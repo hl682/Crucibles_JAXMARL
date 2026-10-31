@@ -48,6 +48,7 @@ class Session:
             host=c['host'],players=[dict(name=p['name'],roles=sorted(p['roles']),host=p['host']) for p in self.clients.values()],
             actions=self.env.manifest['actions'],agent_roles=self.env.manifest['agents'],
             task=self.env.manifest.get('task',{}),observation_fields=self.env.manifest.get('observation_fields',[]),
+            rules=self.env.scene.get('rules',[]),reward_bounds=[self.env.manifest['reward_low'],self.env.manifest['reward_high']],
             information='FULL_STATE_DEBUG' if debug else 'ROLE_FILTERED',ai_policy='UNTRAINED_UNIFORM_LEGAL',
             human_scores=None,engineering=self.engineering)
     def command(self,token,op,payload):

@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Save"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Start project"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Insure partner project"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Liquidate project"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Audit partner project"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state['cash'])\n        obs = obs.at[:, 2].set(state['cash'][::-1])\n        obs = obs.at[:, 3].set(state['timer'].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 4].set(state['timer'][::-1].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 5].set(state['quality'])\n        obs = obs.at[:, 6].set(state['quote'])\n        obs = obs.at[:, 7].set(state['cover'] / 0.15)\n        obs = obs.at[:, 8].set(state['cover'][::-1] / 0.15)\n        obs = obs.at[:, 9].set(state['audit'])\n        obs = obs.at[:, 10].set(state['event'])\n        obs = obs.at[:, 11].set(state['event'][::-1])\n        obs = obs.at[:, 12].set(state['last_action'].astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 13].set(state['last_action'][::-1].astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 14].set((state['audit'] >= 0.0).astype(jnp.float32))\n        obs = obs.at[:, 15].set((state['timer'] > 0).astype(jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        active = state['timer'] > 0\n        start = (actions == 1) & (~active) & (state['cash'] >= 0.25)\n        issue = (actions == 2) & active[::-1] & (state['cover'][::-1] < 0.01) & (state['cash'] >= 0.15)\n        liquidate = (actions == 3) & active\n        audit = (actions == 4) & active[::-1] & (state['cash'] >= 0.025)\n        mature = (state['timer'] == 1) & (~liquidate)\n        ended = mature | liquidate\n        funded_cover = state['cover'] + 0.15 * issue[::-1].astype(jnp.float32)\n        success = mature & (state['quality'] >= 0.35)\n        failure = mature & (~success)\n        proceeds = 0.75 * state['quality'] * success.astype(jnp.float32)\n        indemnity = funded_cover * failure.astype(jnp.float32)\n        liquidation_cash = 0.12 * liquidate.astype(jnp.float32)\n        cover_return = (funded_cover * (success | liquidate).astype(jnp.float32))[::-1]\n        underwriting_fee = (0.04 * (success & (funded_cover > 0.0)).astype(jnp.float32))[::-1]\n        investment = 0.25 * start.astype(jnp.float32)\n        cover_cost = 0.15 * issue.astype(jnp.float32)\n        audit_cost = 0.025 * audit.astype(jnp.float32)\n        saving = 0.08 * (actions == 0).astype(jnp.float32)\n        net_receipt = proceeds + indemnity + liquidation_cash + cover_return + underwriting_fee - investment - cover_cost - audit_cost\n        cash = jnp.clip(state['cash'] + saving + net_receipt, 0.0, 1.0)\n        timer = jnp.where(start, 3, jnp.where(ended, 0, jnp.maximum(state['timer'] - 1, 0))).astype(jnp.int32)\n        quality = jnp.where(start, state['quote'], jnp.where(ended, 0.0, state['quality']))\n        quote_draw = 0.10 + 0.90 * jax.random.uniform(key, (2,), dtype=jnp.float32)\n        quote = jnp.where(start, quote_draw, state['quote'])\n        cover = jnp.where(ended, 0.0, funded_cover)\n        stale_audit = ended[::-1] | start[::-1]\n        remembered = jnp.where(stale_audit, -1.0, state['audit'])\n        audit_value = jnp.where(audit & (~ended[::-1]), state['quality'][::-1], remembered)\n        event = success.astype(jnp.float32) - failure.astype(jnp.float32) - 0.5 * liquidate.astype(jnp.float32)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'cash': cash.astype(jnp.float32),\n            'timer': timer,\n            'quality': quality.astype(jnp.float32),\n            'quote': quote.astype(jnp.float32),\n            'cover': cover.astype(jnp.float32),\n            'audit': audit_value.astype(jnp.float32),\n            'event': event.astype(jnp.float32),\n            'last_action': actions.astype(jnp.int32),\n        }\n        rewards = jnp.tanh(2.0 * net_receipt).astype(jnp.float32)\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

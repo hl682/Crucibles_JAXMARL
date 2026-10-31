@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Inject owned work"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Process local queue"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Route work to partner"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Maintain station"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        ids = jnp.arange(2, dtype=jnp.int32)\n        other = 1 - ids\n        near_load = jnp.sum(state[\"near\"], axis=1)\n        far_load = jnp.sum(state[\"far\"], axis=1)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(jnp.array([-1.0, 1.0], dtype=jnp.float32))\n        obs = obs.at[:, 2].set(state[\"queue\"][ids, ids] / 4.0)\n        obs = obs.at[:, 3].set(state[\"queue\"][ids, other] / 4.0)\n        obs = obs.at[:, 4].set(state[\"queue\"][other, ids] / 4.0)\n        obs = obs.at[:, 5].set(state[\"queue\"][other, other] / 4.0)\n        obs = obs.at[:, 6].set(near_load)\n        obs = obs.at[:, 7].set(jnp.roll(near_load, 1))\n        obs = obs.at[:, 8].set(far_load)\n        obs = obs.at[:, 9].set(jnp.roll(far_load, 1))\n        obs = obs.at[:, 10].set(state[\"energy\"])\n        obs = obs.at[:, 11].set(jnp.roll(state[\"energy\"], 1))\n        obs = obs.at[:, 12].set(state[\"condition\"])\n        obs = obs.at[:, 13].set(jnp.roll(state[\"condition\"], 1))\n        obs = obs.at[:, 14].set(state[\"last_reward\"])\n        obs = obs.at[:, 15].set(jnp.roll(state[\"last_reward\"], 1))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        legal = self.legal_actions(state)\n        inject = (actions == 1) & legal[:, 1]\n        process = (actions == 2) & legal[:, 2]\n        route = (actions == 3) & legal[:, 3]\n        maintain = (actions == 4) & legal[:, 4]\n        load = jnp.sum(state[\"queue\"], axis=1)\n        safe_load = jnp.maximum(load, 0.000001)\n        processing_amount = jnp.where(process, jnp.minimum(load, 0.35 + 0.65 * state[\"condition\"]), 0.0)\n        routing_amount = jnp.where(route, jnp.minimum(load, 1.0), 0.0)\n        processed = state[\"queue\"] * (processing_amount / safe_load)[:, None]\n        sent = state[\"queue\"] * (routing_amount / safe_load)[:, None]\n        remainder = jnp.maximum(state[\"queue\"] - processed - sent, 0.0)\n        injected = jnp.eye(2, dtype=jnp.float32) * inject.astype(jnp.float32)[:, None]\n        before_storage = remainder + injected + state[\"near\"]\n        surviving = 0.985 * before_storage\n        storage_load = jnp.sum(surviving, axis=1)\n        storage_factor = jnp.minimum(1.0, 4.0 / jnp.maximum(storage_load, 0.000001))\n        queue = surviving * storage_factor[:, None]\n        near = 0.985 * state[\"far\"]\n        far = 0.985 * jnp.roll(sent, 1, axis=0)\n        storage_loss = jnp.sum(before_storage - queue, axis=0)\n        transport_loss = 0.015 * jnp.sum(state[\"far\"] + sent, axis=0)\n        owner_dividend = 0.6 * jnp.sum(processed, axis=0)\n        station_fee = 0.2 * jnp.sum(processed, axis=1)\n        utility = (\n            owner_dividend + station_fee\n            - 0.08 * inject.astype(jnp.float32)\n            - 0.035 * route.astype(jnp.float32)\n            - 0.03 * maintain.astype(jnp.float32)\n            - 0.08 * (storage_loss + transport_loss)\n        )\n        rewards = jnp.tanh(utility).astype(jnp.float32)\n        energy = jnp.clip(\n            state[\"energy\"] + 0.08 + 0.12 * (actions == 0).astype(jnp.float32)\n            - 0.25 * inject.astype(jnp.float32)\n            - 0.22 * process.astype(jnp.float32)\n            - 0.16 * route.astype(jnp.float32)\n            - 0.12 * maintain.astype(jnp.float32),\n            0.0, 1.0,\n        )\n        condition = jnp.clip(\n            state[\"condition\"] - 0.004\n            - 0.10 * process.astype(jnp.float32)\n            - 0.03 * route.astype(jnp.float32)\n            + 0.20 * maintain.astype(jnp.float32),\n            0.25, 1.0,\n        )\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"queue\": queue.astype(jnp.float32),\n            \"near\": near.astype(jnp.float32),\n            \"far\": far.astype(jnp.float32),\n            \"energy\": energy.astype(jnp.float32),\n            \"condition\": condition.astype(jnp.float32),\n            \"last_reward\": rewards,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

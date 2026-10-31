@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Monitor"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Extract"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Flush sediment"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Filter contamination"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Build gate"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        phase = jnp.mod(state[\"t\"] + state[\"phase\"], 8).astype(jnp.float32)\n        upstream = (jnp.arange(2, dtype=jnp.int32) == (phase >= 4.0).astype(jnp.int32)).astype(jnp.float32)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"water\"])\n        obs = obs.at[:, 2].set(state[\"pollutant\"] / 1.5)\n        obs = obs.at[:, 3].set(state[\"soil\"])\n        obs = obs.at[:, 4].set(state[\"gate\"])\n        obs = obs.at[:, 5].set(jnp.roll(state[\"gate\"], 1))\n        obs = obs.at[:, 6].set(jnp.roll(state[\"water\"], 1))\n        obs = obs.at[:, 7].set(upstream)\n        obs = obs.at[:, 8].set(jnp.sin(phase * jnp.pi / 4.0))\n        obs = obs.at[:, 9].set(jnp.cos(phase * jnp.pi / 4.0))\n        obs = obs.at[:, 10].set(state[\"survey\"] / 1.5)\n        obs = obs.at[:, 11].set(state[\"survey_age\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 12].set(state[\"last_harvest\"] / 0.22)\n        obs = obs.at[:, 13].set(jnp.roll(state[\"last_harvest\"], 1) / 0.22)\n        obs = obs.at[:, 14].set(state[\"last_arrival\"] / 1.5)\n        obs = obs.at[:, 15].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        phase = jnp.mod(state[\"t\"] + state[\"phase\"], 8)\n        upstream = (jnp.arange(2, dtype=jnp.int32) == (phase >= 4).astype(jnp.int32)).astype(jnp.float32)\n        monitor = actions == 0\n        extract = actions == 1\n        flush = actions == 2\n        filter_action = actions == 3\n        build_gate = actions == 4\n\n        arrival = state[\"plume\"] * (1.0 - state[\"gate\"])\n        load = jnp.clip(state[\"pollutant\"] + arrival, 0.0, 1.5)\n        concentration = load / (state[\"water\"] + 0.25)\n        harvested = jnp.minimum(state[\"water\"], 0.22) * extract.astype(jnp.float32)\n        flush_water = jnp.minimum(jnp.maximum(state[\"water\"] - harvested, 0.0), 0.10) * flush.astype(jnp.float32)\n        flushed = jnp.minimum(load, 0.38) * flush.astype(jnp.float32) * (flush_water / 0.10)\n        filtered = jnp.minimum(jnp.maximum(load - flushed, 0.0), 0.24) * filter_action.astype(jnp.float32)\n\n        water_after_use = jnp.maximum(state[\"water\"] - harvested - flush_water, 0.0)\n        flow = 0.10 * water_after_use * upstream * (1.0 - jnp.roll(state[\"gate\"], 1))\n        residual = jnp.maximum(load - flushed - filtered, 0.0)\n        carried = jnp.minimum(residual, flow * concentration * 0.40)\n        rain = jax.random.uniform(key, (2,), dtype=jnp.float32, minval=0.04, maxval=0.10)\n        recharge = rain * (1.0 - 0.65 * state[\"soil\"]) * (1.0 - 0.55 * state[\"gate\"])\n        water = jnp.clip(water_after_use - flow + jnp.roll(flow, 1) + recharge, 0.0, 1.0)\n        pollutant = jnp.clip(0.96 * residual - carried + 0.25 * harvested, 0.0, 1.5)\n        plume = jnp.clip(jnp.roll(flushed * (0.55 + 0.35 * upstream) + carried, 1), 0.0, 1.5)\n        soil = jnp.clip(\n            0.97 * state[\"soil\"] + 0.045 * jnp.maximum(concentration - 0.50, 0.0)\n            + 0.060 * state[\"gate\"] * state[\"plume\"] - 0.10 * filtered,\n            0.0, 1.0,\n        )\n        gate = jnp.where(build_gate, 0.85, jnp.maximum(state[\"gate\"] - 0.08, 0.0))\n        utility = (\n            2.0 * harvested * (0.70 - 0.80 * concentration) * (1.0 - 0.50 * state[\"soil\"])\n            - 0.035 * filter_action.astype(jnp.float32)\n            - 0.025 * flush.astype(jnp.float32)\n            - 0.030 * build_gate.astype(jnp.float32)\n            - 0.030 * state[\"soil\"]\n        )\n        rewards = jnp.tanh(utility).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"phase\": state[\"phase\"],\n            \"water\": water,\n            \"pollutant\": pollutant,\n            \"plume\": plume,\n            \"soil\": soil,\n            \"gate\": gate,\n            \"survey\": jnp.where(monitor, jnp.roll(state[\"pollutant\"], 1), state[\"survey\"]),\n            \"survey_age\": jnp.where(monitor, 0, jnp.minimum(state[\"survey_age\"] + 1, 32)).astype(jnp.int32),\n            \"last_harvest\": harvested,\n            \"last_arrival\": arrival,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

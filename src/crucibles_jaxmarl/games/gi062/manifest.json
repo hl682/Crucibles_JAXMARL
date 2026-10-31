@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Increment register"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Decrement register"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Transmit register"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Execute instruction"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        registers = state[\"register\"].astype(jnp.float32) / 2.0\n        epochs = state[\"epoch\"].astype(jnp.float32) / 32.0\n        valid = state[\"inbox_valid\"]\n        packets = state[\"packet_value\"].astype(jnp.float32) / 2.0\n        packet_valid = state[\"packet_valid\"]\n        stale = valid & (state[\"inbox_epoch\"] != state[\"epoch\"][::-1])\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(registers)\n        obs = obs.at[:, 2].set(registers[::-1])\n        obs = obs.at[:, 3].set(state[\"target\"].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 4].set(epochs)\n        obs = obs.at[:, 5].set(epochs[::-1])\n        obs = obs.at[:, 6].set(jnp.where(valid, state[\"inbox_value\"].astype(jnp.float32) / 2.0, 0.0))\n        obs = obs.at[:, 7].set(valid.astype(jnp.float32))\n        obs = obs.at[:, 8].set(state[\"inbox_epoch\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 9].set(jnp.where(packet_valid[:, 0], packets[:, 0], 0.0))\n        obs = obs.at[:, 10].set(packet_valid[:, 0].astype(jnp.float32))\n        obs = obs.at[:, 11].set(jnp.where(packet_valid[:, 1], packets[:, 1], 0.0))\n        obs = obs.at[:, 12].set(packet_valid[:, 1].astype(jnp.float32))\n        obs = obs.at[:, 13].set(state[\"last_success\"].astype(jnp.float32))\n        obs = obs.at[:, 14].set(state[\"last_success\"][::-1].astype(jnp.float32))\n        obs = obs.at[:, 15].set(stale.astype(jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        transmit = actions == 3\n        execute = actions == 4\n        success = execute & (state[\"register\"] == state[\"target\"][::-1])\n        failure = execute & jnp.logical_not(success)\n        registers = jnp.mod(\n            state[\"register\"] + (actions == 1).astype(jnp.int32) - (actions == 2).astype(jnp.int32),\n            3,\n        ).astype(jnp.int32)\n        delivery = state[\"packet_valid\"][::-1, 0]\n        inbox_value = jnp.where(delivery, state[\"packet_value\"][::-1, 0], state[\"inbox_value\"])\n        inbox_epoch = jnp.where(delivery, state[\"packet_epoch\"][::-1, 0], state[\"inbox_epoch\"])\n        redraw = jax.random.randint(key, (2,), 0, 3, dtype=jnp.int32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"register\": registers,\n            \"target\": jnp.where(execute[::-1], redraw, state[\"target\"]).astype(jnp.int32),\n            \"epoch\": state[\"epoch\"] + execute[::-1].astype(jnp.int32),\n            \"packet_value\": jnp.stack((state[\"packet_value\"][:, 1], state[\"target\"]), axis=1),\n            \"packet_epoch\": jnp.stack((state[\"packet_epoch\"][:, 1], state[\"epoch\"]), axis=1),\n            \"packet_valid\": jnp.stack((state[\"packet_valid\"][:, 1], transmit), axis=1),\n            \"inbox_value\": inbox_value.astype(jnp.int32),\n            \"inbox_epoch\": inbox_epoch.astype(jnp.int32),\n            \"inbox_valid\": state[\"inbox_valid\"] | delivery,\n            \"last_success\": success,\n        }\n        rewards = jnp.clip(\n            0.6 * success.astype(jnp.float32) + 0.2 * success[::-1].astype(jnp.float32)\n            - 0.25 * failure.astype(jnp.float32) - 0.03 * transmit.astype(jnp.float32),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

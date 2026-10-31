@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Recharge"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Scan private sample"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Request broadcast"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Launch claim 0"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Launch claim 1"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        peer_report = jnp.roll(state[\"published\"], 1)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"battery\"].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 2].set(jnp.maximum(state[\"sample\"], 0).astype(jnp.float32))\n        obs = obs.at[:, 3].set((state[\"sample\"] >= 0).astype(jnp.float32))\n        obs = obs.at[:, 4].set(state[\"sample_age\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 5].set(\n            jnp.maximum(state[\"published\"], 0).astype(jnp.float32)\n        )\n        obs = obs.at[:, 6].set((state[\"published\"] >= 0).astype(jnp.float32))\n        obs = obs.at[:, 7].set(state[\"published_age\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 8].set(jnp.maximum(peer_report, 0).astype(jnp.float32))\n        obs = obs.at[:, 9].set((peer_report >= 0).astype(jnp.float32))\n        obs = obs.at[:, 10].set(\n            jnp.roll(state[\"published_age\"], 1).astype(jnp.float32) / 32.0\n        )\n        obs = obs.at[:, 11].set((state[\"far\"] + 1).astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 12].set((state[\"near\"] + 1).astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 13].set(state[\"channel\"].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 14].set(state[\"last_settlement\"])\n        obs = obs.at[:, 15].set(1.0 - state[\"t\"].astype(jnp.float32) / 32.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        keys = jax.random.split(key, 2)\n        flip = jax.random.bernoulli(keys[0], p=0.12).astype(jnp.int32)\n        latent = jnp.mod(state[\"latent\"] + flip, 2).astype(jnp.int32)\n        error = jax.random.bernoulli(\n            keys[1], p=0.15, shape=(2,)\n        ).astype(jnp.int32)\n        measurement = jnp.mod(latent + error, 2).astype(jnp.int32)\n        scanning = (actions == 1) & (state[\"battery\"] > 0)\n        launching = (\n            ((actions == 3) | (actions == 4)) & (state[\"battery\"] > 0)\n        )\n        requesting = (actions == 2) & (state[\"sample\"] >= 0)\n        channel = jnp.sum(requesting.astype(jnp.int32))\n        transmitted = requesting & (channel == 1)\n        settling = state[\"near\"] >= 0\n        matched = settling & (state[\"near\"] == latent)\n        congested = jnp.all(settling) & (state[\"near\"][0] == state[\"near\"][1])\n        correct_value = jnp.where(congested, 0.275, 0.55)\n        settlement = jnp.where(\n            settling, jnp.where(matched, correct_value, -0.25), 0.0\n        ).astype(jnp.float32)\n        rewards = (\n            settlement\n            - 0.025 * scanning.astype(jnp.float32)\n            - 0.015 * launching.astype(jnp.float32)\n            - 0.005 * requesting.astype(jnp.float32)\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"latent\": latent,\n            \"battery\": jnp.minimum(\n                3,\n                state[\"battery\"]\n                + (actions == 0).astype(jnp.int32)\n                - scanning.astype(jnp.int32)\n                - launching.astype(jnp.int32),\n            ),\n            \"sample\": jnp.where(scanning, measurement, state[\"sample\"]),\n            \"sample_age\": jnp.where(\n                scanning, 0, jnp.minimum(state[\"sample_age\"] + 1, 32)\n            ).astype(jnp.int32),\n            \"published\": jnp.where(\n                transmitted, state[\"sample\"], state[\"published\"]\n            ),\n            \"published_age\": jnp.where(\n                transmitted,\n                jnp.minimum(state[\"sample_age\"] + 1, 32),\n                jnp.minimum(state[\"published_age\"] + 1, 32),\n            ).astype(jnp.int32),\n            \"far\": jnp.where(launching, actions - 3, -1).astype(jnp.int32),\n            \"near\": state[\"far\"],\n            \"channel\": channel,\n            \"last_settlement\": settlement,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\n            \"done_all\": done_all,\n            \"legal_mask\": self.legal_actions(next_state),\n        }\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

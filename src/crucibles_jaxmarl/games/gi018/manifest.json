@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Harvest local patch"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Sow seeds"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Clean local toxin"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Move to other patch"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        here = state[\"position\"]\n        there = 1 - here\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 1].set(here.astype(jnp.float32))\n        obs = obs.at[:, 2].set(state[\"reserve\"])\n        obs = obs.at[:, 3].set(jnp.take(state[\"mature\"], here))\n        obs = obs.at[:, 4].set(jnp.take(state[\"mature\"], there))\n        obs = obs.at[:, 5].set(jnp.take(state[\"water\"], here))\n        obs = obs.at[:, 6].set(jnp.take(state[\"water\"], there))\n        obs = obs.at[:, 7].set(jnp.take(state[\"toxin\"], here))\n        obs = obs.at[:, 8].set(jnp.take(state[\"toxin\"], there))\n        obs = obs.at[:, 9].set(jnp.take(state[\"young\"], here))\n        obs = obs.at[:, 10].set(jnp.take(state[\"old\"], here))\n        obs = obs.at[:, 11].set(jnp.take(state[\"damaged\"], here).astype(jnp.float32))\n        obs = obs.at[:, 12].set(jnp.take(state[\"damaged\"], there).astype(jnp.float32))\n        obs = obs.at[:, 13].set(jnp.roll(here, 1).astype(jnp.float32))\n        obs = obs.at[:, 14].set(state[\"last_yield\"] / 0.22)\n        obs = obs.at[:, 15].set(jnp.roll(state[\"last_yield\"], 1) / 0.22)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        locations = jax.nn.one_hot(state[\"position\"], 2, dtype=jnp.float32)\n        harvesting = actions == 1\n        demand_by_patch = jnp.sum(locations * harvesting[:, None].astype(jnp.float32), axis=0)\n        available = jnp.take(state[\"mature\"], state[\"position\"])\n        local_demand = jnp.take(demand_by_patch, state[\"position\"])\n        harvest = jnp.where(harvesting, jnp.minimum(0.22, available / jnp.maximum(local_demand, 1.0)), 0.0)\n        harvested = jnp.sum(locations * harvest[:, None], axis=0)\n        reserve_available = jnp.minimum(state[\"reserve\"] + 0.35 * harvest, 1.0)\n        sowing = jnp.where(actions == 2, jnp.minimum(reserve_available, 0.14), 0.0)\n        cleaning = jnp.where(actions == 3, jnp.minimum(reserve_available, 0.10), 0.0)\n        moving = (actions == 4) & (reserve_available >= 0.03)\n        seeds = jnp.sum(locations * (2.0 * sowing)[:, None], axis=0)\n        cleanup = jnp.sum(locations * cleaning[:, None], axis=0)\n        growth_factor = jnp.where(state[\"damaged\"], 0.25, 1.0)\n        maturation = state[\"old\"] * state[\"water\"] * growth_factor\n        toxin = jnp.clip(0.97 * state[\"toxin\"] + 0.60 * harvested - 0.90 * cleanup, 0.0, 1.0)\n        damaged = jnp.where(toxin > 0.65, True, jnp.where(toxin < 0.25, False, state[\"damaged\"]))\n        water = jnp.clip(\n            state[\"water\"]\n            + 0.06\n            - 0.50 * maturation\n            - 0.08 * harvested\n            + 0.05 * (jnp.roll(state[\"water\"], 1) - state[\"water\"]),\n            0.0,\n            1.0,\n        )\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"position\": jnp.where(moving, 1 - state[\"position\"], state[\"position\"]).astype(jnp.int32),\n            \"reserve\": jnp.clip(\n                reserve_available - sowing - cleaning - 0.03 * moving + 0.025 * (actions == 0),\n                0.0,\n                1.0,\n            ),\n            \"mature\": jnp.clip(state[\"mature\"] - harvested + maturation, 0.0, 1.0),\n            \"water\": water,\n            \"toxin\": toxin,\n            \"young\": seeds,\n            \"old\": state[\"young\"],\n            \"damaged\": damaged,\n            \"last_yield\": harvest,\n        }\n        damage_here = jnp.take(state[\"damaged\"], state[\"position\"]).astype(jnp.float32)\n        rewards = (\n            0.70 * harvest / 0.22\n            - 0.15 * (sowing / 0.14 + cleaning / 0.10)\n            - 0.03 * moving.astype(jnp.float32)\n            - 0.08 * damage_here * harvesting.astype(jnp.float32)\n        )\n        rewards = jnp.clip(rewards, -1.0, 1.0).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.broadcast_to(done_all, (2,))\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

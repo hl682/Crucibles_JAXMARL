@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Produce stock"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Offer escrow"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Pledge bond"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Withdraw escrow and forfeit bond"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Consume stock"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'] / 32.0)\n        obs = obs.at[:, 1].set(jnp.mod(state['t'], 4) / 3.0)\n        obs = obs.at[:, 2].set(state['stock'])\n        obs = obs.at[:, 3].set(state['escrow'])\n        obs = obs.at[:, 4].set(state['escrow'][::-1])\n        obs = obs.at[:, 5].set(state['bond'])\n        obs = obs.at[:, 6].set(state['bond'][::-1])\n        obs = obs.at[:, 7].set(state['reputation'])\n        obs = obs.at[:, 8].set(state['reputation'][::-1])\n        obs = obs.at[:, 9].set(state['settled'])\n        obs = obs.at[:, 10].set(state['withdrawn'])\n        obs = obs.at[:, 11].set(state['withdrawn'][::-1])\n        obs = obs.at[:, 12].set(jnp.arange(2, dtype=jnp.float32))\n        obs = obs.at[:, 13].set(1.0 - state['stock'])\n        obs = obs.at[:, 14].set(state['escrow'] + state['bond'])\n        obs = obs.at[:, 15].set(1.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        stocked = jnp.minimum(1.0, state['stock'] + 0.18 * (actions == 0))\n        offer = jnp.minimum(stocked, 0.25) * (actions == 1)\n        remaining = stocked - offer\n        pledge = jnp.minimum(remaining, 0.2) * (actions == 2)\n        escrow = jnp.minimum(1.0, state['escrow'] + offer)\n        bond = jnp.minimum(1.0, state['bond'] + pledge)\n        withdrawn = escrow * (actions == 3)\n        forfeited = bond * (actions == 3)\n        escrow = escrow - withdrawn\n        bond = bond - forfeited\n        settlement = jnp.mod(state['t'] + 1, 4) == 0\n        matched = jnp.minimum(escrow[0], escrow[1])\n        delivered = jnp.ones((2,), dtype=jnp.float32) * matched * settlement\n        credit = 0.5 + 0.5 * state['reputation'][::-1]\n        consumed = jnp.minimum(remaining - pledge, 0.2) * (actions == 4)\n        rewards = (0.65 * delivered * credit + 0.3 * forfeited[::-1] + 0.4 * consumed - 0.35 * forfeited).astype(jnp.float32)\n        reputation = jnp.clip(state['reputation'] + 0.15 * delivered - 0.25 * (actions == 3), 0.0, 1.0)\n        stock = jnp.clip(remaining - pledge - consumed + withdrawn + bond * settlement, 0.0, 1.0)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'stock': stock, 'escrow': escrow - delivered,\n            'bond': bond * (1.0 - settlement), 'reputation': reputation,\n            'settled': delivered, 'withdrawn': withdrawn,\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        return self.observe(next_state), next_state, rewards, dones, {\n            'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}"
+  },
+  "release_metadata_revision": 1
 }

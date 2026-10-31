@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Deposit bond"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Work on committed project"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Sign completed work"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Withdraw and forfeit half bond"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 1].set(state[\"wallet\"])\n        obs = obs.at[:, 2].set(state[\"bond\"] / 0.60)\n        obs = obs.at[:, 3].set(jnp.roll(state[\"bond\"], 1) / 0.60)\n        obs = obs.at[:, 4].set(state[\"progress\"])\n        obs = obs.at[:, 5].set(state[\"signed\"].astype(jnp.float32))\n        obs = obs.at[:, 6].set(jnp.roll(state[\"signed\"], 1).astype(jnp.float32))\n        obs = obs.at[:, 7].set(state[\"age\"] / 8.0)\n        obs = obs.at[:, 8].set(state[\"value\"])\n        obs = obs.at[:, 9].set(state[\"efficiency\"] / 1.20)\n        obs = obs.at[:, 10].set(state[\"last_settlement\"].astype(jnp.float32))\n        obs = obs.at[:, 11].set(state[\"last_breach\"].astype(jnp.float32))\n        obs = obs.at[:, 12].set(state[\"last_action\"] / 4.0)\n        obs = obs.at[:, 13].set(jnp.roll(state[\"last_action\"], 1) / 4.0)\n        obs = obs.at[:, 14].set(jnp.all(state[\"bond\"] >= 0.20).astype(jnp.float32))\n        obs = obs.at[:, 15].set((state[\"progress\"] >= 0.75).astype(jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        wallet_start = jnp.minimum(state[\"wallet\"] + 0.03, 1.0)\n        deposit = jnp.where(\n            actions == 1,\n            jnp.minimum(0.24, jnp.minimum(wallet_start, 0.60 - state[\"bond\"])),\n            0.0,\n        )\n        deposited_bond = state[\"bond\"] + deposit\n        withdrawing = (actions == 4) & (deposited_bond > 0.0)\n        forfeited = jnp.where(withdrawing, 0.50 * deposited_bond, 0.0)\n        refunded = jnp.where(withdrawing, 0.50 * deposited_bond, 0.0)\n        held = jnp.where(withdrawing, 0.0, deposited_bond)\n        received = jnp.roll(forfeited, 1)\n        wallet_available = jnp.clip(wallet_start - deposit + refunded + received, 0.0, 1.0)\n        committed = jnp.all(held >= 0.20)\n        work_spend = jnp.where(\n            (actions == 2) & committed,\n            jnp.minimum(wallet_available, 0.12),\n            0.0,\n        )\n        progress_worked = jnp.clip(\n            0.96 * state[\"progress\"] + 2.40 * jnp.sum(work_spend * state[\"efficiency\"]),\n            0.0,\n            1.0,\n        )\n        breach = jnp.any(withdrawing)\n        settlement = jnp.all(state[\"signed\"]) & committed & ~breach\n        active = jnp.any(held > 0.0)\n        project_age = jnp.where(active, state[\"age\"] + 1, 0).astype(jnp.int32)\n        expired = (project_age >= 8) & active & ~settlement\n        signed = state[\"signed\"] | ((actions == 3) & (state[\"progress\"] >= 0.75) & committed)\n        clearing = settlement | expired\n        release = jnp.where(settlement, held, jnp.where(expired, 0.50 * held, 0.0))\n        settlement_cash = jnp.where(settlement, 0.20 * state[\"value\"], 0.0)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"wallet\": jnp.clip(wallet_available - work_spend + release + settlement_cash, 0.0, 1.0),\n            \"bond\": jnp.where(clearing, 0.0, held),\n            \"value\": state[\"value\"],\n            \"efficiency\": state[\"efficiency\"],\n            \"progress\": jnp.where(clearing | breach, 0.0, progress_worked),\n            \"signed\": jnp.where(clearing | breach | ~committed, False, signed),\n            \"age\": jnp.where(clearing, 0, project_age).astype(jnp.int32),\n            \"last_settlement\": settlement,\n            \"last_breach\": breach,\n            \"last_action\": actions.astype(jnp.int32),\n        }\n        outcome = jnp.where(settlement, 0.65 * (0.40 + 0.60 * state[\"value\"]), 0.0)\n        transfers = 0.30 * (received - forfeited)\n        costs = 0.25 * work_spend + 0.03 * deposit + jnp.where(expired, 0.35 * held, 0.0)\n        rewards = jnp.clip(outcome + transfers - costs, -1.0, 1.0).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.broadcast_to(done_all, (2,))\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

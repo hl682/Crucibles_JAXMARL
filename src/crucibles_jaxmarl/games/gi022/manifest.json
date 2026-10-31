@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Harvest biomass"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Feed nutrients"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Toggle connection valve"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Filter toxin"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(jnp.array([-1.0, 1.0], dtype=jnp.float32))\n        obs = obs.at[:, 2].set(state[\"biomass\"])\n        obs = obs.at[:, 3].set(state[\"remote\"][:, 0])\n        obs = obs.at[:, 4].set(state[\"nutrient\"])\n        obs = obs.at[:, 5].set(state[\"remote\"][:, 1])\n        obs = obs.at[:, 6].set(state[\"toxin\"])\n        obs = obs.at[:, 7].set(state[\"remote\"][:, 2])\n        obs = obs.at[:, 8].set(state[\"valve\"].astype(jnp.float32))\n        obs = obs.at[:, 9].set(jnp.roll(state[\"valve\"], 1).astype(jnp.float32))\n        obs = obs.at[:, 10].set(state[\"feed_near\"])\n        obs = obs.at[:, 11].set(state[\"feed_far\"])\n        obs = obs.at[:, 12].set(state[\"waste\"])\n        obs = obs.at[:, 13].set(state[\"affinity\"])\n        obs = obs.at[:, 14].set(state[\"last_reward\"])\n        obs = obs.at[:, 15].set(state[\"last_harvest\"])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        harvested = (actions == 1).astype(jnp.float32) * 0.45 * state[\"biomass\"]\n        fed = (actions == 2).astype(jnp.float32)\n        switched = actions == 3\n        filtered = (actions == 4).astype(jnp.float32) * 0.55 * state[\"toxin\"]\n        valve = jnp.where(switched, ~state[\"valve\"], state[\"valve\"])\n        connected = jnp.all(valve).astype(jnp.float32)\n        nutrient_base = jnp.clip(state[\"nutrient\"] + state[\"feed_near\"] - 0.015, 0.0, 1.0)\n        toxin_base = jnp.clip(0.94 * state[\"toxin\"] + state[\"waste\"] - filtered, 0.0, 1.0)\n        nutrient_mixed = jnp.clip(\n            nutrient_base + 0.16 * connected * (jnp.roll(nutrient_base, 1) - nutrient_base),\n            0.0, 1.0,\n        )\n        toxin = jnp.clip(\n            toxin_base + 0.12 * connected * (jnp.roll(toxin_base, 1) - toxin_base)\n            + 0.08 * state[\"feed_near\"],\n            0.0, 1.0,\n        )\n        remaining = jnp.maximum(state[\"biomass\"] - harvested, 0.0)\n        efficiency = 0.3 + 0.7 * jnp.exp(-4.0 * jnp.square(nutrient_mixed - state[\"affinity\"]))\n        growth = (\n            0.025 * (1.0 - remaining)\n            + 0.18 * remaining * (1.0 - remaining) * efficiency * (1.0 - toxin)\n        )\n        biomass = jnp.clip(remaining + growth - 0.03 * toxin * remaining, 0.0, 1.0)\n        nutrient = jnp.clip(nutrient_mixed - 0.16 * growth, 0.0, 1.0)\n        waste = 0.6 * jnp.roll(filtered, 1)\n        rewards = jnp.tanh(\n            2.5 * harvested * (1.0 - state[\"toxin\"])\n            - 0.08 * fed\n            - 0.04 * switched.astype(jnp.float32)\n            - 0.07 * (actions == 4).astype(jnp.float32)\n            - 0.08 * toxin\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"biomass\": biomass.astype(jnp.float32),\n            \"nutrient\": nutrient.astype(jnp.float32),\n            \"toxin\": toxin.astype(jnp.float32),\n            \"valve\": valve,\n            \"feed_near\": state[\"feed_far\"],\n            \"feed_far\": (0.22 * fed).astype(jnp.float32),\n            \"waste\": waste.astype(jnp.float32),\n            \"affinity\": state[\"affinity\"],\n            \"remote\": jnp.roll(jnp.stack((state[\"biomass\"], state[\"nutrient\"], state[\"toxin\"]), axis=1), 1, axis=0),\n            \"last_reward\": rewards,\n            \"last_harvest\": harvested.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

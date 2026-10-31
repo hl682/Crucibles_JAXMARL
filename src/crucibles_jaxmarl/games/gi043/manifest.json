@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Work"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Screen infection"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Vaccinate"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Treat"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"stock\"] / 2.0)\n        obs = obs.at[:, 1].set(state[\"symptom\"])\n        obs = obs.at[:, 2].set(jnp.roll(state[\"symptom\"], 1))\n        obs = obs.at[:, 3].set(state[\"immunity\"])\n        obs = obs.at[:, 4].set(state[\"vaccine_stage\"] / 2.0)\n        obs = obs.at[:, 5].set(state[\"report\"])\n        obs = obs.at[:, 6].set(state[\"report_age\"] / 32.0)\n        obs = obs.at[:, 7].set(state[\"test_wait\"] / 2.0)\n        obs = obs.at[:, 8].set(state[\"susceptibility\"] / 1.2)\n        obs = obs.at[:, 9].set(state[\"last_contact\"])\n        obs = obs.at[:, 10].set(state[\"last_gain\"] / 0.35)\n        obs = obs.at[:, 11].set(state[\"last_work\"])\n        obs = obs.at[:, 12].set(jnp.roll(state[\"last_work\"], 1))\n        obs = obs.at[:, 13].set(state[\"last_support\"])\n        obs = obs.at[:, 14].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 15].set(jnp.array([-1.0, 1.0], dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        resting = actions == 0\n        working = actions == 1\n        screening = (actions == 2) & (state[\"stock\"] >= 0.08) & (state[\"test_wait\"] == 0)\n        vaccinating = (\n            (actions == 3)\n            & (state[\"stock\"] >= 0.25)\n            & (state[\"vaccine_stage\"] == 0)\n            & (state[\"immunity\"] < 0.9)\n        )\n        treating = (actions == 4) & (state[\"stock\"] >= 0.18)\n        received_support = jnp.roll(treating, 1).astype(jnp.float32)\n        other_working = jnp.roll(working, 1)\n        contact = jnp.where(working & other_working, 1.0, jnp.where(working | other_working, 0.35, 0.05))\n        spark = 0.08 * jax.random.bernoulli(key, p=0.08, shape=(2,)).astype(jnp.float32)\n        exposure = (\n            0.3 * jnp.roll(state[\"load\"], 1) * contact + spark\n        ) * (1.0 - state[\"immunity\"]) * state[\"susceptibility\"]\n        latent = jnp.clip(\n            exposure + 0.25 * state[\"latent\"] - 0.1 * received_support,\n            0.0,\n            1.0,\n        )\n        load = jnp.clip(\n            0.9 * state[\"load\"]\n            + 0.65 * state[\"latent\"]\n            - 0.11 * resting.astype(jnp.float32)\n            - 0.18 * received_support\n            - 0.05 * state[\"immunity\"],\n            0.0,\n            1.0,\n        )\n        immunity = jnp.clip(\n            0.94 * state[\"immunity\"]\n            + 0.55 * (state[\"vaccine_stage\"] == 1).astype(jnp.float32),\n            0.0,\n            0.95,\n        )\n        work_gain = 0.35 * working.astype(jnp.float32) * (1.0 - state[\"load\"])\n        delivered = state[\"test_wait\"] == 1\n        rewards = jnp.clip(\n            0.55 * working.astype(jnp.float32) * (1.0 - state[\"load\"])\n            - 0.35 * state[\"load\"]\n            - 0.08 * screening.astype(jnp.float32)\n            - 0.12 * vaccinating.astype(jnp.float32)\n            - 0.1 * treating.astype(jnp.float32)\n            + 0.08 * received_support * state[\"load\"],\n            -1.0,\n            1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"load\": load.astype(jnp.float32),\n            \"latent\": latent.astype(jnp.float32),\n            \"immunity\": immunity.astype(jnp.float32),\n            \"vaccine_stage\": jnp.where(\n                vaccinating, 2, jnp.maximum(state[\"vaccine_stage\"] - 1, 0)\n            ).astype(jnp.int32),\n            \"stock\": jnp.clip(\n                state[\"stock\"]\n                + work_gain\n                + 0.08 * resting.astype(jnp.float32)\n                - 0.02\n                - 0.08 * screening.astype(jnp.float32)\n                - 0.25 * vaccinating.astype(jnp.float32)\n                - 0.18 * treating.astype(jnp.float32),\n                0.0,\n                2.0,\n            ).astype(jnp.float32),\n            \"susceptibility\": state[\"susceptibility\"],\n            \"symptom\": jnp.clip((state[\"load\"] - 0.12) / 0.88, 0.0, 1.0).astype(jnp.float32),\n            \"report\": jnp.where(delivered, state[\"test_sample\"], state[\"report\"]).astype(jnp.float32),\n            \"report_age\": jnp.where(\n                delivered, 2, jnp.minimum(state[\"report_age\"] + 1, 32)\n            ).astype(jnp.int32),\n            \"test_sample\": jnp.where(screening, state[\"load\"], state[\"test_sample\"]).astype(jnp.float32),\n            \"test_wait\": jnp.where(screening, 2, jnp.maximum(state[\"test_wait\"] - 1, 0)).astype(jnp.int32),\n            \"last_contact\": contact.astype(jnp.float32),\n            \"last_gain\": work_gain.astype(jnp.float32),\n            \"last_work\": working.astype(jnp.float32),\n            \"last_support\": received_support,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

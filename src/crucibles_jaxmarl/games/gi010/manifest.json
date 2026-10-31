@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Request credit"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Lend to requesting partner"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Repay debt"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Enforce aged partner debt"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"balance\"] / 3.0)\n        obs = obs.at[:, 2].set(jnp.roll(state[\"balance\"], 1) / 3.0)\n        obs = obs.at[:, 3].set(state[\"debt\"] / 0.61)\n        obs = obs.at[:, 4].set(jnp.roll(state[\"debt\"], 1) / 0.61)\n        obs = obs.at[:, 5].set(state[\"age\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 6].set(jnp.roll(state[\"age\"], 1).astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 7].set(state[\"request\"].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 8].set(jnp.roll(state[\"request\"], 1).astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 9].set(state[\"frozen\"].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 10].set(jnp.roll(state[\"frozen\"], 1).astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 11].set(state[\"skill\"] / 0.07)\n        obs = obs.at[:, 12].set(state[\"last_income\"] / 0.14)\n        obs = obs.at[:, 13].set(state[\"last_transfer\"] / 0.61)\n        obs = obs.at[:, 14].set(jnp.roll(state[\"last_enforce\"], 1))\n        obs = obs.at[:, 15].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        repaid = jnp.where(\n            actions == 3,\n            jnp.minimum(state[\"balance\"], state[\"debt\"]),\n            0.0,\n        )\n        lendable = (\n            (actions == 2)\n            & (jnp.roll(state[\"request\"], 1) > 0)\n            & (jnp.roll(state[\"debt\"], 1) <= 0.000001)\n        )\n        lent = jnp.where(\n            lendable,\n            jnp.minimum(state[\"balance\"] - repaid, 0.55),\n            0.0,\n        )\n        borrowed = jnp.roll(lent, 1)\n        returned = jnp.roll(repaid, 1)\n        transfer = returned - repaid + borrowed - lent\n        working_balance = jnp.clip(state[\"balance\"] + transfer, 0.0, 3.0)\n        debt = jnp.maximum(state[\"debt\"] - repaid, 0.0) + 1.1 * borrowed\n        age = jnp.where(\n            debt > 0.000001,\n            jnp.where(borrowed > 0.0, 0, state[\"age\"] + 1),\n            0,\n        ).astype(jnp.int32)\n        enforced = (\n            (actions == 4)\n            & (jnp.roll(debt, 1) > 0.000001)\n            & (jnp.roll(state[\"age\"], 1) >= 4)\n        )\n        frozen = jnp.maximum(state[\"frozen\"] - 1, 0)\n        frozen = jnp.where(jnp.roll(enforced, 1), 3, frozen)\n        frozen = jnp.where(debt > 0.000001, frozen, 0).astype(jnp.int32)\n        income = (\n            state[\"skill\"] * jnp.sqrt(working_balance)\n            * (frozen == 0).astype(jnp.float32)\n        )\n        balance = jnp.clip(working_balance + 0.5 * income, 0.0, 3.0)\n        request = jnp.where(\n            actions == 1,\n            3,\n            jnp.maximum(state[\"request\"] - 1, 0),\n        )\n        request = jnp.where(borrowed > 0.0, 0, request).astype(jnp.int32)\n        rewards = (\n            income / 0.14\n            - 0.05 * enforced.astype(jnp.float32)\n            - 0.01 * (actions == 1).astype(jnp.float32)\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"balance\": balance.astype(jnp.float32),\n            \"debt\": debt.astype(jnp.float32),\n            \"age\": age,\n            \"request\": request,\n            \"frozen\": frozen,\n            \"skill\": state[\"skill\"],\n            \"last_income\": income.astype(jnp.float32),\n            \"last_transfer\": transfer.astype(jnp.float32),\n            \"last_enforce\": enforced.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

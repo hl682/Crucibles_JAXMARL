@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Sample private evidence"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Announce 0"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Announce 1"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Commit 0"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Commit 1"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        other_message = jnp.roll(state[\"message\"], 1)\n        other_message_epoch = jnp.roll(state[\"message_epoch\"], 1)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 1].set(state[\"clue\"])\n        obs = obs.at[:, 2].set(state[\"reliability\"])\n        obs = obs.at[:, 3].set((state[\"clue_epoch\"] == state[\"epoch\"]).astype(jnp.float32))\n        obs = obs.at[:, 4].set(state[\"clue_age\"] / 32.0)\n        obs = obs.at[:, 5].set((other_message + 1) / 2.0)\n        obs = obs.at[:, 6].set(((other_message >= 0) & (other_message_epoch == state[\"epoch\"])).astype(jnp.float32))\n        obs = obs.at[:, 7].set(jnp.roll(state[\"message_age\"], 1) / 32.0)\n        obs = obs.at[:, 8].set((state[\"message\"] + 1) / 2.0)\n        obs = obs.at[:, 9].set(((state[\"message\"] >= 0) & (state[\"message_epoch\"] == state[\"epoch\"])).astype(jnp.float32))\n        obs = obs.at[:, 10].set((state[\"commitment\"] + 1) / 2.0)\n        obs = obs.at[:, 11].set((jnp.roll(state[\"commitment\"], 1) + 1) / 2.0)\n        obs = obs.at[:, 12].set(state[\"commitment_age\"] / 3.0)\n        obs = obs.at[:, 13].set(jnp.roll(state[\"commitment_age\"], 1) / 3.0)\n        obs = obs.at[:, 14].set(state[\"phase\"] / 8.0)\n        obs = obs.at[:, 15].set(state[\"last_outcome\"])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        keys = jax.random.split(key, 2)\n        sample = actions == 0\n        announce = (actions == 1) | (actions == 2)\n        commit = actions >= 3\n        correct_clue = jax.random.bernoulli(keys[0], p=state[\"reliability\"], shape=(2,))\n        sampled_clue = jnp.where(correct_clue, state[\"target\"], 1 - state[\"target\"]).astype(jnp.int32)\n        clue = jnp.where(sample, sampled_clue, state[\"clue\"])\n        clue_epoch = jnp.where(sample, state[\"epoch\"], state[\"clue_epoch\"])\n        clue_age = jnp.where(sample, 0, jnp.minimum(state[\"clue_age\"] + 1, 32)).astype(jnp.int32)\n        message = jnp.where(announce, actions - 1, state[\"message\"]).astype(jnp.int32)\n        message_epoch = jnp.where(announce, state[\"epoch\"], state[\"message_epoch\"])\n        message_age = jnp.where(announce, 0, jnp.minimum(state[\"message_age\"] + 1, 32)).astype(jnp.int32)\n        aged_commitment = jnp.minimum(state[\"commitment_age\"] + 1, 3)\n        expired = (state[\"commitment\"] >= 0) & (aged_commitment >= 3) & (~commit)\n        proposed = jnp.where(commit, actions - 3, jnp.where(aged_commitment < 3, state[\"commitment\"], -1)).astype(jnp.int32)\n        proposed_age = jnp.where(commit, 0, jnp.where(proposed >= 0, aged_commitment, 0)).astype(jnp.int32)\n        paired = (proposed[0] >= 0) & (proposed[1] >= 0)\n        agree = proposed[0] == proposed[1]\n        correct = proposed[0] == state[\"target\"]\n        success = paired & agree & correct\n        wrong = paired & agree & (~correct)\n        conflict = paired & (~agree)\n        outcome = (0.75 * success.astype(jnp.float32) - 0.55 * wrong.astype(jnp.float32) - 0.20 * conflict.astype(jnp.float32)).astype(jnp.float32)\n        refresh = paired | (state[\"phase\"] + 1 >= 8)\n        sampled_target = jax.random.randint(keys[1], (), 0, 2, dtype=jnp.int32)\n        target = jnp.where(refresh, sampled_target, state[\"target\"])\n        commitment = jnp.where(refresh, jnp.full((2,), -1, dtype=jnp.int32), proposed)\n        commitment_age = jnp.where(refresh, jnp.zeros((2,), dtype=jnp.int32), proposed_age)\n        rewards = jnp.full((2,), outcome, dtype=jnp.float32)\n        rewards = rewards - 0.035 * sample.astype(jnp.float32) - 0.01 * announce.astype(jnp.float32) - 0.02 * commit.astype(jnp.float32)\n        rewards = jnp.clip(rewards - 0.06 * expired.astype(jnp.float32), -1.0, 1.0).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"target\": target,\n            \"reliability\": state[\"reliability\"],\n            \"clue\": clue,\n            \"clue_epoch\": clue_epoch,\n            \"clue_age\": clue_age,\n            \"message\": message,\n            \"message_epoch\": message_epoch,\n            \"message_age\": message_age,\n            \"commitment\": commitment,\n            \"commitment_age\": commitment_age,\n            \"epoch\": state[\"epoch\"] + refresh.astype(jnp.int32),\n            \"phase\": jnp.where(refresh, 0, state[\"phase\"] + 1).astype(jnp.int32),\n            \"last_outcome\": outcome,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Produce stock"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Make honest delivery"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Make shortcut delivery"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Inspect partner delivery"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Buy insurance shield"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        incoming_stage = jnp.roll(state[\"stage\"], 1)\n        incoming_verified = jnp.roll(state[\"verified\"], 1)\n        incoming_quality = jnp.roll(state[\"quality\"], 1)\n        reported_quality = jnp.where(incoming_verified, incoming_quality, -0.5)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"stock\"] / 6.0)\n        obs = obs.at[:, 1].set(state[\"cost\"] / 1.1)\n        obs = obs.at[:, 2].set(state[\"stage\"] / 3.0)\n        obs = obs.at[:, 3].set(state[\"quality\"])\n        obs = obs.at[:, 4].set(state[\"bond\"] / 0.4)\n        obs = obs.at[:, 5].set(incoming_stage / 3.0)\n        obs = obs.at[:, 6].set(incoming_verified.astype(jnp.float32))\n        obs = obs.at[:, 7].set(reported_quality)\n        obs = obs.at[:, 8].set(state[\"shield\"] / 1.5)\n        obs = obs.at[:, 9].set(state[\"trust\"])\n        obs = obs.at[:, 10].set(jnp.roll(state[\"trust\"], 1))\n        obs = obs.at[:, 11].set(state[\"last_payoff\"])\n        obs = obs.at[:, 12].set(state[\"last_delivery\"])\n        obs = obs.at[:, 13].set(state[\"shipped\"] / 16.0)\n        obs = obs.at[:, 14].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 15].set(jnp.array([-1.0, 1.0], dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        vacant = state[\"stage\"] == 0\n        honest = (actions == 1) & vacant & (state[\"stock\"] >= state[\"cost\"] + 0.4)\n        shortcut = (actions == 2) & vacant & (state[\"stock\"] >= 0.55)\n        launch = honest | shortcut\n        inspect = (actions == 3) & (jnp.roll(state[\"stage\"], 1) > 0) & (state[\"stock\"] >= 0.1)\n        insure = (actions == 4) & (state[\"stock\"] >= 0.25) & (state[\"shield\"] < 1.4)\n        checked = state[\"verified\"] | jnp.roll(inspect, 1)\n        mature = state[\"stage\"] == 1\n        good = state[\"quality\"] > 0.5\n        detected = mature & (~good) & checked\n        accepted = mature & (~detected)\n        delivered_good = jnp.roll(mature & good, 1)\n        delivered_bad = jnp.roll(mature & (~good) & (~checked), 1)\n        delivered_rejected = jnp.roll(detected, 1)\n        available_shield = jnp.minimum(1.5, state[\"shield\"] + 0.65 * insure.astype(jnp.float32))\n        damage = 0.55 * delivered_bad.astype(jnp.float32)\n        absorbed = jnp.minimum(available_shield, damage)\n        receiver_loss = damage - absorbed\n        production_cost = honest.astype(jnp.float32) * state[\"cost\"] + 0.15 * shortcut.astype(jnp.float32)\n        stock = jnp.clip(\n            state[\"stock\"]\n            + 0.55 * (actions == 0).astype(jnp.float32)\n            - production_cost\n            - 0.4 * launch.astype(jnp.float32)\n            - 0.1 * inspect.astype(jnp.float32)\n            - 0.25 * insure.astype(jnp.float32)\n            + state[\"bond\"] * accepted.astype(jnp.float32)\n            + 0.35 * accepted.astype(jnp.float32)\n            + 0.6 * delivered_good.astype(jnp.float32)\n            + 0.2 * delivered_rejected.astype(jnp.float32)\n            - receiver_loss,\n            0.0,\n            6.0,\n        )\n        issuer_payoff = mature.astype(jnp.float32) * jnp.where(\n            good,\n            0.45 + 0.2 * state[\"trust\"],\n            jnp.where(checked, -0.65, 0.55 + 0.1 * state[\"trust\"]),\n        )\n        receiver_payoff = (\n            0.35 * delivered_good.astype(jnp.float32)\n            + 0.08 * delivered_rejected.astype(jnp.float32)\n            - receiver_loss\n        )\n        effort = (\n            0.12 * honest.astype(jnp.float32)\n            + 0.035 * shortcut.astype(jnp.float32)\n            + 0.035 * inspect.astype(jnp.float32)\n            + 0.06 * insure.astype(jnp.float32)\n        )\n        rewards = jnp.clip(issuer_payoff + receiver_payoff - effort, -1.0, 1.0).astype(jnp.float32)\n        continuing = state[\"stage\"] > 1\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"stock\": stock.astype(jnp.float32),\n            \"cost\": state[\"cost\"],\n            \"stage\": jnp.where(launch, 3, jnp.maximum(state[\"stage\"] - 1, 0)).astype(jnp.int32),\n            \"quality\": jnp.where(launch, honest.astype(jnp.float32), jnp.where(continuing, state[\"quality\"], 0.0)),\n            \"bond\": jnp.where(launch, 0.4, jnp.where(continuing, state[\"bond\"], 0.0)).astype(jnp.float32),\n            \"verified\": jnp.where(launch, False, continuing & checked),\n            \"shield\": jnp.maximum(available_shield - absorbed - 0.08, 0.0).astype(jnp.float32),\n            \"trust\": jnp.clip(\n                state[\"trust\"]\n                + 0.1 * (mature & good).astype(jnp.float32)\n                + 0.03 * (mature & (~good) & (~checked)).astype(jnp.float32)\n                - 0.3 * detected.astype(jnp.float32),\n                0.0,\n                1.0,\n            ),\n            \"last_payoff\": rewards,\n            \"last_delivery\": receiver_payoff.astype(jnp.float32),\n            \"shipped\": state[\"shipped\"] + launch.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Sow type 0"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Sow type 1"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Harvest"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Inspect"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1:3].set(state['adults'])\n        obs = obs.at[:, 3:5].set(state['seed_bank'])\n        obs = obs.at[:, 5:7].set(state['seedlings'])\n        obs = obs.at[:, 7].set(state['nutrient'])\n        obs = obs.at[:, 8].set(state['gate'])\n        obs = obs.at[:, 9].set(state['gate'][::-1])\n        obs = obs.at[:, 10].set(state['water'] / 1.8)\n        obs = obs.at[:, 11].set(state['intake'])\n        obs = obs.at[:, 12].set(state['seen_mass'])\n        obs = obs.at[:, 13].set(state['seen_mix'])\n        obs = obs.at[:, 14].set(state['seen_age'])\n        obs = obs.at[:, 15].set(state['last_yield'])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        can_sow = (state['nutrient'] >= 0.08).astype(jnp.float32)\n        sow = jnp.stack(((actions == 1).astype(jnp.float32), (actions == 2).astype(jnp.float32)), axis=1) * can_sow[:, None]\n        sow_count = jnp.sum(sow, axis=1)\n        harvest = (actions == 3).astype(jnp.float32)\n        inspect = actions == 4\n        toggled = inspect.astype(jnp.float32)\n        demand = 0.08 + 0.12 * state['adults'][:, 0] + 0.3 * state['adults'][:, 1] + 0.12 * state['gate']\n        request = demand * (0.4 + 0.6 * state['gate'])\n        recharge = 0.2 + 0.07 * jnp.cos(0.3 * state['t'].astype(jnp.float32))\n        available_water = jnp.minimum(1.8, state['water'] + recharge)\n        allocation = jnp.minimum(1.0, available_water / (jnp.sum(request) + 0.000001))\n        intake = allocation * request\n        hydration = jnp.clip(intake / (demand + 0.000001), 0.0, 1.0)\n        harvested = 0.7 * harvest[:, None] * state['adults']\n        yield_value = jnp.sum(harvested * jnp.array([0.45, 1.0], dtype=jnp.float32)[None, :], axis=1)\n        residual = state['adults'] - harvested\n        survival = jnp.stack((0.94 + 0.03 * hydration, 0.78 + 0.18 * hydration), axis=1)\n        growth = 0.32 * state['seedlings'] * hydration[:, None] * state['nutrient'][:, None] * jnp.array([0.7, 1.2], dtype=jnp.float32)[None, :]\n        raw_adults = residual * survival + growth\n        adults = raw_adults / jnp.maximum(1.0, jnp.sum(raw_adults, axis=1))[:, None]\n        space = jnp.maximum(0.0, 1.0 - jnp.sum(adults, axis=1))\n        seedlings = jnp.clip(0.45 * state['seedlings'] + 0.35 * state['seed_bank'] * space[:, None], 0.0, 1.0)\n        connected = state['gate'] * state['gate'][::-1]\n        incoming = 0.06 * connected[:, None] * state['adults'][::-1, :]\n        seed_bank = jnp.clip(0.65 * state['seed_bank'] + 0.12 * state['adults'] + incoming + 0.35 * sow, 0.0, 1.0)\n        nutrient = jnp.clip(state['nutrient'] + 0.035 + 0.09 * jnp.sum(harvested, axis=1) + 0.03 * state['adults'][:, 0] - 0.09 * jnp.sum(growth, axis=1) - 0.045 * state['adults'][:, 1] - 0.08 * sow_count, 0.05, 1.0)\n        drought = jnp.maximum(0.0, 0.4 - hydration) * state['adults'][:, 1]\n        rewards = jnp.tanh(1.5 * yield_value - 0.05 * sow_count - 0.025 * toggled - 0.1 * drought)\n        partner_mass = jnp.sum(adults[::-1, :], axis=1)\n        partner_mix = adults[::-1, 1] / (partner_mass + 0.000001)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'adults': adults,\n            'seed_bank': seed_bank,\n            'seedlings': seedlings,\n            'nutrient': nutrient,\n            'water': jnp.clip(available_water - jnp.sum(intake), 0.0, 1.8),\n            'gate': jnp.where(inspect, 1.0 - state['gate'], state['gate']),\n            'intake': intake,\n            'seen_mass': jnp.where(inspect, partner_mass, state['seen_mass']),\n            'seen_mix': jnp.where(inspect, partner_mix, state['seen_mix']),\n            'seen_age': jnp.where(inspect, 0.0, jnp.minimum(1.0, state['seen_age'] + 1.0 / 32.0)),\n            'last_yield': yield_value,\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards.astype(jnp.float32), dones, info"
+  },
+  "release_metadata_revision": 1
 }

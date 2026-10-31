@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Harvest fruit"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Plant seeds"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Water"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Clear competing vegetation"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        seeds = state[\"seeds\"]\n        immature = state[\"immature\"]\n        flower = state[\"flower\"]\n        fruit = state[\"fruit\"]\n        moisture = state[\"moisture\"]\n        pest = state[\"pest\"]\n        pollen = state[\"pollen\"]\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(seeds)\n        obs = obs.at[:, 2].set(seeds[::-1])\n        obs = obs.at[:, 3].set(immature)\n        obs = obs.at[:, 4].set(immature[::-1])\n        obs = obs.at[:, 5].set(flower)\n        obs = obs.at[:, 6].set(flower[::-1])\n        obs = obs.at[:, 7].set(fruit)\n        obs = obs.at[:, 8].set(fruit[::-1])\n        obs = obs.at[:, 9].set(moisture)\n        obs = obs.at[:, 10].set(moisture[::-1])\n        obs = obs.at[:, 11].set(pest)\n        obs = obs.at[:, 12].set(pest[::-1])\n        obs = obs.at[:, 13].set(pollen)\n        obs = obs.at[:, 14].set(pollen[::-1])\n        obs = obs.at[:, 15].set((state[\"fertility\"] - 0.8) / 0.4)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        harvest = jnp.where(actions == 1, jnp.minimum(state[\"fruit\"], 0.5), 0.0)\n        planted = jnp.where(actions == 2, jnp.minimum(state[\"seeds\"], 0.3), 0.0)\n        watering = (actions == 3).astype(jnp.float32)\n        clearing = (actions == 4).astype(jnp.float32)\n        rainfall = jax.random.uniform(key, (), minval=0.02, maxval=0.06, dtype=jnp.float32)\n        maturation = 0.4 * state[\"immature\"] * state[\"moisture\"] * state[\"fertility\"]\n        fertilized = jnp.minimum(state[\"flower\"], 0.85 * state[\"pollen\"]) * state[\"moisture\"] * (1.0 - 0.55 * state[\"pest\"])\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"seeds\": jnp.clip(state[\"seeds\"] - planted + 0.65 * harvest, 0.0, 1.0).astype(jnp.float32),\n            \"immature\": jnp.clip(0.98 * state[\"immature\"] - maturation + planted, 0.0, 1.0).astype(jnp.float32),\n            \"flower\": jnp.clip(0.94 * state[\"flower\"] + maturation - fertilized, 0.0, 1.0).astype(jnp.float32),\n            \"fruit\": jnp.clip(0.96 * (state[\"fruit\"] - harvest) + fertilized * (1.0 - 0.35 * state[\"pest\"]), 0.0, 1.0).astype(jnp.float32),\n            \"moisture\": jnp.clip(0.9 * state[\"moisture\"] + rainfall + 0.3 * watering[::-1] - 0.05 * state[\"immature\"], 0.0, 1.0).astype(jnp.float32),\n            \"pest\": jnp.clip(0.92 * state[\"pest\"] + 0.04 * state[\"fruit\"] + 0.03 * state[\"pest\"][::-1] - 0.18 * clearing, 0.0, 1.0).astype(jnp.float32),\n            \"pollen\": (0.9 * state[\"flower\"][::-1] * (1.0 - 0.4 * state[\"pest\"][::-1])).astype(jnp.float32),\n            \"fertility\": state[\"fertility\"],\n        }\n        rewards = jnp.clip(\n            0.95 * harvest - 0.06 * planted - 0.04 * watering - 0.03 * clearing,\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

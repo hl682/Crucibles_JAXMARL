@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Admit fluid"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Process fluid"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Forward fluid"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Filter dirt"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Regenerate filter"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 1].set(state[\"volume\"] / 4.0)\n        obs = obs.at[:, 2].set(jnp.roll(state[\"volume\"], 1) / 4.0)\n        obs = obs.at[:, 3].set(state[\"dirt\"] / jnp.maximum(state[\"volume\"], 0.001))\n        obs = obs.at[:, 4].set(state[\"capacity\"])\n        obs = obs.at[:, 5].set(state[\"pipe_volume\"])\n        obs = obs.at[:, 6].set(state[\"pipe_dirt\"] / jnp.maximum(state[\"pipe_volume\"], 0.001))\n        obs = obs.at[:, 7].set(jnp.roll(state[\"pipe_volume\"], 1))\n        obs = obs.at[:, 8].set(state[\"inlet_dirt\"])\n        obs = obs.at[:, 9].set(state[\"last_reward\"])\n        obs = obs.at[:, 10].set(state[\"overflow\"] / 2.0)\n        obs = obs.at[:, 11].set(jnp.roll(state[\"overflow\"], 1) / 2.0)\n        obs = obs.at[:, 12].set(state[\"throughput\"] / 32.0)\n        obs = obs.at[:, 13].set(jnp.roll(state[\"throughput\"], 1) / 32.0)\n        obs = obs.at[:, 14].set(state[\"last_action\"] / 4.0)\n        obs = obs.at[:, 15].set(jnp.roll(state[\"last_action\"], 1) / 4.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        admit = (actions == 0).astype(jnp.float32)\n        incoming_volume = jnp.roll(state[\"pipe_volume\"], 1)\n        incoming_dirt = jnp.roll(state[\"pipe_dirt\"], 1)\n        total_volume = state[\"volume\"] + incoming_volume + admit\n        total_dirt = state[\"dirt\"] + incoming_dirt + admit * state[\"inlet_dirt\"]\n        fraction = jnp.clip(total_dirt / jnp.maximum(total_volume, 0.001), 0.0, 1.0)\n        overflow = jnp.maximum(total_volume - 4.0, 0.0)\n        volume = jnp.minimum(total_volume, 4.0)\n        dirt = volume * fraction\n        process = jnp.where(actions == 1, jnp.minimum(volume, 1.0), 0.0)\n        forward = jnp.where(actions == 2, jnp.minimum(volume, 1.0), 0.0)\n        filtered = jnp.where(actions == 3, jnp.minimum(dirt, state[\"capacity\"]), 0.0)\n        regenerate = actions == 4\n        wash_volume = (regenerate & (state[\"capacity\"] < 1.0)).astype(jnp.float32)\n        wash_dirt = wash_volume * (1.0 - state[\"capacity\"])\n        next_volume = jnp.maximum(volume - process - forward, 0.0)\n        next_dirt = jnp.clip(dirt - fraction * (process + forward) - filtered, 0.0, next_volume)\n        next_capacity = jnp.where(regenerate, 1.0, jnp.maximum(state[\"capacity\"] - filtered, 0.0))\n        rewards = 0.8 * process * (1.0 - 2.0 * fraction) + 0.04 * forward\n        rewards = rewards - 0.04 * admit - 0.03 * (actions == 3).astype(jnp.float32) - 0.05 * regenerate.astype(jnp.float32)\n        rewards = jnp.clip(rewards - 0.10 * jnp.minimum(overflow, 1.0), -1.0, 1.0).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"volume\": next_volume.astype(jnp.float32),\n            \"dirt\": next_dirt.astype(jnp.float32),\n            \"capacity\": next_capacity.astype(jnp.float32),\n            \"pipe_volume\": (forward + wash_volume).astype(jnp.float32),\n            \"pipe_dirt\": (forward * fraction + wash_dirt).astype(jnp.float32),\n            \"inlet_dirt\": state[\"inlet_dirt\"],\n            \"throughput\": state[\"throughput\"] + process,\n            \"overflow\": overflow.astype(jnp.float32),\n            \"last_reward\": rewards,\n            \"last_action\": actions.astype(jnp.int32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Draw public water"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Consume private reserve"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Plant nursery"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Clean toxin"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        recovery_gate = (state[\"water\"] > 0.55) & (state[\"toxin\"] < 0.22)\n        collapse_gate = (state[\"water\"] < 0.16) | (state[\"toxin\"] > 0.72)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"water\"])\n        obs = obs.at[:, 2].set(state[\"toxin\"])\n        obs = obs.at[:, 3].set(state[\"collapsed\"].astype(jnp.float32))\n        obs = obs.at[:, 4].set(state[\"reserve\"])\n        obs = obs.at[:, 5:7].set(state[\"nursery\"])\n        obs = obs.at[:, 7].set(jnp.sum(state[\"nursery\"][:, 1]) / 2.0)\n        obs = obs.at[:, 8].set(state[\"last_take\"] / 0.18)\n        obs = obs.at[:, 9].set(jnp.roll(state[\"last_take\"], 1) / 0.18)\n        obs = obs.at[:, 10].set(state[\"last_private\"] / 0.18)\n        obs = obs.at[:, 11].set(jnp.roll(state[\"last_clean\"], 1))\n        obs = obs.at[:, 12].set(jnp.sum(state[\"last_mature\"]) / 2.0)\n        obs = obs.at[:, 13].set(recovery_gate.astype(jnp.float32))\n        obs = obs.at[:, 14].set(collapse_gate.astype(jnp.float32))\n        obs = obs.at[:, 15].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        public_request = 0.18 * (actions == 1).astype(jnp.float32)\n        allocation = jnp.minimum(\n            1.0,\n            state[\"water\"] / jnp.maximum(jnp.sum(public_request), 0.18),\n        )\n        taken = public_request * allocation\n        private_take = jnp.minimum(\n            state[\"reserve\"],\n            0.18 * (actions == 2).astype(jnp.float32),\n        )\n        planted = ((actions == 3) & (state[\"reserve\"] >= 0.14)).astype(jnp.float32)\n        cleaned = (actions == 4).astype(jnp.float32)\n        matured = state[\"nursery\"][:, 0]\n        nursery = jnp.stack((state[\"nursery\"][:, 1], planted), axis=1)\n        toxin = jnp.clip(\n            state[\"toxin\"] + 0.1 * jnp.sum(taken) / 0.18\n            - 0.08 * jnp.sum(cleaned) - 0.02 - 0.05 * jnp.sum(matured),\n            0.0,\n            1.0,\n        )\n        regeneration = jnp.where(state[\"collapsed\"], 0.006, 0.05)\n        water = jnp.clip(\n            state[\"water\"] - jnp.sum(taken)\n            + regeneration * (1.0 - state[\"water\"])\n            + 0.09 * jnp.sum(matured),\n            0.0,\n            1.0,\n        )\n        recovery_gate = (water > 0.55) & (toxin < 0.22)\n        collapse_gate = (water < 0.16) | (toxin > 0.72)\n        collapsed = jnp.where(state[\"collapsed\"], ~recovery_gate, collapse_gate)\n        reserve = jnp.clip(\n            state[\"reserve\"] - private_take - 0.14 * planted\n            + 0.025 * water * (1.0 - toxin),\n            0.0,\n            1.0,\n        )\n        public_quality = 1.0 - 0.65 * state[\"collapsed\"].astype(jnp.float32)\n        rewards = (\n            0.7 * public_quality * taken / 0.18\n            + 0.45 * private_take / 0.18\n            - 0.02 * planted - 0.04 * cleaned\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"water\": water.astype(jnp.float32),\n            \"toxin\": toxin.astype(jnp.float32),\n            \"collapsed\": collapsed.astype(jnp.bool_),\n            \"reserve\": reserve.astype(jnp.float32),\n            \"nursery\": nursery.astype(jnp.float32),\n            \"last_take\": taken.astype(jnp.float32),\n            \"last_private\": private_take.astype(jnp.float32),\n            \"last_clean\": cleaned,\n            \"last_mature\": matured,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

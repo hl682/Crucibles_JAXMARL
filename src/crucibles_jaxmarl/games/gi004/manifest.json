@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Open irrigation gate further"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Close irrigation gate further"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Request extra water"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Harvest crop"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'] / 32.0)\n        obs = obs.at[:, 1].set(state['reservoir'])\n        obs = obs.at[:, 2].set(state['soil'])\n        obs = obs.at[:, 3].set(state['pipe'])\n        obs = obs.at[:, 4].set(state['crop'])\n        obs = obs.at[:, 5].set(state['gate'])\n        obs = obs.at[:, 6].set(state['gate'][::-1])\n        obs = obs.at[:, 7].set(state['draw'])\n        obs = obs.at[:, 8].set(state['draw'][::-1])\n        obs = obs.at[:, 9].set(state['harvest'])\n        obs = obs.at[:, 10].set(jnp.arange(2, dtype=jnp.float32))\n        obs = obs.at[:, 11].set(1.0 - state['soil'])\n        obs = obs.at[:, 12].set(state['pipe'][::-1])\n        obs = obs.at[:, 13].set(state['crop'][::-1])\n        obs = obs.at[:, 14].set(0.1)\n        obs = obs.at[:, 15].set(1.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        gate = jnp.clip(state['gate'] + 0.25 * (actions == 1) - 0.25 * (actions == 2), 0.0, 1.0)\n        demand = 0.18 * gate + 0.15 * (actions == 3)\n        supply = jnp.minimum(1.0, state['reservoir'] + 0.1)\n        draw = demand * jnp.minimum(1.0, supply / jnp.maximum(jnp.sum(demand), 0.001))\n        moisture = jnp.clip(0.82 * state['soil'] + state['pipe'], 0.0, 1.0)\n        growth = 0.15 * jnp.maximum(0.0, 1.0 - jnp.abs(moisture - 0.55) / 0.4)\n        ripe = jnp.minimum(1.0, state['crop'] + growth)\n        harvest = ripe * (actions == 4)\n        crop = ripe * (actions != 4)\n        reservoir = jnp.clip(supply - jnp.sum(draw) + 0.03 * jnp.sum(actions == 2), 0.0, 1.0)\n        rewards = (harvest - 0.04 * (actions == 3) - 0.02 * (actions == 4)).astype(jnp.float32)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'reservoir': reservoir, 'soil': moisture, 'pipe': draw,\n            'crop': crop, 'gate': gate, 'draw': draw, 'harvest': harvest,\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        return self.observe(next_state), next_state, rewards, dones, {\n            'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}"
+  },
+  "release_metadata_revision": 1
 }

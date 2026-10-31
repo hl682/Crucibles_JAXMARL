@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Recharge"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Launch packet 0"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Launch packet 1"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Toggle shared switch"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Clamp switch"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        roles = jnp.arange(2, dtype=jnp.int32)\n        observations = jnp.zeros((2, 16), dtype=jnp.float32)\n        observations = observations.at[:, 0].set(state[\"t\"] / 32.0)\n        observations = observations.at[:, 1].set(state[\"energy\"])\n        observations = observations.at[:, 2].set(jnp.roll(state[\"energy\"], 1))\n        observations = observations.at[:, 3].set(state[\"target\"])\n        observations = observations.at[:, 4].set((state[\"packet\"] + 1) / 2.0)\n        observations = observations.at[:, 5].set((jnp.roll(state[\"packet\"], 1) + 1) / 2.0)\n        observations = observations.at[:, 6].set(state[\"age\"] / 2.0)\n        observations = observations.at[:, 7].set(jnp.roll(state[\"age\"], 1) / 2.0)\n        observations = observations.at[:, 8].set(state[\"switch\"])\n        observations = observations.at[:, 9].set(state[\"lock\"] / 2.0)\n        observations = observations.at[:, 10].set(roles == state[\"priority\"])\n        observations = observations.at[:, 11].set(state[\"blocked\"])\n        observations = observations.at[:, 12].set(jnp.roll(state[\"blocked\"], 1))\n        observations = observations.at[:, 13].set(state[\"last_result\"])\n        observations = observations.at[:, 14].set(jnp.roll(state[\"last_result\"], 1))\n        observations = observations.at[:, 15].set(state[\"traffic\"] / 64.0)\n        return observations"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        roles = jnp.arange(2, dtype=jnp.int32)\n        fresh_target = jax.random.randint(key, (2,), 0, 2, dtype=jnp.int32)\n        toggling = (\n            (actions == 3) & (state[\"energy\"] >= 0.08) & (state[\"lock\"] == 0)\n        )\n        parity = jnp.mod(jnp.sum(toggling.astype(jnp.int32)), 2)\n        switch = jnp.mod(state[\"switch\"] + parity, 2).astype(jnp.int32)\n        clamping = (actions == 4) & (state[\"energy\"] >= 0.25)\n        lock = jnp.where(\n            jnp.any(clamping), 2, jnp.maximum(state[\"lock\"] - 1, 0)\n        ).astype(jnp.int32)\n        active = state[\"packet\"] >= 0\n        due = active & (state[\"age\"] >= 2)\n        destination = jnp.mod(state[\"packet\"] + switch, 2)\n        collision = jnp.all(due) & (destination[0] == destination[1])\n        served = due & ((~collision) | (roles == state[\"priority\"]))\n        blocked = due & (~served)\n        correct = served & (destination == state[\"target\"])\n        wrong = served & (~correct)\n        launching = (\n            ((actions == 1) | (actions == 2))\n            & (~active) & (state[\"energy\"] >= 0.15)\n        )\n        new_packet = jnp.where(launching, actions - 1, -1).astype(jnp.int32)\n        remaining = active & (~served)\n        packet = jnp.where(remaining, state[\"packet\"], new_packet).astype(jnp.int32)\n        age = jnp.where(\n            remaining, jnp.minimum(2, state[\"age\"] + 1), jnp.where(launching, 1, 0)\n        ).astype(jnp.int32)\n        energy = jnp.clip(\n            state[\"energy\"] + 0.04\n            + 0.06 * (actions == 0).astype(jnp.float32)\n            + 0.1 * correct.astype(jnp.float32)\n            - 0.15 * launching.astype(jnp.float32)\n            - 0.08 * toggling.astype(jnp.float32)\n            - 0.25 * clamping.astype(jnp.float32),\n            0.0, 1.0,\n        )\n        rewards = jnp.clip(\n            0.8 * correct.astype(jnp.float32) - 0.6 * wrong.astype(jnp.float32)\n            - 0.04 * blocked.astype(jnp.float32)\n            - 0.03 * launching.astype(jnp.float32)\n            - 0.02 * toggling.astype(jnp.float32)\n            - 0.05 * clamping.astype(jnp.float32),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"switch\": switch,\n            \"target\": jnp.where(served, fresh_target, state[\"target\"]).astype(jnp.int32),\n            \"priority\": jnp.where(\n                collision, 1 - state[\"priority\"], state[\"priority\"]\n            ).astype(jnp.int32),\n            \"packet\": packet,\n            \"age\": age,\n            \"lock\": lock,\n            \"energy\": energy.astype(jnp.float32),\n            \"blocked\": blocked,\n            \"last_result\": jnp.where(\n                served, jnp.where(correct, 1.0, -1.0), state[\"last_result\"]\n            ).astype(jnp.float32),\n            \"traffic\": state[\"traffic\"] + jnp.sum(served.astype(jnp.int32)),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

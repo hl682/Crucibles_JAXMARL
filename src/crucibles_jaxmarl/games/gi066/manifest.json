@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Coast"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Pump"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Collect"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Switch flow"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Reinforce"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"pressure\"])\n        obs = obs.at[:, 1].set(jnp.roll(state[\"pressure\"], 1))\n        obs = obs.at[:, 2].set(state[\"transit\"] / 0.16)\n        obs = obs.at[:, 3].set(jnp.roll(state[\"transit\"], 1) / 0.16)\n        obs = obs.at[:, 4].set(state[\"heat\"])\n        obs = obs.at[:, 5].set(jnp.roll(state[\"heat\"], 1))\n        obs = obs.at[:, 6].set((jnp.arange(2, dtype=jnp.int32) == state[\"gate\"]).astype(jnp.float32))\n        obs = obs.at[:, 7].set(state[\"stress\"])\n        obs = obs.at[:, 8].set(state[\"cooldown\"].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 9].set(state[\"last_draw\"] / 0.25)\n        obs = obs.at[:, 10].set(jnp.roll(state[\"last_draw\"], 1) / 0.25)\n        obs = obs.at[:, 11].set(state[\"last_overflow\"])\n        obs = obs.at[:, 12].set(jnp.roll(state[\"last_overflow\"], 1))\n        obs = obs.at[:, 13].set(state[\"total_draw\"] / 8.0)\n        obs = obs.at[:, 14].set(jnp.roll(state[\"total_draw\"], 1) / 8.0)\n        obs = obs.at[:, 15].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        coast = (actions == 0).astype(jnp.float32)\n        pump = (actions == 1).astype(jnp.float32)\n        collect = (actions == 2).astype(jnp.float32)\n        switch = (actions == 3).astype(jnp.float32)\n        reinforce = (actions == 4).astype(jnp.float32)\n        arrived = jnp.roll(state[\"transit\"], 1)\n        filled = state[\"pressure\"] + arrived + 0.12 * pump\n        overflow = jnp.maximum(filled - 1.0, 0.0)\n        available = jnp.clip(filled, 0.0, 1.0)\n        draw = 0.25 * available * collect * (1.0 - 0.5 * state[\"heat\"])\n        after_draw = available - draw\n        donor = (jnp.arange(2, dtype=jnp.int32) == state[\"gate\"]).astype(jnp.float32)\n        head = jnp.sum(donor * (after_draw - jnp.roll(after_draw, 1)))\n        flow = 0.16 * jnp.maximum(head, 0.0) * (state[\"cooldown\"] == 0).astype(jnp.float32)\n        dispatched = donor * flow\n        stress_load = (\n            0.86 * state[\"stress\"] + 0.22 * jnp.sum(switch)\n            + 0.18 * jnp.maximum(-head, 0.0) - 0.16 * jnp.sum(reinforce)\n        )\n        burst = (stress_load > 0.85) & (state[\"cooldown\"] == 0)\n        next_transit = jnp.where(burst, jnp.zeros((2,), dtype=jnp.float32), dispatched)\n        next_pressure = jnp.clip(0.99 * (after_draw - dispatched), 0.0, 1.0)\n        next_heat = jnp.clip(0.84 * state[\"heat\"] + 0.7 * draw - 0.04 * coast - 0.03 * reinforce, 0.0, 1.0)\n        next_stress = jnp.where(burst, 0.15, jnp.clip(stress_load, 0.0, 1.0))\n        next_cooldown = jnp.where(burst, 3, jnp.maximum(state[\"cooldown\"] - 1, 0)).astype(jnp.int32)\n        switch_count = jnp.sum((actions == 3).astype(jnp.int32))\n        next_gate = jnp.mod(state[\"gate\"] + switch_count, 2).astype(jnp.int32)\n        rewards = jnp.tanh(\n            1.7 * draw - 0.04 * pump - 0.03 * switch - 0.035 * reinforce\n            - 0.08 * burst.astype(jnp.float32) - 0.05 * overflow\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"pressure\": next_pressure.astype(jnp.float32),\n            \"heat\": next_heat.astype(jnp.float32),\n            \"gate\": next_gate,\n            \"transit\": next_transit.astype(jnp.float32),\n            \"stress\": next_stress.astype(jnp.float32),\n            \"cooldown\": next_cooldown,\n            \"last_draw\": draw.astype(jnp.float32),\n            \"last_overflow\": overflow.astype(jnp.float32),\n            \"total_draw\": (state[\"total_draw\"] + draw).astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

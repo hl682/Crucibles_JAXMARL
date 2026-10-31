@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest and replenish"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Load batch"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Release culture"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Harvest batch"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Scrub chamber"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        observations = jnp.zeros((2, 16), dtype=jnp.float32)\n        observations = observations.at[:, 0].set(state[\"t\"] / 32.0)\n        observations = observations.at[:, 1].set(state[\"feed\"])\n        observations = observations.at[:, 2].set(jnp.roll(state[\"feed\"], 1))\n        observations = observations.at[:, 3].set(state[\"culture\"])\n        observations = observations.at[:, 4].set(jnp.roll(state[\"culture\"], 1))\n        observations = observations.at[:, 5].set(state[\"batch\"] / 0.4)\n        observations = observations.at[:, 6].set(jnp.roll(state[\"batch\"], 1) / 0.4)\n        observations = observations.at[:, 7].set(state[\"maturity\"])\n        observations = observations.at[:, 8].set(jnp.roll(state[\"maturity\"], 1))\n        observations = observations.at[:, 9].set(state[\"quality\"])\n        observations = observations.at[:, 10].set(jnp.roll(state[\"quality\"], 1))\n        observations = observations.at[:, 11].set(state[\"cloud\"])\n        observations = observations.at[:, 12].set(jnp.roll(state[\"cloud\"], 1))\n        observations = observations.at[:, 13].set(state[\"toxicity\"])\n        observations = observations.at[:, 14].set(jnp.roll(state[\"toxicity\"], 1))\n        observations = observations.at[:, 15].set(state[\"last_yield\"] / 0.4)\n        return observations"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        active = state[\"batch\"] > 0.0\n        loading = (actions == 1) & (~active) & (state[\"feed\"] > 0.0)\n        loaded = jnp.where(loading, jnp.minimum(0.4, state[\"feed\"]), 0.0)\n        released = jnp.where(actions == 2, jnp.minimum(0.4, state[\"culture\"]), 0.0)\n        harvesting = (actions == 3) & active\n        harvested = jnp.where(harvesting, state[\"batch\"], 0.0)\n        scrubbing = actions == 4\n        incoming = jnp.roll(state[\"cloud\"], 1)\n        progress = (0.04 + 0.7 * incoming) / (1.0 + state[\"toxicity\"])\n        grown_maturity = jnp.minimum(1.0, state[\"maturity\"] + progress)\n        grown_quality = jnp.maximum(\n            0.2, state[\"quality\"] * (1.0 - 0.04 * state[\"toxicity\"])\n        )\n        product = harvested * state[\"maturity\"] * state[\"quality\"]\n        remaining = active & (~harvesting)\n        batch = jnp.where(remaining, state[\"batch\"], loaded)\n        maturity = jnp.where(remaining, grown_maturity, 0.0)\n        quality = jnp.where(\n            remaining, grown_quality,\n            jnp.where(loading, 1.0 - 0.3 * state[\"toxicity\"], 0.0),\n        )\n        feed = jnp.clip(\n            state[\"feed\"] - loaded + 0.04 + 0.04 * (actions == 0).astype(jnp.float32),\n            0.0, 1.0,\n        )\n        culture = jnp.clip(\n            state[\"culture\"] - released + 0.02 + 0.05 * (actions == 0).astype(jnp.float32),\n            0.0, 1.0,\n        )\n        cloud = jnp.minimum(1.0, 0.35 * state[\"cloud\"] + released)\n        toxicity = jnp.clip(\n            0.92 * state[\"toxicity\"] + 0.1 * loaded\n            + 0.35 * jnp.roll(harvested, 1) - 0.3 * scrubbing.astype(jnp.float32),\n            0.0, 1.0,\n        )\n        surplus = (\n            product - 0.18 * harvested\n            - 0.025 * released - 0.02 * scrubbing.astype(jnp.float32)\n        )\n        rewards = jnp.tanh(4.0 * surplus).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"feed\": feed.astype(jnp.float32),\n            \"culture\": culture.astype(jnp.float32),\n            \"batch\": batch.astype(jnp.float32),\n            \"maturity\": maturity.astype(jnp.float32),\n            \"quality\": quality.astype(jnp.float32),\n            \"cloud\": cloud.astype(jnp.float32),\n            \"toxicity\": toxicity.astype(jnp.float32),\n            \"last_yield\": product.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

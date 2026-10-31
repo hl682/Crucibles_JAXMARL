@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Sign project 1"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Sign project 2"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Work on active project"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Withdraw signature or active project"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        required = jnp.where(\n            state[\"active\"] > 0,\n            2 + (state[\"active\"] != state[\"skill\"]).astype(jnp.int32),\n            jnp.zeros((2,), dtype=jnp.int32),\n        )\n        project_value = jnp.where(\n            state[\"active\"] > 0,\n            jnp.where(state[\"preference\"] == state[\"active\"], 0.65, 0.25),\n            jnp.zeros((2,), dtype=jnp.float32),\n        ).astype(jnp.float32)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(1.0 - state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 2].set(state[\"signature\"].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 3].set(\n            jnp.roll(state[\"signature\"], 1).astype(jnp.float32) / 2.0\n        )\n        obs = obs.at[:, 4].set(state[\"active\"].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 5].set(state[\"effort\"].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 6].set(jnp.roll(state[\"effort\"], 1).astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 7].set(state[\"age\"].astype(jnp.float32) / 8.0)\n        obs = obs.at[:, 8].set(state[\"preference\"].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 9].set(state[\"skill\"].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 10].set(required.astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 11].set(state[\"pending_payout\"])\n        obs = obs.at[:, 12].set((state[\"resolution\"] == 1).astype(jnp.float32))\n        obs = obs.at[:, 13].set((state[\"resolution\"] == 2).astype(jnp.float32))\n        obs = obs.at[:, 14].set((state[\"resolution\"] == 3).astype(jnp.float32))\n        obs = obs.at[:, 15].set(project_value)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        signing = (actions == 1) | (actions == 2)\n        signatures = jnp.where(signing, actions, state[\"signature\"])\n        signatures = jnp.where(actions == 4, 0, signatures).astype(jnp.int32)\n        active = state[\"active\"] > 0\n        launch = (\n            jnp.logical_not(active)\n            & jnp.all(signatures > 0)\n            & (signatures[0] == signatures[1])\n        )\n        required = 2 + (state[\"active\"] != state[\"skill\"]).astype(jnp.int32)\n        working = active & (actions == 3) & (state[\"effort\"] < required)\n        progress = state[\"effort\"] + working.astype(jnp.int32)\n        ready = active & jnp.all(progress >= required)\n        withdrawn = active & jnp.any(actions == 4)\n        expired = active & (state[\"age\"] + 1 >= 8) & jnp.logical_not(ready)\n        completed = ready & jnp.logical_not(withdrawn)\n        ended = completed | withdrawn | expired\n        project_value = jnp.where(\n            state[\"preference\"] == state[\"active\"], 0.65, 0.25\n        ).astype(jnp.float32)\n        rewards = (\n            state[\"pending_payout\"]\n            - 0.07 * working.astype(jnp.float32)\n            - 0.01 * signing.astype(jnp.float32)\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"signature\": jnp.where(\n                launch, jnp.zeros((2,), dtype=jnp.int32), signatures\n            ),\n            \"active\": jnp.where(\n                ended, 0, jnp.where(launch, signatures[0], state[\"active\"])\n            ).astype(jnp.int32),\n            \"effort\": jnp.where(\n                launch | ended, jnp.zeros((2,), dtype=jnp.int32), progress\n            ),\n            \"age\": jnp.where(\n                launch | ended, 0, jnp.where(active, state[\"age\"] + 1, 0)\n            ).astype(jnp.int32),\n            \"preference\": state[\"preference\"],\n            \"skill\": state[\"skill\"],\n            \"pending_payout\": jnp.where(\n                completed, project_value, jnp.zeros((2,), dtype=jnp.float32)\n            ),\n            \"resolution\": jnp.where(\n                withdrawn, 2, jnp.where(completed, 1, jnp.where(expired, 3, 0))\n            ).astype(jnp.int32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\n            \"done_all\": done_all,\n            \"legal_mask\": self.legal_actions(next_state),\n        }\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

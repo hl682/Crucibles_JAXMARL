@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Idle"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Request low-intensity work"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Request high-intensity work"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Service equipment"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Replenish"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        temp = state[\"temperature\"] / 1.2\n        wear = state[\"wear\"]\n        locked = state[\"locked\"].astype(jnp.float32)\n        charge = state[\"charge\"]\n        transport = state[\"transport\"]\n        output = state[\"last_output\"]\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(temp)\n        obs = obs.at[:, 2].set(temp[::-1])\n        obs = obs.at[:, 3].set(wear)\n        obs = obs.at[:, 4].set(wear[::-1])\n        obs = obs.at[:, 5].set(locked)\n        obs = obs.at[:, 6].set(locked[::-1])\n        obs = obs.at[:, 7].set(charge)\n        obs = obs.at[:, 8].set(charge[::-1])\n        obs = obs.at[:, 9].set(transport)\n        obs = obs.at[:, 10].set(transport[::-1])\n        obs = obs.at[:, 11].set(state[\"coolant\"])\n        obs = obs.at[:, 12].set(output)\n        obs = obs.at[:, 13].set(output[::-1])\n        obs = obs.at[:, 14].set(state[\"ambient\"] / 0.05)\n        obs = obs.at[:, 15].set(state[\"clog\"])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        idle = (actions == 0).astype(jnp.float32)\n        service = (actions == 3).astype(jnp.float32)\n        replenish = (actions == 4).astype(jnp.float32)\n        requested = jnp.where(actions == 1, 0.4, jnp.where(actions == 2, 0.9, 0.0))\n        spent = jnp.minimum(state[\"charge\"], requested) * jnp.logical_not(state[\"locked\"]).astype(jnp.float32)\n        output = spent * (1.0 - 0.65 * state[\"wear\"])\n        cooling = 0.14 * state[\"coolant\"] * (1.0 - 0.6 * state[\"clog\"])\n        temperature = jnp.clip(\n            0.91 * state[\"temperature\"] + 0.32 * output\n            + 0.22 * state[\"transport\"][::-1] + state[\"ambient\"]\n            - cooling - 0.08 * idle,\n            0.0, 1.2,\n        )\n        wear = jnp.clip(\n            state[\"wear\"] + 0.08 * jnp.maximum(temperature - 0.6, 0.0) - 0.16 * service,\n            0.0, 1.0,\n        )\n        locked = (temperature >= 0.9) | (state[\"locked\"] & (temperature > 0.35))\n        coolant = jnp.clip(state[\"coolant\"] + 0.2 * jnp.sum(replenish) - 0.08 * jnp.sum(output) - 0.02, 0.0, 1.0)\n        clog = jnp.clip(0.97 * state[\"clog\"] + 0.04 * jnp.sum(output) - 0.12 * jnp.sum(replenish), 0.0, 1.0)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"temperature\": temperature.astype(jnp.float32),\n            \"wear\": wear.astype(jnp.float32),\n            \"charge\": jnp.clip(state[\"charge\"] - spent + 0.16 * idle + 0.05 * service, 0.0, 1.0).astype(jnp.float32),\n            \"locked\": locked,\n            \"transport\": output.astype(jnp.float32),\n            \"coolant\": coolant.astype(jnp.float32),\n            \"clog\": clog.astype(jnp.float32),\n            \"last_output\": output.astype(jnp.float32),\n            \"ambient\": state[\"ambient\"],\n        }\n        rewards = jnp.clip(\n            0.65 * output - 0.1 * spent - 0.07 * service - 0.1 * replenish\n            - 0.08 * locked.astype(jnp.float32),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

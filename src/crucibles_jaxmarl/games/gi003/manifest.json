@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Move clockwise"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Move anticlockwise"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Toggle owned gate"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Deliver"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"position\"] / 7.0)\n        obs = obs.at[:, 1].set(jnp.roll(state[\"position\"], 1) / 7.0)\n        obs = obs.at[:, 2].set(state[\"target\"] / 7.0)\n        obs = obs.at[:, 3].set(jnp.roll(state[\"target\"], 1) / 7.0)\n        obs = obs.at[:, 4].set(state[\"gate\"])\n        obs = obs.at[:, 5].set(jnp.roll(state[\"gate\"], 1))\n        obs = obs.at[:, 6].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 7].set(jnp.arange(2, dtype=jnp.float32))\n        obs = obs.at[:, 8:13].set(jax.nn.one_hot(state[\"last\"], 5))\n        obs = obs.at[:, 13].set(state[\"delivered\"])\n        obs = obs.at[:, 14].set(state[\"blocked\"])\n        obs = obs.at[:, 15].set(state[\"position\"] == state[\"target\"])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        # 0 wait, 1 clockwise, 2 anticlockwise, 3 toggle owned gate, 4 deliver.\n        direction = (actions == 1).astype(jnp.int32) - (actions == 2).astype(jnp.int32)\n        proposed = jnp.mod(state[\"position\"] + direction, 8)\n        # Gates are edges 1<->2 and 5<->6. Old gate states govern this move.\n        cross_first = ((state[\"position\"] == 1) & (proposed == 2)) | ((state[\"position\"] == 2) & (proposed == 1))\n        cross_second = ((state[\"position\"] == 5) & (proposed == 6)) | ((state[\"position\"] == 6) & (proposed == 5))\n        blocked = (cross_first & ~state[\"gate\"][0]) | (cross_second & ~state[\"gate\"][1])\n        position = jnp.where(blocked, state[\"position\"], proposed)\n        gate = jnp.where(actions == 3, ~state[\"gate\"], state[\"gate\"])\n        delivered = ((actions == 4) & (position == state[\"target\"])).astype(jnp.float32)\n        target = jnp.where(delivered > 0.0, jnp.mod(state[\"target\"] + 4, 8), state[\"target\"])\n        # Sharing a location dilutes delivery service, but never prevents movement.\n        crowd = (position[0] == position[1]).astype(jnp.float32)\n        rewards = delivered * (0.8 - 0.3 * crowd) - 0.03 * (actions == 3) - 0.02 * blocked\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"position\": position.astype(jnp.int32),\n            \"gate\": gate.astype(jnp.bool_),\n            \"target\": target.astype(jnp.int32),\n            \"last\": actions.astype(jnp.int32),\n            \"delivered\": delivered.astype(jnp.float32),\n            \"blocked\": blocked.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards.astype(jnp.float32), dones, info"
+  },
+  "release_metadata_revision": 1
 }

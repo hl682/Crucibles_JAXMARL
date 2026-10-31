@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Refine stock"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Dispatch lot"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Inspect pending lot"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Accept pending lot"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Arm warranty"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"stock\"])\n        obs = obs.at[:, 2].set(state[\"threshold\"])\n        obs = obs.at[:, 3].set(state[\"mail_present\"].astype(jnp.float32))\n        obs = obs.at[:, 4].set(state[\"mail_age\"].astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 5].set(state[\"assayed\"].astype(jnp.float32))\n        obs = obs.at[:, 6].set(jnp.where(state[\"assayed\"], state[\"assay\"], 0.0))\n        obs = obs.at[:, 7].set(state[\"mail_warranty\"].astype(jnp.float32))\n        obs = obs.at[:, 8].set(state[\"armed\"].astype(jnp.float32))\n        obs = obs.at[:, 9].set(state[\"reputation\"])\n        obs = obs.at[:, 10].set(jnp.roll(state[\"reputation\"], 1))\n        obs = obs.at[:, 11].set(jnp.roll(state[\"mail_present\"], 1).astype(jnp.float32))\n        obs = obs.at[:, 12].set(jnp.roll(state[\"mail_age\"], 1).astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 13].set(state[\"last_received\"])\n        obs = obs.at[:, 14].set(state[\"last_sent\"])\n        obs = obs.at[:, 15].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        refine = actions == 0\n        accept = (actions == 3) & state[\"mail_present\"]\n        inspect = (actions == 2) & state[\"mail_present\"] & ~state[\"assayed\"]\n        expire = state[\"mail_present\"] & (state[\"mail_age\"] >= 3) & ~accept\n        keep = state[\"mail_present\"] & ~accept & ~expire\n        dispatch = (actions == 1) & (state[\"stock\"] > 0.08) & ~jnp.roll(keep, 1)\n        incoming = jnp.roll(dispatch, 1)\n        new_warranty = (actions == 4) & ~state[\"armed\"]\n        satisfactory = state[\"mail_quality\"] >= state[\"threshold\"]\n        warranty = state[\"mail_warranty\"].astype(jnp.float32)\n\n        receiver_payoff = accept.astype(jnp.float32) * (\n            0.75 * (state[\"mail_quality\"] - state[\"threshold\"])\n            + 0.12 * satisfactory.astype(jnp.float32)\n            + 0.22 * warranty * (~satisfactory).astype(jnp.float32)\n        )\n        outgoing_settlement = accept.astype(jnp.float32) * (\n            0.20 + 0.15 * state[\"mail_quality\"]\n            + 0.04 * warranty * satisfactory.astype(jnp.float32)\n            - 0.35 * warranty * (~satisfactory).astype(jnp.float32)\n        ) - expire.astype(jnp.float32) * (0.03 + 0.07 * warranty)\n        sender_payoff = jnp.roll(outgoing_settlement, 1)\n        reward = jnp.clip(\n            receiver_payoff + sender_payoff\n            - 0.025 * refine.astype(jnp.float32)\n            - 0.030 * dispatch.astype(jnp.float32)\n            - 0.025 * inspect.astype(jnp.float32)\n            - 0.040 * new_warranty.astype(jnp.float32),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n\n        sender_reviewed = jnp.roll(accept | expire, 1)\n        sender_rating = jnp.roll((accept & satisfactory).astype(jnp.float32), 1)\n        reputation = jnp.where(\n            sender_reviewed,\n            0.80 * state[\"reputation\"] + 0.20 * sender_rating,\n            state[\"reputation\"],\n        )\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"stock\": jnp.where(dispatch, 0.12, jnp.clip(state[\"stock\"] + 0.18 * refine.astype(jnp.float32), 0.0, 1.0)),\n            \"threshold\": state[\"threshold\"],\n            \"mail_quality\": jnp.where(incoming, jnp.roll(state[\"stock\"], 1), jnp.where(keep, state[\"mail_quality\"], 0.0)),\n            \"mail_present\": keep | incoming,\n            \"mail_warranty\": jnp.where(incoming, jnp.roll(state[\"armed\"], 1), keep & state[\"mail_warranty\"]),\n            \"mail_age\": jnp.where(incoming, 0, jnp.where(keep, jnp.minimum(state[\"mail_age\"] + 1, 4), 0)).astype(jnp.int32),\n            \"assayed\": jnp.where(incoming, False, keep & (state[\"assayed\"] | inspect)),\n            \"assay\": jnp.where(incoming, 0.0, jnp.where(keep, jnp.where(inspect, state[\"mail_quality\"], state[\"assay\"]), 0.0)),\n            \"armed\": jnp.where(dispatch, False, state[\"armed\"] | new_warranty),\n            \"reputation\": reputation,\n            \"last_received\": receiver_payoff,\n            \"last_sent\": sender_payoff,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, reward, dones, info"
+  },
+  "release_metadata_revision": 1
 }

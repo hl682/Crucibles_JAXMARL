@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Publish negative report"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Publish positive report"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Audit partner report"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Invest negative"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Invest positive"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(jnp.arange(2, dtype=jnp.float32))\n        obs = obs.at[:, 2].set(state[\"signal\"])\n        obs = obs.at[:, 3].set(state[\"accuracy\"])\n        obs = obs.at[:, 4].set(state[\"claim\"])\n        obs = obs.at[:, 5].set(jnp.roll(state[\"claim\"], 1))\n        obs = obs.at[:, 6].set(state[\"trust\"])\n        obs = obs.at[:, 7].set(jnp.roll(state[\"trust\"], 1))\n        obs = obs.at[:, 8].set(state[\"gate\"])\n        obs = obs.at[:, 9].set(state[\"claim_age\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 10].set(jnp.roll(state[\"claim_age\"], 1).astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 11].set(state[\"commitment\"])\n        obs = obs.at[:, 12].set(state[\"audit_pending\"].astype(jnp.float32))\n        obs = obs.at[:, 13].set(state[\"audit_result\"])\n        obs = obs.at[:, 14].set(state[\"last_maturity\"])\n        obs = obs.at[:, 15].set(jnp.roll(state[\"audit_pending\"], 1).astype(jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        keys = jax.random.split(key, 2)\n        regime_sign = 2.0 * state[\"regime\"].astype(jnp.float32) - 1.0\n        publish = (actions == 0) | (actions == 1)\n        reported_sign = jnp.where(actions == 0, -1.0, 1.0)\n        audit = (actions == 2) & jnp.roll(state[\"claim_valid\"], 1)\n        invest = (actions == 3) | (actions == 4)\n        commitment = jnp.where(actions == 3, -1.0, jnp.where(actions == 4, 1.0, 0.0))\n\n        active = jnp.abs(state[\"commitment\"]) > 0.0\n        correct = state[\"commitment\"] == regime_sign\n        access = 0.35 + 0.65 * 0.5 * (1.0 + state[\"commitment\"] * state[\"gate\"])\n        maturity = active.astype(jnp.float32) * jnp.where(correct, 0.65 * access, -0.45)\n        rewards = jnp.clip(\n            maturity - 0.030 * publish.astype(jnp.float32)\n            - 0.040 * (actions == 2).astype(jnp.float32)\n            - 0.015 * invest.astype(jnp.float32),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n\n        reviewed = jnp.roll(state[\"audit_pending\"], 1)\n        historical_correctness = jnp.roll(state[\"audit_correct\"], 1)\n        trust = jnp.clip(jnp.where(reviewed, 0.80 * state[\"trust\"] + 0.20 * historical_correctness, state[\"trust\"]), 0.05, 0.95)\n        claim = jnp.where(publish, reported_sign, state[\"claim\"])\n        claim_valid = state[\"claim_valid\"] | publish\n        claim_age = jnp.where(publish, 0, jnp.minimum(state[\"claim_age\"] + 1, 32)).astype(jnp.int32)\n        weight = trust * claim_valid.astype(jnp.float32) / (1.0 + 0.15 * claim_age.astype(jnp.float32))\n        target = jnp.sum(weight * claim) / jnp.maximum(jnp.sum(weight), 0.10)\n        gate = jnp.clip(0.75 * state[\"gate\"] + 0.25 * target, -1.0, 1.0)\n        flip = jax.random.bernoulli(keys[0], p=0.14)\n        regime = jnp.where(flip, 1 - state[\"regime\"], state[\"regime\"]).astype(jnp.int32)\n        next_sign = 2.0 * regime.astype(jnp.float32) - 1.0\n        signal = jnp.where(jax.random.uniform(keys[1], (2,), dtype=jnp.float32) < state[\"accuracy\"], next_sign, -next_sign)\n\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"regime\": regime,\n            \"accuracy\": state[\"accuracy\"],\n            \"signal\": signal,\n            \"claim\": claim,\n            \"claim_valid\": claim_valid,\n            \"claim_correct\": jnp.where(publish, (reported_sign == regime_sign).astype(jnp.float32), state[\"claim_correct\"]),\n            \"claim_age\": claim_age,\n            \"trust\": trust,\n            \"gate\": gate,\n            \"commitment\": commitment,\n            \"audit_pending\": audit,\n            \"audit_correct\": jnp.where(audit, jnp.roll(state[\"claim_correct\"], 1), 0.0),\n            \"audit_result\": jnp.where(state[\"audit_pending\"], 2.0 * state[\"audit_correct\"] - 1.0, 0.0),\n            \"last_maturity\": maturity,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

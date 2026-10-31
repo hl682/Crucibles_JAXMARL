@@ -1,6 +1,6 @@
 """Real Chromium DOM controls against the real local JAX server, per game."""
 from pathlib import Path
-import argparse,hashlib,json,os,subprocess,sys,time,urllib.request
+import argparse,hashlib,json,os,re,subprocess,sys,time,urllib.request
 
 R=Path(__file__).resolve().parents[1]
 def main():
@@ -48,7 +48,21 @@ def main():
                     parsed=parse_qs(urlsplit(page.url).fragment);session=parsed['session'][0];token=parsed['token'][0]
                     record['checks'].append('catalog_selected_and_real_native_reset')
                     page.locator('#roles').fill('0');page.locator('#assign').click();expect(page.locator('#action-0')).to_be_visible()
-                    page.locator('#controls button').first.click();page.locator('#step').click();expect(page.locator('#clock')).to_contain_text('t=1 /')
+                    page.locator('#controls button').first.click()
+                    options=page.locator('#action-0 option').evaluate_all('(xs)=>xs.map(x=>({id:x.value,label:x.textContent}))')
+                    directions={'north':'ArrowUp','east':'ArrowRight','south':'ArrowDown','west':'ArrowLeft'}
+                    choice=None
+                    for o in options:
+                        label=o['label'].replace('_',' ').lower()
+                        if not re.search(r'^(north|east|south|west)\b|\b(move|walk|step|throttle|climb|swim|attempt|steer|pull|thrust|scout|request|travel|face)\b',label):continue
+                        direction=next((d for d in directions if re.search(r'\b(?:'+d+r'(?:ward)?|'+d[0]+r')\b',label)),None)
+                        if direction:choice=(o,directions[direction]);break
+                    if choice:
+                        page.locator('#world').click();page.keyboard.press(choice[1]);expect(page.locator('#action-0')).to_have_value(choice[0]['id'])
+                        expect(page.locator('#progress')).to_contain_text('Queued ')
+                        record['keyboard_action_id']=int(choice[0]['id']);record['checks'].append('keyboard_native_direction_command')
+                    else:record['keyboard']='NO_LEGAL_CARDINAL_COMMAND_FOR_ROLE0_AT_RESET'
+                    page.locator('#step').click();expect(page.locator('#clock')).to_contain_text('t=1 /')
                     record['checks'].append('dom_queue_and_native_step')
                     page.locator('#invite').click();expect(page.locator('#invitation')).to_be_visible()
                     invite=page.locator('#invitation').input_value()
@@ -76,6 +90,9 @@ def main():
                     record['checks'].append('release_to_pure_ai_without_reset')
                     assert page.locator('#error').inner_text()=='',page.locator('#error').inner_text()
                     assert not errors,errors
+                    page.locator('#close').click();expect(page.locator('#session')).to_be_hidden();expect(page.locator('#progress')).to_contain_text('Logs preserved')
+                    session=None;token=None
+                    record['checks'].append('close_session_preserves_log')
                     record['status']='PASS'
                 except Exception as error:
                     record.update(status='FAIL',error=f'{type(error).__name__}: {error}',javascript_errors=errors)

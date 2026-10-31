@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Cool"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Fabricate"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Forward goods"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Finish partner goods"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Purge goods"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"raw\"] / 3.0)\n        obs = obs.at[:, 1].set(jnp.roll(state[\"raw\"], 1) / 3.0)\n        obs = obs.at[:, 2].set(state[\"finish\"] / 3.0)\n        obs = obs.at[:, 3].set(jnp.roll(state[\"finish\"], 1) / 3.0)\n        obs = obs.at[:, 4].set(state[\"heat\"])\n        obs = obs.at[:, 5].set(jnp.roll(state[\"heat\"], 1))\n        obs = obs.at[:, 6].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 7].set(jnp.arange(2, dtype=jnp.float32))\n        obs = obs.at[:, 8:13].set(jax.nn.one_hot(state[\"last\"], 5))\n        obs = obs.at[:, 13].set(state[\"completed\"])\n        obs = obs.at[:, 14].set(jnp.roll(state[\"completed\"], 1))\n        obs = obs.at[:, 15].set(state[\"heat\"] < 0.8)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        # 0 cool, 1 fabricate, 2 forward, 3 finish partner goods, 4 purge.\n        operational = state[\"heat\"] < 0.8\n        made = ((actions == 1) & operational & (state[\"raw\"] < 3)).astype(jnp.int32)\n        sent = ((actions == 2) & operational & (state[\"raw\"] > 0)\n                & (jnp.roll(state[\"finish\"], 1) < 3)).astype(jnp.int32)\n        completed = ((actions == 3) & operational & (state[\"finish\"] > 0)).astype(jnp.int32)\n        purged = ((actions == 4) & (state[\"finish\"] > 0)).astype(jnp.int32)\n        raw = state[\"raw\"] + made - sent\n        finish = state[\"finish\"] - completed - purged + jnp.roll(sent, 1)\n        heat = jnp.clip(state[\"heat\"] + 0.22 * (made + sent + completed)\n                        - jnp.where(actions == 0, 0.35, 0.08), 0.0, 1.0)\n        rewards = 0.2 * completed + 0.65 * jnp.roll(completed, 1) - 0.04 * made - 0.03 * purged\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"raw\": raw.astype(jnp.int32),\n            \"finish\": finish.astype(jnp.int32),\n            \"heat\": heat.astype(jnp.float32),\n            \"last\": actions.astype(jnp.int32),\n            \"completed\": completed.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards.astype(jnp.float32), dones, info"
+  },
+  "release_metadata_revision": 1
 }

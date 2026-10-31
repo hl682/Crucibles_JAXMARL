@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Replenish inventory"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Deposit escrow"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Sign authorization"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Withdraw escrow"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Inspect"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        inventory = state[\"inventory\"]\n        escrow = state[\"escrow\"]\n        signature = state[\"signature\"].astype(jnp.float32) / 3.0\n        pipeline = state[\"pipeline\"]\n        visible = state[\"inspection\"] > 0\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(inventory)\n        obs = obs.at[:, 2].set(inventory[::-1])\n        obs = obs.at[:, 3].set(escrow)\n        obs = obs.at[:, 4].set(escrow[::-1])\n        obs = obs.at[:, 5].set(signature)\n        obs = obs.at[:, 6].set(signature[::-1])\n        obs = obs.at[:, 7].set(pipeline[:, 0])\n        obs = obs.at[:, 8].set(pipeline[:, 1])\n        obs = obs.at[:, 9].set(pipeline[::-1, 0])\n        obs = obs.at[:, 10].set(pipeline[::-1, 1])\n        obs = obs.at[:, 11].set(state[\"value\"])\n        obs = obs.at[:, 12].set(jnp.where(visible, state[\"value\"][::-1], 0.0))\n        obs = obs.at[:, 13].set(state[\"inspection\"].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 14].set(state[\"last_transfer\"])\n        obs = obs.at[:, 15].set(state[\"last_withdrawal\"][::-1])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        deposit = jnp.where(\n            actions == 1,\n            jnp.minimum(jnp.minimum(state[\"inventory\"], 0.3), 1.0 - state[\"escrow\"]),\n            0.0,\n        )\n        offered = state[\"escrow\"] + deposit\n        withdrawal = jnp.where(actions == 3, offered, 0.0)\n        available = offered - withdrawal\n        signatures = jnp.where(actions == 2, 3, jnp.maximum(state[\"signature\"] - 1, 0)).astype(jnp.int32)\n        release = jnp.all(available >= 0.2) & jnp.all(signatures > 0)\n        outgoing = jnp.where(release, available, 0.0)\n        delivered = state[\"pipeline\"][:, 0]\n        pipeline = jnp.stack((state[\"pipeline\"][:, 1], outgoing[::-1]), axis=1)\n        inventory = jnp.clip(\n            state[\"inventory\"] - deposit + withdrawal\n            + 0.04 * (actions == 0).astype(jnp.float32) + 0.6 * delivered,\n            0.0, 1.0,\n        )\n        inspection = jnp.where(actions == 4, 3, jnp.maximum(state[\"inspection\"] - 1, 0)).astype(jnp.int32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"inventory\": inventory.astype(jnp.float32),\n            \"escrow\": (available - outgoing).astype(jnp.float32),\n            \"signature\": jnp.where(release, 0, signatures).astype(jnp.int32),\n            \"pipeline\": pipeline.astype(jnp.float32),\n            \"value\": state[\"value\"],\n            \"inspection\": inspection,\n            \"last_transfer\": outgoing.astype(jnp.float32),\n            \"last_withdrawal\": withdrawal.astype(jnp.float32),\n        }\n        rewards = jnp.clip(\n            delivered * state[\"value\"] - 0.15 * deposit\n            - 0.025 * (actions == 2).astype(jnp.float32)\n            - 0.04 * (actions == 4).astype(jnp.float32) - 0.08 * withdrawal,\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

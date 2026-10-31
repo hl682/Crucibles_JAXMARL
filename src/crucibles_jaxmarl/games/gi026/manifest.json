@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Sample field"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Relay signal"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Harvest negative direction"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Harvest positive direction"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Restore resource"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 1].set(state[\"signal\"] / 1.5)\n        obs = obs.at[:, 2].set(state[\"signal_age\"] / 32.0)\n        obs = obs.at[:, 3].set(state[\"signal_valid\"].astype(jnp.float32))\n        obs = obs.at[:, 4].set(state[\"inbox\"] / 1.5)\n        obs = obs.at[:, 5].set(state[\"inbox_age\"] / 32.0)\n        obs = obs.at[:, 6].set(state[\"inbox_valid\"].astype(jnp.float32))\n        obs = obs.at[:, 7].set(state[\"bias\"] / 0.25)\n        obs = obs.at[:, 8].set(state[\"richness\"])\n        obs = obs.at[:, 9].set(jnp.mean(state[\"richness\"]))\n        obs = obs.at[:, 10].set(state[\"interference\"])\n        obs = obs.at[:, 11].set(state[\"pending_valid\"].astype(jnp.float32))\n        obs = obs.at[:, 12].set(state[\"last_extracted\"] / 0.3)\n        obs = obs.at[:, 13].set(state[\"last_reward\"])\n        obs = obs.at[:, 14].set(state[\"last_action\"] / 4.0)\n        obs = obs.at[:, 15].set(jnp.roll(state[\"last_action\"], 1, axis=0) / 4.0)\n        return obs.astype(jnp.float32)"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        sample = actions == 0\n        relay = actions == 1\n        harvesting = (actions == 2) | (actions == 3)\n        restore = actions == 4\n        direction = jnp.where(\n            actions == 3, 1.0, jnp.where(actions == 2, -1.0, 0.0)\n        ).astype(jnp.float32)\n        keys = jax.random.split(key, 2)\n        sensor_noise = jax.random.uniform(\n            keys[0], (2,), minval=-1.0, maxval=1.0, dtype=jnp.float32\n        )\n        drift = jax.random.uniform(\n            keys[1], (), minval=-0.02, maxval=0.02, dtype=jnp.float32\n        )\n        local_field = jnp.clip(state[\"field\"] + state[\"bias\"], -1.0, 1.0)\n        measured = jnp.clip(\n            state[\"field\"]\n            + state[\"bias\"]\n            + (0.04 + 0.24 * state[\"interference\"]) * sensor_noise,\n            -1.5,\n            1.5,\n        )\n        signal = jnp.where(sample, measured, state[\"signal\"])\n        signal_age = jnp.where(\n            sample, 1, jnp.minimum(state[\"signal_age\"] + 1, 32)\n        ).astype(jnp.int32)\n        delivered = jnp.roll(state[\"pending_valid\"], 1, axis=0)\n        inbox = jnp.where(\n            delivered, jnp.roll(state[\"pending\"], 1, axis=0), state[\"inbox\"]\n        )\n        inbox_age = jnp.where(\n            delivered,\n            jnp.minimum(jnp.roll(state[\"pending_age\"], 1, axis=0) + 1, 32),\n            jnp.minimum(state[\"inbox_age\"] + 1, 32),\n        ).astype(jnp.int32)\n        send = relay & state[\"signal_valid\"]\n        pending = jnp.where(send, state[\"signal\"] - state[\"bias\"], 0.0)\n        pending_age = jnp.where(\n            send, jnp.minimum(state[\"signal_age\"] + 1, 32), 32\n        ).astype(jnp.int32)\n        extracted = (\n            jnp.minimum(state[\"richness\"], 0.30)\n            * harvesting.astype(jnp.float32)\n        )\n        restoration = restore.astype(jnp.float32)\n        richness = jnp.clip(\n            state[\"richness\"]\n            - extracted\n            + 0.025\n            + 0.22 * restoration\n            + 0.12 * jnp.roll(restoration, 1, axis=0),\n            0.0,\n            1.0,\n        )\n        field = jnp.clip(\n            0.97 * state[\"field\"]\n            - 0.18 * jnp.sum(direction * extracted)\n            - 0.04 * state[\"field\"] * jnp.sum(restoration)\n            + drift,\n            -0.75,\n            0.75,\n        )\n        interference = jnp.clip(\n            0.50 * state[\"interference\"]\n            + 0.35 * jnp.roll(harvesting, 1, axis=0).astype(jnp.float32),\n            0.0,\n            1.0,\n        )\n        rewards = jnp.clip(\n            0.45 * extracted * direction * local_field\n            + 0.10 * extracted\n            - 0.015 * sample.astype(jnp.float32)\n            - 0.010 * relay.astype(jnp.float32)\n            - 0.025 * restoration,\n            -1.0,\n            1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"field\": field.astype(jnp.float32),\n            \"bias\": state[\"bias\"],\n            \"richness\": richness.astype(jnp.float32),\n            \"signal\": signal.astype(jnp.float32),\n            \"signal_age\": signal_age,\n            \"signal_valid\": state[\"signal_valid\"] | sample,\n            \"inbox\": inbox.astype(jnp.float32),\n            \"inbox_age\": inbox_age,\n            \"inbox_valid\": state[\"inbox_valid\"] | delivered,\n            \"pending\": pending.astype(jnp.float32),\n            \"pending_age\": pending_age,\n            \"pending_valid\": send,\n            \"interference\": interference.astype(jnp.float32),\n            \"last_extracted\": extracted.astype(jnp.float32),\n            \"last_reward\": rewards,\n            \"last_action\": actions.astype(jnp.int32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Prepare cargo"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Inspect"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Ship cargo"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Recharge"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state['cargo'])\n        obs = obs.at[:, 2].set(state['cargo'][::-1])\n        obs = obs.at[:, 3].set(state['quality'])\n        obs = obs.at[:, 4].set(state['certificate'])\n        obs = obs.at[:, 5].set(state['certificate'][::-1])\n        obs = obs.at[:, 6].set(state['energy'])\n        obs = obs.at[:, 7].set(state['energy'][::-1])\n        obs = obs.at[:, 8].set(state['transit'])\n        obs = obs.at[:, 9].set(state['commission'])\n        obs = obs.at[:, 10].set(state['seen_quality'])\n        obs = obs.at[:, 11].set(state['seen_age'])\n        obs = obs.at[:, 12].set(state['congestion'])\n        obs = obs.at[:, 13].set(state['demand'])\n        obs = obs.at[:, 14].set(state['demand'][::-1])\n        obs = obs.at[:, 15].set(state['last_reward'])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        prepare = jnp.logical_and(actions == 1, state['energy'] >= 0.28)\n        inspect = jnp.logical_and(actions == 2, state['energy'] >= 0.12)\n        ship = jnp.logical_and(jnp.logical_and(actions == 3, state['energy'] >= 0.08), state['cargo'] > 0.05)\n        recharge = (actions == 4).astype(jnp.float32)\n        prepared = prepare.astype(jnp.float32)\n        inspected = inspect.astype(jnp.float32)\n        shipped = ship.astype(jnp.float32)\n        congestion = jnp.clip(0.65 * state['congestion'] + 0.2 * jnp.sum(shipped), 0.0, 1.0)\n        payload = shipped * state['cargo'] * state['certificate'] * state['demand']\n        transit = 0.72 * payload / (1.0 + congestion)\n        commission = 0.16 * payload[::-1] / (1.0 + congestion)\n        rewards = jnp.clip(state['transit'] + state['commission'] - 0.06 * prepared - 0.025 * inspected - 0.035 * shipped, -1.0, 1.0)\n        sampled_quality = jax.random.uniform(key, (2,), dtype=jnp.float32, minval=0.2, maxval=1.0)\n        quality = jnp.where(prepare, sampled_quality, state['quality'])\n        cargo = jnp.where(prepare, 1.0, jnp.where(ship, 0.0, state['cargo']))\n        valid_inspection = jnp.logical_and(inspect[::-1], state['cargo'] > 0.05)\n        certificate = jnp.where(valid_inspection, state['quality'], 0.94 * state['certificate'])\n        certificate = jnp.where(jnp.logical_or(prepare, ship), 0.0, certificate)\n        energy = jnp.clip(state['energy'] + 0.03 + 0.28 * recharge - 0.28 * prepared - 0.12 * inspected - 0.08 * shipped, 0.0, 1.0)\n        seen_quality = jnp.where(inspect, state['quality'][::-1] * state['cargo'][::-1], state['seen_quality'])\n        seen_age = jnp.where(inspect, 0.0, jnp.minimum(1.0, state['seen_age'] + 1.0 / 32.0))\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'cargo': cargo,\n            'quality': quality,\n            'certificate': certificate,\n            'energy': energy,\n            'transit': transit,\n            'commission': commission,\n            'seen_quality': seen_quality,\n            'seen_age': seen_age,\n            'congestion': congestion,\n            'demand': state['demand'],\n            'last_reward': rewards,\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards.astype(jnp.float32), dones, info"
+  },
+  "release_metadata_revision": 1
 }

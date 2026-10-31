@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Inject packet"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Switch loop"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Receive packet"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Flush loop"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state['energy'])\n        obs = obs.at[:, 2].set(state['energy'][::-1])\n        obs = obs.at[:, 3].set(state['switches'])\n        obs = obs.at[:, 4].set(state['switches'][::-1])\n        obs = obs.at[:, 5:9].set(state['packets'])\n        obs = obs.at[:, 9:13].set(state['packets'][::-1, :])\n        obs = obs.at[:, 13].set(state['last_delivery'])\n        obs = obs.at[:, 14].set(state['last_delivery'][::-1])\n        obs = obs.at[:, 15].set(state['last_loss'])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        inject = jnp.logical_and(actions == 1, state['energy'] >= 0.18).astype(jnp.float32)\n        switch = jnp.logical_and(actions == 2, state['energy'] >= 0.08).astype(jnp.float32)\n        receive = jnp.logical_and(actions == 3, state['energy'] >= 0.07).astype(jnp.float32)\n        flush = jnp.logical_and(actions == 4, state['energy'] >= 0.05).astype(jnp.float32)\n        delivered = jnp.stack((receive[1] * state['packets'][0, 2], receive[0] * state['packets'][1, 0]))\n        working = state['packets'].at[0, 2].set(state['packets'][0, 2] - delivered[0])\n        working = working.at[1, 0].set(state['packets'][1, 0] - delivered[1])\n        flush_mask = jnp.stack((flush[0], jnp.array(0.0, dtype=jnp.float32), flush[1], jnp.array(0.0, dtype=jnp.float32)))\n        working = working * (1.0 - flush_mask[None, :])\n        injected = 0.65 * inject\n        working = working.at[0, 0].add(injected[0])\n        working = working.at[1, 2].add(injected[1])\n        route0 = state['switches'][0]\n        route1 = state['switches'][1]\n        routed = jnp.stack((\n            working[:, 3],\n            working[:, 0] * (1.0 - route0) + working[:, 2] * route1,\n            working[:, 1],\n            working[:, 0] * route0 + working[:, 2] * (1.0 - route1),\n        ), axis=1)\n        load = jnp.sum(routed, axis=0)\n        packets = routed * (0.96 / jnp.maximum(1.0, load))[None, :]\n        lost = jnp.maximum(0.0, jnp.sum(state['packets'], axis=1) + injected - delivered - jnp.sum(packets, axis=1))\n        rewards = jnp.tanh(1.35 * delivered + 0.35 * delivered[::-1] - 0.09 * inject - 0.03 * switch - 0.02 * receive - 0.04 * flush - 0.18 * lost)\n        energy = jnp.clip(state['energy'] + 0.035 + 0.045 * (actions == 0).astype(jnp.float32) - 0.18 * inject - 0.08 * switch - 0.07 * receive - 0.05 * flush, 0.0, 1.0)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'packets': packets,\n            'switches': jnp.where(switch > 0.0, 1.0 - state['switches'], state['switches']),\n            'energy': energy,\n            'last_delivery': delivered,\n            'last_loss': jnp.minimum(1.0, jnp.sum(lost) / 4.0),\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards.astype(jnp.float32), dones, info"
+  },
+  "release_metadata_revision": 1
 }

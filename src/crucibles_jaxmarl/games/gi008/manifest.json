@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Launch parcel type 0"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Launch parcel type 1"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Set receiver gate 0"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Set receiver gate 1"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        incoming_queue = jnp.roll(state[\"queue\"], 1, axis=0)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"energy\"] / 3.0)\n        obs = obs.at[:, 2].set(state[\"gate\"].astype(jnp.float32))\n        obs = obs.at[:, 3].set(state[\"preference\"].astype(jnp.float32))\n        obs = obs.at[:, 4].set(jnp.roll(state[\"gate\"], 1).astype(jnp.float32))\n        obs = obs.at[:, 5].set(jnp.roll(state[\"energy\"], 1) / 3.0)\n        obs = obs.at[:, 6:9].set((state[\"queue\"].astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 9].set((incoming_queue[:, 0].astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 10].set((incoming_queue[:, 1] >= 0).astype(jnp.float32))\n        obs = obs.at[:, 11].set(state[\"last_in\"])\n        obs = obs.at[:, 12].set(state[\"last_out\"])\n        obs = obs.at[:, 13].set(state[\"last_waste\"])\n        obs = obs.at[:, 14].set((state[\"energy\"] >= 1.0).astype(jnp.float32))\n        obs = obs.at[:, 15].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        launch_requested = (actions == 1) | (actions == 2)\n        launched = launch_requested & (state[\"energy\"] >= 1.0)\n        package = jnp.where(launched, actions - 1, -1).astype(jnp.int32)\n        incoming = jnp.roll(state[\"queue\"][:, 0], 1)\n        present = incoming >= 0\n        matched = present & (incoming == state[\"gate\"])\n        preferred = incoming == state[\"preference\"]\n        incoming_value = matched.astype(jnp.float32) * (0.6 + 0.4 * preferred.astype(jnp.float32))\n        outgoing_value = jnp.roll(incoming_value, 1)\n        wasted = (present & ~matched).astype(jnp.float32)\n        gate = jnp.where(actions == 3, 0, jnp.where(actions == 4, 1, state[\"gate\"])).astype(jnp.int32)\n        queue = jnp.concatenate((state[\"queue\"][:, 1:], package[:, None]), axis=1)\n        energy = jnp.clip(\n            state[\"energy\"] - launched.astype(jnp.float32) + 0.2\n            + 0.5 * matched.astype(jnp.float32),\n            0.0,\n            3.0,\n        )\n        rewards = (\n            0.5 * incoming_value + 0.4 * outgoing_value\n            - 0.05 * launched.astype(jnp.float32) - 0.05 * wasted\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"energy\": energy.astype(jnp.float32),\n            \"queue\": queue,\n            \"gate\": gate,\n            \"preference\": state[\"preference\"],\n            \"last_in\": incoming_value.astype(jnp.float32),\n            \"last_out\": outgoing_value.astype(jnp.float32),\n            \"last_waste\": wasted,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

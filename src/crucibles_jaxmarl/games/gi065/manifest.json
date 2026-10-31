@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Launch pending transaction"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Underwrite partner transaction"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Claim available credit"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Recall bond"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"cash\"])\n        obs = obs.at[:, 1].set(jnp.roll(state[\"cash\"], 1))\n        obs = obs.at[:, 2].set(state[\"pending\"] / 0.25)\n        obs = obs.at[:, 3].set(jnp.roll(state[\"pending\"], 1) / 0.25)\n        obs = obs.at[:, 4].set(state[\"timer\"].astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 5].set(jnp.roll(state[\"timer\"], 1).astype(jnp.float32) / 3.0)\n        obs = obs.at[:, 6].set(state[\"bond\"] / 0.18)\n        obs = obs.at[:, 7].set(jnp.roll(state[\"bond\"], 1) / 0.18)\n        obs = obs.at[:, 8].set(state[\"receivable\"])\n        obs = obs.at[:, 9].set(jnp.roll(state[\"receivable\"], 1))\n        obs = obs.at[:, 10].set(state[\"quality\"])\n        obs = obs.at[:, 11].set(jnp.roll(state[\"signal\"], 1))\n        obs = obs.at[:, 12].set(state[\"signal\"])\n        obs = obs.at[:, 13].set(state[\"last_claim\"] / 0.45)\n        obs = obs.at[:, 14].set(jnp.roll(state[\"last_claim\"], 1) / 0.45)\n        obs = obs.at[:, 15].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        keys = jax.random.split(key, 2)\n        draws = jax.random.uniform(keys[0], (2,), dtype=jnp.float32)\n        noise = jax.random.uniform(keys[1], (2,), minval=-0.18, maxval=0.18, dtype=jnp.float32)\n        mature = (state[\"timer\"] == 1) & (state[\"pending\"] > 0.0)\n        success = mature & (draws < state[\"quality\"])\n        other_timer = jnp.roll(state[\"timer\"], 1)\n        recall = (actions == 4) & (state[\"bond\"] > 0.0) & (other_timer > 1)\n        effective_bond = jnp.where(recall, 0.0, state[\"bond\"])\n        insured = (jnp.roll(effective_bond, 1) > 0.0).astype(jnp.float32)\n        credit = mature.astype(jnp.float32) * (\n            success.astype(jnp.float32) * (0.40 - 0.05 * insured)\n            + (1.0 - success.astype(jnp.float32)) * 0.18 * insured\n        )\n        insurer_return = jnp.roll(success, 1).astype(jnp.float32) * (\n            effective_bond + 0.05 * (effective_bond > 0.0).astype(jnp.float32)\n        )\n        available_cash = state[\"cash\"] + recall.astype(jnp.float32) * state[\"bond\"] + insurer_return\n        old_bond_released = jnp.roll(mature, 1) | recall\n        remaining_bond = jnp.where(old_bond_released, 0.0, state[\"bond\"])\n        underwrite = (\n            (actions == 2) & (other_timer > 1)\n            & (jnp.roll(state[\"pending\"], 1) > 0.0)\n            & (remaining_bond == 0.0) & (available_cash >= 0.18)\n        )\n        launch = (actions == 1) & (state[\"pending\"] == 0.0) & (available_cash >= 0.25)\n        available_credit = state[\"receivable\"] + credit\n        claim = jnp.where(actions == 3, jnp.minimum(0.45, available_credit), 0.0)\n        new_cash = jnp.clip(\n            available_cash - 0.18 * underwrite.astype(jnp.float32)\n            - 0.25 * launch.astype(jnp.float32) + 0.75 * claim + 0.015, 0.0, 1.0\n        )\n        new_receivable = jnp.clip(0.97 * (available_credit - claim), 0.0, 1.0)\n        new_bond = jnp.where(underwrite, 0.18, remaining_bond)\n        new_pending = jnp.where(launch, 0.25, jnp.where(mature, 0.0, state[\"pending\"]))\n        new_timer = jnp.where(launch, 3, jnp.maximum(state[\"timer\"] - 1, 0)).astype(jnp.int32)\n        new_signal = jnp.where(launch, jnp.clip(state[\"quality\"] + noise, 0.0, 1.0), state[\"signal\"])\n        rewards = jnp.tanh(\n            1.6 * claim - 0.02 * launch.astype(jnp.float32)\n            - 0.025 * underwrite.astype(jnp.float32) - 0.03 * recall.astype(jnp.float32)\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"cash\": new_cash.astype(jnp.float32),\n            \"quality\": state[\"quality\"],\n            \"signal\": new_signal.astype(jnp.float32),\n            \"pending\": new_pending.astype(jnp.float32),\n            \"timer\": new_timer,\n            \"bond\": new_bond.astype(jnp.float32),\n            \"receivable\": new_receivable.astype(jnp.float32),\n            \"last_claim\": claim.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

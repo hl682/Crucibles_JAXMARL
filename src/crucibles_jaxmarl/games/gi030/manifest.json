@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Coast and recharge"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Queue positive impulse"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Queue negative impulse"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Brake"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Flip gear"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 1].set(state[\"position\"])\n        obs = obs.at[:, 2].set(state[\"velocity\"] / 0.35)\n        obs = obs.at[:, 3].set(state[\"goal\"])\n        obs = obs.at[:, 4].set(state[\"width\"] / 0.4)\n        obs = obs.at[:, 5].set(state[\"charge\"])\n        obs = obs.at[:, 6].set(jnp.roll(state[\"charge\"], 1))\n        obs = obs.at[:, 7].set(state[\"gear\"])\n        obs = obs.at[:, 8].set(jnp.roll(state[\"gear\"], 1))\n        obs = obs.at[:, 9].set(state[\"pending\"][:, 0] / 0.45)\n        obs = obs.at[:, 10].set(state[\"pending\"][:, 1] / 0.45)\n        obs = obs.at[:, 11].set(jnp.roll(state[\"pending\"][:, 0], 1) / 0.45)\n        obs = obs.at[:, 12].set(jnp.roll(state[\"pending\"][:, 1], 1) / 0.45)\n        obs = obs.at[:, 13].set(state[\"dwell\"] / 4.0)\n        obs = obs.at[:, 14].set(jnp.roll(state[\"last_action\"], 1) / 4.0)\n        obs = obs.at[:, 15].set(state[\"last_effort\"] / 0.45)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        direction = jnp.where(actions == 1, 1.0, jnp.where(actions == 2, -1.0, 0.0)).astype(jnp.float32)\n        pulse = direction * jnp.minimum(state[\"charge\"], 0.45)\n        brake = jnp.where(actions == 3, jnp.minimum(state[\"charge\"], 0.25), 0.0)\n        flip = (actions == 4) & (state[\"charge\"] >= 0.08)\n        gear = jnp.where(flip, -state[\"gear\"], state[\"gear\"])\n        fired = state[\"pending\"][:, 0] * gear\n        damping = 0.84 - 0.8 * jnp.sum(brake)\n        velocity = jnp.clip(damping * state[\"velocity\"] + 0.35 * jnp.sum(fired), -0.35, 0.35)\n        unconstrained_position = state[\"position\"] + velocity\n        collision = jnp.abs(unconstrained_position) > 1.0\n        position = jnp.clip(unconstrained_position, -1.0, 1.0)\n        velocity = jnp.where(collision, -0.2 * velocity, velocity)\n        quality = jnp.exp(-jnp.square((position - state[\"goal\"]) / state[\"width\"]))\n        dwell = jnp.where(quality >= 0.5, jnp.minimum(state[\"dwell\"] + 1, 4), 0).astype(jnp.int32)\n        effort = jnp.abs(pulse) + brake + 0.08 * flip.astype(jnp.float32)\n        charge = jnp.clip(state[\"charge\"] - effort + 0.06 + 0.12 * (actions == 0).astype(jnp.float32), 0.0, 1.0)\n        pending = jnp.stack((state[\"pending\"][:, 1], pulse), axis=1)\n        rewards = 0.40 * quality + 0.35 * (dwell >= 3).astype(jnp.float32)\n        rewards = rewards - 0.10 * jnp.abs(velocity) / 0.35 - 0.12 * effort - 0.05 * collision.astype(jnp.float32)\n        rewards = jnp.clip(rewards, -1.0, 1.0).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"position\": position.astype(jnp.float32),\n            \"velocity\": velocity.astype(jnp.float32),\n            \"goal\": state[\"goal\"],\n            \"width\": state[\"width\"],\n            \"charge\": charge.astype(jnp.float32),\n            \"gear\": gear.astype(jnp.float32),\n            \"pending\": pending.astype(jnp.float32),\n            \"dwell\": dwell,\n            \"last_effort\": effort.astype(jnp.float32),\n            \"last_action\": actions.astype(jnp.int32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

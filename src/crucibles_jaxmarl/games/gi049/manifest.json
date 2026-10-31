@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Stage assembly 0"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Stage assembly 1"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Disclose demand"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Lock irreversible stage"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        observations = jnp.zeros((2, 16), dtype=jnp.float32)\n        observations = observations.at[:, 0].set(state[\"t\"] / 32.0)\n        observations = observations.at[:, 1].set(state[\"target\"])\n        observations = observations.at[:, 2].set((state[\"stage\"] + 1) / 2.0)\n        observations = observations.at[:, 3].set((jnp.roll(state[\"stage\"], 1) + 1) / 2.0)\n        observations = observations.at[:, 4].set(state[\"locked\"])\n        observations = observations.at[:, 5].set(jnp.roll(state[\"locked\"], 1))\n        observations = observations.at[:, 6].set((state[\"public\"] + 1) / 2.0)\n        observations = observations.at[:, 7].set((jnp.roll(state[\"public\"], 1) + 1) / 2.0)\n        observations = observations.at[:, 8].set(state[\"pending\"] >= 0)\n        observations = observations.at[:, 9].set(state[\"piece_age\"] / 32.0)\n        observations = observations.at[:, 10].set(jnp.roll(state[\"piece_age\"], 1) / 32.0)\n        observations = observations.at[:, 11].set(state[\"message_age\"] / 32.0)\n        observations = observations.at[:, 12].set(jnp.roll(state[\"message_age\"], 1) / 32.0)\n        observations = observations.at[:, 13].set(state[\"rounds\"] / 16.0)\n        observations = observations.at[:, 14].set(state[\"last_result\"])\n        observations = observations.at[:, 15].set(state[\"last_success\"])\n        return observations"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        fresh_target = jax.random.randint(key, (2,), 0, 2, dtype=jnp.int32)\n        write = (~state[\"locked\"]) & ((actions == 1) | (actions == 2))\n        stage = jnp.where(write, actions - 1, state[\"stage\"]).astype(jnp.int32)\n        new_lock = (actions == 4) & (stage >= 0) & (~state[\"locked\"])\n        locked = state[\"locked\"] | new_lock\n        piece_age = jnp.where(\n            stage >= 0,\n            jnp.where(write, 0, jnp.minimum(32, state[\"piece_age\"] + 1)),\n            0,\n        ).astype(jnp.int32)\n        delivered = state[\"pending\"] >= 0\n        public = jnp.where(delivered, state[\"pending\"], state[\"public\"])\n        message_age = jnp.where(\n            public >= 0,\n            jnp.where(delivered, 0, jnp.minimum(32, state[\"message_age\"] + 1)),\n            0,\n        ).astype(jnp.int32)\n        pending = jnp.where(actions == 3, state[\"target\"], -1).astype(jnp.int32)\n        completed = jnp.all(locked)\n        correct = jnp.roll(stage, 1) == state[\"target\"]\n        partner_quality = jnp.maximum(0.25, 1.0 - 0.05 * jnp.roll(piece_age, 1))\n        successful = jnp.all(correct)\n        payout = (\n            jnp.where(correct, 0.85, -0.55) * partner_quality\n            + 0.1 * successful.astype(jnp.float32)\n        )\n        rewards = jnp.clip(\n            completed.astype(jnp.float32) * payout\n            - 0.025 * write.astype(jnp.float32)\n            - 0.01 * (actions == 3).astype(jnp.float32)\n            - 0.01 * new_lock.astype(jnp.float32),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"target\": jnp.where(completed, fresh_target, state[\"target\"]).astype(jnp.int32),\n            \"stage\": jnp.where(completed, -1, stage).astype(jnp.int32),\n            \"locked\": jnp.where(completed, jnp.zeros((2,), dtype=jnp.bool_), locked),\n            \"public\": jnp.where(completed, -1, public).astype(jnp.int32),\n            \"pending\": jnp.where(completed, -1, pending).astype(jnp.int32),\n            \"piece_age\": jnp.where(completed, 0, piece_age).astype(jnp.int32),\n            \"message_age\": jnp.where(completed, 0, message_age).astype(jnp.int32),\n            \"rounds\": state[\"rounds\"] + completed.astype(jnp.int32),\n            \"last_result\": jnp.where(\n                completed, jnp.where(correct, 1.0, -1.0), state[\"last_result\"]\n            ).astype(jnp.float32),\n            \"last_success\": jnp.where(\n                completed, successful.astype(jnp.float32), state[\"last_success\"]\n            ).astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

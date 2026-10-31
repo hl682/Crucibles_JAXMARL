@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Flip first register"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Flip second register"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Rotate register routing"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Shield incoming pulse"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Start stability audit"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 1:4].set(state[\"register\"].astype(jnp.float32))\n        obs = obs.at[:, 4:7].set(state[\"target\"].astype(jnp.float32))\n        obs = obs.at[:, 7:10].set(jnp.roll(state[\"register\"], 1, axis=0).astype(jnp.float32))\n        obs = obs.at[:, 10:13].set(state[\"pulse\"].astype(jnp.float32))\n        obs = obs.at[:, 13].set(state[\"shield_charge\"])\n        obs = obs.at[:, 14].set(state[\"audit_timer\"] / 2.0)\n        obs = obs.at[:, 15].set(jnp.roll(state[\"audit_timer\"], 1, axis=0) / 2.0)\n        return obs.astype(jnp.float32)"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        flip_first = actions == 0\n        flip_second = actions == 1\n        rotate = actions == 2\n        shield = (\n            (actions == 3)\n            & (state[\"shield_charge\"] >= 0.35)\n            & jnp.any(state[\"pulse\"] != 0, axis=1)\n        )\n        incoming = jnp.where(shield[:, None], 0, state[\"pulse\"])\n        local_flip = jnp.stack(\n            (\n                flip_first.astype(jnp.int32),\n                flip_second.astype(jnp.int32),\n                jnp.zeros((2,), dtype=jnp.int32),\n            ),\n            axis=1,\n        )\n        register = jnp.mod(state[\"register\"] + incoming + local_flip, 2)\n        register = jnp.where(\n            rotate[:, None], jnp.roll(register, 1, axis=1), register\n        ).astype(jnp.int32)\n        outgoing = jnp.stack(\n            (\n                jnp.zeros((2,), dtype=jnp.int32),\n                flip_first.astype(jnp.int32),\n                flip_second.astype(jnp.int32),\n            ),\n            axis=1,\n        )\n        pulse = jnp.roll(outgoing, 1, axis=0).astype(jnp.int32)\n        changed = jnp.any(register != state[\"register\"], axis=1)\n        dirty = state[\"audit_dirty\"] | changed\n        completed = state[\"audit_timer\"] == 1\n        success = completed & state[\"snapshot_match\"] & jnp.logical_not(dirty)\n        start = (actions == 4) & (state[\"audit_timer\"] == 0)\n        audit_timer = jnp.where(\n            start, 2, jnp.maximum(state[\"audit_timer\"] - 1, 0)\n        ).astype(jnp.int32)\n        snapshot_match = jnp.where(\n            start,\n            jnp.all(register == state[\"target\"], axis=1),\n            state[\"snapshot_match\"],\n        )\n        audit_dirty = jnp.where(\n            start,\n            False,\n            jnp.where(state[\"audit_timer\"] > 0, dirty, False),\n        ).astype(jnp.bool_)\n        target = jnp.where(\n            success[:, None], 1 - state[\"target\"], state[\"target\"]\n        ).astype(jnp.int32)\n        shield_charge = jnp.clip(\n            state[\"shield_charge\"] + 0.08 - 0.35 * shield.astype(jnp.float32),\n            0.0,\n            1.0,\n        )\n        costs = (\n            0.020 * (flip_first | flip_second).astype(jnp.float32)\n            + 0.010 * rotate.astype(jnp.float32)\n            + 0.015 * shield.astype(jnp.float32)\n            + 0.015 * start.astype(jnp.float32)\n        )\n        rewards = jnp.clip(\n            jnp.where(completed, jnp.where(success, 0.70, -0.18), 0.0) - costs,\n            -1.0,\n            1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"register\": register,\n            \"target\": target,\n            \"pulse\": pulse,\n            \"shield_charge\": shield_charge.astype(jnp.float32),\n            \"audit_timer\": audit_timer,\n            \"snapshot_match\": snapshot_match.astype(jnp.bool_),\n            \"audit_dirty\": audit_dirty,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

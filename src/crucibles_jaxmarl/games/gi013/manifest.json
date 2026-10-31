@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Extract water"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Clean contamination"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Restore filter"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Toggle gate"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        expected = 0.85 * jnp.where(\n            jnp.all(state[\"gate\"]), jnp.roll(state[\"plume\"], 1), state[\"plume\"]\n        )\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(1.0 - state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 2].set(state[\"water\"])\n        obs = obs.at[:, 3].set(state[\"contamination\"])\n        obs = obs.at[:, 4].set(state[\"filter\"] / 0.75)\n        obs = obs.at[:, 5].set(state[\"plume\"] / 0.28)\n        obs = obs.at[:, 6].set(jnp.roll(state[\"plume\"], 1) / 0.28)\n        obs = obs.at[:, 7].set(state[\"gate\"].astype(jnp.float32))\n        obs = obs.at[:, 8].set(jnp.roll(state[\"gate\"], 1).astype(jnp.float32))\n        obs = obs.at[:, 9].set(state[\"last_yield\"])\n        obs = obs.at[:, 10].set(state[\"last_rain\"] / 0.11)\n        obs = obs.at[:, 11].set(state[\"last_unfiltered\"] / 0.28)\n        obs = obs.at[:, 12].set(expected / 0.28)\n        obs = obs.at[:, 13].set(jnp.mean(state[\"water\"]))\n        obs = obs.at[:, 14].set(jnp.mean(state[\"contamination\"]))\n        obs = obs.at[:, 15].set(1.0 - 0.85 * state[\"contamination\"])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        cleaning = (actions == 2).astype(jnp.float32)\n        restoring = (actions == 3).astype(jnp.float32)\n        toggling = actions == 4\n        gates = jnp.where(toggling, jnp.logical_not(state[\"gate\"]), state[\"gate\"])\n        incoming = 0.85 * jnp.where(\n            jnp.all(gates), jnp.roll(state[\"plume\"], 1), state[\"plume\"]\n        )\n        filter_available = jnp.minimum(0.75, state[\"filter\"] + 0.25 * restoring)\n        absorbed = jnp.minimum(filter_available, incoming)\n        unfiltered = incoming - absorbed\n        contamination = jnp.clip(\n            0.94 * state[\"contamination\"] + unfiltered - 0.24 * cleaning,\n            0.0,\n            1.0,\n        )\n        extracted = jnp.where(\n            actions == 1, jnp.minimum(state[\"water\"], 0.35), 0.0\n        ).astype(jnp.float32)\n        useful_yield = (extracted / 0.35) * (1.0 - 0.85 * contamination)\n        rainfall = jax.random.uniform(\n            key, (2,), minval=0.08, maxval=0.11, dtype=jnp.float32\n        )\n        rewards = (\n            0.6 * useful_yield\n            - 0.05 * cleaning\n            - 0.055 * restoring\n            - 0.01 * toggling.astype(jnp.float32)\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"water\": jnp.clip(state[\"water\"] - extracted + rainfall, 0.0, 1.0),\n            \"contamination\": contamination,\n            \"filter\": filter_available - absorbed,\n            \"plume\": 0.8 * extracted,\n            \"gate\": gates,\n            \"last_yield\": useful_yield,\n            \"last_rain\": rainfall,\n            \"last_unfiltered\": unfiltered,\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\n            \"done_all\": done_all,\n            \"legal_mask\": self.legal_actions(next_state),\n        }\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

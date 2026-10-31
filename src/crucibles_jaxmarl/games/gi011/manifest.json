@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Inspect private signal"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Publish claim 0"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Publish claim 1"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Launch settlement"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        active = state[\"claim\"] >= 0\n        signed = 2.0 * state[\"claim\"].astype(jnp.float32) - 1.0\n        public_score = jnp.sum(state[\"weight\"] * signed * active.astype(jnp.float32))\n        visible_choice = jnp.where(state[\"pending_age\"] > 0, state[\"pending_choice\"], -1)\n        visible_locked_claim = jnp.where(state[\"pending_age\"] > 0, state[\"pending_claim\"], -1)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"signal\"].astype(jnp.float32))\n        obs = obs.at[:, 2].set(state[\"signal_age\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 3].set(state[\"accuracy\"])\n        obs = obs.at[:, 4].set((state[\"claim\"].astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 5].set((jnp.roll(state[\"claim\"], 1).astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 6].set(state[\"weight\"])\n        obs = obs.at[:, 7].set(jnp.roll(state[\"weight\"], 1))\n        obs = obs.at[:, 8].set(public_score / 2.0)\n        obs = obs.at[:, 9].set(state[\"pending_age\"].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 10].set((visible_choice.astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 11].set((state[\"last_truth\"].astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 12].set(state[\"last_success\"])\n        obs = obs.at[:, 13].set(state[\"project_count\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 14].set((visible_locked_claim.astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 15].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        keys = jax.random.split(key, 2)\n        inspected = actions == 1\n        published = (actions == 2) | (actions == 3)\n        completed = state[\"pending_age\"] == 1\n        correct_choice = state[\"pending_choice\"] == state[\"pending_truth\"]\n        settlement = jnp.where(completed, jnp.where(correct_choice, 1.0, -1.0), 0.0)\n        credit_correct = state[\"pending_claim\"] == state[\"pending_truth\"]\n        adjustment = jnp.where(credit_correct, 0.12, -0.16)\n        weight = jnp.clip(\n            state[\"weight\"]\n            + (completed & state[\"pending_active\"]).astype(jnp.float32) * adjustment,\n            0.25,\n            1.0,\n        )\n        active = state[\"claim\"] >= 0\n        signed = 2.0 * state[\"claim\"].astype(jnp.float32) - 1.0\n        public_score = jnp.sum(state[\"weight\"] * signed * active.astype(jnp.float32))\n        launched = (state[\"pending_age\"] == 0) & jnp.any(actions == 4)\n        choice = (public_score > 0.0).astype(jnp.int32)\n        pending_age = jnp.where(launched, 2, jnp.maximum(state[\"pending_age\"] - 1, 0)).astype(jnp.int32)\n        pending_choice = jnp.where(launched, choice, state[\"pending_choice\"]).astype(jnp.int32)\n        pending_truth = jnp.where(launched, state[\"truth\"], state[\"pending_truth\"]).astype(jnp.int32)\n        pending_claim = jnp.where(launched, state[\"claim\"], state[\"pending_claim\"]).astype(jnp.int32)\n        pending_active = jnp.where(launched, active, state[\"pending_active\"]).astype(jnp.bool_)\n        changed = completed & jax.random.bernoulli(keys[0], p=0.25)\n        truth = jnp.where(changed, 1 - state[\"truth\"], state[\"truth\"]).astype(jnp.int32)\n        sample_correct = jax.random.uniform(keys[1], (2,), dtype=jnp.float32) < state[\"accuracy\"]\n        sample = jnp.where(sample_correct, truth, 1 - truth).astype(jnp.int32)\n        signal = jnp.where(inspected, sample, state[\"signal\"]).astype(jnp.int32)\n        signal_age = jnp.where(\n            inspected,\n            0,\n            jnp.minimum(state[\"signal_age\"] + 1, 32),\n        ).astype(jnp.int32)\n        claim = jnp.where(published, actions - 2, state[\"claim\"]).astype(jnp.int32)\n        rewards = (\n            jnp.full((2,), 0.75 * settlement, dtype=jnp.float32)\n            - 0.03 * inspected.astype(jnp.float32)\n            - 0.01 * published.astype(jnp.float32)\n            - 0.02 * (launched & (actions == 4)).astype(jnp.float32)\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"truth\": truth,\n            \"accuracy\": state[\"accuracy\"],\n            \"signal\": signal,\n            \"signal_age\": signal_age,\n            \"claim\": claim,\n            \"weight\": weight.astype(jnp.float32),\n            \"pending_age\": pending_age,\n            \"pending_choice\": pending_choice,\n            \"pending_truth\": pending_truth,\n            \"pending_claim\": pending_claim,\n            \"pending_active\": pending_active,\n            \"last_truth\": jnp.where(completed, state[\"pending_truth\"], state[\"last_truth\"]).astype(jnp.int32),\n            \"last_success\": jnp.where(completed, settlement, state[\"last_success\"]).astype(jnp.float32),\n            \"project_count\": state[\"project_count\"] + launched.astype(jnp.int32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

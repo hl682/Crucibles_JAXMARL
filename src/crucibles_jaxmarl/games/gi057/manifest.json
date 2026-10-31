@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Process backlog"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Extract heat"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Open exchange valve"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Close exchange valve"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        other = jnp.array([1, 0], dtype=jnp.int32)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state[\"temperature\"])\n        obs = obs.at[:, 2].set(state[\"backlog\"] / 3.0)\n        obs = obs.at[:, 3].set(state[\"tolerance\"])\n        obs = obs.at[:, 4].set(state[\"wear\"])\n        obs = obs.at[:, 5].set(state[\"valve\"])\n        obs = obs.at[:, 6].set(state[\"valve\"][other])\n        obs = obs.at[:, 7].set(state[\"ambient\"])\n        obs = obs.at[:, 8].set(state[\"reservoir\"] / 2.0)\n        obs = obs.at[:, 9].set(state[\"last_exchange\"])\n        obs = obs.at[:, 10].set(state[\"last_service\"])\n        obs = obs.at[:, 11].set(state[\"last_dump\"])\n        obs = obs.at[:, 12].set(state[\"last_grade\"])\n        obs = obs.at[:, 13].set(state[\"last_process\"][other])\n        obs = obs.at[:, 14].set(state[\"last_offers\"])\n        obs = obs.at[:, 15].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        other = jnp.array([1, 0], dtype=jnp.int32)\n        valve = jnp.where(actions == 3, 1.0, jnp.where(actions == 4, 0.0, state[\"valve\"])).astype(jnp.float32)\n        exchange = 0.28 * jnp.prod(valve) * (state[\"temperature\"][other] - state[\"temperature\"])\n        work = (actions == 1).astype(jnp.float32) * jnp.minimum(state[\"backlog\"], 1.0)\n        extracted = (actions == 2).astype(jnp.float32) * jnp.minimum(state[\"temperature\"], 0.25)\n        grade = jnp.clip((state[\"tolerance\"] - state[\"temperature\"] + 0.15) / 0.3, 0.0, 1.0) * (1.0 - 0.5 * state[\"wear\"])\n        service = work * grade\n        dump = 1.2 * extracted\n        temperature = jnp.clip(state[\"temperature\"] + exchange + 0.23 * work - extracted + 0.12 * state[\"ambient\"] - 0.025, 0.0, 1.0)\n        recovery = ((actions == 0) & (temperature < 0.4)).astype(jnp.float32)\n        wear = jnp.clip(state[\"wear\"] + 0.08 * jnp.maximum(temperature - 0.8, 0.0) - 0.03 * recovery, 0.0, 1.0)\n        release = 0.25 * state[\"reservoir\"]\n        offers = jax.random.uniform(key, (2,), minval=0.1, maxval=0.3, dtype=jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"temperature\": temperature,\n            \"backlog\": jnp.clip(state[\"backlog\"] - work + offers, 0.0, 3.0),\n            \"tolerance\": state[\"tolerance\"],\n            \"wear\": wear,\n            \"valve\": valve,\n            \"ambient\": jnp.clip(0.88 * state[\"ambient\"] + 0.35 * release + 0.02 * jnp.sum(work), 0.05, 1.0),\n            \"reservoir\": jnp.clip(state[\"reservoir\"] - release + jnp.sum(dump), 0.0, 2.0),\n            \"last_exchange\": exchange,\n            \"last_service\": service,\n            \"last_dump\": dump,\n            \"last_grade\": grade,\n            \"last_process\": (actions == 1).astype(jnp.float32),\n            \"last_offers\": offers,\n        }\n        utility = 0.9 * service - 0.06 * (actions == 2).astype(jnp.float32) - 0.2 * jnp.maximum(temperature - 0.75, 0.0) - 0.1 * (work - service)\n        rewards = jnp.tanh(utility).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

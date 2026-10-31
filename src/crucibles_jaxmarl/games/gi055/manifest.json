@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Plant seeds"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Irrigate"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Emit pollen"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Harvest fruit"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state['biomass'])\n        obs = obs.at[:, 2].set(state['moisture'])\n        obs = obs.at[:, 3].set(state['flower'])\n        obs = obs.at[:, 4].set(state['pollen'])\n        obs = obs.at[:, 5].set(state['fruit'])\n        obs = obs.at[:, 6].set(state['soil'])\n        obs = obs.at[:, 7].set(state['seed_bank'])\n        obs = obs.at[:, 8].set(state['blight'])\n        obs = obs.at[:, 9].set(jnp.roll(state['biomass'], 1))\n        obs = obs.at[:, 10].set(jnp.roll(state['flower'], 1))\n        obs = obs.at[:, 11].set(jnp.roll(state['fruit'], 1))\n        obs = obs.at[:, 12].set(jnp.roll(state['blight'], 1))\n        obs = obs.at[:, 13].set(state['last_yield'])\n        obs = obs.at[:, 14].set(jnp.roll(state['last_yield'], 1))\n        obs = obs.at[:, 15].set(jnp.roll(state['last_action'], 1).astype(jnp.float32) / 4.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        rest = (actions == 0).astype(jnp.float32)\n        seed_spent = jnp.minimum(state['seed_bank'], 0.25) * (actions == 1).astype(jnp.float32)\n        irrigation = 0.35 * (actions == 2).astype(jnp.float32)\n        emission = jnp.minimum(state['biomass'], 0.25) * (actions == 3).astype(jnp.float32)\n        harvest = jnp.minimum(state['fruit'], 0.6) * (actions == 4).astype(jnp.float32)\n        fertilized = jnp.minimum(state['flower'], state['pollen']) * (0.5 + 0.5 * state['soil']) * (1.0 - state['blight'])\n        shade = jnp.maximum(jnp.sum(state['biomass']) - 1.2, 0.0)\n        growth = 0.07 * state['soil'] * state['moisture'] * (1.0 - state['biomass']) * (1.0 - 0.6 * state['blight'])\n        rain = jax.random.uniform(key, (), dtype=jnp.float32, minval=0.0, maxval=0.06)\n        wetted = state['moisture'] + irrigation + rain\n        soaked = (wetted > 1.0).astype(jnp.float32)\n        usable_yield = harvest * (1.0 - 0.4 * state['blight'])\n        rewards = jnp.clip(\n            0.80 * usable_yield + 0.12 * jnp.roll(usable_yield, 1)\n            - 0.04 * irrigation - 0.02 * seed_spent - 0.02 * emission\n            - 0.08 * state['blight'],\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'biomass': jnp.clip(state['biomass'] + growth + 0.70 * seed_spent - 0.35 * emission - 0.02 * harvest - 0.03 * shade, 0.0, 1.0),\n            'moisture': jnp.clip(0.86 * state['moisture'] + irrigation + rain - 0.08 * state['biomass'] - 0.05 * emission + 0.04 * rest, 0.0, 1.0),\n            'flower': jnp.clip(0.65 * state['flower'] + emission - fertilized, 0.0, 1.0),\n            'pollen': jnp.roll(emission, 1),\n            'spore': jnp.roll(emission * state['blight'], 1),\n            'fruit': jnp.clip(0.95 * state['fruit'] + 1.40 * fertilized - harvest - 0.12 * state['blight'] * state['fruit'], 0.0, 1.0),\n            'soil': jnp.clip(state['soil'] + 0.02 * rest - 0.015 * irrigation - 0.03 * seed_spent, 0.25, 1.0),\n            'seed_bank': jnp.clip(state['seed_bank'] + 0.035 * rest + 0.15 * harvest - seed_spent, 0.0, 1.0),\n            'blight': jnp.clip(0.85 * state['blight'] + 0.18 * soaked + 0.50 * state['spore'] - 0.18 * rest - 0.05 * harvest, 0.0, 1.0),\n            'last_yield': usable_yield,\n            'last_action': actions.astype(jnp.int32),\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.stack([done_all, done_all]).astype(jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest and replenish cistern"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Pump"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Send liquid"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Sell liquid"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Service equipment"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state['volume'] / 2.0)\n        obs = obs.at[:, 2].set(state['cistern'] / 1.5)\n        obs = obs.at[:, 3].set(state['pipe'][:, 0] / 0.6)\n        obs = obs.at[:, 4].set(state['pipe'][:, 1] / 0.6)\n        obs = obs.at[:, 5].set(state['wear'])\n        obs = obs.at[:, 6].set(state['need'])\n        obs = obs.at[:, 7].set(jnp.roll(state['volume'], 1) / 2.0)\n        obs = obs.at[:, 8].set(jnp.roll(state['wear'], 1))\n        obs = obs.at[:, 9].set(state['last_sale'])\n        obs = obs.at[:, 10].set(jnp.roll(state['last_sale'], 1))\n        obs = obs.at[:, 11].set(state['last_spill'])\n        obs = obs.at[:, 12].set(jnp.roll(state['last_spill'], 1))\n        obs = obs.at[:, 13].set(state['silt'])\n        obs = obs.at[:, 14].set(state['last_action'].astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 15].set(jnp.roll(state['last_action'], 1).astype(jnp.float32) / 4.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        rest = (actions == 0).astype(jnp.float32)\n        service = (actions == 4).astype(jnp.float32)\n        pump = jnp.minimum(state['cistern'], 0.5) * (actions == 1).astype(jnp.float32)\n        requested_send = jnp.minimum(state['volume'], 0.6) * (1.0 - 0.5 * state['wear']) * (actions == 2).astype(jnp.float32)\n        shared_fraction = jnp.minimum(1.0, 0.75 / (jnp.sum(requested_send) + 0.000001))\n        sent = requested_send * shared_fraction\n        sale = jnp.minimum(state['volume'], 0.7) * (actions == 3).astype(jnp.float32)\n        vent = jnp.minimum(state['volume'], 0.3) * service\n        arrival = state['pipe'][:, 0]\n        uncapped_volume = state['volume'] + arrival + pump - sent - sale - vent\n        spill = jnp.maximum(uncapped_volume - 2.0, 0.0)\n        quality = (1.0 - 0.5 * state['wear']) * (1.0 - 0.5 * state['silt'])\n        fit = jnp.maximum(0.0, 1.0 - jnp.abs(sale - state['need']))\n        fresh_need = jax.random.uniform(key, (2,), dtype=jnp.float32, minval=0.4, maxval=0.85)\n        rewards = jnp.clip(\n            0.90 * sale * fit * quality + 0.12 * jnp.roll(sale, 1)\n            + 0.04 * sent - 0.07 * pump - 0.04 * service\n            - 0.20 * spill - 0.15 * jnp.roll(spill, 1),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'volume': jnp.clip(uncapped_volume, 0.0, 2.0),\n            'cistern': jnp.clip(state['cistern'] + 0.04 + 0.16 * rest - pump, 0.0, 1.5),\n            'pipe': jnp.stack([state['pipe'][:, 1], jnp.roll(sent, 1)], axis=1),\n            'wear': jnp.clip(0.98 * state['wear'] + 0.12 * pump + 0.10 * arrival + 0.06 * sale - 0.32 * service, 0.0, 1.0),\n            'need': jnp.where(sale > 0.0, fresh_need, state['need']),\n            'silt': jnp.clip(0.85 * state['silt'] + 0.10 * jnp.sum(pump) + 0.10 * jnp.sum(spill) - 0.08 * jnp.sum(service), 0.0, 1.0),\n            'last_sale': sale,\n            'last_spill': spill,\n            'last_action': actions.astype(jnp.int32),\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.stack([done_all, done_all]).astype(jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

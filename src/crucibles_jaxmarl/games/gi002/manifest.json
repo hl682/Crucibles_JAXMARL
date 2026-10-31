@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Idle"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Gentle pump"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Intensive pump"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Plant"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Filter"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"water\"])\n        obs = obs.at[:, 1].set(state[\"pollution\"])\n        obs = obs.at[:, 2].set(state[\"runoff\"])\n        obs = obs.at[:, 3].set(state[\"roots\"])\n        obs = obs.at[:, 4].set(jnp.roll(state[\"roots\"], 1))\n        obs = obs.at[:, 5].set(state[\"intake\"])\n        obs = obs.at[:, 6].set(jnp.roll(state[\"intake\"], 1))\n        obs = obs.at[:, 7].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 8:13].set(jax.nn.one_hot(state[\"last\"], 5))\n        obs = obs.at[:, 13].set(jnp.roll(state[\"last\"], 1) / 4.0)\n        obs = obs.at[:, 14].set(jnp.arange(2, dtype=jnp.float32))\n        obs = obs.at[:, 15].set(1.0 - state[\"pollution\"])\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        # 0 idle, 1 gentle pump, 2 intensive pump, 3 plant, 4 filter.\n        demand = jnp.where(actions == 1, 0.12, jnp.where(actions == 2, 0.32, 0.0))\n        intake = demand * jnp.minimum(1.0, state[\"water\"] / jnp.maximum(jnp.sum(demand), 0.01))\n        useful = intake * (1.0 - state[\"pollution\"])\n        filter_count = jnp.sum((actions == 4).astype(jnp.float32))\n        pollution = jnp.clip(0.85 * state[\"pollution\"] + state[\"runoff\"]\n                             - 0.16 * filter_count - 0.04 * jnp.sum(state[\"roots\"]), 0.0, 1.0)\n        roots = jnp.clip(0.9 * state[\"roots\"] + 0.3 * (actions == 3)\n                         - 0.15 * (actions == 2), 0.0, 1.0)\n        water = jnp.clip(state[\"water\"] - jnp.sum(intake) + 0.08\n                         + 0.08 * jnp.sum(state[\"roots\"]) * (1.0 - state[\"pollution\"]), 0.0, 1.0)\n        runoff = 0.24 * jnp.sum((actions == 2).astype(jnp.float32))\n        rewards = useful - 0.07 * (actions == 3) - 0.05 * (actions == 4)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"water\": water.astype(jnp.float32),\n            \"pollution\": pollution.astype(jnp.float32),\n            \"runoff\": runoff.astype(jnp.float32),\n            \"roots\": roots.astype(jnp.float32),\n            \"last\": actions.astype(jnp.int32),\n            \"intake\": intake.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards.astype(jnp.float32), dones, info"
+  },
+  "release_metadata_revision": 1
 }

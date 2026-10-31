@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Grow biomass"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Harvest"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Clean toxin"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Release catalyst"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"biomass\"])\n        obs = obs.at[:, 1].set(jnp.roll(state[\"biomass\"], 1))\n        obs = obs.at[:, 2].set(state[\"catalyst\"])\n        obs = obs.at[:, 3].set(jnp.roll(state[\"catalyst\"], 1))\n        obs = obs.at[:, 4].set(state[\"nutrient\"])\n        obs = obs.at[:, 5].set(state[\"toxin\"])\n        obs = obs.at[:, 6].set(state[\"affinity\"] / 1.25)\n        obs = obs.at[:, 7].set(state[\"last_harvest\"] / 0.38)\n        obs = obs.at[:, 8].set(jnp.roll(state[\"last_harvest\"], 1) / 0.38)\n        obs = obs.at[:, 9].set(state[\"last_uptake\"] / 0.15)\n        obs = obs.at[:, 10].set(jnp.roll(state[\"last_uptake\"], 1) / 0.15)\n        obs = obs.at[:, 11].set(state[\"last_action\"].astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 12].set(jnp.roll(state[\"last_action\"], 1).astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 13].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 14].set(state[\"total_harvest\"] / 16.0)\n        obs = obs.at[:, 15].set(jnp.roll(state[\"total_harvest\"], 1) / 16.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        grow = (actions == 1).astype(jnp.float32)\n        take = (actions == 2).astype(jnp.float32)\n        clean = (actions == 3).astype(jnp.float32)\n        release = (actions == 4).astype(jnp.float32)\n        harvest = 0.38 * state[\"biomass\"] * take\n        donation = 0.22 * state[\"biomass\"] * release\n        demand = 0.12 * grow * state[\"affinity\"] * (0.25 + 0.75 * jnp.roll(state[\"catalyst\"], 1))\n        ration = jnp.minimum(1.0, state[\"nutrient\"] / jnp.maximum(jnp.sum(demand), 0.0001))\n        uptake = demand * ration\n        new_biomass = jnp.clip(\n            0.985 * state[\"biomass\"] - harvest - donation\n            + 0.9 * uptake * (1.0 - 0.65 * state[\"toxin\"]), 0.0, 1.0\n        )\n        new_catalyst = jnp.clip(0.58 * state[\"catalyst\"] + 1.6 * donation, 0.0, 1.0)\n        new_nutrient = jnp.clip(state[\"nutrient\"] - jnp.sum(uptake) + 0.08 + 0.06 * jnp.sum(clean), 0.0, 1.0)\n        new_toxin = jnp.clip(\n            0.85 * state[\"toxin\"] + 0.28 * jnp.sum(harvest)\n            + 0.10 * jnp.sum(grow) - 0.12 * jnp.sum(clean), 0.0, 1.0\n        )\n        rewards = jnp.tanh(\n            2.0 * harvest - 0.05 * grow - 0.04 * clean\n            - 0.01 * release - 0.10 * new_toxin\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"biomass\": new_biomass.astype(jnp.float32),\n            \"affinity\": state[\"affinity\"],\n            \"catalyst\": new_catalyst.astype(jnp.float32),\n            \"nutrient\": new_nutrient.astype(jnp.float32),\n            \"toxin\": new_toxin.astype(jnp.float32),\n            \"last_harvest\": harvest.astype(jnp.float32),\n            \"last_uptake\": uptake.astype(jnp.float32),\n            \"last_action\": actions.astype(jnp.int32),\n            \"total_harvest\": (state[\"total_harvest\"] + harvest).astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

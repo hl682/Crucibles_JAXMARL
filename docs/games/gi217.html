@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>种风果园 · Seedwind Orchard · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI217 / SPATIAL</p><h1>种风果园 · Seedwind Orchard</h1><p class="lead">管理种篮、湿种干燥、嫁接与风障，选择各园丁的种植目标。</p><div class="stats"><span>8 agents</span><span>24 actions</span><span>1192 observation columns</span><span>512 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi217.gif" alt="Original saved demonstration gi217"></section><section><h2>Run this game</h2><pre>crucibles play --game 217</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>种风果园 · Seedwind Orchard · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI217 / SPATIAL</p><h1>种风果园 · Seedwind Orchard</h1><p class="lead">管理种篮、湿种干燥、嫁接与风障，选择各园丁的种植目标。</p><div class="stats"><span>8 agents</span><span>24 actions</span><span>1192 observation columns</span><span>512 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi217.gif" alt="Original saved demonstration gi217"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi217.gif" alt="Actual verification episode gi217"></section><section><h2>Run this game</h2><pre>crucibles play --game 217</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
   &quot;objective&quot;: &quot;Choose fruit-quality, seed propagation, grafting, plot renewal, shared shelter or water-support goals in a finite 24x24 eight-gardener ecological world.&quot;,
   &quot;natural_termination&quot;: &quot;No mandatory harvest, construction or biodiversity threshold terminates this world. terminated remains false and tick 512 truncates; each harvest, dry cycle and planting leaves the world persistent.&quot;,
   &quot;interaction&quot;: &quot;Harvesting removes a parent&#x27;s canopy and ripe seedbank, changing neighboring shade and future windborne offspring. Windbreak placement/orientation changes other plots&#x27; seed access. Four shared drying slots, a finite reservoir and complementary pruning/building/grafting/watering abilities force spatial and temporal coordination.&quot;,
@@ -539,7 +539,89 @@ Current author checks use stdlib AST/literal shape arithmetic, byte hashes and t
     &quot;attributes&quot;: []
   }
 ]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
-  &quot;status&quot;: &quot;PENDING&quot;
+  &quot;game&quot;: &quot;gi217&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;78a651a4ff09f8353eddeb74fcd42a854cfc1f95df4cd61cbab49e1920161c66&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 8,
+    &quot;observation_size&quot;: 1192,
+    &quot;num_actions&quot;: 24,
+    &quot;max_steps&quot;: 512
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.58585262298584
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.8030529022216797
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 21.432562112808228
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5290083885192871
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 18.963786840438843
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0015747547149658203
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7135176658630371
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 30.475435256958008
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 21.065754652023315
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.7533276081085205
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 102.02586102485657,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 512,
+  &quot;scripted_random_returns&quot;: [
+    -0.800000011920929,
+    3.2999999821186066,
+    5.849999982863665,
+    6.099999986588955,
+    3.4499999918043613,
+    11.149999987334013,
+    2.4499999918043613,
+    3.5999999940395355
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 26,
+  &quot;render_roles_checked&quot;: 8
 }</pre></details><details><summary>Chromium control verification</summary><pre>{
   &quot;status&quot;: &quot;PENDING&quot;
 }</pre></details><details><summary>Original identity and file hashes</summary><pre>{
@@ -594,7 +676,7 @@ Current author checks use stdlib AST/literal shape arithmetic, byte hashes and t
   ],
   &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
   &quot;original_saved_replay&quot;: true,
-  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
   &quot;human_scores&quot;: null,
   &quot;browser_validation&quot;: &quot;PENDING&quot;
 }</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi217">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

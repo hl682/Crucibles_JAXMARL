@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Wait"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Report 0"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Report 1"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Audit partner report"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Trade on report"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        evidence_valid = (state[\"evidence\"] >= 0) & (state[\"evidence_version\"] == jnp.roll(state[\"version\"], 1))\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"secret\"].astype(jnp.float32))\n        obs = obs.at[:, 1].set((state[\"report\"].astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 2].set((jnp.roll(state[\"report\"], 1).astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 3].set(state[\"trust\"])\n        obs = obs.at[:, 4].set(jnp.roll(state[\"trust\"], 1))\n        obs = obs.at[:, 5].set(state[\"age\"].astype(jnp.float32) / 8.0)\n        obs = obs.at[:, 6].set(jnp.roll(state[\"age\"], 1).astype(jnp.float32) / 8.0)\n        obs = obs.at[:, 7].set((state[\"evidence\"].astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 8].set(evidence_valid.astype(jnp.float32))\n        obs = obs.at[:, 9].set(state[\"pending_audit\"].astype(jnp.float32))\n        obs = obs.at[:, 10].set(jnp.roll(state[\"pending_audit\"], 1).astype(jnp.float32))\n        obs = obs.at[:, 11].set(state[\"version\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 12].set(jnp.roll(state[\"version\"], 1).astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 13].set(state[\"last_result\"])\n        obs = obs.at[:, 14].set(state[\"last_fee\"] / 0.24)\n        obs = obs.at[:, 15].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        other_report = jnp.roll(state[\"report\"], 1)\n        other_secret = jnp.roll(state[\"secret\"], 1)\n        other_version = jnp.roll(state[\"version\"], 1)\n        reporting = (actions == 1) | (actions == 2)\n        audit = (actions == 3) & (other_report >= 0)\n        trade = (actions == 4) & (other_report >= 0)\n        evidence_valid = (state[\"evidence\"] >= 0) & (state[\"evidence_version\"] == other_version)\n        prediction = jnp.where(evidence_valid, state[\"evidence\"], other_report)\n        correct = prediction == other_secret\n        stake = 0.2 + 0.6 * jnp.roll(state[\"trust\"], 1)\n        trading_return = trade.astype(jnp.float32) * jnp.where(correct, 0.55, -0.65) * stake\n        sender_fee = jnp.roll(trade.astype(jnp.float32) * jnp.where(correct, 0.06, 0.30) * stake, 1)\n        truthful_snapshot = state[\"snapshot_truth\"] == state[\"snapshot_report\"]\n        audit_adjustment = state[\"pending_audit\"].astype(jnp.float32) * jnp.where(truthful_snapshot, 0.14, -0.22)\n        next_trust = jnp.clip(0.92 * state[\"trust\"] + 0.04 + jnp.roll(audit_adjustment, 1), 0.0, 1.0)\n        next_evidence = jnp.where(state[\"pending_audit\"], state[\"snapshot_truth\"], state[\"evidence\"])\n        next_evidence_version = jnp.where(state[\"pending_audit\"], state[\"snapshot_version\"], state[\"evidence_version\"])\n        refreshed = jnp.roll(trade, 1)\n        replacement_secrets = jax.random.randint(key, (2,), 0, 2, dtype=jnp.int32)\n        next_secret = jnp.where(refreshed, replacement_secrets, state[\"secret\"])\n        next_version = state[\"version\"] + refreshed.astype(jnp.int32)\n        next_report = jnp.where(refreshed, -1, jnp.where(reporting, actions - 1, state[\"report\"])).astype(jnp.int32)\n        next_age = jnp.where(refreshed | reporting, 0, jnp.minimum(state[\"age\"] + 1, 8)).astype(jnp.int32)\n        next_snapshot_truth = jnp.where(audit, other_secret, state[\"snapshot_truth\"])\n        next_snapshot_report = jnp.where(audit, other_report, state[\"snapshot_report\"])\n        next_snapshot_version = jnp.where(audit, other_version, state[\"snapshot_version\"])\n        last_result = jnp.where(trade, jnp.where(correct, 1.0, -1.0), 0.0)\n        rewards = jnp.tanh(\n            trading_return + sender_fee - 0.035 * audit.astype(jnp.float32)\n            - 0.012 * reporting.astype(jnp.float32)\n        ).astype(jnp.float32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"secret\": next_secret.astype(jnp.int32),\n            \"report\": next_report,\n            \"version\": next_version.astype(jnp.int32),\n            \"age\": next_age,\n            \"trust\": next_trust.astype(jnp.float32),\n            \"evidence\": next_evidence.astype(jnp.int32),\n            \"evidence_version\": next_evidence_version.astype(jnp.int32),\n            \"pending_audit\": audit.astype(jnp.bool_),\n            \"snapshot_truth\": next_snapshot_truth.astype(jnp.int32),\n            \"snapshot_report\": next_snapshot_report.astype(jnp.int32),\n            \"snapshot_version\": next_snapshot_version.astype(jnp.int32),\n            \"last_result\": last_result.astype(jnp.float32),\n            \"last_fee\": sender_fee.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

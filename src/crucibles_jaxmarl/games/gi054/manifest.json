@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Work choice 0"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Work choice 1"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Probe partner target"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Transmit survey"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(state['survey'].astype(jnp.float32))\n        obs = obs.at[:, 2].set(state['survey_age'].astype(jnp.float32) / 8.0)\n        obs = obs.at[:, 3].set((state['message'].astype(jnp.float32) + 1.0) / 2.0)\n        obs = obs.at[:, 4].set(state['message_age'].astype(jnp.float32) / 8.0)\n        obs = obs.at[:, 5].set(state['charge'])\n        obs = obs.at[:, 6].set(state['strain'])\n        obs = obs.at[:, 7].set(jnp.roll(state['strain'], 1))\n        obs = obs.at[:, 8].set(state['busy'].astype(jnp.float32) / 2.0)\n        obs = obs.at[:, 9].set(state['last_work'])\n        obs = obs.at[:, 10].set(jnp.roll(state['last_work'], 1))\n        obs = obs.at[:, 11].set(state['last_success'])\n        obs = obs.at[:, 12].set(jnp.roll(state['last_success'], 1))\n        obs = obs.at[:, 13].set(state['last_return'])\n        obs = obs.at[:, 14].set(state['last_action'].astype(jnp.float32) / 4.0)\n        obs = obs.at[:, 15].set(jnp.roll(state['last_action'], 1).astype(jnp.float32) / 4.0)\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        rest = (actions == 0).astype(jnp.float32)\n        work = ((actions == 1) | (actions == 2)) & (state['charge'] >= 0.22)\n        probe = (actions == 3) & (state['charge'] >= 0.06)\n        send = (actions == 4) & (state['charge'] >= 0.04)\n        success = work & ((actions - 1) == state['target'])\n        work_float = work.astype(jnp.float32)\n        success_float = success.astype(jnp.float32)\n        one_sender = jnp.sum(send.astype(jnp.int32)) == 1\n        delivered = send & one_sender & (state['busy'] == 0)\n        received = jnp.roll(delivered, 1)\n        collision = jnp.all(send)\n        burst = state['strain'] >= 0.72\n        random_flip = jax.random.bernoulli(key, p=0.02 + 0.08 * state['strain'], shape=(2,))\n        target = jnp.mod(state['target'] + state['pending'] + burst.astype(jnp.int32) + random_flip.astype(jnp.int32), 2).astype(jnp.int32)\n        rewards = jnp.clip(\n            work_float * jnp.where(success, 0.65, -0.45)\n            + 0.15 * jnp.roll(success_float, 1)\n            - 0.015 * probe.astype(jnp.float32)\n            - 0.010 * send.astype(jnp.float32),\n            -1.0, 1.0,\n        ).astype(jnp.float32)\n        next_state = {\n            't': state['t'] + jnp.array(1, dtype=jnp.int32),\n            'target': target,\n            'survey': jnp.where(probe, jnp.roll(state['target'], 1), state['survey']).astype(jnp.int32),\n            'survey_age': jnp.where(probe, 1, jnp.minimum(state['survey_age'] + 1, 8)).astype(jnp.int32),\n            'message': jnp.where(received, jnp.roll(state['survey'], 1), state['message']).astype(jnp.int32),\n            'message_age': jnp.where(received, jnp.minimum(jnp.roll(state['survey_age'], 1) + 1, 8), jnp.minimum(state['message_age'] + 1, 8)).astype(jnp.int32),\n            'charge': jnp.clip(state['charge'] + 0.02 + 0.18 * rest - 0.22 * work_float - 0.06 * probe.astype(jnp.float32) - 0.04 * send.astype(jnp.float32), 0.0, 1.0),\n            'strain': jnp.clip(0.86 * state['strain'] + 0.16 * jnp.roll(work_float, 1) + 0.08 * work_float - 0.12 * rest - 0.35 * burst.astype(jnp.float32), 0.0, 1.0),\n            'pending': jnp.roll(work.astype(jnp.int32), 1),\n            'busy': jnp.where(collision, 2, jnp.where(jnp.any(delivered), 1, jnp.maximum(state['busy'] - 1, 0))).astype(jnp.int32),\n            'last_work': work_float,\n            'last_success': success_float,\n            'last_return': rewards,\n            'last_action': actions.astype(jnp.int32),\n        }\n        done_all = next_state['t'] >= 32\n        dones = jnp.stack([done_all, done_all]).astype(jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

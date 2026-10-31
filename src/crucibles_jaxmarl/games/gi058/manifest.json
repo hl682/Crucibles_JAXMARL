@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Rest"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Move negative direction"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Move positive direction"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Plant"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Harvest"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        roles = jnp.arange(2, dtype=jnp.int32)\n        other = jnp.array([1, 0], dtype=jnp.int32)\n        position = state[\"position\"]\n        left = jnp.mod(position - 1, 8)\n        right = jnp.mod(position + 1, 8)\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"t\"].astype(jnp.float32) / 32.0)\n        obs = obs.at[:, 1].set(position.astype(jnp.float32) / 7.0)\n        obs = obs.at[:, 2].set(position[other].astype(jnp.float32) / 7.0)\n        obs = obs.at[:, 3].set(state[\"energy\"] / 3.0)\n        obs = obs.at[:, 4].set(state[\"nutrient\"][roles, position] / 2.0)\n        obs = obs.at[:, 5].set(state[\"nutrient\"][other, position] / 2.0)\n        obs = obs.at[:, 6].set(jnp.sum(state[\"sprout\"], axis=0)[position] / 6.0)\n        obs = obs.at[:, 7].set(state[\"ripe\"][position] / 3.0)\n        obs = obs.at[:, 8].set(state[\"soil\"][position])\n        obs = obs.at[:, 9].set(state[\"taste\"][roles, position])\n        obs = obs.at[:, 10].set(state[\"ripe\"][left] / 3.0)\n        obs = obs.at[:, 11].set(state[\"ripe\"][right] / 3.0)\n        obs = obs.at[:, 12].set(state[\"soil\"][left])\n        obs = obs.at[:, 13].set(state[\"soil\"][right])\n        obs = obs.at[:, 14].set(state[\"last_harvest\"])\n        obs = obs.at[:, 15].set(roles.astype(jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        roles = jnp.arange(2, dtype=jnp.int32)\n        location = jax.nn.one_hot(state[\"position\"], 8, dtype=jnp.float32)\n        plant = ((actions == 3) & (state[\"energy\"] >= 0.5)).astype(jnp.float32)\n        deposit = 0.7 * location * plant[:, None]\n        enriched = jnp.clip(state[\"nutrient\"] + deposit, 0.0, 2.0)\n        growth = 0.35 * jnp.minimum(enriched[0], enriched[1]) * state[\"soil\"]\n        requests = location * (actions == 4).astype(jnp.float32)[:, None]\n        total_requests = jnp.sum(requests, axis=0)\n        removed = jnp.minimum(state[\"ripe\"], 0.8 * total_requests)\n        share = removed / jnp.maximum(total_requests, 1.0)\n        harvest = jnp.sum(requests * share[None, :], axis=1)\n        taste = state[\"taste\"][roles, state[\"position\"]]\n        first_stage = 0.55 * state[\"sprout\"][0] + growth\n        second_stage = 0.6 * state[\"sprout\"][1] + 0.45 * state[\"sprout\"][0]\n        movement = (actions == 2).astype(jnp.int32) - (actions == 1).astype(jnp.int32)\n        next_state = {\n            \"t\": state[\"t\"] + jnp.array(1, dtype=jnp.int32),\n            \"position\": jnp.mod(state[\"position\"] + movement, 8).astype(jnp.int32),\n            \"energy\": jnp.clip(state[\"energy\"] - 0.5 * plant + 0.04 + 0.2 * (actions == 0).astype(jnp.float32), 0.0, 3.0),\n            \"nutrient\": jnp.clip(0.98 * (enriched - growth[None, :]), 0.0, 2.0),\n            \"sprout\": jnp.clip(jnp.stack((first_stage, second_stage)), 0.0, 3.0),\n            \"ripe\": jnp.clip(0.96 * (state[\"ripe\"] - removed + 0.4 * state[\"sprout\"][1]), 0.0, 3.0),\n            \"soil\": jnp.clip(state[\"soil\"] + 0.035 - 0.15 * removed - 0.025 * jnp.sum(deposit, axis=0), 0.1, 1.0),\n            \"taste\": state[\"taste\"],\n            \"last_harvest\": harvest,\n        }\n        utility = 1.1 * taste * harvest - 0.025 * plant - 0.01 * jnp.abs(movement).astype(jnp.float32)\n        rewards = jnp.tanh(utility).astype(jnp.float32)\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }

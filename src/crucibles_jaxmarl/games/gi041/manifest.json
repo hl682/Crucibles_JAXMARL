@@ -23,26 +23,42 @@
   "actions": [
     {
       "id": 0,
-      "label": "Action 0; see mechanism and source"
+      "label": "Bank water"
     },
     {
       "id": 1,
-      "label": "Action 1; see mechanism and source"
+      "label": "Pump"
     },
     {
       "id": 2,
-      "label": "Action 2; see mechanism and source"
+      "label": "Flush"
     },
     {
       "id": 3,
-      "label": "Action 3; see mechanism and source"
+      "label": "Dredge"
     },
     {
       "id": 4,
-      "label": "Action 4; see mechanism and source"
+      "label": "Release reservoir water"
     }
   ],
   "terminal_semantics": "legacy_horizon_no_absorbing_contract",
   "observability": "source_defined",
-  "metadata_origin": "release adapter, not original author manifest"
+  "metadata_origin": "release adapter, not original author manifest",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state[\"reservoir\"] / 6.0)\n        obs = obs.at[:, 1].set(state[\"sediment\"] / 2.5)\n        obs = obs.at[:, 2].set(state[\"cistern\"] / 2.0)\n        obs = obs.at[:, 3].set(state[\"transit_water\"] / 8.0)\n        obs = obs.at[:, 4].set(state[\"transit_silt\"] / 2.5)\n        obs = obs.at[:, 5].set(state[\"rain\"] / 0.25)\n        obs = obs.at[:, 6].set(state[\"demand\"] / 1.1)\n        obs = obs.at[:, 7].set(state[\"last_utility\"])\n        obs = obs.at[:, 8].set(state[\"last_out\"] / 8.0)\n        obs = obs.at[:, 9].set(state[\"last_loss\"] / 8.0)\n        obs = obs.at[:, 10].set(jnp.roll(state[\"last_out\"], 1) / 8.0)\n        obs = obs.at[:, 11].set(jnp.roll(state[\"last_utility\"], 1))\n        obs = obs.at[:, 12].set(jnp.sum(state[\"reservoir\"] + state[\"cistern\"]) / 16.0)\n        obs = obs.at[:, 13].set(jnp.mod(state[\"t\"], 8) / 8.0)\n        obs = obs.at[:, 14].set(state[\"t\"] / 32.0)\n        obs = obs.at[:, 15].set(jnp.array([-1.0, 1.0], dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Accumulate original per-agent rewards under the interaction rules in mechanism.md.",
+    "natural_termination": "No early terminal; original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        keys = jax.random.split(key, 2)\n        available = state[\"reservoir\"] + state[\"transit_water\"] + state[\"rain\"]\n        deposit = jnp.clip(\n            state[\"sediment\"] + state[\"transit_silt\"] + 0.015 * state[\"reservoir\"],\n            0.0,\n            2.5,\n        )\n        banking = actions == 0\n        pumping = actions == 1\n        flushing = actions == 2\n        dredging = actions == 3\n        releasing = actions == 4\n        banked = jnp.where(\n            banking,\n            jnp.minimum(0.7, jnp.minimum(available, 2.0 - state[\"cistern\"])),\n            0.0,\n        )\n        working_water = available - banked\n        drawn = jnp.where(pumping, jnp.minimum(1.15, working_water + state[\"cistern\"]), 0.0)\n        from_reservoir = jnp.minimum(drawn, working_water)\n        from_cistern = drawn - from_reservoir\n        remaining = working_water - from_reservoir\n        cistern = state[\"cistern\"] + banked - from_cistern\n        pulse = jnp.where(flushing, jnp.minimum(1.35, remaining), 0.0)\n        eroded = jnp.minimum(deposit, 0.35 * pulse)\n        removed = jnp.where(dredging, jnp.minimum(0.5, deposit), 0.0)\n        sediment = jnp.clip(deposit - eroded - removed, 0.0, 2.5)\n        remaining = remaining - pulse\n        released = jnp.where(releasing, jnp.minimum(1.0, cistern), 0.0)\n        cistern = cistern - released\n        base_flow = jnp.minimum(remaining, jnp.where(banking, 0.04, 0.16))\n        capacity = 6.0 - 1.1 * sediment\n        overflow = jnp.maximum(remaining - base_flow - capacity, 0.0)\n        reservoir = jnp.clip(remaining - base_flow - overflow, 0.0, capacity)\n        outflow = pulse + base_flow + overflow + released\n        useful_draw = drawn / (1.0 + 0.7 * deposit)\n        utility = jnp.clip(useful_draw / state[\"demand\"], 0.0, 1.0)\n        rewards = jnp.clip(\n            0.7 * utility\n            - 0.05 * banking.astype(jnp.float32)\n            - 0.07 * flushing.astype(jnp.float32)\n            - 0.11 * dredging.astype(jnp.float32)\n            - 0.025 * releasing.astype(jnp.float32)\n            - 0.1 * sediment / 2.5\n            - 0.08 * jnp.clip(overflow / 2.0, 0.0, 1.0),\n            -1.0,\n            1.0,\n        ).astype(jnp.float32)\n        next_t = state[\"t\"] + jnp.array(1, dtype=jnp.int32)\n        seasonal_rain = 0.06 + 0.12 * (0.5 + 0.5 * jnp.sin(2.0 * jnp.pi * next_t / 8.0))\n        next_state = {\n            \"t\": next_t,\n            \"reservoir\": reservoir.astype(jnp.float32),\n            \"sediment\": sediment.astype(jnp.float32),\n            \"cistern\": jnp.clip(cistern, 0.0, 2.0).astype(jnp.float32),\n            \"transit_water\": (0.88 * jnp.roll(outflow, 1)).astype(jnp.float32),\n            \"transit_silt\": jnp.roll(0.8 * eroded + 0.02 * overflow, 1).astype(jnp.float32),\n            \"rain\": (\n                seasonal_rain\n                + jax.random.uniform(keys[0], (2,), minval=0.0, maxval=0.07, dtype=jnp.float32)\n            ).astype(jnp.float32),\n            \"demand\": jax.random.uniform(keys[1], (2,), minval=0.65, maxval=1.1, dtype=jnp.float32),\n            \"last_utility\": utility.astype(jnp.float32),\n            \"last_out\": outflow.astype(jnp.float32),\n            \"last_loss\": overflow.astype(jnp.float32),\n        }\n        done_all = next_state[\"t\"] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {\"done_all\": done_all, \"legal_mask\": self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "release_metadata_revision": 1
 }
