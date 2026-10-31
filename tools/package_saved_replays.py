@@ -12,7 +12,7 @@ def main():
         if p.is_file() and p.suffix in ['.js','.json']:targets.append((p,p.relative_to(a).as_posix(),False))
     for p in (a/'gallery246').iterdir():
         if p.name=='font246.js':continue
-        if p.suffix in ['.html','.css','.js']:targets.append((p,p.relative_to(a).as_posix(),p.suffix=='.html'))
+        if p.suffix in ['.html','.css','.js']:targets.append((p,p.relative_to(a).as_posix(),p.suffix in ['.html','.css']))
     for name in ['legend246_static.js','legend246.js','scene_canvas246.js']:
         p=a/'native156_candidate/web'/name;targets.append((p,p.relative_to(a).as_posix(),False))
     for name in ['index.html','audit.html','player250.js']:
@@ -29,10 +29,12 @@ def main():
                     original_hash.update(data)
                     if any(re.search(pattern,tail+data) for pattern in patterns):raise ValueError('Sensitive/nonportable content in '+name)
                     tail=data[-256:]
-                    if adapt:data=data.replace(b'<script src="font246.js"></script>',b'')
+                    if adapt:
+                        data=data.replace(b'<script src="font246.js"></script>',b'')
+                        data=re.sub(rb'@font-face\{[^}]+\}',b'',data)
                     h.update(data);length+=len(data);out.write(data)
             records.append(dict(path=name,bytes=length,sha256=h.hexdigest(),original_sha256=original_hash.hexdigest(),
-                original_origin=src.relative_to(W).as_posix(),adaptation='Remove embedded local font reference; system font fallback' if adapt else None))
+                original_origin=src.relative_to(W).as_posix(),adaptation='Remove embedded local font script/CSS references; system font fallback' if adapt else None))
             if i%100==0:print('packed',i,'/',len(targets),flush=True)
         index='''<!doctype html><meta charset="utf-8"><title>Original saved Crucibles replays</title><style>body{font:18px/1.7 system-ui;max-width:900px;margin:60px auto;padding:20px;background:#14232c;color:#eee}a{color:#d4ed91}</style><h1>Original saved native-state replays</h1><p>These are saved endpoints, not live Python/JAX play. Source rewards, failed tracks, masks, information conditions and numerical uncertainty are retained. No human scores are claimed.</p><ul><li>GI226, 96 independently actionable roles: <a href="gallery246/226_role.html">role view</a> / <a href="gallery246/226_audit.html">privileged full-state audit</a></li><li>GI227, 128 independently actionable roles: <a href="gallery246/227_role.html">role view</a> / <a href="gallery246/227_audit.html">privileged full-state audit</a></li><li>GI229, 24 independently actionable roles: <a href="gi229/index.html">role view</a> / <a href="gi229/audit.html">privileged full-state audit</a></li></ul><p>Keep the complete extracted directory together. Serve it with <code>python -m http.server 8770 --directory saved-replays</code>, then use the printed local address. All data is bundled. Local embedded font bytes and research/operator infrastructure are excluded.</p>'''
         z.writestr('saved-replays/index.html',index)

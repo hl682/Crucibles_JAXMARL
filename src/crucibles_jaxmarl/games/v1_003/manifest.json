@@ -1,0 +1,65 @@
+{
+  "schema": "legacy-array-release-metadata-v1",
+  "candidate_id": "v1_003",
+  "source_sha256": "38e3678ff4e2124f85297d67bd5cb17d94c8dfc54764f8e28929b28909eadd8e",
+  "num_agents": 2,
+  "observation_size": 16,
+  "num_actions": 5,
+  "reward_low": -1.0,
+  "reward_high": 1.0,
+  "max_steps": 32,
+  "observation_low": null,
+  "observation_high": null,
+  "observability": "source_defined",
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Original window-v1 agent; abilities and private parameters follow the original mechanism and observe()"
+    },
+    {
+      "id": "agent_1",
+      "role": "Original window-v1 agent; abilities and private parameters follow the original mechanism and observe()"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Privately sense mode"
+    },
+    {
+      "id": 2,
+      "label": "Start mode-0 project"
+    },
+    {
+      "id": 3,
+      "label": "Start mode-1 project"
+    },
+    {
+      "id": 4,
+      "label": "Push mode toward own index"
+    }
+  ],
+  "terminal_semantics": "legacy_horizon_no_absorbing_contract",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'] / 32.0)\n        obs = obs.at[:, 1].set(state['signal'])\n        obs = obs.at[:, 2].set(state['age'])\n        obs = obs.at[:, 3].set(state['project'].astype(jnp.float32))\n        obs = obs.at[:, 4].set(state['timer'] / 2.0)\n        obs = obs.at[:, 5].set(jnp.roll(state['timer'], 1) / 2.0)\n        obs = obs.at[:, 6].set(state['pressure'])\n        obs = obs.at[:, 7].set(state['outcome'])\n        obs = obs.at[:, 8].set(jnp.roll(state['outcome'], 1))\n        obs = obs.at[:, 9].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Private revelation and directional mode pressure; accumulate original per-agent rewards under mechanism.md.",
+    "natural_termination": "Original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        # 0 wait; 1 privately sense; 2 start mode-0 project; 3 start mode-1 project; 4 push mode toward own index.\n        sensing = actions == 1\n        pushing = (actions == 4).astype(jnp.float32)\n        pressure = jnp.clip(0.65 * state['pressure'] + 0.6 * (pushing[1] - pushing[0]), -1.0, 1.0)\n        drift = jax.random.bernoulli(key, 0.08)\n        mode = jnp.where(pressure > 0.5, 1, jnp.where(pressure < -0.5, 0, jnp.where(drift, 1 - state['mode'], state['mode']))).astype(jnp.int32)\n        mature = state['timer'] == 1\n        outcome = jnp.where(mature, jnp.where(state['project'] == mode, 0.8, -0.6), 0.0).astype(jnp.float32)\n        starts = (state['timer'] == 0) & ((actions == 2) | (actions == 3))\n        timer = jnp.where(starts, 2, jnp.maximum(0, state['timer'] - 1)).astype(jnp.int32)\n        project = jnp.where(starts, actions - 2, jnp.where(timer > 0, state['project'], -1)).astype(jnp.int32)\n        rewards = jnp.tanh(outcome - 0.12 * sensing - 0.18 * pushing - 0.1 * starts).astype(jnp.float32)\n        next_state = {'t': state['t'] + jnp.array(1, jnp.int32), 'mode': mode,\n                      'signal': jnp.where(sensing, mode.astype(jnp.float32), state['signal']),\n                      'age': jnp.where(sensing, 0.0, jnp.minimum(1.0, state['age'] + 0.1)),\n                      'project': project, 'timer': timer, 'pressure': pressure, 'outcome': outcome}\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "metadata_origin": "release adapter metadata, not an original author manifest",
+  "original_namespace": "astra_generation/window_v1",
+  "original_proposal_index": 3
+}

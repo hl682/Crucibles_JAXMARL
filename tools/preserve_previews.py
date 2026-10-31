@@ -29,6 +29,7 @@ def main():
     receipt.write_text(json.dumps(old+receipts,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     current=json.loads((R/'src/crucibles_jaxmarl/catalog.json').read_bytes())['games'];variants=[]
     for row in current[72:]:
+        if row['family']!='spatial':continue
         source=G/('sources/game-v3-%05d'%row['id'])
         for p in source.glob('attempt_*/candidate.py'):
             if sha(p)==row['source_sha256']:continue

@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>节庆蒸汽厨房 · Festival Steam Kitchens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI229 / SPATIAL</p><h1>节庆蒸汽厨房 · Festival Steam Kitchens</h1><p class="lead">24角色的蒸汽双缓冲厨房保存回放；修复已观察cart与角色同格时的绘制遗漏。</p><div class="stats"><span>24 agents</span><span>23 actions</span><span>160 observation columns</span><span>512 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi229.gif" alt="Original saved demonstration gi229"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi229.gif" alt="Actual verification episode gi229"></section><section><h2>Run this game</h2><pre>crucibles play --game 229</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>节庆蒸汽厨房 · Festival Steam Kitchens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI229 / SPATIAL</p><h1>节庆蒸汽厨房 · Festival Steam Kitchens</h1><p class="lead">24角色的蒸汽双缓冲厨房保存回放；修复已观察cart与角色同格时的绘制遗漏。</p><div class="stats"><span>24 agents</span><span>23 actions</span><span>160 observation columns</span><span>512 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi229.gif" alt="Original saved demonstration gi229"></section><p><a href="https://github.com/hl682/Crucibles_JAXMARL/releases/download/v0.1.0/crucibles-original-saved-replays-v0.1.0.zip">Download complete original saved endpoints and standalone replay players (228 MB) →</a> Includes all 11 GI226/227 tracks and six GI229 tracks; retains original failures and numerical uncertainty.</p><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi229.gif" alt="Actual verification episode gi229"></section><section><h2>Run this game</h2><pre>crucibles play --game 229</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
   &quot;objective&quot;: &quot;Serve two orders from each of six kitchens using cooked, cooled food and physically recycled plates.&quot;,
   &quot;natural_termination&quot;: &quot;Terminate once all six served counters reach 2; otherwise truncate at t=512. Expired orders reset their deadline and incur native loss; they do not reset the world.&quot;,
   &quot;interaction&quot;: &quot;Valve siphoning reduces steam forwarded two buffers later to the next kitchen. Meals consume a clean plate; serving emits a blocking dirty-dish cart that must be retrieved, washed and returned to a pot. Ingredient substitutions change quality; tools and carried food can pass between adjacent workers.&quot;,
@@ -475,7 +475,23 @@ No candidate was imported or executed. No JAX/NumPy runtime, validator, trajecto
   &quot;demo_frames&quot;: 26,
   &quot;render_roles_checked&quot;: 24
 }</pre></details><details><summary>Chromium control verification</summary><pre>{
-  &quot;status&quot;: &quot;PENDING&quot;
+  &quot;game&quot;: &quot;gi229&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;keyboard_native_direction_command&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;,
+    &quot;close_session_preserves_log&quot;
+  ],
+  &quot;ui_sha256&quot;: &quot;96243f9de144b80b5e20a114330e2206bdcd58d3efc9c6f13bbc08b95cacc14d&quot;,
+  &quot;keyboard_action_id&quot;: 1,
+  &quot;seconds&quot;: 9.920818090438843
 }</pre></details><details><summary>Original identity and file hashes</summary><pre>{
   &quot;id&quot;: 229,
   &quot;key&quot;: &quot;gi229&quot;,
@@ -531,5 +547,5 @@ No candidate was imported or executed. No JAX/NumPy runtime, validator, trajecto
   &quot;original_saved_replay&quot;: true,
   &quot;release_validation&quot;: &quot;PASS&quot;,
   &quot;human_scores&quot;: null,
-  &quot;browser_validation&quot;: &quot;PENDING&quot;
+  &quot;browser_validation&quot;: &quot;PASS&quot;
 }</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi229">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

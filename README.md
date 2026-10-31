@@ -6,7 +6,7 @@
 Existing Crucibles multi-agent games, packaged as a native JAX library with
 explicit PRNG keys, pure transitions, agent-keyed spaces and local human/AI play.
 The collection contains **180 spatial game identities (GI072–251)** and
-**72 historical abstract resource/communication games (GI000–071)**, with 252
+**76 historical abstract resource/communication games** (GI000–071 plus the four original window-v1 candidates, v1_000–v1_003), with 256
 distinct registered source hashes. Alternate versions are preserved separately
 and are not counted as additional games.
 
@@ -65,7 +65,11 @@ Take over or release any roles before the next step without resetting the world
 or accumulated returns. Assign all roles for one-person team control. Invitations
 allow another browser tab or browser on the same computer to control a separate
 subset. The Host controls the clock. Role populations are not reduced or capped
-by the UI. Networked play across separate computers is not implemented.
+by the UI. For participants on separate computers on the same network, run
+`crucibles play --game 225 --bind 0.0.0.0`. Open the printed LAN address on the
+Host computer before creating invitations, so invitation URLs use that reachable
+address. Other participants open their invitation URL on their own computer.
+The default remains local-only. Public Internet hosting is not bundled.
 
 Full-state debug is a separate, labelled Host camera and is permanently logged
 as an information condition. It is not a blind benchmark. Four concurrent

@@ -1,4 +1,4 @@
-"""Loopback multiplayer server. Every command reaches the original JAX kernel."""
+"""Local/LAN multiplayer server. Every command reaches the original JAX kernel."""
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 import hashlib,json,os,secrets,threading,time,uuid
@@ -111,8 +111,13 @@ class Session:
         else:raise ValueError('Unknown operation')
         return dict(ok=True)
 
-def serve(port=8765,game=225,runs='local-runs',engineering=False):
+def serve(port=8765,game=225,runs='local-runs',engineering=False,bind='127.0.0.1'):
     from .registry import _rows
+    import socket
+    local_addresses={'127.0.0.1','localhost',bind}
+    if bind=='0.0.0.0':
+        local_addresses.update(a[4][0] for a in socket.getaddrinfo(socket.gethostname(),None,socket.AF_INET))
+    allowed_origins={f'http://{host}:{port}' for host in local_addresses}
     sessions={};creation_lock=threading.Lock()
     class Handler(BaseHTTPRequestHandler):
         def send_json(self,value,status=200):
@@ -129,7 +134,7 @@ def serve(port=8765,game=225,runs='local-runs',engineering=False):
         def do_POST(self):
             try:
                 origin=self.headers.get('Origin')
-                if origin and origin not in [f'http://127.0.0.1:{port}',f'http://localhost:{port}']:raise PermissionError('Cross-origin request rejected')
+                if origin and origin not in allowed_origins:raise PermissionError('Cross-origin request rejected')
                 n=int(self.headers.get('Content-Length','0'))
                 if not 0<n<=65536:raise ValueError('Request size invalid')
                 body=json.loads(self.rfile.read(n));op=body.get('op')
@@ -155,9 +160,12 @@ def serve(port=8765,game=225,runs='local-runs',engineering=False):
             except PermissionError as e:self.send_json(dict(error=str(e)),403)
             except Exception as e:self.send_json(dict(error=f'{type(e).__name__}: {e}'),400)
         def log_message(self,*args):pass
-    server=ThreadingHTTPServer(('127.0.0.1',port),Handler)
-    print(f'Crucibles JAXMARL ready: http://127.0.0.1:{port}/?game={game}',flush=True)
-    print(f'Health: http://127.0.0.1:{port}/health | Logs: {Path(runs).resolve()} | Ctrl+C stops this server',flush=True)
+    server=ThreadingHTTPServer((bind,port),Handler)
+    display_host='127.0.0.1' if bind=='0.0.0.0' else bind
+    print(f'Crucibles JAXMARL ready: http://{display_host}:{port}/?game={game}',flush=True)
+    if bind=='0.0.0.0':
+        print('LAN participants: open one of these host addresses before creating invitations: '+', '.join(f'http://{host}:{port}/' for host in sorted(local_addresses) if host not in ['localhost','0.0.0.0','127.0.0.1']),flush=True)
+    print(f'Health: http://{display_host}:{port}/health | Logs: {Path(runs).resolve()} | Ctrl+C stops this server',flush=True)
     try:server.serve_forever()
     except KeyboardInterrupt:pass
     finally:server.server_close()

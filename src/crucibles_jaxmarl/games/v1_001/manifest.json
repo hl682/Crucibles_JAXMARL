@@ -1,0 +1,65 @@
+{
+  "schema": "legacy-array-release-metadata-v1",
+  "candidate_id": "v1_001",
+  "source_sha256": "154452f245ff495f114bd761239e809341994ee63717abaf1984249180fba8e3",
+  "num_agents": 2,
+  "observation_size": 16,
+  "num_actions": 5,
+  "reward_low": -1.0,
+  "reward_high": 1.0,
+  "max_steps": 32,
+  "observation_low": null,
+  "observation_high": null,
+  "observability": "source_defined",
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Original window-v1 agent; abilities and private parameters follow the original mechanism and observe()"
+    },
+    {
+      "id": "agent_1",
+      "role": "Original window-v1 agent; abilities and private parameters follow the original mechanism and observe()"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Rest"
+    },
+    {
+      "id": 1,
+      "label": "Gentle draw"
+    },
+    {
+      "id": 2,
+      "label": "Deep draw"
+    },
+    {
+      "id": 3,
+      "label": "Restore soil"
+    },
+    {
+      "id": 4,
+      "label": "Install filter"
+    }
+  ],
+  "terminal_semantics": "legacy_horizon_no_absorbing_contract",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'] / 32.0)\n        obs = obs.at[:, 1].set(state['stock'])\n        obs = obs.at[:, 2].set(state['soil'])\n        obs = obs.at[:, 3].set(state['queue'][0])\n        obs = obs.at[:, 4].set(state['queue'][1])\n        obs = obs.at[:, 5].set(state['filters'])\n        obs = obs.at[:, 6].set(jnp.roll(state['filters'], 1))\n        obs = obs.at[:, 7].set(state['yield'])\n        obs = obs.at[:, 8].set(jnp.roll(state['yield'], 1))\n        obs = obs.at[:, 9].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Renewing commons with delayed runoff; accumulate original per-agent rewards under mechanism.md.",
+    "natural_termination": "Original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        # 0 rest; 1 gentle draw; 2 deep draw; 3 restore soil; 4 install filter.\n        demand = 0.18 * (actions == 1) + 0.5 * (actions == 2)\n        allocation = demand * jnp.minimum(1.0, state['stock'] / jnp.maximum(0.01, jnp.sum(demand)))\n        tending = (actions == 3).astype(jnp.float32)\n        installing = (actions == 4).astype(jnp.float32)\n        runoff = jnp.sum(allocation * (actions == 2) * (1.0 - state['filters']))\n        soil = jnp.clip(state['soil'] + 0.08 * jnp.sum(tending) - 0.35 * state['queue'][0] - 0.01, 0.0, 1.0)\n        renewal = 0.04 + 0.20 * soil * (1.0 - state['stock'])\n        stock = jnp.clip(state['stock'] - jnp.sum(allocation) + renewal, 0.0, 1.0)\n        rewards = jnp.tanh(2.0 * allocation - 0.12 * tending - 0.15 * installing\n                           - 0.25 * state['queue'][0]).astype(jnp.float32)\n        next_state = {'t': state['t'] + jnp.array(1, jnp.int32), 'stock': stock, 'soil': soil,\n                      'queue': jnp.stack((state['queue'][1], runoff)).astype(jnp.float32),\n                      'filters': jnp.clip(0.92 * state['filters'] + 0.3 * installing, 0.0, 1.0),\n                      'yield': allocation.astype(jnp.float32)}\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "metadata_origin": "release adapter metadata, not an original author manifest",
+  "original_namespace": "astra_generation/window_v1",
+  "original_proposal_index": 1
+}

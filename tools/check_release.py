@@ -36,6 +36,7 @@ def main():
             if not p.is_file() or p.suffix not in ['.py','.md','.html','.json','.js','.yml','.txt','.css']:continue
             if '__pycache__' in p.parts:continue
             text=p.read_text(encoding='utf-8-sig')
+            if any(ord(c)<32 and c not in '\t\r\n' for c in text):errors.append('Unexpected control character in '+str(p.relative_to(R)))
             for pattern in patterns:
                 if re.search(pattern,text):errors.append('Sensitive/nonportable pattern in '+str(p.relative_to(R)))
     result=dict(status='PASS' if not errors else 'FAIL',games=len(rows),html_links_checked=count,errors=errors)

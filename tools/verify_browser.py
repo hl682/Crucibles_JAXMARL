@@ -4,7 +4,7 @@ import argparse,hashlib,json,os,re,socket,subprocess,sys,time,urllib.request,uui
 
 R=Path(__file__).resolve().parents[1]
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument('--games',nargs='*');ap.add_argument('--port',type=int,default=8768);ap.add_argument('--retry',action='store_true');a=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument('--games',nargs='*');ap.add_argument('--port',type=int,default=8768);ap.add_argument('--retry',action='store_true');ap.add_argument('--shard');a=ap.parse_args()
     from crucibles_jaxmarl import registered_envs
     from playwright.sync_api import sync_playwright,expect
     expect.set_options(timeout=180000)
@@ -16,7 +16,7 @@ def main():
     # Never attach a test to an older or unrelated service occupying the port.
     with socket.socket() as probe:probe.bind(('127.0.0.1',a.port))
     env=dict(os.environ,JAX_PLATFORMS='cpu',PYTHONIOENCODING='utf-8',OMP_NUM_THREADS='1',CRUCIBLES_TEST_NONCE=boot_nonce)
-    log=(logs/'browser_server.log').open('w',encoding='utf-8')
+    log=(logs/('browser_server-'+str(a.port)+'.log')).open('w',encoding='utf-8')
     server=subprocess.Popen([sys.executable,'-m','crucibles_jaxmarl','play','--port',str(a.port),'--engineering','--runs',str(R/'local-runs/browser-verification')],cwd=R,env=env,stdout=log,stderr=subprocess.STDOUT)
     try:
         failures=0
@@ -32,7 +32,12 @@ def main():
         else:raise RuntimeError('Test server did not become healthy')
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True)
-            for game in a.games or registered_envs:
+            games=a.games or registered_envs
+            if a.shard:
+                index,total=map(int,a.shard.split('/'))
+                if not 0<=index<total:ap.error('shard must be index/total')
+                games=games[index::total]
+            for game in games:
                 dest=out/(game+'.json')
                 if not a.retry and dest.exists():
                     prior=json.loads(dest.read_bytes())
@@ -55,6 +60,10 @@ def main():
                     parsed=parse_qs(urlsplit(page.url).fragment);session=parsed['session'][0];token=parsed['token'][0]
                     record['checks'].append('catalog_selected_and_real_native_reset')
                     page.locator('#roles').fill('0');page.locator('#assign').click();expect(page.locator('#action-0')).to_be_visible()
+                    phase_setup={'gi134':6,'gi196':1}.get(game,0)
+                    for phase_step in range(phase_setup):
+                        page.locator('#step').click();expect(page.locator('#clock')).to_contain_text(f't={phase_step+1} /')
+                    if phase_setup:record['phase_setup_native_steps']=phase_setup
                     page.locator('#controls button').first.click()
                     options=page.locator('#action-0 option').evaluate_all('(xs)=>xs.map(x=>({id:x.value,label:x.textContent}))')
                     directions={'north':'ArrowUp','east':'ArrowRight','south':'ArrowDown','west':'ArrowLeft'}
@@ -69,7 +78,7 @@ def main():
                         expect(page.locator('#progress')).to_contain_text('Queued ')
                         record['keyboard_action_id']=int(choice[0]['id']);record['checks'].append('keyboard_native_direction_command')
                     else:record['keyboard']='NO_LEGAL_CARDINAL_COMMAND_FOR_ROLE0_AT_RESET'
-                    page.locator('#step').click();expect(page.locator('#clock')).to_contain_text('t=1 /')
+                    page.locator('#step').click();expect(page.locator('#clock')).to_contain_text(f't={phase_setup+1} /')
                     record['checks'].append('dom_queue_and_native_step')
                     page.locator('#invite').click();expect(page.locator('#invitation')).to_be_visible()
                     invite=page.locator('#invitation').input_value()
@@ -79,7 +88,7 @@ def main():
                     expect(page.locator('#player option[value="Player 1"]')).to_have_text('Player 1 (1 roles)')
                     page.locator('#player').select_option('Host');player.locator('#refresh').click();expect(player.locator('#action-1')).to_be_visible()
                     assert player.locator('#action-0').count()==0
-                    player.locator('#controls button').first.click();page.locator('#step').click();expect(page.locator('#clock')).to_contain_text('t=2 /')
+                    player.locator('#controls button').first.click();page.locator('#step').click();expect(page.locator('#clock')).to_contain_text(f't={phase_setup+2} /')
                     record['checks'].append('second_participant_ownership_and_native_joint_step')
                     page.locator('#all').click()
                     expected=int(page.locator('#scope').inner_text().split(' · ')[1].split()[0])
@@ -93,7 +102,7 @@ def main():
                     shots=R/'verification/screenshots';shots.mkdir(exist_ok=True)
                     page.locator('#world').screenshot(path=str(shots/(game+'.png')))
                     page.locator('#player').select_option('AI');page.locator('#all').click();expect(page.locator('#controls .role')).to_have_count(0)
-                    page.locator('#step').click();expect(page.locator('#clock')).to_contain_text('t=3 /')
+                    page.locator('#step').click();expect(page.locator('#clock')).to_contain_text(f't={phase_setup+3} /')
                     record['checks'].append('release_to_pure_ai_without_reset')
                     assert page.locator('#error').inner_text()=='',page.locator('#error').inner_text()
                     assert not errors,errors

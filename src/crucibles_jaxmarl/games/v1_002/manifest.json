@@ -1,0 +1,65 @@
+{
+  "schema": "legacy-array-release-metadata-v1",
+  "candidate_id": "v1_002",
+  "source_sha256": "56d40320d815ebe56bd3f5514f7e7f76fe2e24be01a7342421db391c07c3b85e",
+  "num_agents": 2,
+  "observation_size": 16,
+  "num_actions": 5,
+  "reward_low": -1.0,
+  "reward_high": 1.0,
+  "max_steps": 32,
+  "observation_low": null,
+  "observation_high": null,
+  "observability": "source_defined",
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Original window-v1 agent; abilities and private parameters follow the original mechanism and observe()"
+    },
+    {
+      "id": "agent_1",
+      "role": "Original window-v1 agent; abilities and private parameters follow the original mechanism and observe()"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Manufacture"
+    },
+    {
+      "id": 2,
+      "label": "Post offer"
+    },
+    {
+      "id": 3,
+      "label": "Accept partner offer"
+    },
+    {
+      "id": 4,
+      "label": "Order custom good"
+    }
+  ],
+  "terminal_semantics": "legacy_horizon_no_absorbing_contract",
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "exact original observe() below",
+      "source_code": "def observe(self, state):\n        obs = jnp.zeros((2, 16), dtype=jnp.float32)\n        obs = obs.at[:, 0].set(state['t'] / 32.0)\n        obs = obs.at[:, 1].set(state['goods'] / 3.0)\n        obs = obs.at[:, 2].set(jnp.roll(state['goods'], 1) / 3.0)\n        obs = obs.at[:, 3].set(state['offers'])\n        obs = obs.at[:, 4].set(jnp.roll(state['offers'], 1))\n        obs = obs.at[:, 5].set(state['tools'])\n        obs = obs.at[:, 6].set(jnp.roll(state['tools'], 1))\n        obs = obs.at[:, 7].set(state['orders'])\n        obs = obs.at[:, 8].set(jnp.roll(state['orders'], 1))\n        obs = obs.at[:, 9].set(state['sales'])\n        obs = obs.at[:, 10].set(jnp.arange(2, dtype=jnp.float32))\n        return obs"
+    }
+  ],
+  "task": {
+    "objective": "Manufacturing and persistent custom offers; accumulate original per-agent rewards under mechanism.md.",
+    "natural_termination": "Original t >= 32 horizon.",
+    "exact_transition_and_reward_source": "def raw_step(self, key, state, actions):\n        # 0 wait; 1 manufacture; 2 post offer; 3 accept partner offer; 4 order a custom good.\n        buy = (actions == 3) & (jnp.roll(state['offers'], 1) > 0) & (jnp.roll(state['goods'], 1) >= 1.0)\n        sale = jnp.roll(buy, 1).astype(jnp.float32)\n        manufacture = (actions == 1).astype(jnp.float32)\n        custom = (actions == 4).astype(jnp.float32)\n        bonus = buy.astype(jnp.float32) * state['orders']\n        goods = jnp.clip(state['goods'] - sale + manufacture * (0.5 + state['tools']), 0.0, 3.0)\n        offers = jnp.where((actions == 2) & (goods >= 1.0), 1.0, jnp.maximum(0.0, state['offers'] - 0.34 - sale))\n        rewards = jnp.tanh(0.35 * buy + 0.2 * sale + 0.5 * bonus - 0.16 * manufacture - 0.08 * custom).astype(jnp.float32)\n        next_state = {'t': state['t'] + jnp.array(1, jnp.int32), 'goods': goods,\n                      'offers': offers.astype(jnp.float32),\n                      'tools': jnp.clip(0.96 * state['tools'] + 0.18 * buy + 0.05 * jnp.roll(custom, 1), 0.0, 1.0),\n                      'orders': jnp.clip(0.9 * state['orders'] * (1.0 - buy) + custom, 0.0, 1.0),\n                      'sales': sale}\n        done_all = next_state['t'] >= 32\n        dones = jnp.full((2,), done_all, dtype=jnp.bool_)\n        info = {'done_all': done_all, 'legal_mask': self.legal_actions(next_state)}\n        return self.observe(next_state), next_state, rewards, dones, info"
+  },
+  "metadata_origin": "release adapter metadata, not an original author manifest",
+  "original_namespace": "astra_generation/window_v1",
+  "original_proposal_index": 2
+}
