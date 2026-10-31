@@ -1,5 +1,7 @@
 # Crucibles_JAXMARL
 
+**English** · [中文说明](README.zh-CN.md)
+
 [![Environment contracts](https://github.com/hl682/Crucibles_JAXMARL/actions/workflows/ci.yml/badge.svg)](https://github.com/hl682/Crucibles_JAXMARL/actions/workflows/ci.yml)
 [![Documentation](https://github.com/hl682/Crucibles_JAXMARL/actions/workflows/pages.yml/badge.svg)](https://hl682.github.io/Crucibles_JAXMARL/)
 
@@ -14,7 +16,24 @@ and are not counted as additional games.
 **[Installation and play](https://hl682.github.io/Crucibles_JAXMARL/guide.html)** ·
 **[JAX API](https://hl682.github.io/Crucibles_JAXMARL/api.html)**
 
-![Cavern Rescue Guilds — original saved native-state demonstration](docs/previews/gi222.gif)
+[![Cavern Rescue Guilds — actual native-state preview](docs/gifs/gi222.gif)](https://hl682.github.io/Crucibles_JAXMARL/games/gi222.html)
+
+<a href="https://hl682.github.io/Crucibles_JAXMARL/games/gi072.html"><img src="docs/gifs/gi072.gif" width="48%" alt="Twin-Grip Lockway"></a>
+<a href="https://hl682.github.io/Crucibles_JAXMARL/games/gi188.html"><img src="docs/gifs/gi188.gif" width="48%" alt="Canal Kitchen"></a>
+<a href="https://hl682.github.io/Crucibles_JAXMARL/games/gi225.html"><img src="docs/gifs/gi225.gif" width="48%" alt="Seasonal Pasture Commons"></a>
+<a href="https://hl682.github.io/Crucibles_JAXMARL/games/gi000.html"><img src="docs/gifs/gi000.gif" width="48%" alt="Delayed energy transfers"></a>
+
+**All 256 games have their own animated catalog card and complete English / Chinese
+manuals**: names, explanation, gameplay, controls, design ideas, original interface
+and reinforcement-learning guidance. [Open the complete animated collection](https://hl682.github.io/Crucibles_JAXMARL/#collection).
+Game UI and active GIF text are English. Manuals switch language on the same game.
+Instruction panels belong to the manuals, not the game image.
+
+[Complete design philosophy and classification rationale](https://hl682.github.io/Crucibles_JAXMARL/design.html)
+explains the seven overlapping mechanism labels and each game's source evidence.
+The previews replay saved untrained legal-action traces through original kernels,
+using actual endpoints and a full-state debug camera. They are not solved-task or
+learning demonstrations. Earlier bespoke recordings remain archival evidence.
 
 The worlds explore complementary work, private information, communication,
 shared resources, competing interests and delayed commitments. Each game keeps

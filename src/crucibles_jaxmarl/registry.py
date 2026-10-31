@@ -6,6 +6,7 @@ import re
 
 ROOT = Path(__file__).resolve().parent
 _rows = json.loads((ROOT/'catalog.json').read_bytes())['games']
+_presentation = json.loads((ROOT/'presentation.json').read_bytes())
 _registry = {r['key']:r for r in _rows if 'source_sha256' in r}
 registered_envs = tuple(_registry)
 
@@ -15,7 +16,7 @@ def game_info(name):
         match=re.fullmatch(r'(?:gi|GI|game-v3-)?(\d+)',name)
         if match:name=f'gi{int(match[1]):03d}'
     if name not in _registry:raise ValueError(f'Unknown environment: {name!r}')
-    return dict(_registry[name])
+    return dict(_registry[name],**_presentation[name])
 
 def make(name):
     from .environment import CrucibleEnv

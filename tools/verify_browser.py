@@ -55,6 +55,8 @@ def main():
                     expect(page.locator('#health')).to_contain_text('Python ready')
                     page.locator('#create').click();expect(page.locator('#session')).to_be_visible(timeout=180000)
                     expect(page.locator('#progress')).to_contain_text('ready',timeout=180000)
+                    assert not re.search('[\u3400-\u9fff]',page.locator('body').inner_text()), 'Game UI contains Chinese text'
+                    record['checks'].append('english_only_game_ui')
                     # Read only our own test capability; never include it in evidence.
                     from urllib.parse import parse_qs,urlsplit
                     parsed=parse_qs(urlsplit(page.url).fragment);session=parsed['session'][0];token=parsed['token'][0]

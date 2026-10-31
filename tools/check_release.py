@@ -26,7 +26,7 @@ def main():
         for file,key in [('candidate.py','source_sha256'),('manifest.json','manifest_sha256')]:
             if hashlib.sha256((d/file).read_bytes()).hexdigest()!=row[key]:errors.append('Hash mismatch: '+str(d/file))
     # Restrict the scan to explicitly publishable trees; never inspect local sessions.
-    roots=[R/'src',R/'docs',R/'tools',R/'.github',R/'source-history',R/'verification']
+    roots=[R/'src',R/'docs',R/'tools',R/'manuals',R/'.github',R/'source-history',R/'verification']
     patterns=[r'gh[opusr]_[A-Za-z0-9]{25,}',r'-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----',
               r'(?i)(?:[A-Z]:[\\/](?:Users|lab-hub|OneDrive)|file:///|sshpass|tailscale.*authkey)',r'#session=[0-9a-f]{32}']
     for root in roots:

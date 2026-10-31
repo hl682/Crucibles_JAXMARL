@@ -4,6 +4,7 @@ from pathlib import Path
 import hashlib,json,os,secrets,threading,time,uuid
 
 WEB=Path(__file__).parent/'web'
+from . import __version__
 
 class Session:
     def __init__(self,game,seed,runs,engineering=False):
@@ -21,7 +22,7 @@ class Session:
         self.logdir=Path(runs)/self.id;self.logdir.mkdir(parents=True)
         self.chain='0'*64
         self.log('create',dict(game=self.env.name,seed=seed,source_sha256=self.env.metadata['source_sha256'],
-            manifest_sha256=self.env.metadata['manifest_sha256'],version='0.1.0',engineering=engineering,
+            manifest_sha256=self.env.metadata['manifest_sha256'],version=__version__,engineering=engineering,
             ai_policy='UNTRAINED_UNIFORM_LEGAL',human_scores=None))
     def log(self,kind,value):
         row=dict(type=kind,step=self.step_count,utc_unix=time.time(),value=value,previous=self.chain)
@@ -103,7 +104,7 @@ class Session:
             for p in self.clients.values():p['pending'].clear()
             if self.terminal:
                 mode='MIXED' if self.ever_human and self.ever_ai else ('HUMAN_INPUT' if self.ever_human else 'AI_ONLY')
-                record=dict(game=self.env.name,seed=self.seed,version='0.1.0',source_sha256=self.env.metadata['source_sha256'],
+                record=dict(game=self.env.name,seed=self.seed,version=__version__,source_sha256=self.env.metadata['source_sha256'],
                     mode=mode,information='DEBUG_EXPOSED' if self.ever_debug else 'ROLE_FILTERED',
                     engineering=self.engineering,returns=self.returns.tolist(),steps=self.step_count,
                     human_scores=None,human_verification='NOT_INDEPENDENTLY_VERIFIED',log_chain=self.chain)
@@ -126,8 +127,10 @@ def serve(port=8765,game=225,runs='local-runs',engineering=False,bind='127.0.0.1
         def do_GET(self):
             from urllib.parse import urlsplit
             p=urlsplit(self.path).path
-            if p=='/health':return self.send_json(dict(ok=True,version='0.1.0',games=len(_rows),sessions=len(sessions),pid=os.getpid(),test_nonce=os.environ.get('CRUCIBLES_TEST_NONCE')))
-            if p=='/api/catalog':return self.send_json(dict(games=[{k:r[k] for k in ['id','key','title','family','dimensions','summary']} for r in _rows]))
+            if p=='/health':return self.send_json(dict(ok=True,version=__version__,games=len(_rows),sessions=len(sessions),pid=os.getpid(),test_nonce=os.environ.get('CRUCIBLES_TEST_NONCE')))
+            if p=='/api/catalog':
+                from .registry import game_info
+                return self.send_json(dict(games=[{k:v[k] for k in ['id','key','title','family','dimensions','summary']} for r in _rows for v in [game_info(r['key'])]]))
             name={'/':'index.html','/app.js':'app.js','/style.css':'style.css'}.get(p)
             if not name:return self.send_json(dict(error='Not found'),404)
             data=(WEB/name).read_bytes();self.send_response(200);self.send_header('Content-Type',{'html':'text/html; charset=utf-8','js':'text/javascript; charset=utf-8','css':'text/css'}[name.split('.')[-1]]);self.end_headers();self.wfile.write(data)

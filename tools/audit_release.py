@@ -54,13 +54,16 @@ def main():
     assert all(old==(S/p).read_bytes() for old,p in zip(base_bytes[1:],pieces[1:]) if p!='web/app.js'), 'Rendering/style changed after per-game test'
     old_app=base_bytes[2].decode().splitlines();new_app=(S/'web/app.js').read_text(encoding='utf-8').splitlines()
     assert old_app[:-1]==new_app[:-1] and 'test(game)' in new_app[-1], 'Only the initial legacy-namespace selector may differ'
-    old_session=next(n for n in ast.parse(base_bytes[0].decode()).body if isinstance(n,ast.ClassDef) and n.name=='Session')
+    old_session=next(n for n in ast.parse(base_bytes[0].decode().replace("version='0.1.0'",'version=__version__')).body if isinstance(n,ast.ClassDef) and n.name=='Session')
     new_session=next(n for n in ast.parse((S/'server.py').read_text(encoding='utf-8')).body if isinstance(n,ast.ClassDef) and n.name=='Session')
     assert ast.dump(old_session)==ast.dump(new_session), 'Per-game native control/session logic changed'
-    # The only server change after the all-game browser pass adds interface/origin
-    # binding. Its separate real peer/alternate-host check is required above.
+    # Runtime deltas are binding/origin handling, display metadata and version labels.
+    assert load(R/'verification/presentation_contract.json')['status']=='PASS'
     network_ui_hash=hashlib.sha256((S/'server.py').read_bytes()+b''.join(base_bytes[1:])).hexdigest()
-    known={base_ui_hash,network_ui_hash,hashlib.sha256(b''.join((S/p).read_bytes() for p in pieces)).hexdigest()}
+    published_bytes=[subprocess.check_output(['git','show','0b0ed5d:src/crucibles_jaxmarl/'+p],cwd=R) for p in pieces]
+    published_ui_hash=hashlib.sha256(b''.join(published_bytes)).hexdigest()
+    current_ui_hash=hashlib.sha256(b''.join((S/p).read_bytes() for p in pieces)).hexdigest()
+    known={base_ui_hash,network_ui_hash,published_ui_hash,current_ui_hash}
     assert all(b['ui_sha256'] in known for b in browser)
     parity=collections.Counter(n['numerical_parity'] for n in native)
     result=dict(status='LOCAL_ENGINEERING_VERIFICATION_COMPLETE',registered_unique_games=256,spatial_games=180,legacy_abstract_games=76,
@@ -69,9 +72,11 @@ def main():
         preserved_population_range=[min(r['dimensions']['num_agents'] for r in catalog),max(r['dimensions']['num_agents'] for r in catalog)],
         preserved_horizon_range=[min(r['dimensions']['max_steps'] for r in catalog),max(r['dimensions']['max_steps'] for r in catalog)],
         numerical_parity=dict(parity),floating_difference_max=max(n['float_parity_max_abs'] for n in native),
-        floating_differences_are_not_calibrated_acceptance=True,original_saved_replay_tracks=17,public_gif_count=413,
+        floating_differences_are_not_calibrated_acceptance=True,original_saved_replay_tracks=17,public_gif_count=669,
+        active_world_only_gifs=256,archival_gifs=413,bilingual_game_manuals=512,
+        current_ui_browser_regression_pass=sum(b['ui_sha256']==current_ui_hash for b in browser),
         browser_base_commit=base,browser_base_ui_sha256=base_ui_hash,native_session_and_rendering_core_unchanged=True,
-        later_optional_bind_origin_change_separately_verified='network_transport.json',legacy_namespace_bootstrap_verified=['v1_000','v1_001','v1_002','v1_003'],
+        later_runtime_scope_separately_verified=['network_transport.json','presentation_contract.json'],legacy_namespace_bootstrap_verified=['v1_000','v1_001','v1_002','v1_003'],
         human_scores=None,research_conclusions_changed=False,new_games_generated=False,old_training_resumed=False,
         limits=['No real human participant study','No physical two-computer test','CPU validation; CUDA/TPU untested',
                 'Generic source-driven live graphics plus original bespoke saved previews; no commercial game engine',

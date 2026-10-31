@@ -39,6 +39,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -47,6 +49,8 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: python tools/verify_browser.py --games gi000 gi072 gi225 gi226 gi227 gi251 --retry
       - run: python tools/build_docs.py
+      - run: python tools/verify_docs.py
+      - run: python tools/verify_presentation_contract.py
       - run: python tools/check_release.py
       - uses: actions/upload-artifact@v4
         if: always()

@@ -1,56 +1,73 @@
-"""Build self-contained static game documentation from installed source metadata."""
+"""Static bilingual catalogs and manuals; runs with Python standard library only."""
 from pathlib import Path
-import html,json,re,shutil
-
-R=Path(__file__).resolve().parents[1];S=R/'src/crucibles_jaxmarl';D=R/'docs'
+import html,json,re
+from manual_content import ROOT as R,SRC as S,THEMES,profiles,read_json
+from manual_pages import manual,choose,GH
+D=R/'docs'
 def esc(x):return html.escape(str(x))
-def details(title,obj):
-    return '<details><summary>'+esc(title)+'</summary><pre>'+esc(json.dumps(obj,ensure_ascii=False,indent=2))+'</pre></details>'
-def shell(title,body,prefix=''):
-    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' · Crucibles JAXMARL</title><link rel="stylesheet" href="'+prefix+'style.css"></head><body><header><a href="'+prefix+'index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="'+prefix+'guide.html">Install & play</a><a href="'+prefix+'api.html">API</a><a href="'+prefix+'verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header>'+body+'<footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>'
+def inline(s):
+    s=esc(s);s=re.sub(r'`([^`]+)`',r'<code>\1</code>',s)
+    return re.sub(r'\[([^\]]+)\]\(([^)]+)\)',r'<a href="\2">\1</a>',s)
+def markdown(s):
+    out=[];para=[];code=None;listing=False
+    def flush():
+        if para:out.append('<p>'+inline(' '.join(para))+'</p>');para.clear()
+    for line in s.splitlines():
+        if line.startswith('```'):
+            flush()
+            if code is None:code=[]
+            else:out.append('<pre><code>'+esc('\n'.join(code))+'</code></pre>');code=None
+            continue
+        if code is not None:code.append(line);continue
+        if not line or line.startswith(('#','- ')):
+            flush()
+            if listing and not line.startswith('- '):out.append('</ul>');listing=False
+        if not line:continue
+        if line.startswith('#'):
+            n=len(line)-len(line.lstrip('#'));out.append(f'<h{n}>'+inline(line[n:].strip())+f'</h{n}>')
+        elif line.startswith('- '):
+            if not listing:out.append('<ul>');listing=True
+            out.append('<li>'+inline(line[2:])+'</li>')
+        else:para.append(line)
+    flush()
+    if listing:out.append('</ul>')
+    return ''.join(out)
+def page(path,title,body,lang):
+    depth=len(Path(path).parts)-1;root='../'*depth;local=path[3:] if lang=='zh' else path
+    switch=root+(local if lang=='zh' else 'zh/'+local);base=root+('zh/' if lang=='zh' else '')
+    nav=[('index.html','All games','全部游戏'),('guide.html','Install & play','安装操作'),('api.html','Training API','训练接口'),('design.html','Design & classification','理念与分类'),('verification.html','Evidence','证据')]
+    links=''.join('<a href="'+base+p+'">'+choose(en,zh,lang)+'</a>' for p,en,zh in nav)
+    links+='<a class="language-switch" lang="'+('en' if lang=='zh' else 'zh-CN')+'" href="'+switch+'">'+('English' if lang=='zh' else '中文')+'</a><a href="'+GH+'">GitHub ↗</a>'
+    footer=choose('Original JAX transitions · Full-state debug previews · Untrained policies · Human scores unverified · Apache 2.0','原生状态转移 · 完整状态调试预览 · 策略未训练 · 人类成绩未核验 · 开源许可：Apache 2.0',lang)
+    result='<!doctype html><html lang="'+('zh-CN' if lang=='zh' else 'en')+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' · Crucibles JAXMARL</title><link rel="stylesheet" href="'+root+'style.css"></head><body><header><a href="'+base+'index.html">CRUCIBLES <small>JAXMARL</small></a><nav>'+links+'</nav></header>'+body+'<footer>'+footer+'</footer></body></html>'
+    out=D/path;out.parent.mkdir(parents=True,exist_ok=True);out.write_text(result,encoding='utf-8')
 def main():
-    rows=json.loads((S/'catalog.json').read_bytes())['games'];(D/'games').mkdir(parents=True,exist_ok=True)
-    for row in rows:
-        key=row['key'];g=S/'games'/key;m=json.loads((g/'manifest.json').read_bytes())
-        scene=json.loads((g/'scene.json').read_bytes()) if (g/'scene.json').exists() else {}
-        report=R/'verification'/(key+'.json');v=json.loads(report.read_bytes()) if report.exists() else dict(status='PENDING')
-        bp=R/'verification/browser'/(key+'.json');bv=json.loads(bp.read_bytes()) if bp.exists() else dict(status='PENDING')
-        row['release_validation']=v['status'];row['browser_validation']=bv['status']
-        mechanism=(g/'mechanism.md').read_text(encoding='utf-8-sig') if (g/'mechanism.md').exists() else ''
-        actions=''.join('<div class="action"><b>'+str(a['id'])+'</b><span>'+esc(a['label'])+'</span></div>' for a in m['actions'])
-        roles=''.join('<p><b>'+esc(a['id'])+'</b> '+esc(a['role'])+'</p>' for a in m['agents'])
-        dim=row['dimensions'];body='<main><p class="eyebrow">'+key.upper()+' / '+row['family'].upper()+'</p><h1>'+esc(row['title'])+'</h1><p class="lead">'+esc(row['summary'])+'</p><div class="stats">'+f"<span>{dim['num_agents']} agents</span><span>{dim['num_actions']} actions</span><span>{dim['observation_size']} observation columns</span><span>{dim['max_steps']} original horizon</span><span>Runtime: {v['status']}</span>"+'</div>'
-        if (D/'previews'/(key+'.gif')).exists():body+='<section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/'+key+'.gif" alt="Original saved demonstration '+key+'"></section>'
-        if row['id'] in [226,227,229]:body+='<p><a href="https://github.com/hl682/Crucibles_JAXMARL/releases/download/v0.1.0/crucibles-original-saved-replays-v0.1.0.zip">Download complete original saved endpoints and standalone replay players (228 MB) →</a> Includes all 11 GI226/227 tracks and six GI229 tracks; retains original failures and numerical uncertainty.</p>'
-        if (D/'demos'/(key+'.gif')).exists():body+='<section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/'+key+'.gif" alt="Actual verification episode '+key+'"></section>'
-        body+='<section><h2>Run this game</h2><pre>crucibles play --game '+str(row['id'])+'</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section>'
-        body+='<section><h2>Objective, rewards & ending</h2>'+details('Exact task contract',m.get('task',dict(termination='Original kernel t >= 32; see mechanism and source')))+'<p>Declared per-step reward bounds: '+esc(m['reward_low'])+' to '+esc(m['reward_high'])+'. Observability: '+esc(m['observability'])+'.</p></section>'
-        body+='<section><h2>Rules</h2><ol>'+''.join('<li>'+esc(s)+'</li>' for s in scene.get('rules',[]))+'</ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose">'+esc(mechanism)+'</pre></details></section>'
-        body+='<section><h2>Commands</h2>'+actions+'</section><section><h2>Roles & abilities</h2><div class="scroll">'+roles+'</div></section>'
-        body+='<section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p>'+details('Exact observation layout',m.get('observation_fields',[]))+details('Entity visibility & attributes',m.get('entities',[]))+'</section>'
-        body+='<section><h2>Actual verification & provenance</h2>'+details('Per-game execution receipt',v)+details('Chromium control verification',bv)+details('Original identity and file hashes',row)+'<p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/'+key+'">Complete source, manifest and mechanism →</a></p></section></main>'
-        (D/'games'/(key+'.html')).write_text(shell(row['title'],body,'../'),encoding='utf-8')
-    cards=''.join('<a class="card" data-family="'+r['family']+'" data-search="'+esc(r['key']+' '+r['title']+' '+r['summary'])+'" href="games/'+r['key']+'.html"><span class="eyebrow">'+r['key'].upper()+' · '+r['family'].replace('_',' ')+'</span><h3>'+esc(r['title'])+'</h3><p>'+esc(r['summary'])+'</p><div class="meta">A'+str(r['dimensions']['num_agents'])+' · H'+str(r['dimensions']['max_steps'])+' · '+r['release_validation']+'</div></a>' for r in rows)
-    body='<main><div class="hero"><p class="eyebrow">MULTI-AGENT WORLDS, NATIVE IN JAX</p><h1>Coordination has<br>consequences.</h1><p class="lead">Crucibles brings existing worlds of shared resources, private information, complementary skills and delayed commitments into one installable library.</p><div class="stats"><span>180 spatial source identities</span><span>76 legacy abstract source identities</span><span>256 distinct source hashes</span></div><p><a class="button" href="guide.html">Install & run locally →</a> <a href="api.html">Explore the JAX API</a></p></div><section><h2>Browse the complete source collection</h2><p>Counts describe existing unique source identities. Each card carries its actual verification status. Saved GIFs are demonstrations; live actions require the local Python/JAX server.</p><div class="filters"><input id="search" placeholder="Search games, mechanics or ID" aria-label="Search games"><select id="family"><option value="">All families</option><option value="spatial">Spatial worlds</option><option value="legacy_array">Legacy abstract games</option></select></div><p id="count">256 identities</p><div class="grid">'+cards+'</div></section></main><script src="catalog.js"></script>'
-    featured='<section><h2>Shared worlds, different stakes</h2><p>Actual saved native-state demonstrations. These scripted recordings preserve failures and zero effects; live play uses the local JAX server.</p><div class="grid">'
-    for ordinal,label in [(222,'Cavern Rescue Guilds'),(223,'Harbor Banquet'),(224,'Archipelago Councils'),(225,'Seasonal Pasture Commons')]:
-        featured+='<a class="card preview-card" href="games/gi'+str(ordinal)+'.html"><img src="previews/gi'+str(ordinal)+'.gif" alt="Recorded native state: '+label+'"><h3>'+label+'</h3><span class="eyebrow">Original saved demonstration →</span></a>'
-    featured+='</div></section>'
-    body=body.replace('<section><h2>Browse the complete source collection</h2>',featured+'<section><h2>Browse the complete source collection</h2>')
-    (D/'index.html').write_text(shell('Worlds',body),encoding='utf-8')
-    (D/'catalog.json').write_text(json.dumps(dict(games=rows),ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    checks='<main><p class="eyebrow">EVIDENCE / PER GAME</p><h1>What actually ran.</h1><p class="lead">Every environment has a separate execution receipt. Source import, numerical parity, original-horizon execution, render filtering, browser control and human performance remain separate claims.</p>'
-    summary=R/'verification/release_summary.json'
-    if summary.exists():
-        s=json.loads(summary.read_bytes());parity=s['numerical_parity']
-        checks+='<p><strong>'+str(s['native_full_episode_pass'])+'/256 native full-episode checks and '+str(s['browser_control_pass'])+'/256 browser-control checks passed.</strong> Floating parity is exact for '+str(parity.get('EXACT',0))+' identities. '+str(parity.get('UNDETERMINED_NONZERO_FLOAT_DIFFERENCE',0))+' have measured nonzero eager/JIT differences and remain numerically undetermined; no arbitrary acceptance tolerance was introduced. Human scores remain null.</p>'
-    for r in rows:
-        p=R/'verification'/(r['key']+'.json');v=json.loads(p.read_bytes()) if p.exists() else dict(status='PENDING')
-        checks+='<details><summary>'+r['key'].upper()+' — '+v['status']+' — '+esc(r['title'])+'</summary><pre>'+esc(json.dumps(v,ensure_ascii=False,indent=2))+'</pre></details>'
-    checks+='<section><h2>Historical evidence limits</h2><p>GI226/227 original reset floating differences remain numerically undetermined. Their original failed and zero-effect trajectories are retained in the research archive. GI229 original comparison remains undetermined. New software verification does not revise those research conclusions. No old training matrix was resumed.</p></section></main>'
-    (D/'verification.html').write_text(shell('Verification',checks),encoding='utf-8')
-    for page in ['guide','api']:
-        (D/(page+'.html')).write_text(shell(page.title(),(D/(page+'-body.html')).read_text(encoding='utf-8')),encoding='utf-8')
-    print('Built',len(rows),'game pages')
-
+    rows=read_json(S/'catalog.json')['games'];ps=profiles();assert len(ps)==256
+    for lang in ['en','zh']:
+        t=lambda a,b:choose(a,b,lang);base='zh/' if lang=='zh' else '';asset='../' if lang=='zh' else '';cards=[]
+        (D/'manuals'/lang).mkdir(parents=True,exist_ok=True)
+        for row in rows:
+            key=row['key'];p=ps[key];g=S/'games'/key;m=read_json(g/'manifest.json');sc=read_json(g/'scene.json') if (g/'scene.json').exists() else {}
+            md=manual(row,p,m,sc,lang);(D/'manuals'/lang/(key+'.md')).write_text(md,encoding='utf-8')
+            title=p[lang]['title'];prefix='../../' if lang=='zh' else '../'
+            figure='<figure><a href="'+prefix+'gifs/'+key+'.gif"><img class="demo" src="'+prefix+'gifs/'+key+'.gif" width="640" height="440" alt="'+esc(title)+'"></a><figcaption>'+t('Actual native states · Full-state debug · Untrained legal-action trajectory · Click for GIF','真实原生状态 · 完整状态调试 · 未训练合法动作轨迹 · 点击查看动图')+'</figcaption></figure>'
+            body=markdown(md);at=body.find('</h1>')+5;body=body[:at]+figure+body[at:]
+            download='<p><a class="button" download href="'+prefix+'manuals/'+lang+'/'+key+'.md">'+t('Download this manual','下载本款说明书')+'</a></p>'
+            page(base+'games/'+key+'.html',title,'<main class="manual">'+download+body+'</main>',lang)
+            tags=' · '.join(THEMES[v['code']][0 if lang=='en' else 1] for v in p['themes']);brief=p[lang]['brief']
+            cards.append('<a class="card" data-family="'+row['family']+'" data-themes="'+' '.join(v['code'] for v in p['themes'])+'" data-search="'+esc(key+' '+title+' '+brief+' '+tags)+'" href="games/'+key+'.html"><img loading="lazy" decoding="async" width="640" height="440" src="'+asset+'gifs/'+key+'.gif" alt="'+esc(title)+'"><div class="card-copy"><span class="eyebrow">'+key.upper()+' · '+t('Spatial world' if row['family']=='spatial' else 'Abstract state','空间世界' if row['family']=='spatial' else '抽象状态')+'</span><h3>'+esc(title)+'</h3><p>'+esc(brief[:190])+('…' if len(brief)>190 else '')+'</p><p class="tags">'+esc(tags)+'</p><span class="meta">'+str(row['dimensions']['num_agents'])+t(' roles · ',' 角色 · ')+str(row['dimensions']['max_steps'])+t(' steps',' 步')+'</span><span class="manual-link">'+t('Gameplay, controls & RL manual →','玩法、操作与训练说明书 →')+'</span></div></a>')
+        opts=''.join('<option value="'+c+'">'+THEMES[c][0 if lang=='en' else 1]+'</option>' for c in THEMES)
+        hero='<div class="hero"><p class="eyebrow">'+t('MULTI-AGENT WORLDS · NATIVE JAX','多智能体世界 · 原生内核')+'</p><h1>'+t('Every world.<br>Every consequence.','每一个世界，<br>每一次行动的后果。')+'</h1><p class="lead">'+t('All 256 games, animated. Open any card for its name, explanation, gameplay, controls, design ideas and reinforcement-learning manual.','二百五十六款游戏逐款展示动态预览。打开任一卡片，查看名称、解释、玩法、操作、设计理念与强化学习说明书。')+'</p><div class="stats"><span>180 '+t('spatial games','款空间游戏')+'</span><span>76 '+t('abstract games','款抽象游戏')+'</span><span>256 '+t('GIFs · 512 manuals','份动图 · 512 份说明书')+'</span></div><p><a class="button" href="guide.html">'+t('Install & play →','安装与游玩 →')+'</a><a href="design.html">'+t('Read the design and classification rationale','阅读完整设计与分类依据')+'</a></p></div>'
+        gallery='<section id="collection"><h2>'+t('All games, animated','全部游戏动态目录')+'</h2><p>'+t('Scroll to load each game\'s GIF. Every card has its own recording. Full-state debug may reveal private information. These are saved untrained trajectories, not solved-task claims. Game text stays English; the site and manuals switch language.','滚动即可加载各款动图，每张卡片都有独立预览。完整状态调试视角可能暴露私人信息；保存的未训练轨迹不代表已解出任务。游戏文字固定英文，网站与说明书可以切换语言。')+'</p><div class="filters"><input id="search" aria-label="'+t('Search games','搜索游戏')+'" placeholder="'+t('Search name, mechanic or ID','搜索名称、机制或编号')+'"><select id="family" aria-label="'+t('Interface','接口')+'"><option value="">'+t('All interfaces','全部接口')+'</option><option value="spatial">'+t('Spatial worlds','空间世界')+'</option><option value="legacy_array">'+t('Abstract states','抽象状态')+'</option></select><select id="theme" aria-label="'+t('Mechanism','机制')+'"><option value="">'+t('All mechanisms','全部机制')+'</option>'+opts+'</select></div><p id="count" aria-live="polite">256 '+t('games','款游戏')+'</p><div class="grid">'+''.join(cards)+'</div></section>'
+        page(base+'index.html',t('All games','全部游戏'),'<main>'+hero+gallery+'</main><script src="'+asset+'catalog.js"></script>',lang)
+        for name,title in [('guide',t('Install & play','安装操作')),('api',t('Training API','训练接口'))]:
+            body=(D/(name+'-body.html')).read_text(encoding='utf-8') if lang=='en' else '<main class="manual">'+markdown((R/'manuals'/(name+'.zh.md')).read_text(encoding='utf-8'))+'</main>'
+            page(base+name+'.html',title,body,lang)
+        design=(R/'manuals'/('design.'+lang+'.md')).read_text(encoding='utf-8')
+        (D/'manuals'/('design.'+lang+'.md')).write_text(design,encoding='utf-8')
+        page(base+'design.html',t('Design & classification','理念与分类'),'<main class="manual">'+markdown(design)+'</main>',lang)
+        evidence=t('# Evidence and limits\n\nThe v0.1.0 archive records 256 native full-episode checks, 256 browser-control checks and 180 spatial keyboard checks. Original candidate and manifest hashes remain unchanged.\n\n179 identities had exact eager/JIT parity; 77 had measured nonzero floating differences and remain numerically undetermined. Human scores remain unverified. A pass or a GIF does not establish learning, transfer or strategic depth.\n\nNew presentation receipts record native replay steps, captured endpoints, source identity, GIF hashes and reward differences against saved traces, without a new numerical tolerance.\n\n[Browse actual receipts]('+GH+'/tree/main/verification)\n\n[Read the complete evaluation limits](design.html)','# 证据与边界\n\n初版档案记录全部二百五十六款原生完整回合检查、二百五十六款浏览器控制检查及一百八十款空间游戏键盘检查。原始内核和清单哈希保持不变。\n\n一百七十九款即时与编译数值完全一致，七十七款存在实测非零差异，数值结论仍未定。人类成绩尚未核验。工程通过或动图不能证明学习、迁移或策略深度。\n\n新的展示回执记录原生重放步数、真实端点、源码身份、动图哈希及相对保存轨迹的奖励差异，不增加数值验收容差。\n\n[查看真实回执]('+GH+'/tree/main/verification)\n\n[阅读完整评测边界](design.html)')
+        page(base+'verification.html',t('Evidence','证据'),'<main class="manual">'+markdown(evidence)+'</main>',lang)
+    (D/'catalog.json').write_text(json.dumps(dict(games=[dict(family=r['family'],dimensions=r['dimensions'],**ps[r['key']]) for r in rows]),ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    print('Built 2 catalogs, 512 complete game manuals and paired design/guide/API pages')
 if __name__=='__main__':main()

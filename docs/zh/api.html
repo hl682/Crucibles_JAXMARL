@@ -1,0 +1,25 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>训练接口 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../zh/index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../zh/index.html">全部游戏</a><a href="../zh/guide.html">安装操作</a><a href="../zh/api.html">训练接口</a><a href="../zh/design.html">理念与分类</a><a href="../zh/verification.html">证据</a><a class="language-switch" lang="en" href="../api.html">English</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main class="manual"><h1>强化学习训练接口</h1><p>接口采用按角色索引的多智能体约定，是独立库，不代表上游认证。每款说明书另有具体目标、动作、机制假说和训练注意事项。</p><h2>重置与一步转移</h2><pre><code>import jax
+from crucibles_jaxmarl import make
+
+env = make(&quot;gi072&quot;)
+key = jax.random.PRNGKey(0)
+key, rk, ak, sk = jax.random.split(key, 4)
+obs, state = jax.jit(env.reset)(rk)
+actions = env.sample_actions(ak, state)
+obs, state, rewards, dones, info = jax.jit(env.step_env)(sk, state, actions)
+done = dones[&quot;__all__&quot;]</code></pre><p>观察为角色字典，每个值是原生浮点向量；动作是每人一个整型编号，掩码长度等于动作数。所有角色同一步提交。合法采样只是工程参照，替换为自己的策略时仍须保持角色观察权限。</p><h2>终止语义</h2><p><code>step_env</code> 不自动重置，保留原终止观察和状态。<code>step</code> 明确拆分转移与重置密钥，提供外层自动重置，在 <code>info[&#x27;raw_state&#x27;]</code> 和 <code>info[&#x27;raw_observation&#x27;]</code> 留存终止数据。用整局结束标记划分轨迹，同时区分自然完成、失败与时限。空间内核保留吸收终止，抽象内核保留历史行为。</p><h2>编译与批处理</h2><pre><code>keys = jax.random.split(jax.random.PRNGKey(1), 4)
+obs, states = jax.jit(jax.vmap(env.reset))(keys)
+keys = jax.random.split(jax.random.PRNGKey(2), 4)
+actions = jax.vmap(env.sample_actions)(keys, states)
+keys = jax.random.split(jax.random.PRNGKey(3), 4)
+obs, states, rewards, dones, info = jax.jit(jax.vmap(env.step))(keys, states, actions)</code></pre><p>只批处理同身份同形状，示例批量不替代原始人口或时限。不同形状明确分组，或声明学习器侧填充方案。重置、策略采样和转移使用独立密钥。渲染在主机侧，位于训练编译图外。</p><h2>空间、掩码与原生数组</h2><pre><code>env.agents
+env.agent_classes
+env.action_space(&quot;agent_0&quot;)
+env.observation_space(&quot;agent_0&quot;)
+env.get_avail_actions(state)
+env.get_obs(state)
+env.observe(state)
+env.legal_actions(state)
+env.raw_step(key, state, action_array)
+env.manifest
+env.metadata</code></pre><p>固定数据划分和选择规则，保留原奖励，报告逐角色结果及成本。集中价值网络、记忆、通信、奖励塑形和伙伴适应须作为明确实验因素。冒烟检查不能证明收敛、迁移、元梯度正确或离散动力学可微。</p></main><footer>原生状态转移 · 完整状态调试预览 · 策略未训练 · 人类成绩未核验 · 开源许可：Apache 2.0</footer></body></html>
