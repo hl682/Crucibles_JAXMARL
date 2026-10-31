@@ -1,0 +1,884 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00094",
+  "source_sha256": "2beb035ce5becb46b53f5a6776d4e5eac5f13517a7126da146ba170a339a99ec",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 143,
+  "num_actions": 10,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 96,
+  "reward_low": -2,
+  "reward_high": 4,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Preparation starter; symmetric kitchen actions"
+    },
+    {
+      "id": "agent_1",
+      "role": "Oven runner starter; symmetric kitchen actions"
+    },
+    {
+      "id": "agent_2",
+      "role": "Dispatch starter; symmetric kitchen actions"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up ingredient on own tile"
+    },
+    {
+      "id": 6,
+      "label": "Put held ingredient on own tile"
+    },
+    {
+      "id": 7,
+      "label": "Use cutting bench or dispatch station"
+    },
+    {
+      "id": 8,
+      "label": "Offer or receive adjacent ingredient handoff"
+    },
+    {
+      "id": 9,
+      "label": "Pick up or drop shared cleaver"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carry"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_carrier"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "item_holder"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_stage"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_flavor"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_cut"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_heat"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_age"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_started"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_kind"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "orders"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_index"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spoiled"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered_now"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "spoiled_now"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "handed_now"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "item_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable kitchen floor",
+          "color": "#E8DDC7"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall",
+          "color": "#48525C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "cooks",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carry"
+          ],
+          "meaning": "Held ingredient index; -1 means empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "meaning": "Last movement was blocked",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "ingredients",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "item_pos"
+      ],
+      "active": [
+        "item_active"
+      ],
+      "visibility": [
+        "item_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "item_holder"
+          ],
+          "meaning": "Carrier role; -1 means unheld",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "item_stage"
+          ],
+          "meaning": "Stage: raw 0, cut 1, baked 2, spoiled 3",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "item_flavor"
+          ],
+          "meaning": "Flavor: 0 or 1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "item_cut"
+          ],
+          "meaning": "Cutting work units, maximum 2",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "item_heat"
+          ],
+          "meaning": "Oven exposure; bake 4, burn 8",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "item_age"
+          ],
+          "meaning": "Age after first pickup; spoil at 50",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "item_started"
+          ],
+          "meaning": "Aging has started",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_kind"
+          ],
+          "meaning": "Station: bench 0, oven 1, dispatch 2",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "cleaver",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "tool_pos"
+      ],
+      "active": [
+        "tool_active"
+      ],
+      "visibility": [
+        "tool_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool_carrier"
+          ],
+          "meaning": "Cleaver carrier; -1 means grounded",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "An order was delivered on the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled_now"
+      ],
+      "meaning": "An ingredient spoiled on the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handed_now"
+      ],
+      "meaning": "A consented ingredient handoff occurred on the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "order_index"
+      ],
+      "meaning": "Cumulative fulfilled orders",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Cumulative spoiled ingredients",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "blocked"
+      ],
+      "meaning": "Blocked movement flags from the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Agent positions [x,y], row-major in role order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "Held ingredient index for each agent, -1 means empty.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Shared cleaver position [x,y]; follows its carrier.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "meaning": "Cleaver carrier role index, -1 means lying on its tile.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        20
+      ],
+      "meaning": "Ingredient positions [x,y], including last resolved locations.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        24
+      ],
+      "meaning": "Ingredients still available or in process.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        28
+      ],
+      "meaning": "Ingredient carrier role index, -1 means unheld.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        32
+      ],
+      "meaning": "Ingredient stage: 0 raw, 1 cut, 2 baked, 3 spoiled.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        36
+      ],
+      "meaning": "Ingredient flavor 0 or 1, compared to the next dispatch order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        40
+      ],
+      "meaning": "Cleaver work units, 0 to 2; reaching 2 changes raw to cut.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        44
+      ],
+      "meaning": "Cumulative oven exposure, 0 to 8; 4 bakes and 8 burns on the oven.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        48
+      ],
+      "meaning": "Active aging ticks after first pickup, capped at spoilage age 50.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        52
+      ],
+      "meaning": "Whether the ingredient has ever been picked up and started aging.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        58
+      ],
+      "meaning": "Actual work-station positions: cutting bench, oven, dispatch.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        61
+      ],
+      "meaning": "Station kind: 0 cutting bench, 1 oven, 2 dispatch.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        61,
+        124
+      ],
+      "meaning": "Public y-major 7 by 9 kitchen map; 0 floor and 1 wall.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        128
+      ],
+      "meaning": "Public dispatch flavor sequence.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        129
+      ],
+      "meaning": "Number of correctly delivered orders; next order is this index while incomplete.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        130
+      ],
+      "meaning": "Number of nonabsorbing steps elapsed, 0 through 96.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        131
+      ],
+      "meaning": "Cumulative number of ingredients spoiled or burned.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        132
+      ],
+      "meaning": "Whether the last nonabsorbing step delivered an order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        133
+      ],
+      "meaning": "Whether the last nonabsorbing step spoiled any ingredient.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        134
+      ],
+      "meaning": "Whether the last nonabsorbing step handed off an ingredient.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        137
+      ],
+      "meaning": "Which movement intents were blocked in the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        138
+      ],
+      "meaning": "Joint episode completion; true for natural completion or horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        139
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        140
+      ],
+      "meaning": "Horizon cause; false when natural completion coincides with horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        143
+      ],
+      "meaning": "Own agent identity as A-way one-hot in agent_0 through agent_2 order.",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Cooperate to complete the public sequence of four flavor-specific orders using physical raw ingredients, two cleaver work units, four oven ticks and delivery at dispatch.",
+    "natural_termination": "All four ingredients are resolved, whether delivered or spoiled. Horizon 96 otherwise; natural completion has priority at the horizon.",
+    "interaction": "A single cleaver, one shared oven tile, consented adjacent handoffs and a one-cell central doorway couple task division. Occupancy can block partners; cumulative heat and aging continue while other roles act.",
+    "observation_access": "All roles receive the same complete flattened public game state plus their own one-hot identity. Public map, every active entity and every declared dynamic attribute are visible to every role. Inactive objects keep public last positions/status in flat state; role rendering hides inactive entities. No hidden order or private signal."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "item_age"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "item_heat"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "item_cut"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "order_index"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "spoiled"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_semantics": "Every integer command in [0,U) is legal for every role before joint termination. Geometrically blocked or unavailable operations are deterministic failed attempts. Out-of-range commands become action 0. In absorbing states only action 0 is legal; raw_step ignores all supplied actions and preserves terminal state.",
+  "inactive_role_semantics": "No role is individually removed before joint termination. All A role slots remain physically active; every role has no-op action 0. At joint termination all dones are true and only 0 is legal.",
+  "reset_randomness": "Deterministic fixed initial state; supplied key is accepted but intentionally unused. Script seed identifies future replay provenance, not a source of hidden state.",
+  "interface_integration": "This immutable source supplies the requested flat native kernel. The agent-keyed JaxMARL-compatible public adapter is a separate coordinator-owned integration layer and was not executed by the author."
+}

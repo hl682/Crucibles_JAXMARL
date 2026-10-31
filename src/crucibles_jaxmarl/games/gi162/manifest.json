@@ -1,0 +1,898 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00162",
+  "source_sha256": "adc44f624beee07d7a6cb018141416451f04bc38ee7ff537faef4fe626bb529a",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 118,
+  "num_actions": 10,
+  "max_steps": 64,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0,
+  "observation_high": 64,
+  "reward_low": -2,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "upstream gardener"
+    },
+    {
+      "id": "agent_1",
+      "role": "middle gardener"
+    },
+    {
+      "id": "agent_2",
+      "role": "downstream gardener"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "toggle nearest sluice"
+    },
+    {
+      "id": 6,
+      "label": "maintain nearest canal mouth"
+    },
+    {
+      "id": 7,
+      "label": "draw own garden water into tank"
+    },
+    {
+      "id": 8,
+      "label": "pour tank into nearest living garden"
+    },
+    {
+      "id": 9,
+      "label": "harvest own ripe crop"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tank"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "integrity"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "garden_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "moisture"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "growth"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dry"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "harvested"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dead"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reservoir_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservoir"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_pos"
+      ],
+      "shape": [
+        16,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_route"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "arrived"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "maintained"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "toggled"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "picked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wilted"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lost"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "garden_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "garden_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reservoir_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reservoir_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "water_active"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "water_visible"
+      ],
+      "shape": [
+        3,
+        16
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable bank",
+          "color": "#344534"
+        },
+        {
+          "value": 1,
+          "meaning": "main canal route",
+          "color": "#2F7399"
+        },
+        {
+          "value": 2,
+          "meaning": "garden branch route",
+          "color": "#3A91B7"
+        },
+        {
+          "value": 3,
+          "meaning": "garden soil",
+          "color": "#73643D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tank"
+          ],
+          "meaning": "Portable water",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "count": 3,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Diversion shutter open",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "integrity"
+          ],
+          "meaning": "Canal condition",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "garden",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "garden_pos"
+      ],
+      "active": [
+        "garden_active"
+      ],
+      "visibility": [
+        "garden_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "meaning": "Soil water",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "meaning": "Crop growth",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "dry"
+          ],
+          "meaning": "Dry ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "harvested"
+          ],
+          "meaning": "Harvested",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "dead"
+          ],
+          "meaning": "Wilted",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "reservoir",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "reservoir_pos"
+      ],
+      "active": [
+        "reservoir_active"
+      ],
+      "visibility": [
+        "reservoir_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "reservoir"
+          ],
+          "meaning": "Unreleased water",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "water",
+      "kind": "resource",
+      "count": 16,
+      "position": [
+        "water_pos"
+      ],
+      "active": [
+        "water_active"
+      ],
+      "visibility": [
+        "water_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "water_route"
+          ],
+          "meaning": "Route: main 0 or branch 1..3",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "arrived"
+      ],
+      "meaning": "Per-step packet arrivals into each garden, before clipping or crop use.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "maintained"
+      ],
+      "meaning": "Per-step maintained canal mouths.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "toggled"
+      ],
+      "meaning": "Per-step gate toggles after simultaneous parity resolution.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Per-step gardener harvest flags.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "wilted"
+      ],
+      "meaning": "Per-step newly wilted gardens.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lost"
+      ],
+      "meaning": "Packets blocked or drained off the main canal during this raw step.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own acting role as one-hot in agent-index order.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Raw step clock; also determines public rotating priorities and periodic updates.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        10
+      ],
+      "meaning": "All agent [x,y] positions in agent-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "Portable water units held by each gardener, capacity four.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "Each sluice diversion shutter: true diverts passing water into its branch.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        19
+      ],
+      "meaning": "Passable canal condition at each mouth, zero blocks and loses incoming packets.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        22
+      ],
+      "meaning": "Stored water in each garden, capacity six.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Each crop growth count, capped at five.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Consecutive moisture-free ticks for each unresolved garden, capped at twelve.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        31
+      ],
+      "meaning": "Each garden has already been harvested once.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        34
+      ],
+      "meaning": "Each garden has permanently wilted.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        35
+      ],
+      "meaning": "Finite unreleased upstream water units.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        67
+      ],
+      "meaning": "All sixteen packet [x,y] coordinates; inactive slots are zeroed.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        83
+      ],
+      "meaning": "Which of the sixteen real water packets exist.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        99
+      ],
+      "meaning": "Each packet route: 0 main canal, 1/2/3 garden branch; inactive slots zero.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        99,
+        102
+      ],
+      "meaning": "Per-step packet arrivals into each garden, before clipping or crop use.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        105
+      ],
+      "meaning": "Per-step maintained canal mouths.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        108
+      ],
+      "meaning": "Per-step gate toggles after simultaneous parity resolution.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        111
+      ],
+      "meaning": "Per-step gardener harvest flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        114
+      ],
+      "meaning": "Per-step newly wilted gardens.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        115
+      ],
+      "meaning": "Packets blocked or drained off the main canal during this raw step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        115,
+        116
+      ],
+      "meaning": "Joint terminal state, including natural completion or time limit.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        117
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        118
+      ],
+      "meaning": "Time-limit cause only when no natural termination occurs.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Harvest the assigned crop while deciding how much finite upstream water and personal effort to spend on shared canal service and neighbours.",
+    "natural_termination": "All three gardens have been harvested or permanently wilted; otherwise the natural state is truncated at 64 raw steps.",
+    "interaction": "A shutter physically redirects travelling packets before they can reach later gardens; upstream obstructions destroy downstream supply. Any gardener can maintain mouths or pour stored water into another garden.",
+    "observation_access": "Fully public world and state. Each observation begins with own-role one-hot, then the labelled public dynamic vector. Immutable terrain, mouth/garden coordinates and ownership by index are known game rules. Packet visibility equals activity. Co-location on walkable canal/bank cells is permitted."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tank"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "integrity"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "moisture"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "growth"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "dry"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "reservoir"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "water_route"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

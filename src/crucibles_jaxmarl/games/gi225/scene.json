@@ -1,0 +1,430 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "ad26795944fb92b0411a172a94432ccf5493e1bb4af1900f6d358e7b0f6b7ce1",
+  "manifest_sha256": "db8fe4c89ed8b5dbff7bf264549c0b919ddf0bac15cfd5df9f82cfc513827e4e",
+  "title": "Seasonal Pasture Commons",
+  "rules": [
+    "64 actors form sixteen homesteads. Tools 0 farmer, 1 herder, 2 irrigator, 3 steward can be exchanged nearby or cycled at home.",
+    "Plant within three cells of a plot. Six moist growth ticks make a ripe crop; harvest creates two grain and one seed. Heat can wither unwatered immature crops.",
+    "Irrigation at a trough spends two units from its row reservoir. An open downstream gate shares one moisture with the next homestead.",
+    "Drive a nearby herd in the actor's facing direction. Grazing every four ticks consumes actual cell grass; protected reserves cannot be grazed.",
+    "Spring and autumn restore pasture every 12 ticks; protected reserves restore it every eight. Fertilizer uses collected manure.",
+    "Nearby herds spread disease every eight ticks. An irrigator can spend compost to treat a herd; distance and routes can limit contact.",
+    "Gate crossings wear hinges. Occupied gates cannot close; worn empty gates close until repaired. A closed gate also stops downstream irrigation sharing.",
+    "Store harvested grain, feed hungry herds, or keep it for later work. Household welfare is rewarded periodically; every pantry and herd must meet the stated natural finish rule."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      33,
+      33
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "visibility": [
+        "map_visible"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 1,
+          "meaning": "Fence or closed gate",
+          "color": "#B49A76"
+        },
+        {
+          "value": 2,
+          "meaning": "Open gate",
+          "color": "#D6BD8B"
+        },
+        {
+          "value": 3,
+          "meaning": "Protected pasture reserve",
+          "color": "#4B987D"
+        },
+        {
+          "value": 4,
+          "meaning": "Bare pasture",
+          "color": "#C9B28B"
+        },
+        {
+          "value": 5,
+          "meaning": "Grass one",
+          "color": "#B8C58B"
+        },
+        {
+          "value": 6,
+          "meaning": "Grass two",
+          "color": "#9BBB7C"
+        },
+        {
+          "value": 7,
+          "meaning": "Grass three",
+          "color": "#7EAD69"
+        },
+        {
+          "value": 8,
+          "meaning": "Grass four",
+          "color": "#5F9857"
+        },
+        {
+          "value": 9,
+          "meaning": "Irrigation trough",
+          "color": "#75B6CB"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Agent",
+      "color": "#E9B899",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "Native crew index"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Current tool code"
+        },
+        {
+          "state_path": [
+            "seed"
+          ],
+          "label": "Carried seed units"
+        },
+        {
+          "state_path": [
+            "grain"
+          ],
+          "label": "Carried grain units"
+        },
+        {
+          "state_path": [
+            "compost"
+          ],
+          "label": "Carried compost units"
+        }
+      ]
+    },
+    {
+      "id": "plot",
+      "glyph": "plant",
+      "label": "Plot",
+      "color": "#7FB469",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crop"
+          ],
+          "label": "Crop stage: empty, seed, growing, ripe"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Completed moist growth ticks"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Plot moisture units"
+        },
+        {
+          "state_path": [
+            "pantry"
+          ],
+          "label": "Grain stored for this household"
+        },
+        {
+          "state_path": [
+            "harvests"
+          ],
+          "label": "Crop harvest count"
+        }
+      ]
+    },
+    {
+      "id": "trough",
+      "glyph": "water",
+      "label": "Trough",
+      "color": "#75B6CB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Plot moisture units"
+        }
+      ]
+    },
+    {
+      "id": "herd",
+      "glyph": "circle",
+      "label": "Herd",
+      "color": "#E7DDC4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "hunger"
+          ],
+          "label": "Herd hunger level"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Herd health"
+        },
+        {
+          "state_path": [
+            "disease"
+          ],
+          "label": "Herd disease flag"
+        },
+        {
+          "state_path": [
+            "manure"
+          ],
+          "label": "Collectable manure units"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "Gate",
+      "color": "#B99364",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Gate open to traffic and irrigation"
+        },
+        {
+          "state_path": [
+            "wear"
+          ],
+          "label": "Gate hinge condition"
+        }
+      ]
+    },
+    {
+      "id": "reservoir",
+      "glyph": "water",
+      "label": "Reservoir",
+      "color": "#5D9AB8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water_stock"
+          ],
+          "label": "Shared row water stock"
+        },
+        {
+          "state_path": [
+            "recharges"
+          ],
+          "label": "Reservoir replenishments remaining"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "total_harvests"
+      ],
+      "meaning": "Total ripe crops harvested",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "stored_total"
+      ],
+      "meaning": "Total grain stored in household pantries",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Face or move north"
+    },
+    {
+      "id": 2,
+      "label": "Face or move east"
+    },
+    {
+      "id": 3,
+      "label": "Face or move south"
+    },
+    {
+      "id": 4,
+      "label": "Face or move west"
+    },
+    {
+      "id": 5,
+      "label": "Plant nearby plot with farmer"
+    },
+    {
+      "id": 6,
+      "label": "Irrigate at trough with irrigator"
+    },
+    {
+      "id": 7,
+      "label": "Harvest ripe nearby crop"
+    },
+    {
+      "id": 8,
+      "label": "Feed nearby herd with grain"
+    },
+    {
+      "id": 9,
+      "label": "Drive nearby herd forward with herder"
+    },
+    {
+      "id": 10,
+      "label": "Toggle adjacent gate"
+    },
+    {
+      "id": 11,
+      "label": "Reserve current pasture with steward"
+    },
+    {
+      "id": 12,
+      "label": "Fertilize current pasture with compost"
+    },
+    {
+      "id": 13,
+      "label": "Tend nearby herd with irrigator"
+    },
+    {
+      "id": 14,
+      "label": "Exchange tools with nearest actor"
+    },
+    {
+      "id": 15,
+      "label": "Cycle tool at home"
+    },
+    {
+      "id": 16,
+      "label": "Collect nearby herd manure"
+    },
+    {
+      "id": 17,
+      "label": "Repair adjacent gate with compost"
+    },
+    {
+      "id": 18,
+      "label": "Store grain at home pantry"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "meaning": "Self x,y,homestead,tool,seeds,grain,compost,face.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "t,season,total harvests,total stored grain.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        524
+      ],
+      "meaning": "64 actor slots width 8: visible,x,y,homestead,tool,seeds,grain,compost.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        524,
+        652
+      ],
+      "meaning": "16 plot slots width 8: visible,x,y,crop stage,growth,moisture,pantry,harvest count.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        652,
+        716
+      ],
+      "meaning": "16 trough slots width 4: visible,x,y,plot moisture.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        716,
+        828
+      ],
+      "meaning": "16 herd slots width 7: visible,x,y,hunger,health,disease,manure.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        828,
+        908
+      ],
+      "meaning": "16 gate slots width 5: visible,x,y,open,wear.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        908,
+        928
+      ],
+      "meaning": "4 reservoir slots width 5: visible,x,y,water stock,remaining recharges.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        928,
+        977
+      ],
+      "meaning": "7x7 terrain patch y-major, outside=-1; tiles include visible grass/reserve/trough/gate state.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        977,
+        1026
+      ],
+      "meaning": "7x7 grass patch y-major, outside=-1.",
+      "visibility": "local"
+    }
+  ]
+}

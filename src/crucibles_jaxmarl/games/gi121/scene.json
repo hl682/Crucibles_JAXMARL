@@ -1,0 +1,544 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "d32c5670c393d0c203935cdd1fd6b3219e2dc930059305f3f037d0494b4eeaeb",
+  "manifest_sha256": "2297ab43134d9bc80f5a016c865eceda6682971ed44e17da429f28de1596e364",
+  "title": "Orchard pollination and shared habitat",
+  "rules": [
+    "Each grower owns two plots and begins with one seed. Planting ties up a seed; harvesting or uprooting returns it.",
+    "Draw from the shared tank while adjacent, carry at most two water, and irrigate any nearby plot.",
+    "A seedling with water advances its clock; at two wet growth ticks it spends one water and flowers.",
+    "Flowers age each tick. At age four or later, one remaining soil water makes them ripe; without water they wilt at age six.",
+    "A ripe crop is worth one fruit, or three if a bee brought pollen from a different orchard owner.",
+    "Three shared pollinators move toward eligible flowers other than their last plot, with explicit tie-breaking from the supplied step key.",
+    "Each flower visit spends one of three bee visit credits. With no target or no credit, a bee seeks habitat.",
+    "A habitat refill spends one reserve water, restores three visit credits and clears the last-plot restriction. Any grower can supply habitat water.",
+    "Seeds can be gifted only to an adjacent named neighboring owner. Shared water and pollinator positions are physical state.",
+    "Only actual harvest fruit earns reward. The season ends after six accepted harvests, resource exhaustion without ripe fruit, or the time limit."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable orchard path",
+          "color": "#D7DFBD"
+        },
+        {
+          "value": 1,
+          "meaning": "Boundary wall",
+          "color": "#66735B"
+        },
+        {
+          "value": 2,
+          "meaning": "Walkable actual crop plot",
+          "color": "#A68A5C"
+        },
+        {
+          "value": 3,
+          "meaning": "Walkable pollinator habitat",
+          "color": "#8FA46A"
+        },
+        {
+          "value": 4,
+          "meaning": "Walkable shared water tank",
+          "color": "#6DA3B5"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "growers",
+      "glyph": "worker",
+      "label": "Orchard growers",
+      "color": "#557D72",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "seeds"
+          ],
+          "label": "Unplanted circulating seed count"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried water units"
+        },
+        {
+          "state_path": [
+            "harvests"
+          ],
+          "label": "Own completed harvest count"
+        }
+      ]
+    },
+    {
+      "id": "plots",
+      "glyph": "plant",
+      "label": "Owned crop plots",
+      "color": "#73A04B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "plot_owner"
+          ],
+          "label": "Owning grower id"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "0 empty; 1 seedling; 2 flower; 3 ripe; 4 wilted"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "Bounded stage growth clock"
+        },
+        {
+          "state_path": [
+            "soil_water"
+          ],
+          "label": "Stored soil water units"
+        },
+        {
+          "state_path": [
+            "pollinated"
+          ],
+          "label": "Visited with pollen from a different owner"
+        },
+        {
+          "state_path": [
+            "fruit"
+          ],
+          "label": "Fruit units available when ripe"
+        }
+      ]
+    },
+    {
+      "id": "pollinators",
+      "glyph": "circle",
+      "label": "Shared mobile pollinators",
+      "color": "#E6BD4D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bee_visits_left"
+          ],
+          "label": "Visits remaining before habitat refill"
+        },
+        {
+          "state_path": [
+            "bee_pollen"
+          ],
+          "label": "Last pollen owner; -1 means none"
+        },
+        {
+          "state_path": [
+            "bee_last_plot"
+          ],
+          "label": "Last visited plot; -1 after refill"
+        },
+        {
+          "state_path": [
+            "bee_target"
+          ],
+          "label": "Current target: plots 0..5 or habitats 6..7"
+        }
+      ]
+    },
+    {
+      "id": "habitats",
+      "glyph": "plant",
+      "label": "Shared habitat stations",
+      "color": "#8B9272",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "habitat_water"
+          ],
+          "label": "Shared pollinator refill-water reserve"
+        }
+      ]
+    },
+    {
+      "id": "tank",
+      "glyph": "water",
+      "label": "Finite shared tank",
+      "color": "#5D9CB5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tank_water"
+          ],
+          "label": "Shared remaining irrigation water"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "plant_event"
+      ],
+      "meaning": "Seed planted into plot on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "plot_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "water_event"
+      ],
+      "meaning": "Carried water deposited in plot",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "plot_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "bloom_event"
+      ],
+      "meaning": "Seedling became a flower",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "plot_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "pollination_event"
+      ],
+      "meaning": "Plot first gained cross-owner pollination",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "plot_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "ripe_event"
+      ],
+      "meaning": "Flower became ripe fruit",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "plot_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "wilt_event"
+      ],
+      "meaning": "Unwatered mature flower wilted",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "plot_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "visit_event"
+      ],
+      "meaning": "Pollinator reached and visited a flower",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "bee_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "harvest_event"
+      ],
+      "meaning": "Grower harvested a ripe crop",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "habitat_event"
+      ],
+      "meaning": "Grower added water to habitat reserve",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "habitat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "seed_transfer_event"
+      ],
+      "meaning": "Grower gave a seed to an adjacent owner",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move east"
+    },
+    {
+      "id": 2,
+      "label": "Move west"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move north"
+    },
+    {
+      "id": 5,
+      "label": "Plant one seed in nearest empty own plot within distance one"
+    },
+    {
+      "id": 6,
+      "label": "Draw one shared tank water within distance one, if carrying below two"
+    },
+    {
+      "id": 7,
+      "label": "Irrigate nearest non-full plot within distance one with one carried water; any owner allowed"
+    },
+    {
+      "id": 8,
+      "label": "Harvest nearest eligible ripe own plot within distance one, returning its seed"
+    },
+    {
+      "id": 9,
+      "label": "Add one carried water to nearest habitat within distance one, up to reserve four"
+    },
+    {
+      "id": 10,
+      "label": "Give one seed to previous owner id modulo three if adjacent"
+    },
+    {
+      "id": 11,
+      "label": "Give one seed to next owner id modulo three if adjacent"
+    },
+    {
+      "id": 12,
+      "label": "Uproot a nonempty own plot within distance one; return its seed without fruit reward"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own grower one-hot identity",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        84
+      ],
+      "meaning": "Public 9 by 9 tile map in yx row-major order divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        90
+      ],
+      "meaning": "Three grower xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        93
+      ],
+      "meaning": "Unplanted seed counts divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        96
+      ],
+      "meaning": "Carried water divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        96,
+        99
+      ],
+      "meaning": "Own harvest counts divided by 6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        99,
+        111
+      ],
+      "meaning": "Six plot xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        117
+      ],
+      "meaning": "Plot owner ids divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        123
+      ],
+      "meaning": "Plot stages divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        129
+      ],
+      "meaning": "Plot stage ages divided by 6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        135
+      ],
+      "meaning": "Soil water divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        141
+      ],
+      "meaning": "Cross-owner pollination flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        147
+      ],
+      "meaning": "Fruit values divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        153
+      ],
+      "meaning": "Three pollinator xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        156
+      ],
+      "meaning": "Pollinator remaining visits divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        159
+      ],
+      "meaning": "Pollen owner ids divided by 2; -0.5 means none",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        162
+      ],
+      "meaning": "Last plot ids divided by 5; negative means none",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        165
+      ],
+      "meaning": "Target ids divided by 7; 0..5 plots and 6..7 habitats",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        165,
+        169
+      ],
+      "meaning": "Two habitat xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        169,
+        171
+      ],
+      "meaning": "Habitat water reserves divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        171,
+        173
+      ],
+      "meaning": "Tank xy position divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        173,
+        174
+      ],
+      "meaning": "Tank water divided by 18",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        174,
+        177
+      ],
+      "meaning": "Clock/96, total harvest count/6, permanently consumed water/22",
+      "visibility": "public"
+    }
+  ]
+}

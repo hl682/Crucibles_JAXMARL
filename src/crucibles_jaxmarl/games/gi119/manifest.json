@@ -1,0 +1,1370 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00119",
+  "source_sha256": "d67bf466761d3504a9e352d03b654c7a855a2a35a9b59d41866f519e948a62b6",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 355,
+  "num_actions": 12,
+  "max_steps": 112,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": 0.0,
+  "reward_high": 1.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Cable rigger: installs and retrieves cables; service rate 1"
+    },
+    {
+      "id": "agent_1",
+      "role": "Relay specialist: installs and retrieves switches; service rate 2"
+    },
+    {
+      "id": "agent_2",
+      "role": "Battery courier: installs and retrieves batteries and pedal-recharges carried batteries; service rate 1"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move east"
+    },
+    {
+      "id": 2,
+      "label": "Move west"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move north"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-id loose part within distance one, or drop held part"
+    },
+    {
+      "id": 6,
+      "label": "Install held part of own specialty at an eligible nearby socket or source pad; if empty-handed, retrieve a nearby own-specialty installed part"
+    },
+    {
+      "id": 7,
+      "label": "Toggle lowest-id nearby installed switch or battery"
+    },
+    {
+      "id": 8,
+      "label": "Service nearest facility within distance one if powered and in work mode"
+    },
+    {
+      "id": 9,
+      "label": "Courier pedal-recharges a carried battery near source pad 0 by one charge"
+    },
+    {
+      "id": 10,
+      "label": "Hand held part to lowest-id adjacent empty-handed teammate"
+    },
+    {
+      "id": 11,
+      "label": "Toggle nearest unfinished facility between idle and work mode within distance one"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "service_rate"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "held"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_power"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "object_pos"
+      ],
+      "shape": [
+        10,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "object_active"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "object_visible"
+      ],
+      "shape": [
+        3,
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "object_kind"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "object_mode"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrier"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "slot"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "on"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "charge"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trip"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy_created"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy_spent"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "socket_pos"
+      ],
+      "shape": [
+        8,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "socket_active"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "socket_visible"
+      ],
+      "shape": [
+        3,
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "edge_ends"
+      ],
+      "shape": [
+        8,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "edge_present"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "edge_closed"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "edge_powered"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "connectivity"
+      ],
+      "shape": [
+        7,
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "node_pos"
+      ],
+      "shape": [
+        7,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_active"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "node_visible"
+      ],
+      "shape": [
+        3,
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "node_demand"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "component_load"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_powered"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "node_overload"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "power_delivered"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "facility_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facility_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "facility_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "progress"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_mode"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "install_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "handoff_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "power_event"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "overload_event"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "service_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "charge_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#DDE4E8"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall",
+          "color": "#4C5963"
+        },
+        {
+          "value": 2,
+          "meaning": "Gate cell; traversable only while node 6 is powered",
+          "color": "#D5AE61"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Specialty: 0 cable, 1 switch, 2 battery",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "held"
+          ],
+          "meaning": "Held part id; -1 means empty",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "tool_power"
+          ],
+          "meaning": "Powered service tool in reach",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "parts",
+      "kind": "object",
+      "count": 10,
+      "position": [
+        "object_pos"
+      ],
+      "active": [
+        "object_active"
+      ],
+      "visibility": [
+        "object_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "object_kind"
+          ],
+          "meaning": "Kind: 0 cable, 1 switch, 2 battery",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "object_mode"
+          ],
+          "meaning": "Mode: 0 loose, 1 carried, 2 installed",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "meaning": "Carrier role id; -1 if not carried",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "slot"
+          ],
+          "meaning": "Installed edge or battery node id; -1 otherwise",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "on"
+          ],
+          "meaning": "Switch closed or battery enabled",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "charge"
+          ],
+          "meaning": "Battery stored charge; zero for other parts",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "trip"
+          ],
+          "meaning": "Battery trip recovery ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "sockets",
+      "kind": "object",
+      "count": 8,
+      "position": [
+        "socket_pos"
+      ],
+      "active": [
+        "socket_active"
+      ],
+      "visibility": [
+        "socket_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "edge_ends"
+          ],
+          "meaning": "Endpoint node ids",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "edge_present"
+          ],
+          "meaning": "Cable installed",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "edge_closed"
+          ],
+          "meaning": "Conducting cable and switch path",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "edge_powered"
+          ],
+          "meaning": "Both endpoints energized through this path",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "nodes",
+      "kind": "landmark",
+      "count": 7,
+      "position": [
+        "node_pos"
+      ],
+      "active": [
+        "node_active"
+      ],
+      "visibility": [
+        "node_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "node_powered"
+          ],
+          "meaning": "Currently supplied without overload",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "node_overload"
+          ],
+          "meaning": "Current component exceeds available battery capacity",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "node_demand"
+          ],
+          "meaning": "Local device demand",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "component_load"
+          ],
+          "meaning": "Demand in connected component",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "facility_pos"
+      ],
+      "active": [
+        "facility_active"
+      ],
+      "visibility": [
+        "facility_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "progress"
+          ],
+          "meaning": "Completed repair units out of four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "device_mode"
+          ],
+          "meaning": "0 idle; 1 requests powered service",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Gate open while node 6 is powered",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "install_event"
+      ],
+      "meaning": "Part installed or retrieved on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "handoff_event"
+      ],
+      "meaning": "Crew member transferred a part",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "power_event"
+      ],
+      "meaning": "Node power changed since input state",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "node_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "overload_event"
+      ],
+      "meaning": "Overload detected before discharge and trip resolution on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "node_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "service_event"
+      ],
+      "meaning": "Facility repair progress increased",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "facility_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "charge_event"
+      ],
+      "meaning": "Courier added one charge by pedaling",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own crew specialty one-hot identity",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own powered service rate divided by 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        85
+      ],
+      "meaning": "Public 9 by 9 terrain in yx row-major order divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        91
+      ],
+      "meaning": "Three crew xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        94
+      ],
+      "meaning": "Held part ids divided by 9; negative means empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "Crew tool-power flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        117
+      ],
+      "meaning": "Ten physical part xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        127
+      ],
+      "meaning": "Part kinds divided by 2: cable, switch, battery",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        137
+      ],
+      "meaning": "Part modes divided by 2: loose, carried, installed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        147
+      ],
+      "meaning": "Carrier ids divided by 2; -0.5 means not carried",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        157
+      ],
+      "meaning": "Installed slot ids divided by 7; negative means uninstalled; cable/switch slots are edge ids, battery slots node ids",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        167
+      ],
+      "meaning": "Switch closed and battery enabled flags; inert true values on cables",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        167,
+        177
+      ],
+      "meaning": "Charge divided by 12; only batteries store charge",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        177,
+        187
+      ],
+      "meaning": "Battery trip ticks divided by 3; other parts zero",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        187,
+        195
+      ],
+      "meaning": "Cable-present flags in edge order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        203
+      ],
+      "meaning": "Conducting-edge flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        203,
+        211
+      ],
+      "meaning": "Energized-edge flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        211,
+        260
+      ],
+      "meaning": "Seven by seven reflexive transitive connectivity matrix, row-major",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        260,
+        267
+      ],
+      "meaning": "Current powered-node flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        267,
+        274
+      ],
+      "meaning": "Current overloaded-node flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        274,
+        281
+      ],
+      "meaning": "Local node demand divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        281,
+        288
+      ],
+      "meaning": "Connected component load divided by 5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        288,
+        290
+      ],
+      "meaning": "Facility progress divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        290,
+        292
+      ],
+      "meaning": "Facility work-mode flags encoded as integers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        292,
+        299
+      ],
+      "meaning": "Power delivered before battery discharge in the last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        299,
+        300
+      ],
+      "meaning": "Current gate-open flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        300,
+        316
+      ],
+      "meaning": "Eight socket xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        316,
+        330
+      ],
+      "meaning": "Seven node xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        330,
+        346
+      ],
+      "meaning": "Eight endpoint node-id pairs divided by 6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        346,
+        350
+      ],
+      "meaning": "Facility xy positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        350,
+        352
+      ],
+      "meaning": "Gate xy position divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        352,
+        355
+      ],
+      "meaning": "Clock/112, total energy created/136, total energy spent/136",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Repair both facilities to four units by transporting and installing limited cables, switches and batteries. Every crew member receives total actual repair increment divided by eight.",
+    "natural_termination": "Both facilities reach four repair units; otherwise time ends at 112 transitions. These task rules are not scientific performance gates.",
+    "interaction": "Installed cables and switches define a seven-node graph. Enabled batteries supply their actual connected components. Demand exceeding three units per available battery trips the component. Node 6 opens the gate; nodes 4 and 5 power repair tools. Specialty-limited installation and physical handoff make partners change one another inventory, routes and work opportunities.",
+    "observation_access": "All terrain, crew/item positions, modes, carriers, slots, charge, trips, connectivity, node endpoints, power, loads, device modes, progress and gate state are public flat-observation fields. Own specialty and service rate are explicit. All rendered entities are public; static role ordering and capacities are task definitions."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "pos"
+      ],
+      "low": 1,
+      "high": 7,
+      "min": 1,
+      "max": 7
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "object_pos"
+      ],
+      "low": 1,
+      "high": 7,
+      "min": 1,
+      "max": 7
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "object_mode"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "carrier"
+      ],
+      "low": -1,
+      "high": 2,
+      "min": -1,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "slot"
+      ],
+      "low": -1,
+      "high": 7,
+      "min": -1,
+      "max": 7
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "charge"
+      ],
+      "low": 0,
+      "high": 12,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "trip"
+      ],
+      "low": 0,
+      "high": 3,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "progress"
+      ],
+      "low": 0,
+      "high": 4,
+      "min": 0,
+      "max": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "device_mode"
+      ],
+      "low": 0,
+      "high": 1,
+      "min": 0,
+      "max": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "energy_created"
+      ],
+      "low": 24,
+      "high": 136,
+      "min": 24,
+      "max": 136
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "energy_spent"
+      ],
+      "low": 0,
+      "high": 136,
+      "min": 0,
+      "max": 136
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 112,
+      "min": 0,
+      "max": 112
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "object_kind"
+      ],
+      "value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        2
+      ]
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "role"
+      ],
+      "value": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_resolution": "All twelve intent actions are legal before joint termination. Missing position, specialty, inventory or power prerequisites cause deterministic no-ops. Malformed indices map to action 0; only 0 is legal after termination. Simultaneous movement blocks input occupied cells, walls and closed gates, cancels duplicate destinations, and blocks swaps. Object transactions use cyclic priority starting at t mod 3; ties use lowest ids except nearest eligible socket selection. A received part may be used by a later role turn that tick. Movement uses current gate power; newly installed power supplies tools now and permits gate movement from the next tick.",
+  "rng_contract": "Reset and step are deterministic and ignore supplied keys. The declared replay seed/key schedule remains exact provenance and must not be silently remapped. No process-global randomness exists.",
+  "event_visibility_note": "All entity/event visibility arrays are true. Per-step events are separate from persistent node power and overload levels. power_delivered describes the supply before charge consumption, while node_powered is the post-discharge condition.",
+  "scientific_status": "AUTHORED_NOT_EXECUTED_NOT_R0_ACCEPTED",
+  "adapter_boundary": "This package supplies the native fixed-array kernel. Agent-keyed JaxMARL adapter, __all__, real replay and presentation acceptance are separate integration deliverables; no frozen learner is replaced."
+}

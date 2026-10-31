@@ -1,0 +1,565 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fe586a7aceb81e759b32214811a9bbb7f6797c110430d946c4c179bbf2dc360c",
+  "manifest_sha256": "57f6042a83741069a00678cde8047942090d1844bab047ecb2ecb7a5514416d4",
+  "title": "Sluice Commons and Downstream Passage",
+  "rules": [
+    "Move on banks and closed gate bridges. Opening a gate prevents bridge entry and permits downstream water and cargo.",
+    "Every open edge can dispatch one existing donor unit; the packet arrives on the next live transition. New arrivals cannot depart in the same transition.",
+    "Close votes win simultaneous open/close conflicts. Crop and spill contention use cyclic role priority.",
+    "Launch nearby boats. A launched boat crosses one open lock per turn only when both endpoint depths lie from one through four.",
+    "Irrigation permanently consumes a water unit. Two doses finish a crop. An unfinished crop loses one health at basin depth five or six.",
+    "Intentional spilling prevents flooding but permanently removes scarce water. Delivered cargo, irrigated crops and crop losses affect owner and shared rewards."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable bank",
+          "color": "#E2D2A8"
+        },
+        {
+          "value": 1,
+          "meaning": "Canal water: not walkable",
+          "color": "#4D90AD"
+        },
+        {
+          "value": 2,
+          "meaning": "Gate bridge: walkable while closed",
+          "color": "#B39562"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "stewards",
+      "glyph": "worker",
+      "label": "Water stewards",
+      "color": "#F1C75B",
+      "attribute_labels": []
+    },
+    {
+      "id": "sluices",
+      "glyph": "gate",
+      "label": "Sluice footbridges",
+      "color": "#87624B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Open for flow and cargo; closed for walking"
+        },
+        {
+          "state_path": [
+            "transit"
+          ],
+          "label": "Water packet on this downstream edge"
+        },
+        {
+          "state_path": [
+            "last_flow"
+          ],
+          "label": "Units newly dispatched this turn"
+        }
+      ]
+    },
+    {
+      "id": "basins",
+      "glyph": "water",
+      "label": "Reservoir and storage basins",
+      "color": "#3A9BC1",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Stored water units"
+        },
+        {
+          "state_path": [
+            "last_spill"
+          ],
+          "label": "Units deliberately drained this turn"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Cargo boats, owner equals index",
+      "color": "#CE8C45",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "boat_running"
+          ],
+          "label": "Launched for automatic lock passage"
+        },
+        {
+          "state_path": [
+            "boat_node"
+          ],
+          "label": "Current basin index"
+        },
+        {
+          "state_path": [
+            "boat_delivered"
+          ],
+          "label": "Arrived at the eastern port"
+        }
+      ]
+    },
+    {
+      "id": "crops",
+      "glyph": "plant",
+      "label": "Owner-indexed crop plots",
+      "color": "#5C9C4B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crop_dose"
+          ],
+          "label": "Conserved irrigation units received"
+        },
+        {
+          "state_path": [
+            "crop_health"
+          ],
+          "label": "Remaining flood tolerance"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "last_flow"
+      ],
+      "meaning": "Water packets dispatched this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_irrigated"
+      ],
+      "meaning": "Crop received at least one dose this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_delivered"
+      ],
+      "meaning": "Cargo first arrived at port this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_flood"
+      ],
+      "meaning": "Unfinished crop lost one health this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_spill"
+      ],
+      "meaning": "Units intentionally drained from each basin this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "drained"
+      ],
+      "meaning": "Total water deliberately drained",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Vote open adjacent gates"
+    },
+    {
+      "id": 6,
+      "label": "Veto and close adjacent gates"
+    },
+    {
+      "id": 7,
+      "label": "Irrigate one adjacent viable crop"
+    },
+    {
+      "id": 8,
+      "label": "Launch adjacent cargo boats"
+    },
+    {
+      "id": 9,
+      "label": "Spill one adjacent basin unit"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role identity, one-hot in declared agent index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Live transition clock, starting at zero",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "t"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "done"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Natural terminal cause",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "terminated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Horizon cause only when natural termination is false",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "truncated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        7,
+        84
+      ],
+      "meaning": "Native tile map flattened in y-major order; see the public world legend",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "tile"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        84,
+        90
+      ],
+      "meaning": "agent pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "agent_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        90,
+        96
+      ],
+      "meaning": "gate pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "gate_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        96,
+        99
+      ],
+      "meaning": "Open for flow and cargo; closed for walking",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "gate_open"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        99,
+        107
+      ],
+      "meaning": "node pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "node_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        107,
+        111
+      ],
+      "meaning": "Stored water units",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "water"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        111,
+        114
+      ],
+      "meaning": "Water packet on this downstream edge",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "transit"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        114,
+        115
+      ],
+      "meaning": "Cumulative intentionally drained water",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "drained"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        115,
+        121
+      ],
+      "meaning": "boat pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "boat_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        121,
+        124
+      ],
+      "meaning": "Current basin index",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "boat_node"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        124,
+        127
+      ],
+      "meaning": "Launched for automatic lock passage",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "boat_running"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        127,
+        130
+      ],
+      "meaning": "Arrived at the eastern port",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "boat_delivered"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        130,
+        136
+      ],
+      "meaning": "crop pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "crop_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        136,
+        139
+      ],
+      "meaning": "Conserved irrigation units received",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "crop_dose"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        139,
+        142
+      ],
+      "meaning": "Remaining flood tolerance",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "crop_health"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        142,
+        145
+      ],
+      "meaning": "Units newly dispatched this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_flow"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        145,
+        148
+      ],
+      "meaning": "Crop received at least one dose this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_irrigated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        148,
+        151
+      ],
+      "meaning": "Cargo first arrived at port this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_delivered"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        151,
+        154
+      ],
+      "meaning": "Unfinished crop lost one health this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_flood"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        154,
+        158
+      ],
+      "meaning": "Units deliberately drained this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_spill"
+        ]
+      ]
+    }
+  ]
+}

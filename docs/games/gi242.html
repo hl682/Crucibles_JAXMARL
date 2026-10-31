@@ -1,0 +1,489 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Estuary Council Cities · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI242 / SPATIAL</p><h1>Estuary Council Cities</h1><p class="lead"></p><div class="stats"><span>320 agents</span><span>21 actions</span><span>833 observation columns</span><span>1024 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 242</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Deliver 40 town crop cargos to markets while negotiating physical permits, river access, irrigation and delayed flood protection before H=1024.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion at 40 cumulative market deliveries; otherwise horizon truncation at 1024.&quot;,
+  &quot;interaction&quot;: &quot;Two distinct local contributors within four ticks and a civic witness create a carried permit. Permits compete between gate access and water allocation. Upstream levees redirect a later flood pulse into downstream towns. Open sluices aid access and irrigation but admit floodwater. Ferries, roads and markets alter future cargo choices.&quot;,
+  &quot;observation_access&quot;: &quot;Only own prefix and radius-two Chebyshev 5x5 patch with exact listed channels enter the policy. Visible actor identity, role, crew, tools, cargo, stamina and message are in the patch. Each object attribute is in its group channels. Hidden cells and entities remain hidden; global debugger must be labeled. Clock alone is public.&quot;
+}</pre></details><p>Declared per-step reward bounds: -8.0 to 8.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Twenty towns each contain sixteen independently controlled residents. Tools are exchangeable and original professions remain visible.</li><li>Two different residents must contribute supply at the same assembly within four ticks; a seal-holder must witness before a permit appears.</li><li>Carry a permit to open a river sluice for twelve ticks, or spend it at a reservoir for four irrigation units.</li><li>Levees protect local fields but redirect later flood pressure to the neighboring town downstream. Sluices improve access and can increase exposure.</li><li>Plant, irrigate and harvest actual fields. Carry crops to markets, invest in markets or build roads for cheaper movement.</li><li>Ferries cross the actual river to a free landing. Native action rows can support human selection; the interface is not yet verified.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Estuary Council Cities
+
+Status: AUTHORED_NOT_EXECUTED. All gameplay, scripts and causal predictions below are source-derived author hypotheses, not measured results.
+
+## Civic rules and real geography
+
+Twenty sixteen-person towns occupy a 70 by 48 estuary grid. Five continuous vertical rivers divide the connected land, with timed sluice crossings at each town and one-way ferry landings. Eight visible professions include builders, farmers, stewards, ferrymen, couriers and traders; tools 1/2/3/4 enable building, irrigation, witnessing and ferry use and can be exchanged. Supply units are explicit combined construction/seed kits. Initial builder 0 and farmer 1 of each town carry two and one units.
+
+At the assembly, action 6 contributes a unit. The first contributor opens a four-tick window. A second contributor must have a different actor identity; the ledger records the first actor. A nearby civic-tool holder must witness (7) while two credits and time remain. A grant creates one physical permit at the hall; action 8 picks it up into empty hands. The permit can be handed over, consumed at the gate (9) to open twelve ticks, or consumed at the reservoir (10) for four water units. A permit cannot satisfy both uses. Contributions expire without a valid witness; later independent assemblies are possible.
+
+Action 11 invests supply into a levee at a flood gauge, up to strength two. Flood pressure moves from a town to the next real town east on a later step. The upstream levee increases the redirected component when pressure is present. Locally, a levee reduces exposure while an old open sluice adds two exposure units. This is a bounded discrete pressure model, not a mass-conserving fluid solver. Seeded tide offsets only affect the first upstream town in each row. Flood level at least three damages existing crops by three maturity units. A gate can improve irrigation and movement while worsening exposure during a pulse.
+
+Action 12 moves a tool-4 actor from the harbor across the river to a free west landing. It is one-way; a return requires the town gate or another route. A newly occupied landing cancels the ferry. Roads (17) consume supply underfoot and remove walking stamina cost on road destination cells. A levee is a real blocked tile; construction is canceled if an actor moves onto its site in that step. Market investment (18) consumes supply and raises future crop prices up to two levels.
+
+Fields start at maturity two and moisture two. Irrigation (13) requires a farming tool and consumes reservoir water. Existing wet crops gain maturity every fourth tick; planting (14) consumes supply on an empty field; harvest (15) loads one crop when maturity reaches eight. Sell (16) physically transfers the carried crop at a market. Tool exchange (19) and cargo/message handoff (20) are reciprocal adjacent actions.
+
+## Incentives and intended alternatives
+
+Residents can coordinate a gate permit for voyages, allocate it to irrigation, or withhold witness labor; supply invested in local levees can impose delayed exposure downstream. Roads and market upgrades compete with planting and assembly costs. Ferry labor provides an alternative to temporary gates. These are source-defined alternatives without measured equilibrium or learning claims.
+
+Each nonrest action costs 0.01. Donations, levees, roads and market investments cost an additional 0.02. A sale pays its actor 1 plus 0.25 per old market level, and each resident of that market town 0.04. Each damaged town field costs all its residents 0.08. Natural completion is 40 cumulative crop cargos sold; otherwise H=1024 ends the episode. Public decisions are embodied in local action, supplied inventory and physical permits, with no implemented free-text negotiation or off-map voting.
+
+## Literal diagnostics
+
+Script one contributes from actor 0, then from actor 1 while actor 2 witnesses, then actor 1 picks up the expected permit. Script two moves ferryman 3 through the explicit cross-river action and then west. The paired hypothesis removes only actor 2&#x27;s witness at the second contribution and uses identical later rest actions. Expected permit and expiry differences are unexecuted hypotheses.
+
+
+## Native boundary and local information
+
+Every listed actor is an independently selectable row of the same int32 action vector. Human or AI control uses that unchanged row; a frontend, keyboard binding, animation, camera, agent-keyed adapter and human usability have not been implemented or verified by this author. All actors remain active. Rest restores one stamina unit; exertion consumes one, with documented game-specific additions. Movement is cardinal; destinations occupied at the start of a step cannot be entered. Simultaneous claims for an empty destination favor the lowest actor index. Spatial interactions use start-of-step positions and Manhattan distance at most one to the nearest relevant object, unless a specific rule says otherwise. Tool exchange requires both adjacent actors to choose exchange and mutually select each other. Invalid or out-of-range actions become rest deterministically.
+
+Each role receives the own-state prefix plus a 5x5 radius-two patch. The manifest lists every channel and normalization; the renderer&#x27;s entity masks and map mask are derived from the same radius. Out-of-world patch cells are all -1. There is no omniscient policy feed. Agent IDs, fixed role and home crew are public metadata; current tools, cargo, stamina, messages and world attributes are visible only in the patch. Entity positions are used by movement, proximity, ecology or construction; none are layout-only proxies.
+
+A nonterminal call advances the int32 clock once. Natural completion has priority over horizon truncation. A terminal raw call preserves every state leaf, observation and terminal cause, returns zero reward and all dones true, and does not reset. All boundary/state integers are int32; the supplied uint32 key is used only through JAX randomness and is not copied into state. State keys/shapes remain fixed. Rewards declare conservative [-8,8] bounds and observations [-1,1]; these are interface ranges, not scientific performance gates. Concurrency, bounds, terminal absorption, JIT/vmap, causal effects, throughput and numerical parity remain unverified.
+
+## Source-line evidence
+
+- candidate.py:122 &#x27;grant =&#x27;: distinct contributions and witness release a permit
+- candidate.py:139 &#x27;n[&quot;pending&quot;]&#x27;: levees redirect delayed pressure to a different town
+- candidate.py:133 &#x27;flood =&#x27;: opened sluice changes local flood exposure
+- candidate.py:106 &#x27;ferry =&#x27;: free landing and actual river transport
+- candidate.py:129 &#x27;n[&quot;sluice&quot;]&#x27;: physical carried permit changes gate duration
+
+## Provenance and limits
+
+The source is original for this batch and train split. Only current batch authority, four assigned design/request pairs, population/family direction, human-playability addendum and copied interface contracts/templates were read. No prior candidate, IR, result, training, heldout or memory was read; no remote query was made. Official repository references were allowed but not read or copied. The family inspiration comes solely from the supplied design direction: no commercial assets or upstream game implementation is included. PureJaxRL/Craftax baseline code is not used as a game or learner replacement.
+
+The two literal scripts and the paired single-action hypothesis in playthrough.json are unexecuted diagnostics, not a controller restriction or proof of task success. Source-authored invariants and bounds await the independent sealed validator. No candidate import, Python candidate execution, JAX/NumPy computation, validator, training, replay, browser session, human play, accepted R0/M0, solvability, learning, strategic richness, non-isomorphism or transfer result is claimed. Zero, negative, failed, missing and indeterminate outcomes remain admissible.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Rest</span></div><div class="action"><b>1</b><span>East</span></div><div class="action"><b>2</b><span>West</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>North</span></div><div class="action"><b>5</b><span>Take two supply units</span></div><div class="action"><b>6</b><span>Contribute supply at assembly</span></div><div class="action"><b>7</b><span>Witness assembly with civic seal</span></div><div class="action"><b>8</b><span>Pick up granted permit</span></div><div class="action"><b>9</b><span>Spend permit to open sluice</span></div><div class="action"><b>10</b><span>Spend permit on reservoir allocation</span></div><div class="action"><b>11</b><span>Build levee at flood gauge</span></div><div class="action"><b>12</b><span>Ferry across river</span></div><div class="action"><b>13</b><span>Irrigate field</span></div><div class="action"><b>14</b><span>Plant with supply unit</span></div><div class="action"><b>15</b><span>Harvest ripe field</span></div><div class="action"><b>16</b><span>Sell crop at market</span></div><div class="action"><b>17</b><span>Lay road underfoot</span></div><div class="action"><b>18</b><span>Invest supply in market</span></div><div class="action"><b>19</b><span>Exchange tools</span></div><div class="action"><b>20</b><span>Handoff cargo and message</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> builder of town 0</p><p><b>agent_1</b> farmer of town 0</p><p><b>agent_2</b> steward of town 0</p><p><b>agent_3</b> ferryman of town 0</p><p><b>agent_4</b> courier of town 0</p><p><b>agent_5</b> trader of town 0</p><p><b>agent_6</b> engineer of town 0</p><p><b>agent_7</b> gate keeper of town 0</p><p><b>agent_8</b> builder of town 0</p><p><b>agent_9</b> farmer of town 0</p><p><b>agent_10</b> steward of town 0</p><p><b>agent_11</b> ferryman of town 0</p><p><b>agent_12</b> courier of town 0</p><p><b>agent_13</b> trader of town 0</p><p><b>agent_14</b> engineer of town 0</p><p><b>agent_15</b> gate keeper of town 0</p><p><b>agent_16</b> builder of town 1</p><p><b>agent_17</b> farmer of town 1</p><p><b>agent_18</b> steward of town 1</p><p><b>agent_19</b> ferryman of town 1</p><p><b>agent_20</b> courier of town 1</p><p><b>agent_21</b> trader of town 1</p><p><b>agent_22</b> engineer of town 1</p><p><b>agent_23</b> gate keeper of town 1</p><p><b>agent_24</b> builder of town 1</p><p><b>agent_25</b> farmer of town 1</p><p><b>agent_26</b> steward of town 1</p><p><b>agent_27</b> ferryman of town 1</p><p><b>agent_28</b> courier of town 1</p><p><b>agent_29</b> trader of town 1</p><p><b>agent_30</b> engineer of town 1</p><p><b>agent_31</b> gate keeper of town 1</p><p><b>agent_32</b> builder of town 2</p><p><b>agent_33</b> farmer of town 2</p><p><b>agent_34</b> steward of town 2</p><p><b>agent_35</b> ferryman of town 2</p><p><b>agent_36</b> courier of town 2</p><p><b>agent_37</b> trader of town 2</p><p><b>agent_38</b> engineer of town 2</p><p><b>agent_39</b> gate keeper of town 2</p><p><b>agent_40</b> builder of town 2</p><p><b>agent_41</b> farmer of town 2</p><p><b>agent_42</b> steward of town 2</p><p><b>agent_43</b> ferryman of town 2</p><p><b>agent_44</b> courier of town 2</p><p><b>agent_45</b> trader of town 2</p><p><b>agent_46</b> engineer of town 2</p><p><b>agent_47</b> gate keeper of town 2</p><p><b>agent_48</b> builder of town 3</p><p><b>agent_49</b> farmer of town 3</p><p><b>agent_50</b> steward of town 3</p><p><b>agent_51</b> ferryman of town 3</p><p><b>agent_52</b> courier of town 3</p><p><b>agent_53</b> trader of town 3</p><p><b>agent_54</b> engineer of town 3</p><p><b>agent_55</b> gate keeper of town 3</p><p><b>agent_56</b> builder of town 3</p><p><b>agent_57</b> farmer of town 3</p><p><b>agent_58</b> steward of town 3</p><p><b>agent_59</b> ferryman of town 3</p><p><b>agent_60</b> courier of town 3</p><p><b>agent_61</b> trader of town 3</p><p><b>agent_62</b> engineer of town 3</p><p><b>agent_63</b> gate keeper of town 3</p><p><b>agent_64</b> builder of town 4</p><p><b>agent_65</b> farmer of town 4</p><p><b>agent_66</b> steward of town 4</p><p><b>agent_67</b> ferryman of town 4</p><p><b>agent_68</b> courier of town 4</p><p><b>agent_69</b> trader of town 4</p><p><b>agent_70</b> engineer of town 4</p><p><b>agent_71</b> gate keeper of town 4</p><p><b>agent_72</b> builder of town 4</p><p><b>agent_73</b> farmer of town 4</p><p><b>agent_74</b> steward of town 4</p><p><b>agent_75</b> ferryman of town 4</p><p><b>agent_76</b> courier of town 4</p><p><b>agent_77</b> trader of town 4</p><p><b>agent_78</b> engineer of town 4</p><p><b>agent_79</b> gate keeper of town 4</p><p><b>agent_80</b> builder of town 5</p><p><b>agent_81</b> farmer of town 5</p><p><b>agent_82</b> steward of town 5</p><p><b>agent_83</b> ferryman of town 5</p><p><b>agent_84</b> courier of town 5</p><p><b>agent_85</b> trader of town 5</p><p><b>agent_86</b> engineer of town 5</p><p><b>agent_87</b> gate keeper of town 5</p><p><b>agent_88</b> builder of town 5</p><p><b>agent_89</b> farmer of town 5</p><p><b>agent_90</b> steward of town 5</p><p><b>agent_91</b> ferryman of town 5</p><p><b>agent_92</b> courier of town 5</p><p><b>agent_93</b> trader of town 5</p><p><b>agent_94</b> engineer of town 5</p><p><b>agent_95</b> gate keeper of town 5</p><p><b>agent_96</b> builder of town 6</p><p><b>agent_97</b> farmer of town 6</p><p><b>agent_98</b> steward of town 6</p><p><b>agent_99</b> ferryman of town 6</p><p><b>agent_100</b> courier of town 6</p><p><b>agent_101</b> trader of town 6</p><p><b>agent_102</b> engineer of town 6</p><p><b>agent_103</b> gate keeper of town 6</p><p><b>agent_104</b> builder of town 6</p><p><b>agent_105</b> farmer of town 6</p><p><b>agent_106</b> steward of town 6</p><p><b>agent_107</b> ferryman of town 6</p><p><b>agent_108</b> courier of town 6</p><p><b>agent_109</b> trader of town 6</p><p><b>agent_110</b> engineer of town 6</p><p><b>agent_111</b> gate keeper of town 6</p><p><b>agent_112</b> builder of town 7</p><p><b>agent_113</b> farmer of town 7</p><p><b>agent_114</b> steward of town 7</p><p><b>agent_115</b> ferryman of town 7</p><p><b>agent_116</b> courier of town 7</p><p><b>agent_117</b> trader of town 7</p><p><b>agent_118</b> engineer of town 7</p><p><b>agent_119</b> gate keeper of town 7</p><p><b>agent_120</b> builder of town 7</p><p><b>agent_121</b> farmer of town 7</p><p><b>agent_122</b> steward of town 7</p><p><b>agent_123</b> ferryman of town 7</p><p><b>agent_124</b> courier of town 7</p><p><b>agent_125</b> trader of town 7</p><p><b>agent_126</b> engineer of town 7</p><p><b>agent_127</b> gate keeper of town 7</p><p><b>agent_128</b> builder of town 8</p><p><b>agent_129</b> farmer of town 8</p><p><b>agent_130</b> steward of town 8</p><p><b>agent_131</b> ferryman of town 8</p><p><b>agent_132</b> courier of town 8</p><p><b>agent_133</b> trader of town 8</p><p><b>agent_134</b> engineer of town 8</p><p><b>agent_135</b> gate keeper of town 8</p><p><b>agent_136</b> builder of town 8</p><p><b>agent_137</b> farmer of town 8</p><p><b>agent_138</b> steward of town 8</p><p><b>agent_139</b> ferryman of town 8</p><p><b>agent_140</b> courier of town 8</p><p><b>agent_141</b> trader of town 8</p><p><b>agent_142</b> engineer of town 8</p><p><b>agent_143</b> gate keeper of town 8</p><p><b>agent_144</b> builder of town 9</p><p><b>agent_145</b> farmer of town 9</p><p><b>agent_146</b> steward of town 9</p><p><b>agent_147</b> ferryman of town 9</p><p><b>agent_148</b> courier of town 9</p><p><b>agent_149</b> trader of town 9</p><p><b>agent_150</b> engineer of town 9</p><p><b>agent_151</b> gate keeper of town 9</p><p><b>agent_152</b> builder of town 9</p><p><b>agent_153</b> farmer of town 9</p><p><b>agent_154</b> steward of town 9</p><p><b>agent_155</b> ferryman of town 9</p><p><b>agent_156</b> courier of town 9</p><p><b>agent_157</b> trader of town 9</p><p><b>agent_158</b> engineer of town 9</p><p><b>agent_159</b> gate keeper of town 9</p><p><b>agent_160</b> builder of town 10</p><p><b>agent_161</b> farmer of town 10</p><p><b>agent_162</b> steward of town 10</p><p><b>agent_163</b> ferryman of town 10</p><p><b>agent_164</b> courier of town 10</p><p><b>agent_165</b> trader of town 10</p><p><b>agent_166</b> engineer of town 10</p><p><b>agent_167</b> gate keeper of town 10</p><p><b>agent_168</b> builder of town 10</p><p><b>agent_169</b> farmer of town 10</p><p><b>agent_170</b> steward of town 10</p><p><b>agent_171</b> ferryman of town 10</p><p><b>agent_172</b> courier of town 10</p><p><b>agent_173</b> trader of town 10</p><p><b>agent_174</b> engineer of town 10</p><p><b>agent_175</b> gate keeper of town 10</p><p><b>agent_176</b> builder of town 11</p><p><b>agent_177</b> farmer of town 11</p><p><b>agent_178</b> steward of town 11</p><p><b>agent_179</b> ferryman of town 11</p><p><b>agent_180</b> courier of town 11</p><p><b>agent_181</b> trader of town 11</p><p><b>agent_182</b> engineer of town 11</p><p><b>agent_183</b> gate keeper of town 11</p><p><b>agent_184</b> builder of town 11</p><p><b>agent_185</b> farmer of town 11</p><p><b>agent_186</b> steward of town 11</p><p><b>agent_187</b> ferryman of town 11</p><p><b>agent_188</b> courier of town 11</p><p><b>agent_189</b> trader of town 11</p><p><b>agent_190</b> engineer of town 11</p><p><b>agent_191</b> gate keeper of town 11</p><p><b>agent_192</b> builder of town 12</p><p><b>agent_193</b> farmer of town 12</p><p><b>agent_194</b> steward of town 12</p><p><b>agent_195</b> ferryman of town 12</p><p><b>agent_196</b> courier of town 12</p><p><b>agent_197</b> trader of town 12</p><p><b>agent_198</b> engineer of town 12</p><p><b>agent_199</b> gate keeper of town 12</p><p><b>agent_200</b> builder of town 12</p><p><b>agent_201</b> farmer of town 12</p><p><b>agent_202</b> steward of town 12</p><p><b>agent_203</b> ferryman of town 12</p><p><b>agent_204</b> courier of town 12</p><p><b>agent_205</b> trader of town 12</p><p><b>agent_206</b> engineer of town 12</p><p><b>agent_207</b> gate keeper of town 12</p><p><b>agent_208</b> builder of town 13</p><p><b>agent_209</b> farmer of town 13</p><p><b>agent_210</b> steward of town 13</p><p><b>agent_211</b> ferryman of town 13</p><p><b>agent_212</b> courier of town 13</p><p><b>agent_213</b> trader of town 13</p><p><b>agent_214</b> engineer of town 13</p><p><b>agent_215</b> gate keeper of town 13</p><p><b>agent_216</b> builder of town 13</p><p><b>agent_217</b> farmer of town 13</p><p><b>agent_218</b> steward of town 13</p><p><b>agent_219</b> ferryman of town 13</p><p><b>agent_220</b> courier of town 13</p><p><b>agent_221</b> trader of town 13</p><p><b>agent_222</b> engineer of town 13</p><p><b>agent_223</b> gate keeper of town 13</p><p><b>agent_224</b> builder of town 14</p><p><b>agent_225</b> farmer of town 14</p><p><b>agent_226</b> steward of town 14</p><p><b>agent_227</b> ferryman of town 14</p><p><b>agent_228</b> courier of town 14</p><p><b>agent_229</b> trader of town 14</p><p><b>agent_230</b> engineer of town 14</p><p><b>agent_231</b> gate keeper of town 14</p><p><b>agent_232</b> builder of town 14</p><p><b>agent_233</b> farmer of town 14</p><p><b>agent_234</b> steward of town 14</p><p><b>agent_235</b> ferryman of town 14</p><p><b>agent_236</b> courier of town 14</p><p><b>agent_237</b> trader of town 14</p><p><b>agent_238</b> engineer of town 14</p><p><b>agent_239</b> gate keeper of town 14</p><p><b>agent_240</b> builder of town 15</p><p><b>agent_241</b> farmer of town 15</p><p><b>agent_242</b> steward of town 15</p><p><b>agent_243</b> ferryman of town 15</p><p><b>agent_244</b> courier of town 15</p><p><b>agent_245</b> trader of town 15</p><p><b>agent_246</b> engineer of town 15</p><p><b>agent_247</b> gate keeper of town 15</p><p><b>agent_248</b> builder of town 15</p><p><b>agent_249</b> farmer of town 15</p><p><b>agent_250</b> steward of town 15</p><p><b>agent_251</b> ferryman of town 15</p><p><b>agent_252</b> courier of town 15</p><p><b>agent_253</b> trader of town 15</p><p><b>agent_254</b> engineer of town 15</p><p><b>agent_255</b> gate keeper of town 15</p><p><b>agent_256</b> builder of town 16</p><p><b>agent_257</b> farmer of town 16</p><p><b>agent_258</b> steward of town 16</p><p><b>agent_259</b> ferryman of town 16</p><p><b>agent_260</b> courier of town 16</p><p><b>agent_261</b> trader of town 16</p><p><b>agent_262</b> engineer of town 16</p><p><b>agent_263</b> gate keeper of town 16</p><p><b>agent_264</b> builder of town 16</p><p><b>agent_265</b> farmer of town 16</p><p><b>agent_266</b> steward of town 16</p><p><b>agent_267</b> ferryman of town 16</p><p><b>agent_268</b> courier of town 16</p><p><b>agent_269</b> trader of town 16</p><p><b>agent_270</b> engineer of town 16</p><p><b>agent_271</b> gate keeper of town 16</p><p><b>agent_272</b> builder of town 17</p><p><b>agent_273</b> farmer of town 17</p><p><b>agent_274</b> steward of town 17</p><p><b>agent_275</b> ferryman of town 17</p><p><b>agent_276</b> courier of town 17</p><p><b>agent_277</b> trader of town 17</p><p><b>agent_278</b> engineer of town 17</p><p><b>agent_279</b> gate keeper of town 17</p><p><b>agent_280</b> builder of town 17</p><p><b>agent_281</b> farmer of town 17</p><p><b>agent_282</b> steward of town 17</p><p><b>agent_283</b> ferryman of town 17</p><p><b>agent_284</b> courier of town 17</p><p><b>agent_285</b> trader of town 17</p><p><b>agent_286</b> engineer of town 17</p><p><b>agent_287</b> gate keeper of town 17</p><p><b>agent_288</b> builder of town 18</p><p><b>agent_289</b> farmer of town 18</p><p><b>agent_290</b> steward of town 18</p><p><b>agent_291</b> ferryman of town 18</p><p><b>agent_292</b> courier of town 18</p><p><b>agent_293</b> trader of town 18</p><p><b>agent_294</b> engineer of town 18</p><p><b>agent_295</b> gate keeper of town 18</p><p><b>agent_296</b> builder of town 18</p><p><b>agent_297</b> farmer of town 18</p><p><b>agent_298</b> steward of town 18</p><p><b>agent_299</b> ferryman of town 18</p><p><b>agent_300</b> courier of town 18</p><p><b>agent_301</b> trader of town 18</p><p><b>agent_302</b> engineer of town 18</p><p><b>agent_303</b> gate keeper of town 18</p><p><b>agent_304</b> builder of town 19</p><p><b>agent_305</b> farmer of town 19</p><p><b>agent_306</b> steward of town 19</p><p><b>agent_307</b> ferryman of town 19</p><p><b>agent_308</b> courier of town 19</p><p><b>agent_309</b> trader of town 19</p><p><b>agent_310</b> engineer of town 19</p><p><b>agent_311</b> gate keeper of town 19</p><p><b>agent_312</b> builder of town 19</p><p><b>agent_313</b> farmer of town 19</p><p><b>agent_314</b> steward of town 19</p><p><b>agent_315</b> ferryman of town 19</p><p><b>agent_316</b> courier of town 19</p><p><b>agent_317</b> trader of town 19</p><p><b>agent_318</b> engineer of town 19</p><p><b>agent_319</b> gate keeper of town 19</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;native clock / H&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;own x / (width - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;own y / (height - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;own stamina / 20&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;meaning&quot;: &quot;own tool / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;meaning&quot;: &quot;own cargo kind / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;meaning&quot;: &quot;own cargo units / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;meaning&quot;: &quot;own carried information / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      833
+    ],
+    &quot;meaning&quot;: &quot;5 by 5 local patch, dy then dx from -2 through +2, then channel; outside world all -1. Channels: 0=terrain value / 10; 1=actor identity (id + 1) / A; 2=role (role + 1) / R; 3=home crew (team + 1) / C; 4=held tool / 4; 5=cargo type / 4; 6=cargo amount / 4; 7=stamina / 20; 8=carried message / 4; 9=hall identity (index + 1) / capacity; 10=material contributions in current assembly / 2; 11=ticks remaining in assembly / 4; 12=first donor actor index plus one / 320; 13=available carried permit / 1; 14=stock identity (index + 1) / capacity; 15=supply stock / 32; 16=gate identity (index + 1) / capacity; 17=open crossing ticks remaining / 12; 18=field identity (index + 1) / capacity; 19=crop maturity / 8; 20=field moisture / 4; 21=harbor identity (index + 1) / capacity; 22=ferry trips / 1024; 23=market identity (index + 1) / capacity; 24=market investment / 2; 25=delivered crop cargos / 40; 26=reservoir identity (index + 1) / capacity; 27=irrigation water / 8; 28=gauge identity (index + 1) / capacity; 29=levee strength / 2; 30=incoming delayed pressure / 4; 31=local flood pressure / 6; 32=local tide offset / 7&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 320,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;role&quot;
+        ],
+        &quot;meaning&quot;: &quot;fixed profession code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;home crew identifier&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;current exchangeable tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo kind&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;load&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;energy&quot;
+        ],
+        &quot;meaning&quot;: &quot;stamina, 0 to 20&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;memory&quot;
+        ],
+        &quot;meaning&quot;: &quot;physically carried information code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;hall&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;hall_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;hall_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;hall_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;credits&quot;
+        ],
+        &quot;meaning&quot;: &quot;material contributions in current assembly&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;window&quot;
+        ],
+        &quot;meaning&quot;: &quot;ticks remaining in assembly&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;first_donor&quot;
+        ],
+        &quot;meaning&quot;: &quot;first donor actor index plus one&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;permit&quot;
+        ],
+        &quot;meaning&quot;: &quot;available carried permit&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;stock&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;stock_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;stock_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;stock_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;supplies&quot;
+        ],
+        &quot;meaning&quot;: &quot;supply stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gate&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gate_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;sluice&quot;
+        ],
+        &quot;meaning&quot;: &quot;open crossing ticks remaining&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;field&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;field_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;field_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;field_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;crop maturity&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wet&quot;
+        ],
+        &quot;meaning&quot;: &quot;field moisture&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;harbor&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;harbor_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;harbor_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;harbor_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;ferry_count&quot;
+        ],
+        &quot;meaning&quot;: &quot;ferry trips&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;market&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;market_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;market_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;market_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;market_level&quot;
+        ],
+        &quot;meaning&quot;: &quot;market investment&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sales&quot;
+        ],
+        &quot;meaning&quot;: &quot;delivered crop cargos&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;reservoir&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;reservoir_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;reservoir_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;reservoir_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;irrigation water&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gauge&quot;,
+    &quot;kind&quot;: &quot;hazard&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;gauge_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gauge_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gauge_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;levee&quot;
+        ],
+        &quot;meaning&quot;: &quot;levee strength&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pending&quot;
+        ],
+        &quot;meaning&quot;: &quot;incoming delayed pressure&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;flood&quot;
+        ],
+        &quot;meaning&quot;: &quot;local flood pressure&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tide_phase&quot;
+        ],
+        &quot;meaning&quot;: &quot;local tide offset&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 242,
+  &quot;key&quot;: &quot;gi242&quot;,
+  &quot;title&quot;: &quot;Estuary Council Cities&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 320,
+    &quot;observation_size&quot;: 833,
+    &quot;num_actions&quot;: 21,
+    &quot;max_steps&quot;: 1024
+  },
+  &quot;source_sha256&quot;: &quot;f0c6cf463d29edd7e5870f6c15c590ca922820e224adf38026aef485afe7b7c7&quot;,
+  &quot;manifest_sha256&quot;: &quot;0ba5037f2aef0b015ebfed0c8753c104fa900e73dd46dfcc9a1fc5212274f9a9&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;f0c6cf463d29edd7e5870f6c15c590ca922820e224adf38026aef485afe7b7c7&quot;,
+      &quot;bytes&quot;: 18913,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00242/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;0ba5037f2aef0b015ebfed0c8753c104fa900e73dd46dfcc9a1fc5212274f9a9&quot;,
+      &quot;bytes&quot;: 69322,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00242/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;b4423582b3f28fed838add3dcdb1395b4ecc17d2de2eb813f2557e62245895cf&quot;,
+      &quot;bytes&quot;: 10781,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00242/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;1ec95203053274f72eadafeab32b067c3eba80b94c0588fc0c7a679260ae0aad&quot;,
+      &quot;bytes&quot;: 7905,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00242/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;7d4f962210b6ce1ce1be4817c89a75a8f58112cb35d926649d64b69490ac78c3&quot;,
+      &quot;bytes&quot;: 76789,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00242/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi242">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

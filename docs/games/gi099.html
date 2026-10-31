@@ -1,0 +1,557 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>灯火庭院 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI099 / SPATIAL</p><h1>灯火庭院</h1><p class="lead">守卫追逐持旗信使；标记使对手冻结掉旗，邻近队友可救援并给予短时保护。</p><div class="stats"><span>4 agents</span><span>7 actions</span><span>73 observation columns</span><span>96 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi099.gif" alt="Original saved demonstration gi099"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi099.gif" alt="Actual verification episode gi099"></section><section><h2>Run this game</h2><pre>crucibles play --game 99</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Wardens aim to immobilize every courier still inside. Couriers aim to get both pennants out, one carried pennant per escaping courier, while keeping their partner available for rescue.&quot;,
+  &quot;natural_termination&quot;: &quot;Both couriers escaped, or every nonescaped courier is currently frozen. If one has escaped and the other is tagged, the wardens end the remaining chase. Otherwise truncate at 96 steps. Frozen timers last at most six steps without retagging; an episode can end earlier. Terminal raw state is absorbing.&quot;,
+  &quot;interaction&quot;: &quot;Workers occupy a courtyard with two routes around a wall. Tagging drops carried cargo and removes the target&#x27;s next actions. A nearby courier can free the partner with grace before the tag phase. Both couriers draw from the same regenerating shelter charges; wardens can seal those physical shelters. Exiting removes a possible rescuer while also securing a payoff.&quot;,
+  &quot;observation_access&quot;: &quot;Same-team workers are always radio-visible. Opponents are visible only within Manhattan distance three; walls do not block this proximity sensor. Pennants are visible within the same radius or when carried by a teammate; delivered pennants are inactive. The static map, shelters, exit, shelter resources and identity-only event announcements are public. Hidden worker and pennant coordinates and attributes are masked exactly as listed; the renderer must honor agent_vis and flag_vis.&quot;
+}</pre></details><p>Declared per-step reward bounds: -16 to 16. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Two wardens pursue two pennant-carrying couriers around a central wall.</li><li>Tagging an adjacent unprotected courier freezes them and drops their pennant.</li><li>An adjacent teammate can rescue a frozen courier, granting temporary protection.</li><li>Couriers must spend finite shelter charges for cover; wardens can seal shelters.</li><li>Couriers share radio positions. Opponents and loose pennants are sensed only nearby.</li><li>An escaped courier cannot return to rescue. The chase ends when both escape or every remaining courier is frozen.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Lantern Courtyard — game-v3-00099
+
+Two controlled wardens (roles 0 and 1) and two controlled couriers (roles 2 and 3) occupy a 9 by 7 courtyard. A three-cell central wall separates upper and lower approaches. Couriers must collect the two pennants and each exit with one at (8,3). Wardens seek to freeze every courier still inside. Both teams&#x27; actions affect the other side&#x27;s future action set and opportunities.
+
+## Transition order and role actions
+
+Actions 0–4 wait or move. Input-frozen or escaped roles have only wait. Movement is followed by warden shelter seals, courier cover expenditure, courier interaction, then warden tagging. Finally carried pennants follow their actual carriers, termination is determined, and visibility is recomputed.
+
+For a warden, action 5 tags the nearest eligible courier at Manhattan distance at most one; equal distances choose the lower courier index. A courier is eligible only when not escaped, not already frozen, without rescue grace and without cover. Tagging freezes them for six ticks, drops any carried pennant at their current cell and clears their inventory. Timers decline once per call; a courier frozen at input cannot act on the call that brings its timer to zero. Retagging after release is possible.
+
+For a courier, action 5 first rescues an adjacent frozen teammate; otherwise it exits while at the gate with a pennant, or picks a loose pennant on its own cell when empty-handed. Rescue clears the teammate&#x27;s freeze timer and grants grace two, protecting that transition and the following transition. The rescued player does not gain an extra same-tick action. Escape makes the pennant inactive and leaves the escaped worker visible as an inert role; it no longer blocks movement and cannot rescue.
+
+Action 6 seals a shelter for a warden within distance one, or spends one cover charge for a courier standing exactly on an unsealed shelter. Wardens&#x27; seals take precedence that tick. Cover lasts only for the current tag phase; the level is visible in the resulting state. Each shelter starts with four charges. Every sixth tick it regains one, capped at four, only if it was unsealed at input. Cover therefore creates shared resource and timing dependence.
+
+The natural endings are both couriers escaped, or every courier that has not escaped is frozen. The latter can occur before the six-tick timers expire; if one courier already exited, tagging the other ends the remaining chase. Otherwise the horizon is 96. This is a team contest with possible mixed earlier escapes, not an assertion that either side has a winning strategy.
+
+## Payoffs, information and partner dependence
+
+Each successful tag pays its warden two and penalizes its target two. A rescue pays one to the rescuer and one to the rescued courier. Each escape pays its courier five, the other courier two, and costs each warden two. A joint escape adds three to both couriers and subtracts three from both wardens. A capture ending does the reverse. Those integer event payoffs are the returned rewards; there is no measured outcome in this document.
+
+Teammate positions and status are always radio-visible. Enemy workers are visible only within Manhattan distance three; walls do not occlude this proximity sensor. Loose pennants use that radius; a teammate-carried pennant is visible to its team. Delivered pennants are inactive. Hidden coordinates and attributes are masked, with explicit visibility bits. The public map, shelters and their resource levels, gate, and identity-only event announcements remain available to all roles. Public resource changes can themselves support inference; no additional secret positional feed is provided to the role renderer.
+
+A courier can divert a warden so a partner crosses, spend a shared charge, return to rescue, or escape early and remove the team&#x27;s remaining rescue option. Wardens can split approaches, coordinate a freeze window, or spend a turn sealing cover while the other tags. These alternatives depend on partners&#x27; timing and opponents&#x27; actions. The proposed paired scripts separately vary a warden&#x27;s tag and a courier&#x27;s rescue; their predicted mask, cargo and protection differences await real execution.
+
+## Declared invariants and prospective variations
+
+The two wardens never acquire pennants or become frozen. A courier carries at most one pennant; an active carried pennant has exactly one courier owner. Frozen timers remain in [0,6], grace in [0,2], charges in [0,4] and seals in [0,3]. Escaped courier positions may overlap later entrants at the gate because they are nonblocking; unique active positions are deliberately not asserted for that group. All physical positions remain in map bounds.
+
+Prospective variants could change wall gaps, shelter placement and regeneration, sensing radius, team composition or the rule for leaving a partner behind. None is sampled or evaluated here.
+
+## Literal source evidence
+
+**Actual proximity and teammate visibility**
+
+```python
+L16:         n[&quot;agent_vis&quot;] = (teams[:, None] == teams[None, :]) | (distance &lt;= 3)
+L17:         flag_distance = jnp.sum(jnp.abs(s[&quot;agent_pos&quot;][:, None, :] - s[&quot;flag_pos&quot;][None, :, :]), axis=2, dtype=jnp.int32)
+L18:         carrier_team = teams[jnp.clip(s[&quot;flag_owner&quot;], 0, 3)]
+L19:         friendly_carrier = (s[&quot;flag_owner&quot;][None, :] &gt;= 0) &amp; (teams[:, None] == carrier_team[None, :])
+L20:         n[&quot;flag_vis&quot;] = ((flag_distance &lt;= 3) | friendly_carrier) &amp; s[&quot;flag_active&quot;][None, :]
+```
+
+**Inactive-role action mask**
+
+```python
+L89:         able = (s[&quot;frozen&quot;] == 0) &amp; ~s[&quot;escaped&quot;] &amp; ~s[&quot;done&quot;]
+L90:         return able[:, None] | (jnp.arange(7)[None, :] == 0)
+```
+
+**Rescue changes partner state**
+
+```python
+L153:             rescue = act &amp; adjacent &amp; (q[&quot;frozen&quot;][mate] &gt; 0) &amp; ~q[&quot;escaped&quot;][mate]
+L154:             q[&quot;frozen&quot;] = q[&quot;frozen&quot;].at[mate].set(jnp.where(rescue, 0, q[&quot;frozen&quot;][mate]))
+L155:             q[&quot;grace&quot;] = q[&quot;grace&quot;].at[mate].set(jnp.where(rescue, 2, q[&quot;grace&quot;][mate]))
+L156:             q[&quot;rescue_event&quot;] = q[&quot;rescue_event&quot;].at[mate].set(q[&quot;rescue_event&quot;][mate] | rescue)
+L157:             credit = credit.at[i].add(rescue.astype(jnp.int32))
+```
+
+**Tag removes opportunities and drops cargo**
+
+```python
+L182:             hit = (a[i] == 5) &amp; jnp.any(candidates)
+L183:             q[&quot;frozen&quot;] = q[&quot;frozen&quot;].at[target].set(jnp.where(hit, 6, q[&quot;frozen&quot;][target]))
+L184:             q[&quot;tag_event&quot;] = q[&quot;tag_event&quot;].at[target].set(q[&quot;tag_event&quot;][target] | hit)
+L185:             credit = credit.at[i].add(hit.astype(jnp.int32))
+L186:             dropped = (q[&quot;flag_owner&quot;] == target) &amp; hit
+L187:             q[&quot;flag_pos&quot;] = jnp.where(dropped[:, None], q[&quot;agent_pos&quot;][target], q[&quot;flag_pos&quot;])
+L188:             q[&quot;flag_owner&quot;] = jnp.where(dropped, -1, q[&quot;flag_owner&quot;])
+L189:             q[&quot;carrying&quot;] = q[&quot;carrying&quot;].at[target].set(jnp.where(hit, -1, q[&quot;carrying&quot;][target]))
+L190:             return q, credit
+```
+
+**Natural contest ending**
+
+```python
+L195:         all_escaped = jnp.all(n[&quot;escaped&quot;][2:])
+L196:         caught = jnp.all(n[&quot;escaped&quot;][2:] | (n[&quot;frozen&quot;][2:] &gt; 0)) &amp; ~all_escaped
+L197:         n[&quot;t&quot;] = s[&quot;t&quot;] + 1
+L198:         n[&quot;terminated&quot;] = all_escaped | caught
+L199:         n[&quot;truncated&quot;] = (n[&quot;t&quot;] &gt;= self.max_steps) &amp; ~n[&quot;terminated&quot;]
+L200:         n[&quot;done&quot;] = n[&quot;terminated&quot;] | n[&quot;truncated&quot;]
+```
+
+**Absorbing raw state**
+
+```python
+L212:         next_state = jax.tree.map(lambda old, new: jnp.where(state[&quot;done&quot;], old, new), state, proposed)
+L213:         rewards = jnp.where(state[&quot;done&quot;], jnp.zeros((4,), dtype=jnp.float32), rewards)
+L214:         dones = jnp.full((4,), next_state[&quot;done&quot;], dtype=jnp.bool_)
+L215:         info = {&quot;done_all&quot;: next_state[&quot;done&quot;], &quot;terminated&quot;: next_state[&quot;terminated&quot;],
+L216:                 &quot;truncated&quot;: next_state[&quot;truncated&quot;]}
+```
+
+## Author boundary and provenance
+
+This package is authored, frozen and **not executed**. Only the assigned batch&#x27;s eight design/request files, delivery requirements, six contract/interface files and five supplied official reference files were inputs. There was no candidate import, JAX/NumPy import, compiler, contract validator, simulator, training, SSH or network operation. The only local source check is Python AST parsing; JSON parsing and SHA-256 establish file syntax and identity, not runtime validity.
+
+All dynamics and integer design fields use fixed-shape int32/bool arrays; observations and rewards are float32. The supplied reset and step keys are unused because this original instance is deterministic. The key is not duplicated into state. Natural completion has priority at the horizon. A terminal raw call preserves every state leaf and observation, keeps the clock unchanged, returns zero reward and preserves its cause flags. The outer training wrapper remains responsible for resetting.
+
+Unavailable contextual intents and blocked movement are legal attempts with no effect. Out-of-range or masked actions become wait. Normal manual movement uses rotating role priority (clock modulo the role count), refuses occupied target cells and has no implicit swap. This is a public rule. Every script and paired branch in playthrough.json is UNEXECUTED_AUTHOR_HYPOTHESIS; it contains actions and intended differences only, with no invented rollout states, returns or successful-completion claims.
+
+## Supplied reference use
+
+The supplied official JaxMARL README informed the distinction between this fixed-array kernel and an external agent-keyed parallel API adapter with an __all__ done entry. The supplied Pgx README informed explicit legal-action and terminal-state metadata and the separation of caller keys from hidden state. The supplied Craftax README informed the goal of a persistent spatial world with real objects, resource use and visible consequences. No existing game map, benchmark implementation, game rules or upstream code was copied.
+
+PureJaxRL and the supplied Craftax_Baselines PPO-RNN file were read as algorithm/integration references only. They are not game libraries and are not incorporated here. This package does not replace the frozen experimental learner or implement the coordinator&#x27;s separate community adapter and replay runtime. All five input snapshots and their actual hashes are recorded in generation_record.json.
+
+Reference attribution: JaxMARL (Rutherford et al., NeurIPS Datasets and Benchmarks 2024), Pgx (Koyamada et al., NeurIPS 2023), Craftax (Matthews et al., ICML 2024), and PureJaxRL/Discovered Policy Optimisation (Lu et al., NeurIPS 2022). The Craftax PPO-RNN integration source credits Chris Lu&#x27;s PureJaxRL implementation. No license from those references is asserted to cover this new author&#x27;s own rules or source.
+
+## Scientific limits
+
+The intended strategies and interventions are hypotheses from source reasoning. Static syntax and real future causal replay do not establish learnability, optimality, solvability, strategic richness, non-isomorphism, generalization or meta-learning transfer. Negative, failed, zero-effect and indeterminate validation outcomes must remain visible. No reward, success-count, percentage or seed-count acceptance gate is introduced. Rule, role and layout variations mentioned below are prospective design possibilities, not implemented sampled task distributions or measured results.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Warden: tag adjacent vulnerable courier; courier: rescue, otherwise exit with pennant or pick up pennant</span></div><div class="action"><b>6</b><span>Warden: seal adjacent shelter; courier: spend a charge while standing on an open shelter</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Warden on the upper approach</p><p><b>agent_1</b> Warden on the lower approach</p><p><b>agent_2</b> Courier initially approaching the upper pennant</p><p><b>agent_3</b> Courier initially approaching the lower pennant</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;Observer role index; roles 0/1 wardens, 2/3 couriers&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      5
+    ],
+    &quot;meaning&quot;: &quot;Public clock, done, natural termination, truncation&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      9
+    ],
+    &quot;meaning&quot;: &quot;Public shelter x,y coordinates&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      11
+    ],
+    &quot;meaning&quot;: &quot;Public shelter charge levels&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      13
+    ],
+    &quot;meaning&quot;: &quot;Public shelter closure timers&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      15
+    ],
+    &quot;meaning&quot;: &quot;Public exit x,y&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      19
+    ],
+    &quot;meaning&quot;: &quot;Public tag announcements by tagged identity; positions are not broadcast&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      19,
+      23
+    ],
+    &quot;meaning&quot;: &quot;Public rescue announcements by rescued identity&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      23,
+      27
+    ],
+    &quot;meaning&quot;: &quot;Public exit announcements by identity&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      27,
+      29
+    ],
+    &quot;meaning&quot;: &quot;Public shelter-seal events&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      29,
+      33
+    ],
+    &quot;meaning&quot;: &quot;Public shelter-cover expenditures by identity&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      33,
+      41
+    ],
+    &quot;meaning&quot;: &quot;Visible worker x,y; hidden coordinates zero-filled&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      41,
+      45
+    ],
+    &quot;meaning&quot;: &quot;Worker visibility flags: same team or Manhattan distance at most three&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      45,
+      49
+    ],
+    &quot;meaning&quot;: &quot;Visible immobilization timers; hidden entries zero&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      49,
+      53
+    ],
+    &quot;meaning&quot;: &quot;Visible rescue-grace timers; hidden entries zero&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      57
+    ],
+    &quot;meaning&quot;: &quot;Visible carried pennant index; -1 empty, -2 unknown&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      57,
+      61
+    ],
+    &quot;meaning&quot;: &quot;Visible escaped flags; hidden entries false&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      61,
+      65
+    ],
+    &quot;meaning&quot;: &quot;Visible cover flags; hidden entries false&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      65,
+      69
+    ],
+    &quot;meaning&quot;: &quot;Visible pennant x,y; hidden coordinates zero-filled&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      69,
+      71
+    ],
+    &quot;meaning&quot;: &quot;Pennant visibility flags&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      71,
+      73
+    ],
+    &quot;meaning&quot;: &quot;Visible pennant owner; -1 loose, carrier index, or -3 unknown&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agent&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;frozen&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining immobilization timer&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;grace&quot;
+        ],
+        &quot;meaning&quot;: &quot;Rescue protection timer&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carrying&quot;
+        ],
+        &quot;meaning&quot;: &quot;Pennant index or -1 for no pennant&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;escaped&quot;
+        ],
+        &quot;meaning&quot;: &quot;Courier already exited; only no-op remains&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;guard&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shelter cover spent for this tick&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;flag&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;flag_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;flag_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;flag_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;flag_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;-1 loose, 2 or 3 carried by that courier, -2 delivered&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;shelter&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;shelter_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;shelter_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;shelter_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;shelter_charge&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shared cover charges, at most four&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;shelter_seal&quot;
+        ],
+        &quot;meaning&quot;: &quot;Warden closure timer&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;exit&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;exit_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;exit_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;exit_vis&quot;
+    ],
+    &quot;attributes&quot;: []
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi099&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;a355223f334d3ddcfe71534c335342c327adcf0862c3d4a35f1d249dbb4472ae&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 4,
+    &quot;observation_size&quot;: 73,
+    &quot;num_actions&quot;: 7,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.2961080074310303
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.3551449775695801
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.0328681468963623
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0905466079711914
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.0001320838928223
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0015447139739990234
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.23513102531433105
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.7057740688323975
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.1872711181640625
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.489586114883423
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 11.101727485656738,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 96,
+  &quot;scripted_random_returns&quot;: [
+    2.0,
+    4.0,
+    -4.0,
+    -2.0
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 4
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi099&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 3.434051990509033
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 99,
+  &quot;key&quot;: &quot;gi099&quot;,
+  &quot;title&quot;: &quot;灯火庭院&quot;,
+  &quot;summary&quot;: &quot;守卫追逐持旗信使；标记使对手冻结掉旗，邻近队友可救援并给予短时保护。&quot;,
+  &quot;tags&quot;: [
+    &quot;追逐救援&quot;,
+    &quot;团队对抗&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 4,
+    &quot;observation_size&quot;: 73,
+    &quot;num_actions&quot;: 7,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;source_sha256&quot;: &quot;a355223f334d3ddcfe71534c335342c327adcf0862c3d4a35f1d249dbb4472ae&quot;,
+  &quot;manifest_sha256&quot;: &quot;24aa9fdb752d306a9883fca64b1a188c1c21139099f931452df778b85b0bfcdc&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;a355223f334d3ddcfe71534c335342c327adcf0862c3d4a35f1d249dbb4472ae&quot;,
+      &quot;bytes&quot;: 12303,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00099/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;24aa9fdb752d306a9883fca64b1a188c1c21139099f931452df778b85b0bfcdc&quot;,
+      &quot;bytes&quot;: 14884,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00099/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;4db12762486e2070ec3204bf02acd2c961c4ed2d746b0e44f067ad8c16e2fd1a&quot;,
+      &quot;bytes&quot;: 7844,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00099/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;3321ba243b4586f1e242c29fc763552b84508d0902f79bf55054e135045b81dc&quot;,
+      &quot;bytes&quot;: 11269,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00099/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;a6eb0958a791314fe58a6813f3bb4e2deb79a6a1650073510ca7c03c3dbf05fe&quot;,
+      &quot;bytes&quot;: 4372,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00099/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi099">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

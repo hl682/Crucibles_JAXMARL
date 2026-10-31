@@ -1,0 +1,421 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "2040229c883b0abaa228b1d952c982d6fa7fb453b0371148dd299504e6a88af3",
+  "manifest_sha256": "91614b802acddca046d8b3493e01fd89c96bcc907c9b145bef4ee2011c019a82",
+  "title": "Copper Relay",
+  "rules": [
+    "Connect owned conduit cells by cardinal adjacency to your home. Enemy occupation cuts the connection at that cell.",
+    "Laying a conduit costs 2 supply. Repairing it or cutting a nearby enemy conduit costs 1. Home hardware is indestructible but can be occupied.",
+    "Two adjacent teammates choosing transfer shift one unit from the richer pack to the poorer pack, once per participant per tick.",
+    "Restock by up to 2 through a connected friendly conduit; teammates draw from the same finite stock.",
+    "Every third tick disconnected nonhome conduits lose durability. Every fourth tick connected owned relay sites produce pulses and each stock gains one unit.",
+    "Each role receives half its team's pulse count minus half the opponent's. First reaching 12 ends play, preserving simultaneous ties.",
+    "Displayed supply and contention are actual state. No performance or strategy result is claimed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable ground",
+          "color": "#DCD8BD"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall or rock",
+          "color": "#4A5358"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "surveyors",
+      "glyph": "agent",
+      "label": "Surveyors",
+      "color": "#597BB8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team: west 0, east 1"
+        },
+        {
+          "state_path": [
+            "pack"
+          ],
+          "label": "Carried supply, maximum 6"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "label": "Last movement was blocked"
+        }
+      ]
+    },
+    {
+      "id": "conduits",
+      "glyph": "square",
+      "label": "Physical conduit sites",
+      "color": "#C69B52",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "Owner: neutral -1, west 0, east 1"
+        },
+        {
+          "state_path": [
+            "charge"
+          ],
+          "label": "Conduit durability, maximum 3"
+        },
+        {
+          "state_path": [
+            "linked"
+          ],
+          "label": "Connected to owner's home"
+        },
+        {
+          "state_path": [
+            "contested"
+          ],
+          "label": "Enemy occupation interrupts supply"
+        },
+        {
+          "state_path": [
+            "relay"
+          ],
+          "label": "Scoring relay site"
+        }
+      ]
+    },
+    {
+      "id": "homes",
+      "glyph": "beacon",
+      "label": "Supply homes",
+      "color": "#6BA878",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Shared team stock, maximum 24"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Cumulative relay pulses"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "built_now"
+      ],
+      "meaning": "Build or repair flags from the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cut_now"
+      ],
+      "meaning": "Durability attack flags from the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transfer_now"
+      ],
+      "meaning": "Consented supply handoff participants from the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "scored_now"
+      ],
+      "meaning": "Relay pulse flags from the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative relay pulses by team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "contested"
+      ],
+      "meaning": "Current enemy occupation of conduit sites",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "linked"
+      ],
+      "meaning": "Current actual supply connectivity",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lay neutral conduit or repair friendly conduit"
+    },
+    {
+      "id": 6,
+      "label": "Cut lowest-index nearby enemy conduit"
+    },
+    {
+      "id": 7,
+      "label": "Offer or receive adjacent teammate supply"
+    },
+    {
+      "id": 8,
+      "label": "Restock through connected friendly conduit"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "meaning": "Agent [x,y] positions in role order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "Public team assignments: roles 0,1 west team 0; roles 2,3 east team 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        16
+      ],
+      "meaning": "Supply units carried by each agent, 0 to 6.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        20
+      ],
+      "meaning": "Last nonabsorbing step blocked movement intents.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        90
+      ],
+      "meaning": "Interior tile-center positions in y-major order, including inactive rock sites.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        125
+      ],
+      "meaning": "True for actual traversable conduit sites; false at the two rocks.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        160
+      ],
+      "meaning": "Conduit ownership: -1 neutral, 0 west team, 1 east team.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        160,
+        195
+      ],
+      "meaning": "Conduit durability 0 to 3.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        230
+      ],
+      "meaning": "Actual uncontested same-owner connection to that owner's home.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        230,
+        265
+      ],
+      "meaning": "Enemy agent currently occupies an owned conduit, interrupting supply.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        265,
+        300
+      ],
+      "meaning": "The two scoring relay sites at [3,2] and [5,4].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        300,
+        304
+      ],
+      "meaning": "Actual west/east home positions [1,3] and [7,3].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        304,
+        306
+      ],
+      "meaning": "Shared team stock 0 to 24, used for linked restocking.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        306,
+        308
+      ],
+      "meaning": "Cumulative relay pulses credited to each team.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        308,
+        371
+      ],
+      "meaning": "Public y-major 7 by 9 map; 0 ground and 1 wall or rock.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        371,
+        375
+      ],
+      "meaning": "Per-role conduit build or repair on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        375,
+        379
+      ],
+      "meaning": "Per-role successful durability attack on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        379,
+        383
+      ],
+      "meaning": "Participants in the last nonabsorbing step's supply handoffs.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        383,
+        385
+      ],
+      "meaning": "Whether each team received any relay pulse on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        385,
+        386
+      ],
+      "meaning": "Elapsed nonabsorbing steps, 0 through 80.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        386,
+        387
+      ],
+      "meaning": "Joint episode completion; true for natural completion or horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        387,
+        388
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        388,
+        389
+      ],
+      "meaning": "Horizon cause; false when natural completion coincides with horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        389,
+        393
+      ],
+      "meaning": "Own agent identity as A-way one-hot in agent_0 through agent_3 order.",
+      "visibility": "self"
+    }
+  ]
+}

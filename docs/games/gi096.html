@@ -1,0 +1,566 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>侧翼守护草场 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI096 / SPATIAL</p><h1>侧翼守护草场</h1><p class="lead">通过门控、聚焦与信号影响动物和伙伴；实际脚本开门但没有救出动物。</p><div class="stats"><span>3 agents</span><span>8 actions</span><span>133 observation columns</span><span>64 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi096.gif" alt="Original saved demonstration gi096"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi096.gif" alt="Actual verification episode gi096"></section><section><h2>Run this game</h2><pre>crucibles play --game 96</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Cooperate to guide four physical animals through the gate to either safe pen while limiting panic and ditch losses.&quot;,
+  &quot;natural_termination&quot;: &quot;All four animals are saved or lost. Horizon 64 otherwise, with natural completion taking priority on the same step.&quot;,
+  &quot;interaction&quot;: &quot;Animal force sums the proximity pressures of all shepherds. Multiple strong pressures raise panic; calm reduces it and an active gate holder is quiet. Cohesion acts without external pressure. High panic creates an extra microstep and permits dangerous ditch entry. Shepherds and herd physically block one another, and a gate helper spends actions on passability.&quot;,
+  &quot;observation_access&quot;: &quot;Complete public meadow state plus own-role one-hot, with exact panic, focus, gate timer and all active entity positions. All active entities and the fixed map are visible to every role; resolved animals&#x27; public status and final positions remain in the flat observation.&quot;
+}</pre></details><p>Declared per-step reward bounds: -4 to 4. Observability: fully_observable.</p></section><section><h2>Rules</h2><ol><li>Guide all four animals to either marked pen. Each saved animal gives every shepherd +1; each lost animal gives -1.</li><li>Ordinary shepherd proximity repels within distance 2. A whistle costs one focus and doubles pressure within distance 3.</li><li>Calm restores one focus, emits no pressure, and reduces nearby panic. An adjacent gate-hold action is also quiet.</li><li>Strong combined pressure raises panic. Panic at least 3 grants a second microstep and allows dangerous ditch entry.</li><li>Animals without pressure follow nearby herd mates; calm animals beyond the gate follow a marked pen.</li><li>Holding the gate sets its timer to 3. The timer decays, but occupied gates remain open for safe clearance.</li><li>Movements, collisions, panic and gate passability are real state. These author scripts have not been run.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Flank-and-Hold Meadow
+
+A/O/U/H = 3/133/8/64. Three shepherds guide four actual herd animals through a held gate into two safe pens. Herd reactions sum the effects of multiple nearby shepherds, making one role&#x27;s best pressure or calming action depend on the others.
+
+## Rules and causally coupled decisions
+
+The 9 by 7 meadow has a divider at x=5, a gate at [5,3], safe pens at [7,2] and [7,4], and ditches at [4,1] and [4,5]. Two shepherds begin on the west side and a third begins beside the east side of the gate. Roles have the same commands. Shepherd movement cannot enter hedges, ditches, a closed gate, another shepherd&#x27;s pre-step cell, an active animal&#x27;s cell or a competing destination.
+
+A shepherd&#x27;s ordinary proximity produces unit repulsion within Manhattan distance 2. A whistle spends one of at most four focus units and produces weight-two repulsion within distance 3. An exhausted whistle command emits only ordinary pressure. Calm restores one focus, emits no repulsion and reduces panic of animals within distance 2. An adjacent gate-hold command is also quiet; the helper is not forced to repel the animals away from the opening while holding it.
+
+Per-animal pressure weights are summed. A total weight at least 3 adds one panic. Nearby calmers subtract panic, and no pressure subtracts one more. Panic is clipped to [0,4]. Animal motion uses the vector sum of signed displacements from every pressuring shepherd. In the absence of pressure, low-panic animals receive a cohesion vector toward nearby active peers. On the safe side at x at least 6, low-panic animals follow a nearest marked pen using the actual pen coordinate.
+
+Each animal takes one physical microstep, or two when panic is at least 3. The larger force component determines direction, with horizontal tie-breaking; an obstructed chosen direction does not receive an invented pathfinder correction. Animal moves resolve in rotating animal order each tick and cannot overlap other active animals or current shepherd cells. High panic permits entry into a ditch, which permanently loses the animal; low-panic animals will not enter a ditch. Reaching a pen saves it permanently. This exposes the tradeoff between rapid pressure and controlled placement while retaining possible trapping or failed coordination as honest outcomes.
+
+Holding the gate from distance at most 1 sets a timer to 3. Otherwise the timer falls by one. The gate remains open if a shepherd or active animal occupied its tile at the start of the step, preventing closure onto that occupant. Gate state is computed before movement and is retained as the actual passability used that transition. It can consequently stay open one clearance tick after an occupant leaves.
+
+Commands are 0 wait with ordinary pressure; 1/2/3/4 movement; 5 whistle; 6 calm; 7 adjacent gate hold. Each saved animal gives all shepherds +1; each lost animal gives -1. Natural completion is all four resolved, regardless of success or failure; the horizon is 64.
+
+Two plausible strategies are calm flankers that aim a compact herd through a gate helper, or stronger short whistle bursts followed by recovery and repositioning. A helper may hold the opening while partners create force, or a flanker may temporarily take over gate duty. Simultaneous whistles can create two-cell panic motion and negate a calmer&#x27;s desired timing. Standing at the wrong location can block the path or reverse the summed force. These are explicit rule consequences and strategy hypotheses, not evidence of controllability or learned teamwork.
+
+## Information, visible state and declared bounds
+
+Every animal&#x27;s position, active status, panic, saved/lost status and last-step outcomes are state. Shepherd focus and effective signals are state. Gate position, timer and passability are the exact transition inputs. Every active entity is public to every role; the fixed terrain is public; the complete flat public observation plus own-role one-hot has 133 columns. There is no hidden herd controller or private shepherd view.
+
+Static capacities are three shepherds, four animals, one gate, two pens and two ditches. Active shepherd and animal positions are separately unique, and their transitions prevent cross-group overlap. Focus and panic stay in [0,4], gate timer in [0,3], cumulative saved/lost in [0,4], and active plus saved plus lost remains four animals. Saved and lost status cannot be reversed. Shared rewards are bounded by [-4,4] from the finite herd, not by a desired empirical effect.
+
+## Literal source evidence
+
+- Original world and capacities: `candidate.py:12`, literal `def reset(self, key):`.
+- Exact public observation packing: `candidate.py:42`, literal `def observe(self, s):`.
+- Shepherd-herd physical blocking: `candidate.py:61`, literal `herd = jnp.any(jnp.all(q[:,None,:] == s[&quot;animal_pos&quot;][None,:,:],axis=2) &amp; s[&quot;animal_active&quot;][None,:],axis=1)`.
+- Real gate hold: `candidate.py:70`, literal `hold = jnp.any((a == 7) &amp; at_gate)`.
+- Quiet gate helper: `candidate.py:78`, literal `quiet = calm | ((a == 7) &amp; at_gate)`.
+- Summed pressure and bounded panic: `candidate.py:87`, literal `panic_delta = (pressure &gt;= 3).astype(jnp.int32) - soothing - (pressure == 0).astype(jnp.int32)`.
+- Animal response to every shepherd: `candidate.py:99`, literal `repulse = jnp.sum(jnp.sign(d)*w[:,None],axis=0,dtype=jnp.int32)`.
+- Cohesion without external pressure: `candidate.py:102`, literal `force = repulse + jnp.where((jnp.sum(w) == 0) &amp; (panic[i] &lt; 3),cohesion,jnp.zeros(2,dtype=jnp.int32))`.
+- Safe-side pen direction: `candidate.py:110`, literal `force = jnp.where((pos[i,0] &gt;= 6) &amp; (panic[i] &lt; 3),pen_route,force)`.
+- Actual moving and loss checks: `candidate.py:122`, literal `lost_i = active[i] &amp; (s[&quot;map&quot;][pos[i,1],pos[i,0]] == 3) &amp; (panic[i] &gt;= 3)`.
+- Natural end from active herd: `candidate.py:137`, literal `s[&quot;terminated&quot;] = ~jnp.any(active)`.
+- Absorbing terminal branch: `candidate.py:149`, literal `def absorb(self, key, state, actions):`.
+
+## Witnesses and possible future variation
+
+The short script alternates whistles, calm and gate holds to inspect real focus, pressure, gate state and movement. One pair changes only the gate helper&#x27;s command; another replaces a flanker whistle with calm. Neither claims all animals are saved, and no safety ordering is presumed.
+
+Future independently assigned animal counts, gate positions, force rules, panic thresholds or pen locations could change useful formations and timing. Current capacity and rules are fixed; no variant, learned transfer or safety certificate has been measured.
+
+## Provenance, interface and status
+
+Source SHA-256: dc0778d0198f820eb1619db6f0f6b666b6bca60afb7655ac7f1ba5ed4e83634f.
+
+This is original author-written game code and layout for this assigned train-stream proposal, source attempt 00, generation window 0. No previous candidate, execution result, replay, ranking, training output or final-test material was read. No upstream game code, benchmark layout, texture, heldout implementation or scoring code was copied. Original authorship does not prove structural non-isomorphism.
+
+The supplied official JaxMARL README informed the distinction between the native flat kernel and an agent-keyed public integration API. The supplied Pgx README informed explicit state, legal-mask and terminal API concepts. The supplied Craftax README informed JAX game-state and reset/render separation concepts. The supplied PureJaxRL README was read as an algorithm/integration reference, not a game library; no PPO implementation was copied and the frozen scientific learner is unchanged. The supplied Craftax_Baselines/ppo_rnn.py was not read or used. Exact copied-reference hashes and official source URLs are in generation_record.json.
+
+Every declared nonterminal command is legal. A physically blocked movement or unavailable object operation is a deterministic failed attempt, not an out-of-range action. Out-of-range integers map to command 0. No role is individually removed before joint termination. Each role retains command 0; after joint termination only 0 is legal. The absorbing raw call ignores the provided actions, returns the same complete state and observation, leaves t unchanged, returns zero float32 rewards and all-true dones, and preserves actual terminal causes. Otherwise t advances exactly once. Natural termination has priority over the horizon, so terminated and truncated cannot both be true. No reset occurs inside raw_step.
+
+All observation columns are covered exactly once in manifest.json, in the literal concatenate order used by observe. Raw integer/bool state is cast to float32 without normalization. Visibility is fully public: active entity visibility is broadcast to all roles; map.public is true. Fixed or derived active/visibility masks do not add hidden policy information. Resolved objects retain their last public position and status in flat state, while the role renderer suppresses their inactive glyphs. A separate full-state debug view must remain labelled as such. The source uses only int32 and bool state, representing small categorical design values losslessly as int32. The reset key remains external provenance and is intentionally unused by these deterministic initial rules.
+
+The native kernel is not a public adapter implementation. Agent-keyed dictionaries, __all__, space objects and replay/UI integration belong to the coordinator&#x27;s separate presentation layer. The author has not exercised that layer. The six author files satisfy a source-delivery scope; they do not by themselves establish community product acceptance.
+
+No candidate import, reset, raw_step, JAX call, validator, training run, replay, browser playback or numerical parity test was executed by this author. Pure text and JSON metadata review and byte hashing are the only checks performed. playthrough.json contains literal finite action vectors, seeds and explicitly unexecuted paired intervention hypotheses. A later sealed replay must retain mismatches, zero effects, failures and early terminals as actual evidence. No script is a successful trajectory receipt, solvability proof, learned policy, optimal strategy, meta-learning result or generalization result. Model tokens and API charges are unknown rather than invented.
+
+Reference URLs read as supplied snapshots:
+- https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md
+- https://github.com/sotetsuk/pgx/blob/main/README.md
+- https://github.com/luchris429/purejaxrl/blob/main/README.md
+- https://github.com/MichaelTMatthews/Craftax/blob/main/README.md
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait with ordinary proximity pressure</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Whistle using one focus</span></div><div class="action"><b>6</b><span>Calm nearby animals and recover focus</span></div><div class="action"><b>7</b><span>Hold gate open when adjacent</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> North flank starter; symmetric shepherd actions</p><p><b>agent_1</b> South flank starter; symmetric shepherd actions</p><p><b>agent_2</b> Gate-side starter; symmetric shepherd actions</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      6
+    ],
+    &quot;meaning&quot;: &quot;Shepherd positions [x,y].&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      9
+    ],
+    &quot;meaning&quot;: &quot;Whistle focus from 0 to 4; a whistle spends 1 and calm restores 1.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      12
+    ],
+    &quot;meaning&quot;: &quot;Last effective signal: 0 ordinary, 1 whistle, 2 calm, 3 gate hold.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      15
+    ],
+    &quot;meaning&quot;: &quot;Last nonabsorbing blocked shepherd movement flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      23
+    ],
+    &quot;meaning&quot;: &quot;Animal positions [x,y], including final saved or lost locations.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      23,
+      27
+    ],
+    &quot;meaning&quot;: &quot;Animals still physically moving in the meadow.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      27,
+      31
+    ],
+    &quot;meaning&quot;: &quot;Animal panic from 0 to 4; panic at least 3 permits a second microstep and ditch entry.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      31,
+      35
+    ],
+    &quot;meaning&quot;: &quot;Persistent per-animal saved status.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      35,
+      39
+    ],
+    &quot;meaning&quot;: &quot;Persistent per-animal lost status.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      39,
+      41
+    ],
+    &quot;meaning&quot;: &quot;Gate position [5,3].&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      41,
+      42
+    ],
+    &quot;meaning&quot;: &quot;The gate entity is always present.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      42,
+      43
+    ],
+    &quot;meaning&quot;: &quot;Actual passability of the gate during the most recent transition.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      43,
+      44
+    ],
+    &quot;meaning&quot;: &quot;Open hold timer, 0 to 3; occupied gates remain open even at zero.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      44,
+      48
+    ],
+    &quot;meaning&quot;: &quot;Safe pen positions [7,2] and [7,4].&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      48,
+      52
+    ],
+    &quot;meaning&quot;: &quot;Ditch positions [4,1] and [4,5].&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      52,
+      115
+    ],
+    &quot;meaning&quot;: &quot;Public y-major map: floor 0, hedge 1, gate 2, ditch 3, pen 4.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      115,
+      116
+    ],
+    &quot;meaning&quot;: &quot;Cumulative number of saved animals.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      116,
+      117
+    ],
+    &quot;meaning&quot;: &quot;Cumulative number of lost animals.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      117,
+      118
+    ],
+    &quot;meaning&quot;: &quot;Elapsed nonabsorbing steps, 0 through 64.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      118,
+      122
+    ],
+    &quot;meaning&quot;: &quot;Which animals entered a safe pen on the last nonabsorbing step.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      122,
+      126
+    ],
+    &quot;meaning&quot;: &quot;Which animals entered a ditch in panic on the last nonabsorbing step.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      126,
+      127
+    ],
+    &quot;meaning&quot;: &quot;Gate changed from closed to open on the last nonabsorbing step.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      127,
+      128
+    ],
+    &quot;meaning&quot;: &quot;Joint episode completion; true for natural completion or horizon.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      128,
+      129
+    ],
+    &quot;meaning&quot;: &quot;Natural terminal cause, preserved by absorbing calls.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      129,
+      130
+    ],
+    &quot;meaning&quot;: &quot;Horizon cause; false when natural completion coincides with horizon.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      130,
+      133
+    ],
+    &quot;meaning&quot;: &quot;Own agent identity as A-way one-hot in agent_0 through agent_2 order.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;shepherds&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;focus&quot;
+        ],
+        &quot;meaning&quot;: &quot;Whistle focus, maximum 4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;signal&quot;
+        ],
+        &quot;meaning&quot;: &quot;Signal: ordinary 0, whistle 1, calm 2, hold 3&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;blocked&quot;
+        ],
+        &quot;meaning&quot;: &quot;Last movement was blocked&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;herd&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;animal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;animal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;animal_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;panic&quot;
+        ],
+        &quot;meaning&quot;: &quot;Panic: 0 to 4; second microstep at 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;saved&quot;
+        ],
+        &quot;meaning&quot;: &quot;Saved permanently&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;lost&quot;
+        ],
+        &quot;meaning&quot;: &quot;Lost permanently&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gate&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gate_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_open&quot;
+        ],
+        &quot;meaning&quot;: &quot;Gate passable&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_timer&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining hold timer, maximum 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;pens&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;pen_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;pen_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;pen_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;ditches&quot;,
+    &quot;kind&quot;: &quot;hazard&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;hazard_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;hazard_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;hazard_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi096&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;dc0778d0198f820eb1619db6f0f6b666b6bca60afb7655ac7f1ba5ed4e83634f&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 133,
+    &quot;num_actions&quot;: 8,
+    &quot;max_steps&quot;: 64
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.693096399307251
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1906142234802246
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.87020206451416
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.04729866981506348
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.375304937362671
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0010066032409667969
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.07526516914367676
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 4.620998859405518
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.242734909057617
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 4.8402345180511475
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 18.386035919189453,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 64,
+  &quot;scripted_random_returns&quot;: [
+    0.0,
+    0.0,
+    0.0
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 33,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi096&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 4.456035137176514
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 96,
+  &quot;key&quot;: &quot;gi096&quot;,
+  &quot;title&quot;: &quot;侧翼守护草场&quot;,
+  &quot;summary&quot;: &quot;通过门控、聚焦与信号影响动物和伙伴；实际脚本开门但没有救出动物。&quot;,
+  &quot;tags&quot;: [
+    &quot;群体引导&quot;,
+    &quot;门控协作&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 133,
+    &quot;num_actions&quot;: 8,
+    &quot;max_steps&quot;: 64
+  },
+  &quot;source_sha256&quot;: &quot;dc0778d0198f820eb1619db6f0f6b666b6bca60afb7655ac7f1ba5ed4e83634f&quot;,
+  &quot;manifest_sha256&quot;: &quot;23911efdb665bce93e0f75ba3770f07ae4b76b36520fc829a297e9149872b506&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;dc0778d0198f820eb1619db6f0f6b666b6bca60afb7655ac7f1ba5ed4e83634f&quot;,
+      &quot;bytes&quot;: 10256,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00096/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;23911efdb665bce93e0f75ba3770f07ae4b76b36520fc829a297e9149872b506&quot;,
+      &quot;bytes&quot;: 17215,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00096/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;204576b7b5b5bf22c1e7cd930d19df29a4d594399052ee6785a0a342b048d96c&quot;,
+      &quot;bytes&quot;: 9813,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00096/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;29b53eecce80be0cf6d0e581b53caf965ce4e50faa179ab5fd59afa53118a247&quot;,
+      &quot;bytes&quot;: 10541,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00096/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;c70d2c44beddea2735e393b53ae0adb8945d9c24267dd21982143d71f97a37fc&quot;,
+      &quot;bytes&quot;: 3207,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00096/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi096">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

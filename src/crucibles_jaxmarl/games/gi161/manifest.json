@@ -1,0 +1,1286 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00161",
+  "source_sha256": "f58a6fc02ef1f4542e3bd11b49c1914cdcb401f41f51f6e198b518df8cef4b87",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 210,
+  "num_actions": 14,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -16,
+  "observation_high": 192,
+  "reward_low": -1,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Rigger: long cable and anchor tool"
+    },
+    {
+      "id": "agent_1",
+      "role": "Drive operator: required for powered pulls"
+    },
+    {
+      "id": "agent_2",
+      "role": "Technician: gate override and recharge"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Attach nearest reachable cargo or detach current cable"
+    },
+    {
+      "id": 6,
+      "label": "Vote pull north"
+    },
+    {
+      "id": 7,
+      "label": "Vote pull east"
+    },
+    {
+      "id": 8,
+      "label": "Vote pull south"
+    },
+    {
+      "id": 9,
+      "label": "Vote pull west"
+    },
+    {
+      "id": 10,
+      "label": "Technician hold nearest gate open for three ticks"
+    },
+    {
+      "id": 11,
+      "label": "Technician recharge four shared power at charger"
+    },
+    {
+      "id": 12,
+      "label": "Collect nearby personal salvage chip and add two shared power"
+    },
+    {
+      "id": 13,
+      "label": "Rigger toggle nearest cargo anchor"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tile"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "attached"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "rope_limit"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tension"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_action"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "personal"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchored"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pulled"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "drifted"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "strained"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "snapped"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_step"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchor_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "anchor_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchor_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "power"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "charger_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "charger_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "charger_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "chip_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "chip_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "chip_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cable_start"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cable_vector"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cable_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cable_vis"
+      ],
+      "shape": [
+        3,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cable_length"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cable_taut"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "endpoint_pos"
+      ],
+      "shape": [
+        10,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "endpoint_active"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "endpoint_vis"
+      ],
+      "shape": [
+        3,
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "endpoint_link"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "endpoint_side"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable interior",
+          "color": "#253440"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#111C26"
+        },
+        {
+          "value": 2,
+          "meaning": "Door or gate tile; passability follows its actual state",
+          "color": "#526B78"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Tool role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "attached"
+          ],
+          "meaning": "Cargo connection ID",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "rope_limit"
+          ],
+          "meaning": "Maximum cable length",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "tension"
+          ],
+          "meaning": "Attached cable length",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "personal"
+          ],
+          "meaning": "Collected personal chips",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "last_action"
+          ],
+          "meaning": "Latest sanitized action",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "snapped"
+          ],
+          "meaning": "Cable snapped this transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "anchored"
+          ],
+          "meaning": "Bollard ID or minus one",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pulled"
+          ],
+          "meaning": "Powered movement this transition",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "drifted"
+          ],
+          "meaning": "Passive drift this transition",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "strained"
+          ],
+          "meaning": "Crew cable blocked drift this transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "anchors",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "anchor_pos"
+      ],
+      "active": [
+        "anchor_active"
+      ],
+      "visibility": [
+        "anchor_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Currently passable",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "meaning": "Forced-open ticks remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Assigned module recovered",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "charger",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "charger_pos"
+      ],
+      "active": [
+        "charger_active"
+      ],
+      "visibility": [
+        "charger_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "power"
+          ],
+          "meaning": "Shared battery charge",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "chips",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "chip_pos"
+      ],
+      "active": [
+        "chip_active"
+      ],
+      "visibility": [
+        "chip_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "cables",
+      "kind": "object",
+      "count": 5,
+      "position": [
+        "cable_start"
+      ],
+      "active": [
+        "cable_active"
+      ],
+      "visibility": [
+        "cable_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cable_vector"
+          ],
+          "meaning": "True vector to far endpoint",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "cable_length"
+          ],
+          "meaning": "Manhattan cable length",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cable_taut"
+          ],
+          "meaning": "At cable length limit",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "endpoints",
+      "kind": "object",
+      "count": 10,
+      "position": [
+        "endpoint_pos"
+      ],
+      "active": [
+        "endpoint_active"
+      ],
+      "visibility": [
+        "endpoint_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "endpoint_link"
+          ],
+          "meaning": "Cable ID",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "endpoint_side"
+          ],
+          "meaning": "Endpoint side: zero start, one end",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pulled"
+      ],
+      "meaning": "Powered cargo displacement this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "drifted"
+      ],
+      "meaning": "Passive cargo displacement this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "strained"
+      ],
+      "meaning": "Unanchored drift strained a crew cable this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "snapped"
+      ],
+      "meaning": "Unpowered strained crew cable snapped this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_step"
+      ],
+      "meaning": "Cargo newly recovered this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "personal"
+      ],
+      "meaning": "Collected personal salvage chips",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "power"
+      ],
+      "meaning": "Shared power level",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cable_taut"
+      ],
+      "meaning": "Active cables currently at their length limits",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer role one-hot in fixed agent order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        102
+      ],
+      "meaning": "Public walls and gate tiles, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        108
+      ],
+      "meaning": "Crew positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        111
+      ],
+      "meaning": "Equipment roles",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        114
+      ],
+      "meaning": "Cargo attachment IDs or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        117
+      ],
+      "meaning": "Maximum agent cable lengths",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        120
+      ],
+      "meaning": "Current attached cable Manhattan lengths",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        123
+      ],
+      "meaning": "Latest sanitized commands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        126
+      ],
+      "meaning": "Collected chips by crew member",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        130
+      ],
+      "meaning": "Cargo positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        132
+      ],
+      "meaning": "Cargo delivered flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        134
+      ],
+      "meaning": "Anchor IDs or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        136
+      ],
+      "meaning": "Cargo powered pull this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        138
+      ],
+      "meaning": "Cargo drift this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        140
+      ],
+      "meaning": "Attempted drift strained a crew cable this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        143
+      ],
+      "meaning": "Crew cables snapped this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        145
+      ],
+      "meaning": "Cargo delivered this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        145,
+        149
+      ],
+      "meaning": "Bollard positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        153
+      ],
+      "meaning": "Timed gate positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        155
+      ],
+      "meaning": "Current passable gate states",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        157
+      ],
+      "meaning": "Remaining forced-open timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "meaning": "Shared power",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        162
+      ],
+      "meaning": "Assigned cargo dock positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        164
+      ],
+      "meaning": "Technician charger position",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        170
+      ],
+      "meaning": "Personal salvage chip positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        170,
+        173
+      ],
+      "meaning": "Uncollected chip flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        173,
+        183
+      ],
+      "meaning": "Crew and anchored-cargo cable starts",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        183,
+        193
+      ],
+      "meaning": "True displacement to other endpoint for each cable",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        193,
+        198
+      ],
+      "meaning": "Connected cable flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        198,
+        203
+      ],
+      "meaning": "Cable Manhattan length",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        203,
+        208
+      ],
+      "meaning": "Active cable at its maximum permitted length",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        208,
+        210
+      ],
+      "meaning": "Clock and joint done flag",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Recover each salvage module at its assigned western dock while choosing when to help, anchor, recharge or collect personal chips.",
+    "natural_termination": "Both modules delivered. Otherwise bounded horizon of one hundred sixty transitions; low power alone is recoverable and is not declared failure.",
+    "interaction": "All crew-to-cargo cables constrain walking and pulling. A powered pull needs the drive operator and another matching vote, consumes shared power, and must respect every attached cable and anchor. Drift can consume common power or snap teammates cables.",
+    "observation_access": "Fully observable public map, crews, cargo, power, gate phase, all actual cable starts/vectors and paired endpoints. All active entities are visible to every role. Endpoint positions are exact derived state from the same constraints used by movement."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "power"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "personal"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "rope_limit"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tension"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cable_length"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

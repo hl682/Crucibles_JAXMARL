@@ -1,0 +1,385 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Railway Commons Republics · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI238 / SPATIAL</p><h1>Railway Commons Republics</h1><p class="lead"></p><div class="stats"><span>256 agents</span><span>19 actions</span><span>231 observation columns</span><span>1024 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 238</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Maintain freight routes, feed towns and contest physical passage through shared station actions while preserving bridges and carriers.&quot;,
+  &quot;natural_termination&quot;: &quot;No early natural terminal; a fixed 1024-tick settlement season truncates.&quot;,
+  &quot;interaction&quot;: &quot;Building changes others routes; switches commit choices; destination passage controls eligibility; power depletes; braking and edge reservations cause queues; cargo affects origin and recipient.&quot;,
+  &quot;observation_access&quot;: &quot;Surveyed corridor geometry is public. Only selected nearest site/link/train/agent rows reveal operational state. Home identity grants no remote treasury or signal view. Explicit decaying local bulletins convey route information. Off-view events are debug-only.&quot;
+}</pre></details><p>Declared per-step reward bounds: -4.0 to 4.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Sixteen republics each control sixteen people. Towns share 24 rail links and eight autonomous four-unit trains; trains are not agent rows.</li><li>Ore builds track and repairs bridges. Horizontal links start unfinished; vertical links are open alternatives. Walking crews must reach actual work sites.</li><li>A switch chooses a cardinal link and commits for six ticks. Departures spend power. Red signals brake approaching trains over real remaining distance.</li><li>Passage is public or home-origin only. Visitors at the station may declare it public; home actors may reclaim it. Physical presence matters.</li><li>Trains need clear links, valid destination passage, bridges and power. Load/unload at parked trains; foreign cargo replenishes physical town stock.</li><li>Weather damages bridges every 32 ticks. Crews can repair carriers; pantry grain is consumed every sixteen ticks. Accounting ends at 1024.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Railway Commons Republics
+
+Status: AUTHORED_NOT_EXECUTED. Source SHA256: c491d2ff054fbe8ac13430c940bb2c1e84719e3d6fe2d8d7cbb2fe5d69cbb491. All scripts/interventions are UNEXECUTED_AUTHOR_HYPOTHESIS.
+
+Native contract: A=256, O=231, U=19, H=1024; scalar int32 actions, float32 observations, fixed int32/bool state. Geometry 64 by 32, x right/y down. Family civilization_strategy.
+
+The four-by-four settlement graph has horizontal length-sixteen links and vertical length-eight links. Corridor cells are public geography; actual construction and damage live at physical link-center work sites. Foot agents travel through the map, and trains advance in integer world coordinates along their selected links. No browser geometry replaces these transitions.
+
+Each settlement owns a mine, farm and station/power depot. Horizontal routes need one extra ore unit, while vertical routes are open alternatives after a switch change. Eight trains begin with one grain unit from their origins. The switch commits for six ticks. Trains reserve edges, preventing head-on entry; multiple carriers may park at a station. Speed rises to two cells/tick and red signals brake within three remaining cells. Late red changes can cause overrun. Failed bridges damage health and cargo. Broken carriers stay visible at their actual location for repairs.
+
+Passage is a simple contestable public/home-origin declaration, not a full diplomacy interface. Foreign unloading adds two producer-stock units per cargo unit, an explicit trade/processing yield. Actors resolve in rotating order before train updates; a courier must staff arrival before a later departure or arrange a red stop.
+
+Work costs 0.001. Unloading pays courier 0.15, each recipient-town actor 0.04 and each origin-town actor 0.02. Bridge failure or red overrun costs origin actors 0.03; a failed bridge additionally charges its real last contributor 0.02 only when such an actor exists. Empty pantries at consumption cost local actors 0.02. Rewards are clipped to [-4,4]. Alternate investment, route, access, power, pantry and repair strategies are source hypotheses; no equilibrium, prosperity, performance or transfer is proved.
+
+## Interface and visibility
+
+Surveyed corridor geometry is public. Only selected nearest site/link/train/agent rows reveal operational state. Home identity grants no remote treasury or signal view. Explicit decaying local bulletins convey route information. Off-view events are debug-only.
+
+Source entry lines: reset 33, legal_actions 72, observe 91, raw_step 123. Exact columns, normalizers, shapes and scene bindings are in manifest.json. Every selected entity slot ends with presence; hidden slots are zero. Crew identities remain fixed, while tools may change. A legal intent can still be blocked by earlier actors, missing simultaneous help, material shortages or geometry. Masked or out-of-range actions become Wait. Actor priority rotates as (loop index + t) mod A.
+
+No early natural terminal; a fixed 1024-tick settlement season truncates.
+
+Already-done raw calls preserve every state leaf and observation, return zero rewards and true per-agent dones, and preserve terminal causes. Nonterminal calls advance t exactly once. No autoreset or external state exists. Signed identities and sentinels use int32; reset keys are not copied into state. Observation bounds [0,1] and explicit reward clipping [-4,4] are source declarations, not numerical verification.
+
+
+## Literal source evidence
+
+- candidate.py:160: build = (a == 6) &amp; (ed[e] &lt;= 1) &amp; (w[&#x27;cargo&#x27;][i] == 1)
+- candidate.py:169: switch = (a == 7) &amp; station &amp; (w[&#x27;commit&#x27;][c] == 0) &amp; (w[&#x27;tool&#x27;][i] == 2)
+- candidate.py:182: unload = (a == 10) &amp; station &amp; jnp.any(parked) &amp; (w[&#x27;train_node&#x27;][b] == c) &amp; (w[&#x27;train_owner&#x27;][b] != c) &amp; (w[&#x27;train_load&#x27;][b] &gt; 0)
+- candidate.py:231: permission = (w[&#x27;permit&#x27;][dest] &lt; 0) | (w[&#x27;permit&#x27;][dest] == w[&#x27;train_owner&#x27;][b])
+- candidate.py:233: depart = (w[&#x27;train_edge&#x27;][b] &lt; 0) &amp; (w[&#x27;train_health&#x27;][b] &gt; 0) &amp; jnp.any(choices) &amp; (w[&#x27;track&#x27;][e] &gt;= 2) &amp; (w[&#x27;bridge&#x27;][e] &gt; 0) &amp; (w[&#x27;power&#x27;][node] &gt; 0) &amp; ~w[&#x27;red&#x27;][node] &amp; permission &amp; ~occupied
+- candidate.py:244: brake = w[&#x27;red&#x27;][dest] &amp; (remaining &lt;= 3)
+- candidate.py:247: damaged = moving &amp; (w[&#x27;bridge&#x27;][e] == 0) &amp; (speed &gt; 0)
+- candidate.py:251: overrun = arrive &amp; w[&#x27;red&#x27;][dest]
+- candidate.py:266: storm = (t % 32 == 0) &amp; jax.random.bernoulli(key, 0.125, (24,))
+- candidate.py:270: hungry = consume &amp; (s[&#x27;grain&#x27;] == 0)
+
+
+## Human operation, provenance and limits
+Scene data binds actual positions, stock, tools and events. Human single-role/multiple-role control must call the unchanged native joint action interface. No UI has been implemented, opened or played by this author. Role rendering must restrict event presentation to visible entities; global event inspection is debug-only.
+
+
+Four independent world families are authored, without upstream code or assets. Supplied external reference files were permitted but not read. No prior game, results, IR, selection, training, heldout, memory, network, API, local model or numerical package was read/invoked. Current population/family240 and dispatch scope override inherited counts. Parentless initial window: 240 used/reserved of 512, feedback 0.
+
+
+Only bytes/SHA256, JSON/AST and literal structure are checked here. Candidate import/reset/step/observe/legal_actions and provided validators were never executed. Runtime shapes/dtypes, JIT/vmap, terminal replay, mask reachability, script success, finite numerical bounds, resource cost, animation, human playability, non-isomorphism, learning and transfer remain unverified. Independent authorized frozen-source integration must preserve actual failures. No acceptance, deployment or experimental result is authored.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait / receive</span></div><div class="action"><b>1</b><span>Walk north</span></div><div class="action"><b>2</b><span>Walk east</span></div><div class="action"><b>3</b><span>Walk south</span></div><div class="action"><b>4</b><span>Walk west</span></div><div class="action"><b>5</b><span>Gather ore at mine or grain at farm with matching tool</span></div><div class="action"><b>6</b><span>Spend ore on nearby track and bridge</span></div><div class="action"><b>7</b><span>Rotate station switch east/south/west/north with signal tool</span></div><div class="action"><b>8</b><span>Toggle station red signal with signal tool</span></div><div class="action"><b>9</b><span>Load matching cargo into adjacent parked train</span></div><div class="action"><b>10</b><span>Unload foreign cargo at staffed station</span></div><div class="action"><b>11</b><span>Declare local passage public</span></div><div class="action"><b>12</b><span>Claim home-town passage for home freight</span></div><div class="action"><b>13</b><span>Fuel local power substation with ore</span></div><div class="action"><b>14</b><span>Hand cargo to adjacent waiting empty actor</span></div><div class="action"><b>15</b><span>Exchange tools with adjacent waiting actor</span></div><div class="action"><b>16</b><span>Relay station route and signal locally</span></div><div class="action"><b>17</b><span>Stock station pantry with grain</span></div><div class="action"><b>18</b><span>Repair adjacent train with ore and repair tool</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> miner</p><p><b>agent_1</b> tracklayer</p><p><b>agent_2</b> signal worker</p><p><b>agent_3</b> courier</p><p><b>agent_4</b> farmer</p><p><b>agent_5</b> repairer</p><p><b>agent_6</b> miner</p><p><b>agent_7</b> tracklayer</p><p><b>agent_8</b> signal worker</p><p><b>agent_9</b> courier</p><p><b>agent_10</b> farmer</p><p><b>agent_11</b> repairer</p><p><b>agent_12</b> miner</p><p><b>agent_13</b> tracklayer</p><p><b>agent_14</b> signal worker</p><p><b>agent_15</b> courier</p><p><b>agent_16</b> miner</p><p><b>agent_17</b> tracklayer</p><p><b>agent_18</b> signal worker</p><p><b>agent_19</b> courier</p><p><b>agent_20</b> farmer</p><p><b>agent_21</b> repairer</p><p><b>agent_22</b> miner</p><p><b>agent_23</b> tracklayer</p><p><b>agent_24</b> signal worker</p><p><b>agent_25</b> courier</p><p><b>agent_26</b> farmer</p><p><b>agent_27</b> repairer</p><p><b>agent_28</b> miner</p><p><b>agent_29</b> tracklayer</p><p><b>agent_30</b> signal worker</p><p><b>agent_31</b> courier</p><p><b>agent_32</b> miner</p><p><b>agent_33</b> tracklayer</p><p><b>agent_34</b> signal worker</p><p><b>agent_35</b> courier</p><p><b>agent_36</b> farmer</p><p><b>agent_37</b> repairer</p><p><b>agent_38</b> miner</p><p><b>agent_39</b> tracklayer</p><p><b>agent_40</b> signal worker</p><p><b>agent_41</b> courier</p><p><b>agent_42</b> farmer</p><p><b>agent_43</b> repairer</p><p><b>agent_44</b> miner</p><p><b>agent_45</b> tracklayer</p><p><b>agent_46</b> signal worker</p><p><b>agent_47</b> courier</p><p><b>agent_48</b> miner</p><p><b>agent_49</b> tracklayer</p><p><b>agent_50</b> signal worker</p><p><b>agent_51</b> courier</p><p><b>agent_52</b> farmer</p><p><b>agent_53</b> repairer</p><p><b>agent_54</b> miner</p><p><b>agent_55</b> tracklayer</p><p><b>agent_56</b> signal worker</p><p><b>agent_57</b> courier</p><p><b>agent_58</b> farmer</p><p><b>agent_59</b> repairer</p><p><b>agent_60</b> miner</p><p><b>agent_61</b> tracklayer</p><p><b>agent_62</b> signal worker</p><p><b>agent_63</b> courier</p><p><b>agent_64</b> miner</p><p><b>agent_65</b> tracklayer</p><p><b>agent_66</b> signal worker</p><p><b>agent_67</b> courier</p><p><b>agent_68</b> farmer</p><p><b>agent_69</b> repairer</p><p><b>agent_70</b> miner</p><p><b>agent_71</b> tracklayer</p><p><b>agent_72</b> signal worker</p><p><b>agent_73</b> courier</p><p><b>agent_74</b> farmer</p><p><b>agent_75</b> repairer</p><p><b>agent_76</b> miner</p><p><b>agent_77</b> tracklayer</p><p><b>agent_78</b> signal worker</p><p><b>agent_79</b> courier</p><p><b>agent_80</b> miner</p><p><b>agent_81</b> tracklayer</p><p><b>agent_82</b> signal worker</p><p><b>agent_83</b> courier</p><p><b>agent_84</b> farmer</p><p><b>agent_85</b> repairer</p><p><b>agent_86</b> miner</p><p><b>agent_87</b> tracklayer</p><p><b>agent_88</b> signal worker</p><p><b>agent_89</b> courier</p><p><b>agent_90</b> farmer</p><p><b>agent_91</b> repairer</p><p><b>agent_92</b> miner</p><p><b>agent_93</b> tracklayer</p><p><b>agent_94</b> signal worker</p><p><b>agent_95</b> courier</p><p><b>agent_96</b> miner</p><p><b>agent_97</b> tracklayer</p><p><b>agent_98</b> signal worker</p><p><b>agent_99</b> courier</p><p><b>agent_100</b> farmer</p><p><b>agent_101</b> repairer</p><p><b>agent_102</b> miner</p><p><b>agent_103</b> tracklayer</p><p><b>agent_104</b> signal worker</p><p><b>agent_105</b> courier</p><p><b>agent_106</b> farmer</p><p><b>agent_107</b> repairer</p><p><b>agent_108</b> miner</p><p><b>agent_109</b> tracklayer</p><p><b>agent_110</b> signal worker</p><p><b>agent_111</b> courier</p><p><b>agent_112</b> miner</p><p><b>agent_113</b> tracklayer</p><p><b>agent_114</b> signal worker</p><p><b>agent_115</b> courier</p><p><b>agent_116</b> farmer</p><p><b>agent_117</b> repairer</p><p><b>agent_118</b> miner</p><p><b>agent_119</b> tracklayer</p><p><b>agent_120</b> signal worker</p><p><b>agent_121</b> courier</p><p><b>agent_122</b> farmer</p><p><b>agent_123</b> repairer</p><p><b>agent_124</b> miner</p><p><b>agent_125</b> tracklayer</p><p><b>agent_126</b> signal worker</p><p><b>agent_127</b> courier</p><p><b>agent_128</b> miner</p><p><b>agent_129</b> tracklayer</p><p><b>agent_130</b> signal worker</p><p><b>agent_131</b> courier</p><p><b>agent_132</b> farmer</p><p><b>agent_133</b> repairer</p><p><b>agent_134</b> miner</p><p><b>agent_135</b> tracklayer</p><p><b>agent_136</b> signal worker</p><p><b>agent_137</b> courier</p><p><b>agent_138</b> farmer</p><p><b>agent_139</b> repairer</p><p><b>agent_140</b> miner</p><p><b>agent_141</b> tracklayer</p><p><b>agent_142</b> signal worker</p><p><b>agent_143</b> courier</p><p><b>agent_144</b> miner</p><p><b>agent_145</b> tracklayer</p><p><b>agent_146</b> signal worker</p><p><b>agent_147</b> courier</p><p><b>agent_148</b> farmer</p><p><b>agent_149</b> repairer</p><p><b>agent_150</b> miner</p><p><b>agent_151</b> tracklayer</p><p><b>agent_152</b> signal worker</p><p><b>agent_153</b> courier</p><p><b>agent_154</b> farmer</p><p><b>agent_155</b> repairer</p><p><b>agent_156</b> miner</p><p><b>agent_157</b> tracklayer</p><p><b>agent_158</b> signal worker</p><p><b>agent_159</b> courier</p><p><b>agent_160</b> miner</p><p><b>agent_161</b> tracklayer</p><p><b>agent_162</b> signal worker</p><p><b>agent_163</b> courier</p><p><b>agent_164</b> farmer</p><p><b>agent_165</b> repairer</p><p><b>agent_166</b> miner</p><p><b>agent_167</b> tracklayer</p><p><b>agent_168</b> signal worker</p><p><b>agent_169</b> courier</p><p><b>agent_170</b> farmer</p><p><b>agent_171</b> repairer</p><p><b>agent_172</b> miner</p><p><b>agent_173</b> tracklayer</p><p><b>agent_174</b> signal worker</p><p><b>agent_175</b> courier</p><p><b>agent_176</b> miner</p><p><b>agent_177</b> tracklayer</p><p><b>agent_178</b> signal worker</p><p><b>agent_179</b> courier</p><p><b>agent_180</b> farmer</p><p><b>agent_181</b> repairer</p><p><b>agent_182</b> miner</p><p><b>agent_183</b> tracklayer</p><p><b>agent_184</b> signal worker</p><p><b>agent_185</b> courier</p><p><b>agent_186</b> farmer</p><p><b>agent_187</b> repairer</p><p><b>agent_188</b> miner</p><p><b>agent_189</b> tracklayer</p><p><b>agent_190</b> signal worker</p><p><b>agent_191</b> courier</p><p><b>agent_192</b> miner</p><p><b>agent_193</b> tracklayer</p><p><b>agent_194</b> signal worker</p><p><b>agent_195</b> courier</p><p><b>agent_196</b> farmer</p><p><b>agent_197</b> repairer</p><p><b>agent_198</b> miner</p><p><b>agent_199</b> tracklayer</p><p><b>agent_200</b> signal worker</p><p><b>agent_201</b> courier</p><p><b>agent_202</b> farmer</p><p><b>agent_203</b> repairer</p><p><b>agent_204</b> miner</p><p><b>agent_205</b> tracklayer</p><p><b>agent_206</b> signal worker</p><p><b>agent_207</b> courier</p><p><b>agent_208</b> miner</p><p><b>agent_209</b> tracklayer</p><p><b>agent_210</b> signal worker</p><p><b>agent_211</b> courier</p><p><b>agent_212</b> farmer</p><p><b>agent_213</b> repairer</p><p><b>agent_214</b> miner</p><p><b>agent_215</b> tracklayer</p><p><b>agent_216</b> signal worker</p><p><b>agent_217</b> courier</p><p><b>agent_218</b> farmer</p><p><b>agent_219</b> repairer</p><p><b>agent_220</b> miner</p><p><b>agent_221</b> tracklayer</p><p><b>agent_222</b> signal worker</p><p><b>agent_223</b> courier</p><p><b>agent_224</b> miner</p><p><b>agent_225</b> tracklayer</p><p><b>agent_226</b> signal worker</p><p><b>agent_227</b> courier</p><p><b>agent_228</b> farmer</p><p><b>agent_229</b> repairer</p><p><b>agent_230</b> miner</p><p><b>agent_231</b> tracklayer</p><p><b>agent_232</b> signal worker</p><p><b>agent_233</b> courier</p><p><b>agent_234</b> farmer</p><p><b>agent_235</b> repairer</p><p><b>agent_236</b> miner</p><p><b>agent_237</b> tracklayer</p><p><b>agent_238</b> signal worker</p><p><b>agent_239</b> courier</p><p><b>agent_240</b> miner</p><p><b>agent_241</b> tracklayer</p><p><b>agent_242</b> signal worker</p><p><b>agent_243</b> courier</p><p><b>agent_244</b> farmer</p><p><b>agent_245</b> repairer</p><p><b>agent_246</b> miner</p><p><b>agent_247</b> tracklayer</p><p><b>agent_248</b> signal worker</p><p><b>agent_249</b> courier</p><p><b>agent_250</b> farmer</p><p><b>agent_251</b> repairer</p><p><b>agent_252</b> miner</p><p><b>agent_253</b> tracklayer</p><p><b>agent_254</b> signal worker</p><p><b>agent_255</b> courier</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      10
+    ],
+    &quot;meaning&quot;: &quot;Self x/63,y/31,town/15,tool/5,cargo/2,message/6,event/10,id/255,t/1024,storm phase/31&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      74
+    ],
+    &quot;meaning&quot;: &quot;8 nearest agents within Manhattan 4: x/63,y/31,town/15,tool/5,cargo/2,message/6,id/255,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      134
+    ],
+    &quot;meaning&quot;: &quot;6 nearest sites within Manhattan 6: x/63,y/31,kind/2,stock/24,route/3,permit-code/16,red,commit/6,town/15,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      134,
+      166
+    ],
+    &quot;meaning&quot;: &quot;4 nearest link centers within Manhattan 9: x/63,y/31,endpoint-a/15,endpoint-b/15,track/3,bridge/6,(builder+1)/256,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      166,
+      186
+    ],
+    &quot;meaning&quot;: &quot;2 nearest trains within Manhattan 6: x/63,y/31,kind/2,load/4,origin/15,health/4,speed/2,destination/15,progress/16,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      186,
+      205
+    ],
+    &quot;meaning&quot;: &quot;Legal intent mask actions 0..18&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      205,
+      231
+    ],
+    &quot;meaning&quot;: &quot;Explicit zero padding&quot;,
+    &quot;visibility&quot;: &quot;padding&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 256,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Home republic&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 mine,1 track,2 signal,3 courier,4 farm,5 repair&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty,1 ore,2 grain&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;Decaying local route/signal bulletin&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;sites&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;site_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;site_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;site_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 station/substation,1 mine,2 farm&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;site_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Station power or producer stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;site_route&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 east,1 south,2 west,3 north at station&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;site_permit&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 public, otherwise allowed origin republic plus one&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;site_red&quot;
+        ],
+        &quot;meaning&quot;: &quot;Red station signal&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;site_timer&quot;
+        ],
+        &quot;meaning&quot;: &quot;Switch commitment remaining&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;track_links&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;edge_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;edge_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;edge_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;edge_a&quot;
+        ],
+        &quot;meaning&quot;: &quot;First endpoint republic&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;edge_b&quot;
+        ],
+        &quot;meaning&quot;: &quot;Second endpoint republic&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;track&quot;
+        ],
+        &quot;meaning&quot;: &quot;Construction level; at least two opens link&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;bridge&quot;
+        ],
+        &quot;meaning&quot;: &quot;Bridge integrity&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;edge_builder&quot;
+        ],
+        &quot;meaning&quot;: &quot;Last material contributor, minus one if none&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;trains&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;train_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;train_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;train_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;train_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;1 ore or 2 grain&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;train_load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Units in four-unit carrier&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;train_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cargo origin republic&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;train_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carrier health; zero needs repair&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;speed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cells advanced this tick&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;train_dest&quot;
+        ],
+        &quot;meaning&quot;: &quot;Destination republic&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cells along current link&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 238,
+  &quot;key&quot;: &quot;gi238&quot;,
+  &quot;title&quot;: &quot;Railway Commons Republics&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 256,
+    &quot;observation_size&quot;: 231,
+    &quot;num_actions&quot;: 19,
+    &quot;max_steps&quot;: 1024
+  },
+  &quot;source_sha256&quot;: &quot;c491d2ff054fbe8ac13430c940bb2c1e84719e3d6fe2d8d7cbb2fe5d69cbb491&quot;,
+  &quot;manifest_sha256&quot;: &quot;af1de010c52cad0624e40c1047c77a11464cad0f2b0244d3816ccae7308c1872&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;c491d2ff054fbe8ac13430c940bb2c1e84719e3d6fe2d8d7cbb2fe5d69cbb491&quot;,
+      &quot;bytes&quot;: 20640,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00238/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;af1de010c52cad0624e40c1047c77a11464cad0f2b0244d3816ccae7308c1872&quot;,
+      &quot;bytes&quot;: 53020,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00238/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;158e88c861b9dbb7e1b8f3b92fc16f1bc92840ca715ee8f5e294bdd6f30fa2f2&quot;,
+      &quot;bytes&quot;: 9122,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00238/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;2cd850ecb992b067cd35900b74103637ce419914638453b1aa89c749491dddb7&quot;,
+      &quot;bytes&quot;: 5742,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00238/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;136efcb81fd7afb15ec946fc68397ec4c165ac81920d74aa9a553e6b0fa13135&quot;,
+      &quot;bytes&quot;: 140272,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00238/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi238">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

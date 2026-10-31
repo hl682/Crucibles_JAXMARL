@@ -1,0 +1,577 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0987325e3c11e6e78000a5abc5e91cdd11d68416740d5a48371cc66885ab01b4",
+  "manifest_sha256": "6439c358f09f327f02ceb83854817b5aa476f2f80127204b53d5a68e7bea0ab5",
+  "title": "Icehouse Service",
+  "rules": [
+    "The kitchens and service area connect only through corridor (5,3). Loose ice boxes block walking; loose trays do not.",
+    "Each cook carries one tray or ice box. Pick boxes from an adjacent cell; trays from your own cell.",
+    "Hot processing takes four ticks. Dessert needs three consecutive processing ticks while cooled to temperature at most one.",
+    "A hot hatch requires temperature at least five; the dessert hatch requires at most one.",
+    "Cold-room coverage and charged boxes cool nearby trays. A box can preserve dessert and also overcool a teammate's hot dish.",
+    "An open door, active cold preparation and warm cookware in the cold room consume shared cooling.",
+    "A box refill transfers room cooling into portable charge. Compressor fuel is finite; washing restores trays, not ingredients.",
+    "Food ages to spoilage at 30. Serving leaves dirty cookware, which must be washed before another load."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Kitchen or service floor",
+          "color": "#F1D8BF"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable kitchen wall",
+          "color": "#776B70"
+        },
+        {
+          "value": 2,
+          "meaning": "Closed cold-room door",
+          "color": "#698695"
+        },
+        {
+          "value": 3,
+          "meaning": "Open cold-room door",
+          "color": "#B7DCE1"
+        },
+        {
+          "value": 4,
+          "meaning": "Single narrow service-corridor cell",
+          "color": "#CAAF89"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "cooks",
+      "glyph": "worker",
+      "label": "Icehouse cooks and porter",
+      "color": "#C96947",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "carry"
+        }
+      ]
+    },
+    {
+      "id": "items",
+      "glyph": "food",
+      "label": "Three trays and two portable ice boxes",
+      "color": "#D6BC8D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "item_kind"
+          ],
+          "label": "item kind"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "holder"
+        },
+        {
+          "state_path": [
+            "food"
+          ],
+          "label": "food"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "stage"
+        },
+        {
+          "state_path": [
+            "temperature"
+          ],
+          "label": "temperature"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "age"
+        },
+        {
+          "state_path": [
+            "clock"
+          ],
+          "label": "clock"
+        },
+        {
+          "state_path": [
+            "box_charge"
+          ],
+          "label": "box charge"
+        },
+        {
+          "state_path": [
+            "chilled"
+          ],
+          "label": "chilled"
+        }
+      ]
+    },
+    {
+      "id": "coldroom",
+      "glyph": "door",
+      "label": "Cold-room door and cooling store",
+      "color": "#78B2C7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "door_open"
+          ],
+          "label": "door open"
+        },
+        {
+          "state_path": [
+            "room_cooling"
+          ],
+          "label": "room cooling"
+        },
+        {
+          "state_path": [
+            "compressor_fuel"
+          ],
+          "label": "compressor fuel"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Pantry, processing, washing and serving stations",
+      "color": "#B97D57",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_kind"
+          ],
+          "label": "station kind"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "door_changed"
+      ],
+      "meaning": "Door toggled during this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served_now"
+      ],
+      "meaning": "Correct-temperature portions served this step, hot then dessert.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "processed_now"
+      ],
+      "meaning": "Tray completed native processing this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "washed_now"
+      ],
+      "meaning": "Tray washed this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "chilled"
+      ],
+      "meaning": "Per-tray cooling actually applied in this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Cumulative portions served by type.",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Cumulative ingredients discarded at washing by type.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Take nonprocessing tray here or put held tray down"
+    },
+    {
+      "id": 6,
+      "label": "Take adjacent ice box or put held box down"
+    },
+    {
+      "id": 7,
+      "label": "Load hot ingredient onto clean tray at pantry"
+    },
+    {
+      "id": 8,
+      "label": "Load dessert ingredient onto clean tray at pantry"
+    },
+    {
+      "id": 9,
+      "label": "Start/reheat matching tray at hot stove or cold-prep station"
+    },
+    {
+      "id": 10,
+      "label": "Serve ready held course at matching hatch and temperature"
+    },
+    {
+      "id": 11,
+      "label": "Toggle adjacent cold-room door when closure is clear"
+    },
+    {
+      "id": 12,
+      "label": "Wash held dirty/spoiled tray at sink, or crank compressor empty-handed"
+    },
+    {
+      "id": 13,
+      "label": "Fill held ice box inside cold room using stored room cooling"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Role one-hot in fixed agent order 0,1,2.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "t: Raw clock, frozen at terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "done: Joint completion latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "terminated: Natural terminal latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "truncated: Cap-only terminal latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        84
+      ],
+      "meaning": "tiles: Actual room/wall/door/corridor map. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        90
+      ],
+      "meaning": "agent_pos: Actual cook [x,y] in role order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        93
+      ],
+      "meaning": "agent_active: Native agent active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        96
+      ],
+      "meaning": "carry: Held item index or -1 empty. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        96,
+        106
+      ],
+      "meaning": "item_pos: Actual [x,y] of trays 0..2 and ice boxes 3..4; held items follow carriers. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        111
+      ],
+      "meaning": "item_active: Native item active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        116
+      ],
+      "meaning": "item_kind: 0 tray, 1 ice box. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        121
+      ],
+      "meaning": "holder: -1 loose, 0..2 holding cook. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        126
+      ],
+      "meaning": "food: 0 none, 1 hot ingredient/course, 2 dessert. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        131
+      ],
+      "meaning": "stage: 0 clean, 1 raw, 2 processing, 3 ready, 4 spoiled, 5 dirty. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        136
+      ],
+      "meaning": "temperature: Tray temperature 0..8; boxes zero. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        141
+      ],
+      "meaning": "age: Food age 0..30. Hot food ages every tick; dessert ages without applied cooling. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        146
+      ],
+      "meaning": "clock: Hot processing ticks or consecutive sufficiently cold dessert ticks. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        151
+      ],
+      "meaning": "box_charge: Portable cooling units 0..8 on boxes only. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        153
+      ],
+      "meaning": "door_pos: Actual cold-room doorway (3,1). Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        154
+      ],
+      "meaning": "door_active: Native door active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "meaning": "door_open: Actual door walkability and shared-energy leakage state. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        156
+      ],
+      "meaning": "room_cooling: Shared cold reserve in 0..20. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        157
+      ],
+      "meaning": "compressor_fuel: Finite remaining compressor charges, initially four. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        171
+      ],
+      "meaning": "station_pos: Pantry, hot stove, cold prep, sink, hot hatch, dessert hatch, compressor, in this order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        171,
+        178
+      ],
+      "meaning": "station_active: Native station active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        178,
+        185
+      ],
+      "meaning": "station_kind: 0..6 in the station order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        185,
+        187
+      ],
+      "meaning": "stock: Unloaded hot/dessert ingredients, initially two each plus one initially loaded each. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        187,
+        189
+      ],
+      "meaning": "served: Hot/dessert cumulative service counts, each target two. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        189,
+        191
+      ],
+      "meaning": "waste: Hot/dessert discarded food count. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        191,
+        196
+      ],
+      "meaning": "chilled: Per-item cooling applied this step; only trays can be true. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        196,
+        197
+      ],
+      "meaning": "door_changed: Door-toggle flag this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        197,
+        199
+      ],
+      "meaning": "served_now: Hot/dessert portions served this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        199,
+        204
+      ],
+      "meaning": "processed_now: Per-tray processing completed this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        204,
+        209
+      ],
+      "meaning": "washed_now: Per-tray washing this step. Flattened row-major.",
+      "visibility": "public"
+    }
+  ]
+}

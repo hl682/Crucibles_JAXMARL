@@ -1,0 +1,269 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fbc6da3df61915cf82a7b5d395befa7b60e480b958266083e6df10ed664a0c60",
+  "manifest_sha256": "aef21dc5a315461f05880953035d15328c418d80f089137b62d8a5d08815ae05",
+  "title": "Tugboat Convoy: Two Channels, One Hydraulic Selector",
+  "rules": [
+    "Four tugs can attach only from an adjacent square; attached tugs travel with their barge.",
+    "A tow needs opposite anchors perpendicular to movement, a net force of at least two and clear footprints.",
+    "A current opposing a horizontal gate crossing raises required net force to three. North and south currents reverse every eight steps.",
+    "A crank opens its channel for four timer units and closes the other. Multiple cranks use rotating tug priority.",
+    "Tugs fit through closed sluices; a barge entering x=5 needs its selected gate timer positive after countdown.",
+    "New cargo delivery pays every tug +1. Each non-wait legal action costs its actor 1/64.",
+    "Delivered barges remain physical obstacles. Both deliveries terminate; step 64 truncates otherwise."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "water navigable by tug and cargo",
+          "color": "#A3D5EF"
+        },
+        {
+          "value": 1,
+          "meaning": "solid bank or pier",
+          "color": "#40546A"
+        },
+        {
+          "value": 2,
+          "meaning": "hydraulic selector location",
+          "color": "#E5AF53"
+        },
+        {
+          "value": 3,
+          "meaning": "assigned cargo dock",
+          "color": "#7ABD9A"
+        },
+        {
+          "value": 4,
+          "meaning": "sluice centre; whole adjacent three-row lane shares its gate",
+          "color": "#B98CE5"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "tugs",
+      "glyph": "agent",
+      "label": "Tugs",
+      "color": "#3267AE",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "attached"
+          ],
+          "label": "Attached barge index; -1 means detached"
+        }
+      ]
+    },
+    {
+      "id": "barges",
+      "glyph": "crate",
+      "label": "Barges 0 and 1",
+      "color": "#C98444",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "At its assigned dock and permanently stationary"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Sluice controls",
+      "color": "#8C5EBB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "label": "Open timer; decays before next tow resolution"
+        },
+        {
+          "state_path": [
+            "gate_flow"
+          ],
+          "label": "Current vector for the next nonterminal transition"
+        }
+      ]
+    },
+    {
+      "id": "selectors",
+      "glyph": "tool",
+      "label": "Crank posts",
+      "color": "#DCA534",
+      "attribute_labels": []
+    },
+    {
+      "id": "docks",
+      "glyph": "flag",
+      "label": "Assigned docks",
+      "color": "#398E61",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tow_moved"
+      ],
+      "meaning": "Whether each barge moved in the last nonterminal transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tow_blocked"
+      ],
+      "meaning": "Some attached tug attempted a tow but that barge did not move",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_step"
+      ],
+      "meaning": "New arrival of each barge at its assigned dock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gate_changed"
+      ],
+      "meaning": "Each gate timer changed, including natural countdown",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "swim north when detached"
+    },
+    {
+      "id": 2,
+      "label": "swim east when detached"
+    },
+    {
+      "id": 3,
+      "label": "swim south when detached"
+    },
+    {
+      "id": 4,
+      "label": "swim west when detached"
+    },
+    {
+      "id": 5,
+      "label": "attach to lowest-index adjacent undelivered barge"
+    },
+    {
+      "id": 6,
+      "label": "detach"
+    },
+    {
+      "id": 7,
+      "label": "tow north"
+    },
+    {
+      "id": 8,
+      "label": "tow east"
+    },
+    {
+      "id": 9,
+      "label": "tow south"
+    },
+    {
+      "id": 10,
+      "label": "tow west"
+    },
+    {
+      "id": 11,
+      "label": "crank nearest adjacent channel selector"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self identity one-hot over four tugs",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        20
+      ],
+      "meaning": "Four public tug blocks [x/16,y/16,(attached+1)/2,active] in ID order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        26
+      ],
+      "meaning": "Two public barge blocks [x/16,y/16,delivered]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        34
+      ],
+      "meaning": "Two public gate blocks [x/16,y/16,timer/4,next-transition current x]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        35
+      ],
+      "meaning": "Public clock t/64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        134
+      ],
+      "meaning": "Public 9x11 map flattened y-major, tile value/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        142
+      ],
+      "meaning": "Public event flags in order: tow_moved[2],tow_blocked[2],delivered_step[2],gate_changed[2]",
+      "visibility": "public"
+    }
+  ]
+}

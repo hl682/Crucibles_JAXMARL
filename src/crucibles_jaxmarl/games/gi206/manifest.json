@@ -1,0 +1,1068 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00206",
+  "source_sha256": "fa36e8e9425db04b74a1df9bf754e6ed626b972812d51080a9a3d89575b4a70e",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 210,
+  "num_actions": 11,
+  "max_steps": 150,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 150,
+  "reward_low": -6,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West drilling crew"
+    },
+    {
+      "id": "agent_1",
+      "role": "Slab support and insulation crew"
+    },
+    {
+      "id": "agent_2",
+      "role": "East salvage crew"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Drill nearest eligible ore wall"
+    },
+    {
+      "id": 6,
+      "label": "Brace nearest intact slab for this step"
+    },
+    {
+      "id": 7,
+      "label": "Pick up nearby loose ore, otherwise insulation screen"
+    },
+    {
+      "id": 8,
+      "label": "Drop carried object at current cell"
+    },
+    {
+      "id": 9,
+      "label": "Deliver carried ore beside its owner's depot"
+    },
+    {
+      "id": 10,
+      "label": "Clear one rubble unit from nearby slab"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "failure"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "held"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "work"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ore_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ore_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ore_status"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ore_holder"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "drill_progress"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ore_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ore_vis"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "screen_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "screen_holder"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "screen_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "screen_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "slab_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "slab_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "slab_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stress"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wave"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "braced"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "collapsed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "rubble"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "drilled"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "collapse_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shipment"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "injury"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#C9BA9A"
+        },
+        {
+          "value": 1,
+          "meaning": "Permanent rock wall; vibration crosses it",
+          "color": "#5A5D5E"
+        },
+        {
+          "value": 2,
+          "meaning": "Drillable ore wall; two work units open floor",
+          "color": "#9F7553"
+        },
+        {
+          "value": 3,
+          "meaning": "Collapsed slab rubble; blocks walking until cleared",
+          "color": "#7B7167"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "held"
+          ],
+          "meaning": "-1 empty; 0-5 ore identity; 6-7 insulation screen",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "meaning": "Cumulative accepted non-wait actions",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "meaning": "Invalid request or lost walking contention",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "ore",
+      "kind": "resource",
+      "count": 6,
+      "position": [
+        "ore_pos"
+      ],
+      "active": [
+        "ore_active"
+      ],
+      "visibility": [
+        "ore_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "ore_owner"
+          ],
+          "meaning": "Owner receiving delivery bonus",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "ore_status"
+          ],
+          "meaning": "0 embedded, 1 loose, 2 carried, 3 delivered, 4 lost",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "ore_holder"
+          ],
+          "meaning": "Carrier ID or -1",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "drill_progress"
+          ],
+          "meaning": "Accepted drill work; two exposes the parcel",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "screen",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "screen_pos"
+      ],
+      "active": [
+        "screen_active"
+      ],
+      "visibility": [
+        "screen_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "screen_holder"
+          ],
+          "meaning": "Carrier ID or -1 deployed",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "slab",
+      "kind": "hazard",
+      "count": 3,
+      "position": [
+        "slab_pos"
+      ],
+      "active": [
+        "slab_active"
+      ],
+      "visibility": [
+        "slab_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stress"
+          ],
+          "meaning": "Accumulated stress, zero through eight",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "meaning": "Workers plus carried-ore weight at this site",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "wave"
+          ],
+          "meaning": "Vibration after nearby screen attenuation",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "braced"
+          ],
+          "meaning": "Nearest-slab brace applied this step",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "collapsed"
+          ],
+          "meaning": "Persistent collapsed-support flag",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "rubble"
+          ],
+          "meaning": "Blocked rubble units remaining, zero through two",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "drilled"
+      ],
+      "meaning": "Drilling at ore wall this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collapse_now"
+      ],
+      "meaning": "New slab collapse this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shipment"
+      ],
+      "meaning": "Worker delivery this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative delivered ore by owner",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "injury"
+      ],
+      "meaning": "Worker caught by this step's collapse",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public elapsed nonterminal transitions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Natural completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Cap completion flag with natural priority",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Natural task success flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Natural task failure flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        105
+      ],
+      "meaning": "Actual public tile map flattened y then x",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        111
+      ],
+      "meaning": "Actual Quarry workers positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        114
+      ],
+      "meaning": "-1 empty; 0-5 ore identity; 6-7 insulation screen",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        117
+      ],
+      "meaning": "Cumulative accepted non-wait actions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        120
+      ],
+      "meaning": "Invalid request or lost walking contention",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        132
+      ],
+      "meaning": "Actual Six conserved ore parcels positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        138
+      ],
+      "meaning": "Owner receiving delivery bonus",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        144
+      ],
+      "meaning": "0 embedded, 1 loose, 2 carried, 3 delivered, 4 lost",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        150
+      ],
+      "meaning": "Carrier ID or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        156
+      ],
+      "meaning": "Accepted drill work; two exposes the parcel",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        160
+      ],
+      "meaning": "Actual Movable insulation screens positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        160,
+        162
+      ],
+      "meaning": "Carrier ID or -1 deployed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        168
+      ],
+      "meaning": "Actual Support slabs and rubble sites positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        171
+      ],
+      "meaning": "Accumulated stress, zero through eight",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        171,
+        174
+      ],
+      "meaning": "Workers plus carried-ore weight at this site",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        174,
+        177
+      ],
+      "meaning": "Vibration after nearby screen attenuation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        177,
+        180
+      ],
+      "meaning": "Nearest-slab brace applied this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        180,
+        183
+      ],
+      "meaning": "Persistent collapsed-support flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        183,
+        186
+      ],
+      "meaning": "Blocked rubble units remaining, zero through two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        186,
+        192
+      ],
+      "meaning": "Actual Owner delivery depots positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        192,
+        195
+      ],
+      "meaning": "Cumulative delivered parcels by owner",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        201
+      ],
+      "meaning": "Ore-wall locations drilled this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        201,
+        204
+      ],
+      "meaning": "Slabs newly collapsed this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        204,
+        207
+      ],
+      "meaning": "Per-worker delivery counts on this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        210
+      ],
+      "meaning": "Workers caught at a newly collapsed slab this step",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Expose and deliver all six owner-tagged parcels without fatal collapse.",
+    "natural_termination": "All parcels delivered is success. A worker caught in a new collapse or an ore parcel lost is failure unless success; otherwise truncate at 150.",
+    "interaction": "Drilling one wall exposes ore but transmits vibration through rock to nearby support sites. Peers can brace, move finite screens, clear rubble or choose perimeter routes; removing a screen changes another worker's loaded slab risk.",
+    "observation_access": "Fully public native map, actors, objects, ledgers and events. Delivered/lost ore deactivates visually while its status and final position remain in every observation."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 150
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "held"
+      ],
+      "low": -1,
+      "high": 7
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ore_status"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ore_holder"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "drill_progress"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stress"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "load"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wave"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "rubble"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "delivered"
+      ],
+      "low": 0,
+      "high": 2
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

@@ -1,0 +1,1058 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00109",
+  "source_sha256": "f3e8cc66eed591d6b8e9a972a169267b3b9c5df22ec940d80cf9e1c7a370b3f9",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 145,
+  "num_actions": 9,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "courier-team scout"
+    },
+    {
+      "id": "agent_1",
+      "role": "courier"
+    },
+    {
+      "id": "agent_2",
+      "role": "interception-team scout"
+    },
+    {
+      "id": "agent_3",
+      "role": "interceptor"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait; scouts recover switch energy"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "scout transmits current notebook"
+    },
+    {
+      "id": 6,
+      "label": "scout toggles an adjacent ready gate"
+    },
+    {
+      "id": 7,
+      "label": "courier delivers or interceptor attempts adjacent capture"
+    },
+    {
+      "id": 8,
+      "label": "emit finite unverified public team signal"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_cooldown"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "parcel_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "parcel_status"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "parcel_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "parcel_visible"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "exit_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "memory_target"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "memory_target_age"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "memory_gate"
+      ],
+      "shape": [
+        2,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "memory_gate_age"
+      ],
+      "shape": [
+        2,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_target"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_target_age"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_gate"
+      ],
+      "shape": [
+        2,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_gate_age"
+      ],
+      "shape": [
+        2,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_listeners"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "report_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "report_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_claim"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "outcome"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "relay_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "toggle_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable corridor or bank",
+          "color": "#E7E5E4"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall in dividing column",
+          "color": "#475569"
+        },
+        {
+          "value": 2,
+          "meaning": "Public gate site; current gate state is locally sensed only",
+          "color": "#99F6E4"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "roles",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "0 courier scout; 1 courier; 2 interception scout; 3 interceptor",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 3,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Current passage permission for courier and interceptor",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "gate_cooldown"
+          ],
+          "meaning": "Ticks until another switch attempt can act",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "parcel",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "parcel_pos"
+      ],
+      "active": [
+        "parcel_active"
+      ],
+      "visibility": [
+        "parcel_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "parcel_status"
+          ],
+          "meaning": "0 carried; 1 delivered; 2 intercepted",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "exits",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "exit_pos"
+      ],
+      "active": [
+        "exit_active"
+      ],
+      "visibility": [
+        "exit_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "reports",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "report_pos"
+      ],
+      "active": [
+        "report_active"
+      ],
+      "visibility": [
+        "report_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "report_target"
+          ],
+          "meaning": "Last reported opposing main-role x,y; -1 means unknown",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "report_target_age"
+          ],
+          "meaning": "Reported target age, saturated at nine",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "report_gate"
+          ],
+          "meaning": "Reported north/middle/south gate values; -1 unknown",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "report_gate_age"
+          ],
+          "meaning": "Reported north/middle/south information ages",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "report_ttl"
+          ],
+          "meaning": "Remaining radio message lifetime",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "lures",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_claim"
+          ],
+          "meaning": "Unverified 0 courier-like or 1 interceptor-like signal",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "meaning": "Remaining public signal lifetime",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "beacon_event"
+      ],
+      "meaning": "Public unverified signals emitted this transition by team",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "outcome"
+      ],
+      "meaning": "Current public outcome: 0 unresolved, 1 delivered, 2 intercepted",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own role one-hot; roles 0/1 and 2/3 are opposing teams",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        6
+      ],
+      "meaning": "Own x,y/8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own switch energy/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        15
+      ],
+      "meaning": "Locally detected role x,y/8 in role order; hidden pairs are -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        15,
+        19
+      ],
+      "meaning": "Actual per-role local contact visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        19,
+        22
+      ],
+      "meaning": "Locally sensed gate open values; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Locally sensed gate cooldown/4; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Gate visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        28,
+        30
+      ],
+      "meaning": "Locally detected parcel x,y/8, or -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        30,
+        31
+      ],
+      "meaning": "Locally detected parcel status/2, or -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        31,
+        33
+      ],
+      "meaning": "Own scout notebook last target x,y/8 or -1; main roles receive -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        33,
+        34
+      ],
+      "meaning": "Own scout target age/9; main roles -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Own scout cached north/middle/south gate values; unknown or main-role values -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Own scout gate ages/9; main roles -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        40,
+        44
+      ],
+      "meaning": "Accessible radio origin x,y/8 for the two messages; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        44,
+        48
+      ],
+      "meaning": "Accessible last-reported opposing-role x,y/8; unknown or inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        48,
+        50
+      ],
+      "meaning": "Accessible reported target ages/9; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        50,
+        56
+      ],
+      "meaning": "Accessible reported gate values; unknown or inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        56,
+        62
+      ],
+      "meaning": "Accessible reported gate ages/9; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        62,
+        64
+      ],
+      "meaning": "Accessible message TTL/4; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        64,
+        66
+      ],
+      "meaning": "Actual radio access flags from team delivery or nearby interception",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        66,
+        70
+      ],
+      "meaning": "Public unverified signal origin x,y/8; inactive -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        72
+      ],
+      "meaning": "Public signal TTL/5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        72,
+        74
+      ],
+      "meaning": "Public signal active flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        76
+      ],
+      "meaning": "Public remaining signal stock per team/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        77
+      ],
+      "meaning": "Clock/80",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        77,
+        81
+      ],
+      "meaning": "Both public exit x,y coordinates/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "meaning": "Public outcome/2: ongoing, delivered, intercepted",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        145
+      ],
+      "meaning": "Public row-major topology/2; gate sites do not reveal gate states",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Roles 0/1 coordinate to deliver the parcel through one of two exits; roles 2/3 coordinate to intercept. Scouts provide expiring route intelligence and operate corridor gates.",
+    "natural_termination": "Interceptor action 7 within Manhattan distance one of the courier captures the parcel; otherwise courier action 7 on either exit delivers it. Capture has explicit priority if both triggers occur. Horizon 80 truncates as an unresolved draw.",
+    "interaction": "Scouts can traverse closed gates, cache local gate/opponent facts and explicitly relay them. A teammate gains access to those facts, while opponents near the transmitter can intercept the same report. Gate toggles change others' movement; public lures can redirect behavior but are never ground-truth contacts.",
+    "observation_access": "Radar-style local sensing has Manhattan radius three for scouts and one for main roles, without wall occlusion. Only scouts see their own notebook. A radio message is accessible to its team and roles within radius two at the actual broadcast, until TTL expires. Public map reveals gate sites only. Unverified lures and public terminal outcome are separated from actual locally observed contacts."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "energy"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "gate_cooldown"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "memory_target_age"
+      ],
+      "low": 0,
+      "high": 9
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "memory_gate_age"
+      ],
+      "low": 0,
+      "high": 9
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "report_ttl"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "report_target_age"
+      ],
+      "low": 0,
+      "high": 9
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "report_gate_age"
+      ],
+      "low": 0,
+      "high": 9
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "beacon_ttl"
+      ],
+      "low": 0,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "decoy_stock"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "outcome"
+      ],
+      "low": 0,
+      "high": 2
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "status": "AUTHORED_NOT_EXECUTED",
+  "legal_action_semantics": "All nine ids are legal attempts for every live role. Role-inapplicable skills and unmet prerequisites have no skill effect; private gate/contact information never enters the action mask. Invalid ids become wait. Joint-terminal states permit wait only. Scouts may collocate; courier and interceptor block one another.",
+  "integration_scope": "Native fixed-array kernel. Public agent-keyed JaxMARL adapter is a separate trusted integration layer; no learner or policy-bank substitution."
+}

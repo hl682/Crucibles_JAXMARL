@@ -1,0 +1,412 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "68f262f8c70e0e968bab3398c6503b1d266760238e921a9c36cd700b8826328e",
+  "manifest_sha256": "eb91c6a9ac653da313ac6c23e719080da85ecf92a72e5bd937513be8690d3e5d",
+  "title": "Harbor Banquet",
+  "rules": [
+    "40 workers in eight kitchens. Item codes: 0 empty, 1 raw fish, 2 vegetables, 3 cooked fish, 4 stew, 5 fuel crate, 6 spoiled dish.",
+    "Cook tool 1 starts only matching raw food at a compatible station. Fuel is consumed; four ticks finish a dish and add mess.",
+    "Pick up cooked output before 12 ticks. Carried dishes cool after 16 ticks; adjacent handoffs preserve remaining warmth.",
+    "Serve either cooked dish locally, or contribute one of each to a composite feast. The first feast component reserves a tray for up to 24 ticks.",
+    "A completed service launches that kitchen's return boat. It must travel a full 32-cell circuit and be unloaded near its actual location before its tray is reused.",
+    "The junction diverts boats around recurring flotsam. Engineer tool 4 can clear the shared blockage; boats cannot move into occupied boat cells.",
+    "Dock deliveries replace remaining dock cargo every 32 ticks, at most eight times. Assortments alternate between the two ingredients and fuel.",
+    "Cycle tools at your home table. Each kitchen completing one composite feast ends the episode; single dishes remain an alternative use of scarce equipment."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      33,
+      12
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "visibility": [
+        "map_visible"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable kitchen or boardwalk",
+          "color": "#E5D6B3"
+        },
+        {
+          "value": 1,
+          "meaning": "Boundary",
+          "color": "#38444E"
+        },
+        {
+          "value": 2,
+          "meaning": "Shallow walkable service channel",
+          "color": "#7ABBC4"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Agent",
+      "color": "#F5D36C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "Native crew index"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Current tool code"
+        },
+        {
+          "state_path": [
+            "item"
+          ],
+          "label": "Carried item code"
+        },
+        {
+          "state_path": [
+            "warmth"
+          ],
+          "label": "Remaining carried-dish warmth"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "glyph": "tool",
+      "label": "Station",
+      "color": "#C47856",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "specialty"
+          ],
+          "label": "Raw ingredient accepted by station"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Station fuel units"
+        },
+        {
+          "state_path": [
+            "mess"
+          ],
+          "label": "Station dirt level"
+        },
+        {
+          "state_path": [
+            "timer"
+          ],
+          "label": "Remaining cooking ticks"
+        },
+        {
+          "state_path": [
+            "output"
+          ],
+          "label": "Cooked output item"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "Output age"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "glyph": "crate",
+      "label": "Dock",
+      "color": "#57A7B5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Dock cargo stock"
+        },
+        {
+          "state_path": [
+            "assortment"
+          ],
+          "label": "Dock cargo item code"
+        },
+        {
+          "state_path": [
+            "deliveries_left"
+          ],
+          "label": "Scheduled deliveries remaining"
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "glyph": "food",
+      "label": "Table",
+      "color": "#A7C97A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "trays"
+          ],
+          "label": "Available reusable trays"
+        },
+        {
+          "state_path": [
+            "fish"
+          ],
+          "label": "Fish component reserved"
+        },
+        {
+          "state_path": [
+            "stew"
+          ],
+          "label": "Stew component reserved"
+        },
+        {
+          "state_path": [
+            "feast_age"
+          ],
+          "label": "Reserved-component waiting age"
+        },
+        {
+          "state_path": [
+            "served"
+          ],
+          "label": "Single meals served here"
+        },
+        {
+          "state_path": [
+            "feasts"
+          ],
+          "label": "Composite feasts completed here"
+        }
+      ]
+    },
+    {
+      "id": "boat",
+      "glyph": "square",
+      "label": "Boat",
+      "color": "#6393CB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "boat_ticks"
+          ],
+          "label": "Moved channel cells this return trip"
+        },
+        {
+          "state_path": [
+            "boat_ready"
+          ],
+          "label": "Return tray ready for unloading"
+        }
+      ]
+    },
+    {
+      "id": "junction",
+      "glyph": "gate",
+      "label": "Junction",
+      "color": "#BF84CC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "divert"
+          ],
+          "label": "Junction sends boats to bypass lane"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "label": "Main lane blocked at x17"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "total_meals"
+      ],
+      "meaning": "Total single dishes served",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "total_feasts"
+      ],
+      "meaning": "Total completed two-dish feasts",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Face or move north"
+    },
+    {
+      "id": 2,
+      "label": "Face or move east"
+    },
+    {
+      "id": 3,
+      "label": "Face or move south"
+    },
+    {
+      "id": 4,
+      "label": "Face or move west"
+    },
+    {
+      "id": 5,
+      "label": "Take one dock ingredient"
+    },
+    {
+      "id": 6,
+      "label": "Start compatible cooking with cook tool"
+    },
+    {
+      "id": 7,
+      "label": "Take station dish"
+    },
+    {
+      "id": 8,
+      "label": "Serve local dish on tray"
+    },
+    {
+      "id": 9,
+      "label": "Clean adjacent station"
+    },
+    {
+      "id": 10,
+      "label": "Toggle channel diversion"
+    },
+    {
+      "id": 11,
+      "label": "Clear channel with engineer"
+    },
+    {
+      "id": 12,
+      "label": "Refuel station using fuel crate"
+    },
+    {
+      "id": 13,
+      "label": "Discard carried item"
+    },
+    {
+      "id": 14,
+      "label": "Pass item to nearest empty-handed actor"
+    },
+    {
+      "id": 15,
+      "label": "Contribute dish to composite feast"
+    },
+    {
+      "id": 16,
+      "label": "Unload returned tray boat"
+    },
+    {
+      "id": 17,
+      "label": "Cycle tool at home table"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        7
+      ],
+      "meaning": "Self x,y,kitchen,tool,item,warmth,face.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        10
+      ],
+      "meaning": "Clock t; total single meals; total composite feasts.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        290
+      ],
+      "meaning": "40 actor slots width 7: visible,x,y,kitchen,tool,item,warmth.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        290,
+        362
+      ],
+      "meaning": "8 station slots width 9: visible,x,y,specialty,fuel,mess,timer,output,age.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        362,
+        410
+      ],
+      "meaning": "8 dock slots width 6: visible,x,y,stock,assortment,remaining deliveries.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        410,
+        482
+      ],
+      "meaning": "8 table slots width 9: visible,x,y,trays,fish,stew,feast age,single serves,feasts.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        482,
+        522
+      ],
+      "meaning": "8 boat slots width 5: visible,x,y,moved cells,ready.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        522,
+        527
+      ],
+      "meaning": "Junction slot: visible,x,y,diversion,blockage.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        527,
+        576
+      ],
+      "meaning": "7x7 terrain patch y-major, outside=-1.",
+      "visibility": "local"
+    }
+  ]
+}

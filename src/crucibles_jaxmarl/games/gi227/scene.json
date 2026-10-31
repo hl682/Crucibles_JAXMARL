@@ -1,0 +1,519 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0dfe87d714ef6907e0e2fb30b8ed07b5357e832698e91cffc491441ec42ced06",
+  "manifest_sha256": "a2d425d03b46617d8186ffa69b5b091e82a2ae925e71b47749059bcef23f7b2e",
+  "title": "Forest Frontier Commons",
+  "rules": [
+    "Control any of128 settlers through the same native action interface. The16 pack animals are separate NPC objects.",
+    "Walk on grass or trails and cross streams at usable bridges. Grass spends stamina; resting recovers it. Mature tree stage3 blocks passage.",
+    "Chop with an axe to obtain timber and open a route. Living cut trees regrow after eligible24-turn periods; bare stumps require replanting.",
+    "Mature neighboring woodland supports well recharge. Wells exchange water west-to-east along village rows, so local withdrawals can affect neighbors.",
+    "Buckets fill at wells, irrigate crops or extinguish trees. Hoes tend and seed crops. Exchange tools with a waiting neighbor to change work capability.",
+    "Shared trails carry loaded pack animals one cell per turn. Trees, broken bridges, other animals and settlers can block them; village docks allow co-location.",
+    "Timber and food remain in inventories, stores or moving shipments. Only finite matching trade orders pay shipment commissions.",
+    "Dry woodland can ignite and spread fire eastward. Fire consumes trees and damages nearby crops; smoke drains stamina and can injure settlers.",
+    "Firebreaks stop growth and fire at that tree site; replanting reverses them. Injured neighbors can be aided with carried food or water.",
+    "Work targets the nearest corresponding object within distance one. Clock-rotating actor order resolves contention, then pack movement and ecology run.",
+    "Role views show radius-five local entities with declared slot limits. Nearby fire reports can be posted to the neighboring village and become stale.",
+    "The896-turn season ends by truncation. This declarative scene is not an executed animation or evidence of learning."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      39,
+      39
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Meadow; walking spends one stamina",
+          "color": "#9EBB72"
+        },
+        {
+          "value": 1,
+          "meaning": "Shared trail; walking does not spend stamina",
+          "color": "#C4AC7A"
+        },
+        {
+          "value": 2,
+          "meaning": "Stream; not traversable",
+          "color": "#69A9B9"
+        },
+        {
+          "value": 3,
+          "meaning": "Bridge site; positive strength permits crossing",
+          "color": "#A78359"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "settlers",
+      "glyph": "worker",
+      "label": "Settlers, equipment and carried supplies",
+      "color": "#D5A66B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "Village 0-15"
+        },
+        {
+          "state_path": [
+            "profession"
+          ],
+          "label": "0 woodcutter, 1 farmer, 2 courier, 3 ranger"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "1 axe, 2 hoe, 3 bucket"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Carried timber 0-3"
+        },
+        {
+          "state_path": [
+            "food"
+          ],
+          "label": "Carried food 0-3"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried water 0-2"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Health 0-3"
+        },
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "label": "Stamina 0-6"
+        }
+      ]
+    },
+    {
+      "id": "woodland",
+      "glyph": "plant",
+      "label": "Persistent woodland and firebreaks",
+      "color": "#58824F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "height"
+          ],
+          "label": "Tree stage 0-3; stage3 blocks passage"
+        },
+        {
+          "state_path": [
+            "fire"
+          ],
+          "label": "Currently burning"
+        },
+        {
+          "state_path": [
+            "firebreak"
+          ],
+          "label": "Cleared firebreak"
+        },
+        {
+          "state_path": [
+            "regrow"
+          ],
+          "label": "Current eligible regrowth age 0-24"
+        },
+        {
+          "state_path": [
+            "tree_owner"
+          ],
+          "label": "Ecological beneficiary village"
+        }
+      ]
+    },
+    {
+      "id": "crops",
+      "glyph": "food",
+      "label": "Renewable crop plots",
+      "color": "#BBAC4D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Crop stage 0-6"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Soil moisture 0-3"
+        }
+      ]
+    },
+    {
+      "id": "wells",
+      "glyph": "water",
+      "label": "Village wells and shared aquifer",
+      "color": "#6CABB5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "well_water"
+          ],
+          "label": "Well water 0-8"
+        }
+      ]
+    },
+    {
+      "id": "villages",
+      "glyph": "flag",
+      "label": "Village stores and facilities",
+      "color": "#BA845F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock_wood"
+          ],
+          "label": "Timber stock 0-32"
+        },
+        {
+          "state_path": [
+            "stock_food"
+          ],
+          "label": "Food stock 0-32"
+        },
+        {
+          "state_path": [
+            "level"
+          ],
+          "label": "Facility level 0-3"
+        },
+        {
+          "state_path": [
+            "orders"
+          ],
+          "label": "Remaining trade commissions 0-4"
+        },
+        {
+          "state_path": [
+            "report"
+          ],
+          "label": "Reported nearby fires 0-4"
+        },
+        {
+          "state_path": [
+            "report_age"
+          ],
+          "label": "Report age; 896 absent or stale"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "glyph": "gate",
+      "label": "Shared stream crossings",
+      "color": "#94704D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge_health"
+          ],
+          "label": "Bridge strength 0-3"
+        }
+      ]
+    },
+    {
+      "id": "pack_animals",
+      "glyph": "crate",
+      "label": "NPC pack animals with physical shipments",
+      "color": "#9A7953",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cart_cargo"
+          ],
+          "label": "0 empty, 1 timber, 2 food"
+        },
+        {
+          "state_path": [
+            "cart_phase"
+          ],
+          "label": "0 home idle, 1 outbound, 2 returning"
+        },
+        {
+          "state_path": [
+            "cart_home"
+          ],
+          "label": "Home village"
+        },
+        {
+          "state_path": [
+            "cart_target"
+          ],
+          "label": "Current destination village"
+        },
+        {
+          "state_path": [
+            "cart_stalled"
+          ],
+          "label": "Currently unable to advance"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "fire"
+      ],
+      "meaning": "Current burning-tree level, not a new ignition every frame.",
+      "semantics": "level",
+      "entity_id": "woodland",
+      "visibility": [
+        "tree_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "cart_cargo"
+      ],
+      "meaning": "Current physical shipment cargo.",
+      "semantics": "level",
+      "entity_id": "pack_animals",
+      "visibility": [
+        "cart_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "health"
+      ],
+      "meaning": "Current settler health.",
+      "semantics": "level",
+      "entity_id": "settlers",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "orders"
+      ],
+      "meaning": "Current unfilled village commissions.",
+      "semantics": "level",
+      "entity_id": "villages",
+      "visibility": [
+        "store_visible"
+      ]
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest / accept tool swap"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Chop nearest tree with axe"
+    },
+    {
+      "id": 6,
+      "label": "Harvest ripe crop"
+    },
+    {
+      "id": 7,
+      "label": "Water nearest crop with bucket"
+    },
+    {
+      "id": 8,
+      "label": "Fill bucket at nearest well"
+    },
+    {
+      "id": 9,
+      "label": "Repair bridge with timber and axe"
+    },
+    {
+      "id": 10,
+      "label": "Load pack animal with timber"
+    },
+    {
+      "id": 11,
+      "label": "Load pack animal with food"
+    },
+    {
+      "id": 12,
+      "label": "Deposit one timber"
+    },
+    {
+      "id": 13,
+      "label": "Deposit one food"
+    },
+    {
+      "id": 14,
+      "label": "Tend crop with hoe"
+    },
+    {
+      "id": 15,
+      "label": "Eat food to recover"
+    },
+    {
+      "id": 16,
+      "label": "Swap tools with accepting neighbor"
+    },
+    {
+      "id": 17,
+      "label": "Aid injured neighboring settler"
+    },
+    {
+      "id": 18,
+      "label": "Cut firebreak using timber and axe"
+    },
+    {
+      "id": 19,
+      "label": "Upgrade store using two timber and food"
+    },
+    {
+      "id": 20,
+      "label": "Seed bare crop with hoe and food"
+    },
+    {
+      "id": 21,
+      "label": "Replant bare tree with food seed"
+    },
+    {
+      "id": 22,
+      "label": "Extinguish tree with bucket water"
+    },
+    {
+      "id": 23,
+      "label": "Withdraw one timber"
+    },
+    {
+      "id": 24,
+      "label": "Withdraw one food"
+    },
+    {
+      "id": 25,
+      "label": "Post local fire reading to neighboring village"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public season clock t/896.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        12
+      ],
+      "meaning": "Self x/39, y/39, village/15, profession/3, tool/3, timber/3, food/3, water/2, health/3, stamina/6, nearby burning-tree count/64.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        108
+      ],
+      "meaning": "8 settler slots, each: seen, id/127, x/39, y/39, village/15, profession/3, tool/3, timber/3, food/3, water/2, health/3, stamina/6.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        108,
+        216
+      ],
+      "meaning": "12 woodland slots, each: seen, id/63, x/39, y/39, height/3, fire, firebreak, regrowth age/24, owner/15.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        216,
+        234
+      ],
+      "meaning": "3 crop slots, each: seen, id/15, x/39, y/39, growth/6, moisture/3.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        234,
+        249
+      ],
+      "meaning": "3 well slots, each: seen, id/15, x/39, y/39, water/8.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        249,
+        279
+      ],
+      "meaning": "3 village slots, each: seen, id/15, x/39, y/39, timber stock/32, food stock/32, facility/3, orders/4, fire report/4, report age/896.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        279,
+        294
+      ],
+      "meaning": "3 bridge slots, each: seen, id/7, x/39, y/39, strength/3.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        294,
+        321
+      ],
+      "meaning": "3 pack-animal slots, each: seen, id/15, x/39, y/39, cargo/2, phase/2, home/15, destination/15, stalled.",
+      "visibility": "local"
+    }
+  ]
+}

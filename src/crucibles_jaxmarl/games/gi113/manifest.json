@@ -1,0 +1,748 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00113",
+  "source_sha256": "5149a2bd96aa9756f1e81116bd66469c5643fa12962e5cfdc3a0d7cf6673be79",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 115,
+  "num_actions": 13,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "courier 0: owner of parcel 0, initially carries parcel 2"
+    },
+    {
+      "id": "agent_1",
+      "role": "courier 1: owner of parcel 1, initially carries parcel 0"
+    },
+    {
+      "id": "agent_2",
+      "role": "courier 2: owner of parcel 2, initially carries parcel 1"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "move north"
+    },
+    {
+      "id": 2,
+      "label": "move east"
+    },
+    {
+      "id": 3,
+      "label": "move south"
+    },
+    {
+      "id": 4,
+      "label": "move west"
+    },
+    {
+      "id": 5,
+      "label": "commit one credit to next bridge slot"
+    },
+    {
+      "id": 6,
+      "label": "commit two credits to next bridge slot"
+    },
+    {
+      "id": 7,
+      "label": "pick up lowest-index nearby floor parcel or drop carried parcel"
+    },
+    {
+      "id": 8,
+      "label": "offer carried parcel to adjacent receiver"
+    },
+    {
+      "id": 9,
+      "label": "accept offered parcel with empty hands"
+    },
+    {
+      "id": 10,
+      "label": "attempt delivery at current depot"
+    },
+    {
+      "id": 11,
+      "label": "consent to bilateral parcel swap with adjacent carrying courier"
+    },
+    {
+      "id": 12,
+      "label": "post own private delivery order at own board"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carry"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "parcel_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "parcel_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "parcel_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "parcel_carrier"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "parcel_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "need"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "announced"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "credits"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "escrow"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spent"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "paid_step"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "settled"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_step"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "board_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "board_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "board_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_id"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "permit"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable route",
+          "color": "#E4DBC5"
+        },
+        {
+          "value": 1,
+          "meaning": "river or impassable border",
+          "color": "#587E9A"
+        },
+        {
+          "value": 2,
+          "meaning": "walkable delivery depot",
+          "color": "#9BBE79"
+        },
+        {
+          "value": 3,
+          "meaning": "walkable public order and account board",
+          "color": "#D4B777"
+        },
+        {
+          "value": 4,
+          "meaning": "single-slot bridge square",
+          "color": "#B49074"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carry"
+          ],
+          "meaning": "Carried parcel index; -1 means empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "parcels",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "parcel_pos"
+      ],
+      "active": [
+        "parcel_active"
+      ],
+      "visibility": [
+        "parcel_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "parcel_owner"
+          ],
+          "meaning": "Beneficiary agent index",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "parcel_carrier"
+          ],
+          "meaning": "Carrier index; -1 means ground",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "public_boards",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "board_pos"
+      ],
+      "active": [
+        "board_active"
+      ],
+      "visibility": [
+        "board_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "announced"
+          ],
+          "meaning": "Posted depot index; -1 means not disclosed",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "credits"
+          ],
+          "meaning": "Available public credits",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "escrow"
+          ],
+          "meaning": "Current locked bid",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "spent"
+          ],
+          "meaning": "Cumulative credits paid to bridge",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "depot_id"
+          ],
+          "meaning": "Public depot index",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "bridge_slot",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "bridge_pos"
+      ],
+      "active": [
+        "bridge_active"
+      ],
+      "visibility": [
+        "bridge_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "permit"
+          ],
+          "meaning": "Prepared entry permit for next step; -1 means none",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "paid_step"
+      ],
+      "meaning": "Actual bridge payment by each courier this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "settled"
+      ],
+      "meaning": "Settlement phase processed, including rounds with no bids",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_step"
+      ],
+      "meaning": "Public registration of each newly delivered parcel",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self courier identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Public [t/128,t modulo 2]; even commits, odd settles",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Only this agent private parcel destination, depot index/4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        15
+      ],
+      "meaning": "Three public account blocks [credits/8,escrow/2,spent/8]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Three public posted order values (announced+1)/4; zero means undisclosed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        19
+      ],
+      "meaning": "Public prepared bridge permit (permit+1)/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        22
+      ],
+      "meaning": "Three public delivered flags in parcel-owner order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        34
+      ],
+      "meaning": "Three local agent blocks [visible,x/8,y/8,(carry+1)/4]; L1 radius 3, hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        34,
+        52
+      ],
+      "meaning": "Three parcel blocks [visible,x/8,y/8,owner/4,(carrier+1)/4,delivered]; local and active, hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        52,
+        115
+      ],
+      "meaning": "Public 7x9 board flattened y-major, tile value/4",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Route physical parcels to each owner private depot requirement. Delivery pays its beneficiary +1 and actual delivering courier +1/4. Actual bridge payments cost payer amount/16 reward; non-wait actions cost actor 1/128.",
+    "natural_termination": "All three fixed parcel identities have been delivered to their correct depots, or truncate at 96 otherwise. At terminal, outstanding unused-slot deposits are cancelled and refunded.",
+    "interaction": "Simultaneous bounded bids reserve one physical bridge entry slot, highest bid wins with rotating deterministic tie order, winner pays and losers recover deposits. Parcel swaps and consent-based transfers can save crossings. Posting an order changes other carriers available information.",
+    "observation_access": "Private need[i] is observed only by agent i and is never a scene attribute. Posted orders, credits, escrow, payments, permit and delivery registration are public. Agent/active parcel payloads are visible within L1 radius 3. Delivery legal masks depend on any depot, never on hidden target correctness."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "credits"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "escrow"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "spent"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

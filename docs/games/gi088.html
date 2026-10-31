@@ -1,0 +1,438 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>借来的电流 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI088 / SPATIAL</p><h1>借来的电流</h1><p class="lead">共享发电机在不同路线间分配电力；切换会暂时中断供给，手摇与便携电量互相牵制。</p><div class="stats"><span>3 agents</span><span>11 actions</span><span>54 observation columns</span><span>96 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi088.gif" alt="Original saved demonstration gi088"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi088.gif" alt="Actual verification episode gi088"></section><section><h2>Run this game</h2><pre>crucibles play --game 88</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;All three operators must complete two services before 96 steps while supplying and traversing the shared network.&quot;,
+  &quot;natural_termination&quot;: &quot;Joint natural completion when every completed count equals two. No independent customer removal or artificial blackout failure is imposed.&quot;,
+  &quot;interaction&quot;: &quot;Routing allocates one common supply unit per turn; switching interrupts it, gate entry spends the same remote capacitor used for service, portable donations can enable a partner request, and private orders require timely radio coordination.&quot;,
+  &quot;observation_access&quot;: &quot;Fixed layout, route/buffer/cooldown, gate indicators, power pulses and total service count are public. Orders are self-only. Agents and capacitors are local within distance 3, except a live radio call tracks its sender and visible attributes globally for three turns.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 9.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>The common generator sends at most one unit per turn: north, south, or alternating by clock. Its buffer holds ten.</li><li>Cycle routing near [4,4]; a switch costs one buffer unit and interrupts supply on the switch turn and the following turn.</li><li>Crank near [2,4] for two common units. One handcell socket trades two common units for one portable unit.</li><li>Entering a gate consumes one unit from that route service capacitor. Service at the distant station consumes two from the same store.</li><li>Each role must complete two private orders; a completed service flips its next target to the other station.</li><li>Donate one portable unit to help a partner request. Capacitors hold four and leak one every fourth turn.</li><li>A radio call publishes its stored target and tracks the sender for three turns. The old request can become stale after service.</li><li>Local capacitor and agent attributes are hidden beyond radius three unless the agent is broadcasting. Gate indicators and supply pulses are public.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Borrowed Current
+
+**Status: AUTHORED_NOT_EXECUTED.**
+
+Three operators share the work of power production and routing while pursuing private alternating service orders. Crossing a useful passage subtracts from the exact capacitor a waiting customer needs, so spatial access and service allocation cannot be optimized independently.
+
+## Rules and real cross-agent dependencies
+
+A divider at x=6 can be crossed at [6,2] or [6,6]. Its associated stations are [9,2] and [9,6], with initial capacitor levels two and two. The common generator at [2,4] starts with five units, capped at ten. Every supplied unit goes to north, south, or the clock-alternating route, and the source loses that unit. A full destination capacitor stops that turn&#x27;s supply without consuming buffer. CRANK adds two shared units per cranking role. The roles can trade jobs because each has the same physical interaction capabilities.
+
+The console at [4,4] cycles 2 -&gt; 0 -&gt; 1 -&gt; 2. A switch consumes up to one buffer unit and sets cooldown two. There is no supply on the switch turn or next turn; supply resumes when the decremented cooldown reaches zero. Repeated switching can waste power and perpetually delay a distant partner. A handcell recharge at the generator consumes two shared units to gain one portable unit, with capacity two and one rotating-priority socket. A role may instead carry its charge to a station and donate it to a partner.
+
+After supply is applied, a successful move entering a gate spends one unit from that route&#x27;s capacitor. A gate without energy cannot be entered. Once occupied, a safety latch displays it open until its occupant leaves, without creating additional charge or allowing another agent to overlap it. Donations are then applied, so a donor can enable another role&#x27;s service on the same turn. A service consumes two capacitor units, increases the requester&#x27;s count, and flips its private target. One donation and one service can be accepted per station per turn, each with rotating identity priority. Every fourth turn, all capacitors lose one remaining unit. This creates timing choices between hoarding, travel, donation and immediate service.
+
+Each role needs two completed services. The initial dispatcher starts with a north order, the north customer with north, and the south customer with south. The dispatcher eventually has to leave the console/generator to obtain services; a previously served customer can take over supporting jobs. A finished customer remains able to move, crank, route, donate and signal. This is a joint task with private immediate service rewards, not three separate errands.
+
+## Kernel, information and rewards
+
+A=3, O=54, U=11, H=96. Coordinates are integer [x,y], with y increasing downward. All state leaves are fixed-shape int32, float32 or bool arrays; all observations and rewards are float32.
+
+Private order is always in that role&#x27;s observation and is not an entity rendering attribute. RADIO consumes the role&#x27;s action for that turn, publishes its current target, and makes its position, portable charge, completion count and last radio fields visible to all roles for three recorded states. After a service, the private target flips but a prior radio message does not automatically update. Calling again is a real information/timing decision. Outside a live call, agent fields and station capacitors are visible only within Manhattan distance three. Public route/buffer displays, gate indicators, supply pulses and aggregate service count are included in every observation.
+
+The transition applies route changes/cranking/socket charge, one-unit supply, physical walking and crossing cost, local donations, local service, periodic leakage, radio lifetime and terminal assessment. A movement intent may be legal yet blocked by a wall, a closed/empty gate, any other role&#x27;s old cell or a shared destination. Service, donate and handcell-charge actions are legal intents when their local prerequisites hold, with actual simultaneous energy availability deciding realization. This permits a correctly placed partner donation to enable a service that had insufficient stored energy at the previous observation.
+
+Rewards are -0.01 per live role/turn, an additional -0.03 for a crank and -0.02 for a routing action; a service pays its requester 2 and every role 0.2 per accepted service that turn. Joint completion pays every role 6. The possible per-step values fit [-1,9]. All observations fit [0,1] and have exactly 54 columns. The maximum six services and request quotas are game objectives, not evidence thresholds.
+
+The binding addendum is implemented: a live input advances the scalar int32 clock by one; natural completion takes priority over the horizon. Already-terminal raw calls preserve the complete state, observation, clock, terminal causes and final event flags, return zero rewards and all-true dones. They are not extra gameplay transitions. The only legal terminal action is WAIT. Autoreset belongs to an external wrapper. No individual is removed from the world before joint completion. Invalid or out-of-range actions become WAIT; blocked cardinal directions remain legal attempted movements and may produce no motion.
+
+Each observation slice, entity position, active mask, visibility mask and displayed attribute is declared in manifest.json. scene.json repeats exactly the hash-bound map and declared channels. Its motion comes only from real state positions. A debug full-state view must remain distinct from role views. Public event channels are explicitly present in each role observation; local object/agent attributes are zero-masked together with a visible bit. A hidden entity is not a position hint.
+
+## Literal source evidence
+
+- Partial local information with public tracking calls: candidate.py:L19 — `ns[&quot;agent_visible&quot;] = (distance &lt;= 3) | (s[&quot;call_ttl&quot;][None, :] &gt; 0)`
+- Switching has a persistent timing cost: candidate.py:L124 — `cooldown = jnp.where(switched, 2, jnp.maximum(0, s[&quot;cooldown&quot;][0] - 1))`
+- Finite shared generation competes with portable charging: candidate.py:L129 — `buffer = buffer - 2 * jnp.sum(charging.astype(jnp.int32))`
+- One route receives each common supply unit: candidate.py:L134 — `power_event = jax.nn.one_hot(destination, 2, dtype=jnp.int32) * powered.astype(jnp.int32)`
+- Movement consumes a distant service resource: candidate.py:L153 — `capacitor = capacitor - crossing`
+- A partner donation enters the same capacitor before service: candidate.py:L157 — `capacitor = capacitor + jnp.sum(at * donating[:, None].astype(jnp.int32), axis=0)`
+- Service depends on energy after other roles crossing/donation: candidate.py:L159 — `serving = self.select_local((a == 7) &amp; (capacitor[station] &gt;= 2), station, s[&quot;t&quot;])`
+- An order changes privately after service: candidate.py:L162 — `order = jnp.where(serving, 1 - s[&quot;order&quot;], s[&quot;order&quot;])`
+- Stored radio messages can become stale: candidate.py:L167 — `call_target = jnp.where(call, s[&quot;order&quot;], s[&quot;call_target&quot;])`
+- All three roles matter to joint completion: candidate.py:L169 — `success = jnp.all(completed == 2)`
+
+Method extents in this exact source:
+
+- `direction`: candidate.py:L12-L14.
+- `refresh`: candidate.py:L16-L24.
+- `reset`: candidate.py:L26-L70.
+- `observe`: candidate.py:L72-L92.
+- `local_station`: candidate.py:L94-L96.
+- `legal_actions`: candidate.py:L98-L109.
+- `select_local`: candidate.py:L111-L115.
+- `advance`: candidate.py:L117-L196.
+- `absorb`: candidate.py:L198-L201.
+- `raw_step`: candidate.py:L203-L204.
+
+## Fixed witnesses and intended intervention differences
+
+These fixed scripts inspect local allocation, delayed supply and information rather than claiming all six services. The crossing pair isolates one mover while holding the remote requester fixed. The first script is intended to show calls becoming stale when private orders flip, real portable-cell donations, and delayed south supply after a routing change. No actual outcome is asserted.
+
+No scripted outcome is an execution receipt. A successful-looking path in prose is only a prediction from the rules. Scripts that exercise local mechanisms intentionally do not assert whole-task completion.
+
+## Invariants, variation and limits
+
+Declared invariants include unique positions and nonnegative clock, buffer, capacitors, handcells, order/call fields and service counters. Construction bounds are buffer&lt;=10, capacitor&lt;=4, handcell&lt;=2, completed&lt;=2, route&lt;=2, cooldown&lt;=2, call_ttl&lt;=3 and service_total&lt;=6. Orders are private dynamic state even though their initial values are fixed by this instance; first service and subsequent timing still change information needs. Other original layouts, private-order distributions, leakage schedules or generator constraints could change partner-dependent allocation strategies; such variants and any learning advantage remain untested.
+
+Integer sign-bearing fields (for example no-owner=-1) remain exact int32 values. There is no design-specified int8 distribution to adapt. The external uint32 PRNG key is not duplicated as a state leaf. The authored reset and transitions are deterministic; keys are accepted but not consumed.
+
+## Provenance and reference use
+
+This is an original authored kernel for initial window0, attempt00, in the train source stream. No prior candidate, project execution result, heldout layout, evaluation score, ranking or final test was read. No candidate or JAX was imported or run. The action lists are fixed hypotheses, not recorded trajectories. Interface/R0 checks, numerical parity, actual legality along the scripts, intervention replays, animation, training, solvability, optimality, strategic richness and meta-learning effects remain unestablished.
+
+Only supplied official references were used. JaxMARL&#x27;s README informed the intended simultaneous multi-agent adapter boundary (agent-keyed dictionaries and __all__ belong in the later integration layer). Pgx&#x27;s README informed the separation of explicit transition keys, legal masks and raw terminal state. Craftax&#x27;s README informed the distinction between a world kernel, state-based rendering and an external reset wrapper. PureJaxRL is an algorithm implementation reference, not a game library; its performance statements are not evidence about this game. Craftax_Baselines/ppo_rnn.py was read only at its environment/reset wrapper interfaces; no PPO/network code or benchmark mechanics were copied. No upstream implementation or map is incorporated. These references are attributed in generation_record.json with exact supplied file hashes and upstream URLs.
+
+The copied community_delivery_requirements.json still lists IDs 82-85. The exact assigned design/request IDs 86-89 control this batch; the general interaction and presentation requirements are applied without rewriting that input. Actual dispatch identity, backend and usage evidence are retained by the coordinator, not invented here.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>WAIT</span></div><div class="action"><b>1</b><span>NORTH intent</span></div><div class="action"><b>2</b><span>EAST intent</span></div><div class="action"><b>3</b><span>SOUTH intent</span></div><div class="action"><b>4</b><span>WEST intent</span></div><div class="action"><b>5</b><span>CYCLE ROUTE at console</span></div><div class="action"><b>6</b><span>CRANK at generator</span></div><div class="action"><b>7</b><span>REQUEST SERVICE at matching station</span></div><div class="action"><b>8</b><span>RADIO private current order for three turns</span></div><div class="action"><b>9</b><span>DONATE one handcell unit at station</span></div><div class="action"><b>10</b><span>CHARGE handcell at generator using two grid units</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> initial dispatcher with private north order; must also complete service</p><p><b>agent_1</b> initial north customer; next order flips south</p><p><b>agent_2</b> initial south customer; next order flips north</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      3
+    ],
+    &quot;meaning&quot;: &quot;Observer identity one-hot&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      5
+    ],
+    &quot;meaning&quot;: &quot;Own current private order (north=0,south=1) and own completed services /2&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      13
+    ],
+    &quot;meaning&quot;: &quot;Public t/96, done, success, route/2, supply cooldown/2, buffer/10, switch event, service_total/6&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      15
+    ],
+    &quot;meaning&quot;: &quot;Public north/south gate-open indicators&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      17
+    ],
+    &quot;meaning&quot;: &quot;Public north/south supply pulse for last transition&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      17,
+      25
+    ],
+    &quot;meaning&quot;: &quot;Public generator, console, north gate and south gate [x/12,y/8] coordinates&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      25,
+      46
+    ],
+    &quot;meaning&quot;: &quot;Three role slots: [x/12,y/8,handcell/2,completed/2,last_radio_target,radio_ttl/3,visible]; zero outside radius 3 unless role radio is live&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      46,
+      54
+    ],
+    &quot;meaning&quot;: &quot;Two station slots: [x/12,y/8,capacitor/4,visible]; zero outside Manhattan radius 3&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;operators&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;handcell&quot;
+        ],
+        &quot;meaning&quot;: &quot;Portable charge, capacity 2&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;completed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Services completed, goal 2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;call_target&quot;
+        ],
+        &quot;meaning&quot;: &quot;Last radio request: 0 north, 1 south&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;call_ttl&quot;
+        ],
+        &quot;meaning&quot;: &quot;Radio tracking turns remaining&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;generator&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;generator_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;generator_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;generator_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;buffer&quot;
+        ],
+        &quot;meaning&quot;: &quot;Public shared grid buffer, capacity 10&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;console&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;console_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;console_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;console_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;route&quot;
+        ],
+        &quot;meaning&quot;: &quot;Route: 0 north, 1 south, 2 alternating&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cooldown&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining supply interruption&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;stations&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;capacitor&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stored route energy, capacity 4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gates&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gate_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_open&quot;
+        ],
+        &quot;meaning&quot;: &quot;Open from stored power or safety occupancy latch&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi088&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;cb67ed2f5c9bec408d29d029efc5c9d1eea8de24a22b4b49e96d709b504d38e3&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 54,
+    &quot;num_actions&quot;: 11,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.0289297103881836
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5815029144287109
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.9371843338012695
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.2618906497955322
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8516478538513184
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0010294914245605469
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.340914249420166
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.409975290298462
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.338913917541504
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.649240016937256
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 13.172175884246826,
+  &quot;float_parity_max_abs&quot;: 5.960464477539063e-08,
+  &quot;numerical_parity&quot;: &quot;UNDETERMINED_NONZERO_FLOAT_DIFFERENCE&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 96,
+  &quot;scripted_random_returns&quot;: [
+    -0.7799999807029963,
+    1.2400000784546137,
+    -0.7599999811500311
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi088&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 3.5215916633605957
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 88,
+  &quot;key&quot;: &quot;gi088&quot;,
+  &quot;title&quot;: &quot;借来的电流&quot;,
+  &quot;summary&quot;: &quot;共享发电机在不同路线间分配电力；切换会暂时中断供给，手摇与便携电量互相牵制。&quot;,
+  &quot;tags&quot;: [
+    &quot;能源分配&quot;,
+    &quot;共享设施&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 54,
+    &quot;num_actions&quot;: 11,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;source_sha256&quot;: &quot;cb67ed2f5c9bec408d29d029efc5c9d1eea8de24a22b4b49e96d709b504d38e3&quot;,
+  &quot;manifest_sha256&quot;: &quot;c74f2a75b60b94fa9e077c2c82acac9faf2d850d88cf0644659d1e5c6098e262&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;cb67ed2f5c9bec408d29d029efc5c9d1eea8de24a22b4b49e96d709b504d38e3&quot;,
+      &quot;bytes&quot;: 11865,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00088/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;c74f2a75b60b94fa9e077c2c82acac9faf2d850d88cf0644659d1e5c6098e262&quot;,
+      &quot;bytes&quot;: 14039,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00088/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;6ade6b63fcbce94cd97c8df37b915b896f90f24486a382461d3050ef22ef2282&quot;,
+      &quot;bytes&quot;: 7267,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00088/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;06ecb92df8536593ad09f9bc3bc7ca10c47d63bee46fff4a7ab55fe1ea0eddcc&quot;,
+      &quot;bytes&quot;: 10899,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00088/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;55e315a87fd51dd3265ef32496669a6b6a829a201723fd7a56a389452b0aa74e&quot;,
+      &quot;bytes&quot;: 5088,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00088/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi088">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

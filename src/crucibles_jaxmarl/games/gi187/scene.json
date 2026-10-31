@@ -1,0 +1,345 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "14ff1ed4371e402b595847aeb5c0aebb6ddb37a7e2bba3c40c0180399740631d",
+  "manifest_sha256": "e4f2925cc43c41cae0c5ed991093416dc56143cfc5a64b9505e3c44b6e2b53e5",
+  "title": "Ember Shelter",
+  "rules": [
+    "Three foragers share a timber shelter and a clay kiln; each pack holds only three material units.",
+    "Build with timber and insulate with kiln lining. Both wall and lining must reach two for shared night protection.",
+    "The kiln consumes one timber and one clay, finishes after three transitions, and releases smoke.",
+    "A timber-fed hearth adds four shared heat. Night protection needs enough heat for the current cold severity.",
+    "Day lasts 12 ticks and night six; the third sunrise ends the expedition at tick 54.",
+    "At night, unprotected workers lose health. Shelter protection reaches Manhattan distance two from its footprint.",
+    "Night end wears one wall level. Thick kiln smoke hurts nearby workers and can wear walls.",
+    "Pass materials to adjacent workers or put your private preferred material into the locker for a personal bonus.",
+    "Use actual wall, lining, heat, smoke and weather state to depict a timber-block refuge, warm hearth and cold forest clearing."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      6.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable forest clearing",
+          "color": "#99AD86"
+        },
+        {
+          "value": 1,
+          "meaning": "Stone rim",
+          "color": "#5D6261"
+        },
+        {
+          "value": 2,
+          "meaning": "Timber stand; trunk remains after stock depletion",
+          "color": "#557B4F"
+        },
+        {
+          "value": 3,
+          "meaning": "Clay deposit",
+          "color": "#B88C71"
+        },
+        {
+          "value": 4,
+          "meaning": "Shelter footprint",
+          "color": "#AC865A"
+        },
+        {
+          "value": 5,
+          "meaning": "Kiln footprint",
+          "color": "#A35F40"
+        },
+        {
+          "value": 6,
+          "meaning": "Walkable locker apron",
+          "color": "#C5A46F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "foragers",
+      "glyph": "worker",
+      "label": "Foragers with boots, packs and warm coats",
+      "color": "#BD824F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Health / 8"
+        },
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "Pack: timber, clay, lining"
+        }
+      ]
+    },
+    {
+      "id": "material_stands",
+      "glyph": "resource",
+      "label": "Timber trunks and clay deposit",
+      "color": "#658150",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "resource_kind"
+          ],
+          "label": "Material kind"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Units remaining"
+        }
+      ]
+    },
+    {
+      "id": "camp_structures",
+      "glyph": "tool",
+      "label": "Timber shelter, clay kiln and locker",
+      "color": "#C39462",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_status"
+          ],
+          "label": "Structure state"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices: 0 gathered; 1 wall/lining added; 2 kiln loaded; 3 lining collected; 4 hearth fed or smoke vented; 5 material passed; 6 private stash; 7 health damage or wall wear.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "weather"
+      ],
+      "meaning": "Current public weather: 0 daylight, 1 cold night, 2 severe cold night",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "smoke"
+      ],
+      "meaning": "Current kiln smoke; at six or more it creates local fire damage",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lost_wall"
+      ],
+      "meaning": "Wall levels permanently lost to weather or fire",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Gather nearby material"
+    },
+    {
+      "id": 6,
+      "label": "Build shelter wall"
+    },
+    {
+      "id": 7,
+      "label": "Load kiln with timber and clay"
+    },
+    {
+      "id": 8,
+      "label": "Take kiln lining"
+    },
+    {
+      "id": 9,
+      "label": "Install shelter lining"
+    },
+    {
+      "id": 10,
+      "label": "Feed shelter hearth"
+    },
+    {
+      "id": 11,
+      "label": "Vent kiln smoke"
+    },
+    {
+      "id": 12,
+      "label": "Pass one material"
+    },
+    {
+      "id": 13,
+      "label": "Stash private-priority material"
+    },
+    {
+      "id": 14,
+      "label": "Repair shelter wall"
+    },
+    {
+      "id": 15,
+      "label": "Rest in daytime shelter"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t / 54",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Day-night phase (t modulo 18) / 17",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Current weather 0 daylight, 1 cold, 2 severe / 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        52
+      ],
+      "meaning": "Public tile map / 6, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        58
+      ],
+      "meaning": "All worker xy positions / 6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        61
+      ],
+      "meaning": "All worker health / 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        61,
+        70
+      ],
+      "meaning": "Pack counts by worker then timber/clay/lining / 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        74
+      ],
+      "meaning": "Material node stocks / 6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        80
+      ],
+      "meaning": "Wall / 3, lining / 3, heat / 12, kiln timer / 3, kiln output, smoke / 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        88
+      ],
+      "meaning": "Current transition event flags in declared order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        88,
+        91
+      ],
+      "meaning": "Public locker totals by material / 24",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        92
+      ],
+      "meaning": "Own private preferred material index / 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        92,
+        93
+      ],
+      "meaning": "Own forecast: role i alone initially knows night i severity / 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        93,
+        96
+      ],
+      "meaning": "Own role one-hot",
+      "visibility": "self"
+    }
+  ]
+}

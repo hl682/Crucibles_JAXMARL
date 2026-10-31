@@ -1,0 +1,857 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00114",
+  "source_sha256": "16ebb97c9c761db5da08d58d3254d08995165d8b40b8c8222c044731c723a8ba",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 194,
+  "num_actions": 10,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -1.0,
+  "reward_high": 11.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "entities": [
+    {
+      "id": "rescuers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Health, initially three; zero disables this role",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_lamp"
+          ],
+          "meaning": "Held lantern identity, minus one means none",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_evac"
+          ],
+          "meaning": "Carried evacuee identity, minus one means none",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "lanterns",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "lamp_pos"
+      ],
+      "active": [
+        "lamp_active"
+      ],
+      "visibility": [
+        "lamp_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "lamp_owner"
+          ],
+          "meaning": "Carrier identity, minus one means grounded",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "lamp_charge"
+          ],
+          "meaning": "Remaining lantern battery units",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "lamp_on"
+          ],
+          "meaning": "Lantern switch state",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "evacuees",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "evac_pos"
+      ],
+      "active": [
+        "evac_active"
+      ],
+      "visibility": [
+        "evac_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "evac_carrier"
+          ],
+          "meaning": "Carrier identity, minus one means uncarried",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "evac_rescued"
+          ],
+          "meaning": "Already delivered to the shelter",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "relay_beacons",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "meaning": "Remaining relay illumination ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "battery_depot",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "depot_stock"
+          ],
+          "meaning": "Remaining shared battery units",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "moving_shadows",
+      "kind": "hazard",
+      "count": 2,
+      "position": [
+        "hazard_pos"
+      ],
+      "active": [
+        "hazard_active"
+      ],
+      "visibility": [
+        "hazard_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued_count"
+      ],
+      "meaning": "Number of evacuees delivered to the shelter; public cumulative record",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "rescue_flash"
+      ],
+      "meaning": "Evacuees newly rescued on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lamp_charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "beacon_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "depot_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "rescued_count"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "render_tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Unlit traversable floor",
+          "color": "#2E3949"
+        },
+        {
+          "value": 1,
+          "meaning": "Opaque wall",
+          "color": "#586174"
+        },
+        {
+          "value": 2,
+          "meaning": "Shelter and permanent nearby safety light",
+          "color": "#65C18C"
+        },
+        {
+          "value": 3,
+          "meaning": "Shared battery depot tile",
+          "color": "#71A589"
+        },
+        {
+          "value": 4,
+          "meaning": "Currently illuminated traversable floor",
+          "color": "#D6BE77"
+        }
+      ],
+      "visibility": [
+        "map_visible"
+      ]
+    }
+  },
+  "title": "Lantern rescue and moving shadows",
+  "action_mask_semantics": "Every listed action is a legal command attempt for an active role. Unmet physical, capability, inventory or consent prerequisites yield no effect. Out-of-range integers become wait. Inactive roles and absorbed episodes expose only action 0.",
+  "public_adapter_status": "NOT_DELIVERED_IN_AUTHOR_PACKAGE; the separate implementation layer must supply and validate agent-keyed dictionaries and __all__ without changing this flat kernel or the frozen learner.",
+  "authoring_status": "AUTHORED_NOT_EXECUTED",
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Lighter: may carry a lantern but cannot lift evacuees"
+    },
+    {
+      "id": "agent_1",
+      "role": "Carrier: may lift an evacuee but cannot pick up lanterns"
+    },
+    {
+      "id": "agent_2",
+      "role": "Runner: can carry either one lantern or one evacuee"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up or ground a lantern"
+    },
+    {
+      "id": 6,
+      "label": "Lift or set down an evacuee"
+    },
+    {
+      "id": 7,
+      "label": "Toggle held lantern"
+    },
+    {
+      "id": 8,
+      "label": "Recharge held lantern from nearby shared depot"
+    },
+    {
+      "id": 9,
+      "label": "Spend four charge units to pulse a nearby relay"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "phase"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "illumination"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "render_tiles"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map_visible"
+      ],
+      "shape": [
+        3,
+        7,
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "rescued_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "rescue_flash"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_lamp"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_evac"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lamp_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lamp_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lamp_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lamp_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lamp_charge"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lamp_on"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "evac_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "evac_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "evac_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "evac_carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "evac_rescued"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_stock"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot: lighter 0, evacuee carrier 1, flexible runner 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Self x,y divided by 8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Self health divided by 3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Self held lantern identity plus one, divided by 2; zero means none",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Self carried evacuee identity plus one, divided by 2; zero means none",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "meaning": "Public elapsed ticks divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Public rescued evacuees divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        73
+      ],
+      "meaning": "Row-major base terrain /3 at visible cells, minus one elsewhere",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        73,
+        136
+      ],
+      "meaning": "Row-major current illumination at visible cells, minus one elsewhere",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        154
+      ],
+      "meaning": "Three visible rescuer records: x/8,y/8,health/3,(lamp+1)/2,(evacuee+1)/2,active; all six entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        154,
+        166
+      ],
+      "meaning": "Two visible lantern records: x/8,y/8,charge/64,(owner+1)/3,on,visible=1; all six entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        166,
+        176
+      ],
+      "meaning": "Two visible evacuee records: x/8,y/8,rescued,(carrier+1)/3,visible=1; all five entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        176,
+        184
+      ],
+      "meaning": "Two visible relay records: x/8,y/8,ttl/12,visible=1; all four entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        184,
+        188
+      ],
+      "meaning": "Visible battery depot record: x/8,y/8,stock/16,visible=1; four minus ones when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        188,
+        194
+      ],
+      "meaning": "Two lit and locally visible shadow records: x/8,y/8,visible=1; all three entries minus one when unseen",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Physically carry both evacuees from the east rooms to the shelter at (1,3) before all rescuers are disabled or tick 128.",
+    "natural_termination": "Both evacuees rescued, or every rescuer has zero health; natural completion has priority over timeout on the same tick.",
+    "interaction": "Lantern and beacon illumination changes other roles visibility and the cells a loaded carrier can enter. Shared battery stock, exclusive bulky carrying, object competition, relay timing and moving dark hazards create action-dependent coordination.",
+    "observation_access": "Each role sees its own status and public time/rescue totals. Current cell visibility uses a 17-sample rounded cell ray and Manhattan distance: radius one regardless of light, or radius four in illuminated cells. Shadows additionally require illumination. No other map cells, shadow phase, distant inventories or unseen object positions enter the role observation. Renderer uses the same visibility arrays.",
+    "transition_order": "Movement uses pre-step illumination; rotating object interactions follow; charge/relay timers tick; shadows move every third tick; new light determines damage; rescue and terminal state are then evaluated."
+  },
+  "invariant_notes": [
+    "Agent positions remain on non-wall cells; co-location is intentional.",
+    "At most one lantern or evacuee is held per rescuer; role capabilities restrict lifting.",
+    "Lantern charge is between 0 and 64, beacon ttl between 0 and 12, depot stock between 0 and 16, health between 0 and 3.",
+    "Evacuee rescue is irreversible and counted once; lighting is recomputed from actual positions, switches, fuel and rays.",
+    "Moving shadow phase is private except for consequences revealed through legal observations.",
+    "A completed raw state is absorbing, including its clock, per-step event value and actual terminal cause."
+  ]
+}

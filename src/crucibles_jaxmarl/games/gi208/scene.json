@@ -1,0 +1,393 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "60fbff4f9b125b8fe475cc9baf48d0318708e6be00b77b3f7326906386673e6b",
+  "manifest_sha256": "e14611d2f6ba8124d3cc079d73a01750807c12cb33bd6652a7adba5ccb63ade7",
+  "title": "Canal Compact",
+  "rules": [
+    "A lock has low level zero, intermediate one and high two. Entry or exit on its west side needs high; its east side needs low.",
+    "Commit one own water unit or drain a nearby lock. Commands resolve before same-step movement requests, so a peer can enable passage.",
+    "Opposed fill/drain commands at one lock cause a surge: its water is released, an adjacent settlement field is flooded and a boat inside is pushed east if clear.",
+    "A blocked surge loses the trapped boat's cargo. Three flood alarms or lost cargo ends the episode; all three deliveries complete it.",
+    "Reserve a side berth for six ticks or release it. Actual occupied boat cells still block entry and rotating priority resolves contested moves.",
+    "Own water also irrigates a local field for private harvest reward. Water supply is finite; drained or irrigated units cannot be recovered.",
+    "Signal from beside a lock to send its current level and clock. Each receiver sees a dated snapshot for five transitions, not remote live updates.",
+    "Native policy/human actions and observations are the same. Scripts are unexecuted author hypotheses."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Land and field banks; boats cannot enter",
+          "color": "#D5CFAC"
+        },
+        {
+          "value": 1,
+          "meaning": "Navigable canal and side-berth branches",
+          "color": "#779CA6"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "robot",
+      "label": "Settlement cargo boats",
+      "color": "#627E96",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "reservoir"
+          ],
+          "label": "Own finite water units available to commit or irrigate"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "Remaining carried cargo, zero or one"
+        }
+      ]
+    },
+    {
+      "id": "lock",
+      "glyph": "gate",
+      "label": "Two stepped canal locks",
+      "color": "#A08B5B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "level"
+          ],
+          "label": "Water level 0 downstream, 1 intermediate, 2 upstream"
+        },
+        {
+          "state_path": [
+            "phase"
+          ],
+          "label": "-1 draining, 0 idle, 1 filling, 2 contrary-command surge"
+        },
+        {
+          "state_path": [
+            "surge"
+          ],
+          "label": "Opposed fill/drain commands on this step"
+        }
+      ]
+    },
+    {
+      "id": "berth",
+      "glyph": "flag",
+      "label": "Three side berths",
+      "color": "#8E9B78",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "reservation"
+          ],
+          "label": "Reservation owner or -1 unreserved"
+        },
+        {
+          "state_path": [
+            "reserve_ttl"
+          ],
+          "label": "Remaining reservation transitions"
+        }
+      ]
+    },
+    {
+      "id": "field",
+      "glyph": "plant",
+      "label": "Settlement irrigation fields",
+      "color": "#85A166",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Field moisture credit, zero through four"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Crop growth to four for harvesting"
+        },
+        {
+          "state_path": [
+            "harvested"
+          ],
+          "label": "Private harvest count, at most two per field"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "glyph": "crate",
+      "label": "Cargo destination docks",
+      "color": "#C19F68",
+      "attribute_labels": []
+    },
+    {
+      "id": "message",
+      "glyph": "beacon",
+      "label": "Dated lock-level reports",
+      "color": "#C4AA71",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "message_sender"
+          ],
+          "label": "Sending boat ID"
+        },
+        {
+          "state_path": [
+            "message_level"
+          ],
+          "label": "Snapshot level at send time, not current remote state"
+        },
+        {
+          "state_path": [
+            "message_time"
+          ],
+          "label": "Native clock at send time"
+        },
+        {
+          "state_path": [
+            "message_ttl"
+          ],
+          "label": "Remaining visible report lifetime"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Public completed cargo deliveries",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "delivery_now"
+      ],
+      "meaning": "Cargo delivered this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "flood"
+      ],
+      "meaning": "Cumulative public flood alarm from contrary commands",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Request canal step north"
+    },
+    {
+      "id": 2,
+      "label": "Request canal step east"
+    },
+    {
+      "id": 3,
+      "label": "Request canal step south"
+    },
+    {
+      "id": 4,
+      "label": "Request canal step west"
+    },
+    {
+      "id": 5,
+      "label": "Commit one own water unit to nearby lock"
+    },
+    {
+      "id": 6,
+      "label": "Drain nearby lock one level downstream"
+    },
+    {
+      "id": 7,
+      "label": "Reserve nearby available berth for six ticks"
+    },
+    {
+      "id": 8,
+      "label": "Release own nearby berth reservation"
+    },
+    {
+      "id": 9,
+      "label": "Irrigate own nearby field with one water unit"
+    },
+    {
+      "id": 10,
+      "label": "Deliver cargo at own destination dock"
+    },
+    {
+      "id": 11,
+      "label": "Harvest own nearby ready field"
+    },
+    {
+      "id": 12,
+      "label": "Broadcast dated nearby lock-level report"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        7
+      ],
+      "meaning": "Public t, done, terminated, truncated, success, failure and cumulative flood alarm",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        98
+      ],
+      "meaning": "Public fixed canal map, seven rows by thirteen columns",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        104
+      ],
+      "meaning": "Public per-owner cargo destination x/y coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        107
+      ],
+      "meaning": "Public delivered cargo by owner",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        107,
+        110
+      ],
+      "meaning": "Public delivery flags this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        114
+      ],
+      "meaning": "Self role ID, work count, blocked flag and lost cargo count",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        114,
+        117
+      ],
+      "meaning": "Boat visibility bits for radius-three local view",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        117,
+        129
+      ],
+      "meaning": "Visible boat records: x,y,reservoir,cargo; four -1 values when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        129,
+        131
+      ],
+      "meaning": "Local lock visibility bits",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        131,
+        141
+      ],
+      "meaning": "Visible lock records: x,y,level,phase,surge; five -1 values when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        141,
+        144
+      ],
+      "meaning": "Local berth visibility bits",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        144,
+        156
+      ],
+      "meaning": "Visible berth records: x,y,reservation,reserve_ttl; four -1 values when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        156,
+        159
+      ],
+      "meaning": "Local field visibility bits",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        159,
+        174
+      ],
+      "meaning": "Visible field records: x,y,moisture,growth,harvested; five -1 values when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        174,
+        183
+      ],
+      "meaning": "Per-role mailbox visibility; only own unexpired recipient records appear",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        183,
+        237
+      ],
+      "meaning": "Visible message records: x,y,sender,snapshot_level,source_time,ttl; six -1 values when unseen or expired",
+      "visibility": "self"
+    }
+  ]
+}

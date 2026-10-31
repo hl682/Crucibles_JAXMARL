@@ -1,0 +1,146 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>astra-d2-00062: Private instructions, delayed messages, and epoch invalidation · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI062 / LEGACY_ARRAY</p><h1>astra-d2-00062: Private instructions, delayed messages, and epoch invalidation</h1><p class="lead"></p><div class="stats"><span>2 agents</span><span>5 actions</span><span>16 observation columns</span><span>32 original horizon</span><span>Runtime: PASS</span></div><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi062.gif" alt="Actual verification episode gi062"></section><section><h2>Run this game</h2><pre>crucibles play --game 62</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;termination&quot;: &quot;Original kernel t &gt;= 32; see mechanism and source&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 1.0. Observability: source_defined.</p></section><section><h2>Rules</h2><ol></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># astra-d2-00062: Private instructions, delayed messages, and epoch invalidation
+
+This parentless proposal gives each agent a public three-position register and a private instruction for the other agent&#x27;s register. An agent can execute its own register, but only the partner directly observes the target that determines whether that execution succeeds. Targets remain fixed until their intended recipient executes; every execution, successful or unsuccessful, redraws that recipient&#x27;s target at its partner and increments the corresponding public epoch. The new target may have the same numeric value, but it belongs to a new instruction epoch.
+
+Actions are 0 wait; 1 rotate one&#x27;s register forward modulo three; 2 rotate it backward; 3 transmit one&#x27;s current private instruction with its epoch; 4 execute one&#x27;s current register. All actions are legal. The private instruction held by agent i is for agent 1-i, not for agent i. Execution success therefore compares the executing agent&#x27;s old register with its partner&#x27;s old private target. Rotations and execution are exclusive choices on the same turn.
+
+Messages enter a two-slot outgoing pipeline. A send occupies slot 1 after the transition, shifts to slot 0 on the next transition, and reaches the partner&#x27;s inbox on the following one. Delivery overwrites that inbox; without a delivery the old inbox persists. Packets carry the value and epoch that existed when sent. If the receiver executes while an instruction is in flight, the message can arrive with an obsolete epoch. The receiver sees public epochs and an explicit stale-message indicator, so a delayed packet is not silently treated as current information. Epoch validity records provenance, not a guarantee that an obsolete numeric value is wrong.
+
+Each agent observes its own outgoing message contents and validity bits but does not directly observe its partner&#x27;s outgoing payload or private target. The peer&#x27;s register, target epoch, and previous execution success are public. Public registers can themselves become an implicit signaling channel. The source does not assert that paid transmission is uniquely advantageous or that a memoryless policy can infer every relevant state. Targets are sampled at reset and redrawn using only the supplied transition key.
+
+Observation columns 0 through 15 are: normalized time; own and partner registers divided by two; own private instruction divided by two; own and partner instruction epochs divided by 32; inbox value divided by two or zero if invalid; inbox-valid indicator; inbox epoch divided by 32; own outgoing slot-0 value or zero; its valid indicator; own outgoing slot-1 value or zero; its valid indicator; own and partner previous success indicators; inbox-stale indicator. The separate validity bits distinguish an absent message from instruction zero.
+
+Reward is 0.6 for own success plus 0.2 for the partner&#x27;s success, minus 0.25 for own failed execution and 0.03 for transmitting. It is explicitly clipped to [-1, 1]; the success indicators make this a bounded utility formula. Helping the partner can produce a positive team component, whereas uninformed execution risks a loss and changes the instruction that the partner needs to convey. Both roles affect persistent registers, message queues, private-target epochs, and the other&#x27;s payoff.
+
+The generic relation is to decentralized instruction following, delayed communication, and stale-cache coordination. The intended mechanism is asynchronous information with action-triggered invalidation. This is not a claim of nonisomorphism or originality relative to every existing communication game. No benchmark source, other candidate source, or outcome feedback was accessed.
+
+The interface contains two agents, sixteen float32 observation features, five legal actions, and a 32-transition clock. Terminal inboxes, queues, registers, and targets are preserved. This is an unexecuted source proposal. No isolated validation, compiler result, pool eligibility, duplicate decision, or learning-effectiveness claim is included.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Action 0; see mechanism and source</span></div><div class="action"><b>1</b><span>Action 1; see mechanism and source</span></div><div class="action"><b>2</b><span>Action 2; see mechanism and source</span></div><div class="action"><b>3</b><span>Action 3; see mechanism and source</span></div><div class="action"><b>4</b><span>Action 4; see mechanism and source</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Original legacy agent; see mechanism and source</p><p><b>agent_1</b> Original legacy agent; see mechanism and source</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi062&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;0bed125df6f0803937b0d45d186fc07e119a4f94379d7db153bf19d2867e5a0c&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.9445695877075195
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1517167091369629
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7336337566375732
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.598520040512085
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5348186492919922
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0010056495666503906
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7069845199584961
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.43903613090515137
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8815491199493408
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.9064218997955322
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 7.401150465011597,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;NOT_PART_OF_ORIGINAL_LEGACY_CONTRACT&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 32,
+  &quot;scripted_random_returns&quot;: [
+    0.9000000581145287,
+    0.5200000796467066
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 33,
+  &quot;render_roles_checked&quot;: 2
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi062&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 2.8193209171295166
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 62,
+  &quot;key&quot;: &quot;gi062&quot;,
+  &quot;title&quot;: &quot;astra-d2-00062: Private instructions, delayed messages, and epoch invalidation&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;legacy_array&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;source_sha256&quot;: &quot;0bed125df6f0803937b0d45d186fc07e119a4f94379d7db153bf19d2867e5a0c&quot;,
+  &quot;manifest_sha256&quot;: &quot;01927cb99cd5ac52602691b629730615a7fb902d2d34aa54c05839953a0b1d49&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;0bed125df6f0803937b0d45d186fc07e119a4f94379d7db153bf19d2867e5a0c&quot;,
+      &quot;bytes&quot;: 4632,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00062/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;1a110aad630ad781587eb82d3af7b0c594dbb975ab2f90ee158e979dac3cf5d5&quot;,
+      &quot;bytes&quot;: 4048,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00062/attempt_00/mechanism.md&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;LEGACY_SOURCE&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi062">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

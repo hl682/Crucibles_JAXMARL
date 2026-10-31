@@ -1,0 +1,288 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "14b58f26d52d8cb617abefcb9824e0a4f3fa63399eb7f8f670e17a9e05ca236a",
+  "manifest_sha256": "83d3487fbdfde1cbf5e19017de3711bb9c29d85727da8d171440253ecadbaede",
+  "title": "Shared-Heat Workshop: Three Specialists, Two Conserved Workpieces",
+  "rules": [
+    "Two physical pieces must pass raw, forged, tempered and assembled stages before shipping.",
+    "Only worker 0 forges, worker 1 tempers and worker 2 assembles, each while carrying the appropriate piece beside its station.",
+    "Hands hold one piece. A handoff requires adjacent OFFER and ACCEPT actions; floor pickup/drop is also possible.",
+    "A processing action adds four heat to its own station and two to every other station. Passive cooling removes one per transition.",
+    "Work thresholds are six, five and seven for forge, quench and press. Shared processing order rotates; earlier work can block later work.",
+    "One valve use per step consumes one of six coolant units and removes three heat from every station. Excess heat above twelve is safety-vented.",
+    "The two one-cell partition passages make transport order matter. Agents cannot swap squares or enter occupied squares.",
+    "Only fully assembled shipping pays +1 to every worker. Each non-wait action costs its actor 1/128. Both shipments terminate; 96 steps truncate otherwise."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable workshop floor",
+          "color": "#E8DDC8"
+        },
+        {
+          "value": 1,
+          "meaning": "wall or partition",
+          "color": "#565B65"
+        },
+        {
+          "value": 2,
+          "meaning": "forge station; work from an adjacent square",
+          "color": "#CF7256"
+        },
+        {
+          "value": 3,
+          "meaning": "quench station; work from an adjacent square",
+          "color": "#6BA3C1"
+        },
+        {
+          "value": 4,
+          "meaning": "assembly press; work from an adjacent square",
+          "color": "#9975BA"
+        },
+        {
+          "value": 5,
+          "meaning": "shared coolant valve; use from an adjacent square",
+          "color": "#68B7B2"
+        },
+        {
+          "value": 6,
+          "meaning": "walkable shipping dock",
+          "color": "#78A56B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "specialists",
+      "glyph": "worker",
+      "label": "Specialist workers",
+      "color": "#496DAD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Fixed specialist stage index"
+        },
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "Carried piece index; -1 means empty"
+        }
+      ]
+    },
+    {
+      "id": "workpieces",
+      "glyph": "crate",
+      "label": "Conserved workpieces",
+      "color": "#C18647",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "piece_carrier"
+          ],
+          "label": "Carrier index; -1 means ground"
+        },
+        {
+          "state_path": [
+            "piece_stage"
+          ],
+          "label": "Stage 0 raw, 1 forged, 2 tempered, 3 assembled"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Thermally coupled stations",
+      "color": "#B46C62",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_role"
+          ],
+          "label": "Station specialist stage index"
+        },
+        {
+          "state_path": [
+            "station_heat"
+          ],
+          "label": "Actual equipment temperature from 0 to 12"
+        }
+      ]
+    },
+    {
+      "id": "coolant_tank",
+      "glyph": "water",
+      "label": "Shared coolant",
+      "color": "#499FBB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "coolant"
+          ],
+          "label": "Remaining shared cooling units"
+        }
+      ]
+    },
+    {
+      "id": "shipping",
+      "glyph": "flag",
+      "label": "Shipping register",
+      "color": "#518C65",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "shipped"
+          ],
+          "label": "Total fully shipped pieces"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "shipped_step"
+      ],
+      "meaning": "Number of newly shipped finished pieces this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shipped"
+      ],
+      "meaning": "Public cumulative shipped-piece count",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "move north"
+    },
+    {
+      "id": 2,
+      "label": "move east"
+    },
+    {
+      "id": 3,
+      "label": "move south"
+    },
+    {
+      "id": 4,
+      "label": "move west"
+    },
+    {
+      "id": 5,
+      "label": "pick up lowest-index nearby floor piece or drop carried piece"
+    },
+    {
+      "id": 6,
+      "label": "process carried piece at own specialist station"
+    },
+    {
+      "id": 7,
+      "label": "open shared cooling valve at tank"
+    },
+    {
+      "id": 8,
+      "label": "offer carried piece to adjacent receiver"
+    },
+    {
+      "id": 9,
+      "label": "accept offered piece with empty hands"
+    },
+    {
+      "id": 10,
+      "label": "dispatch assembled piece beside shipping dock"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self specialist identity one-hot; role equals ID",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Public [t/128,shipped count/2]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        17
+      ],
+      "meaning": "Three agent blocks [visible,x/16,y/16,(carry+1)/4]; local L1 radius 3; hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        17,
+        27
+      ],
+      "meaning": "Two piece blocks [visible,x/16,y/16,(carrier+1)/4,stage/4]; local L1 radius 3 and active; hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        27,
+        33
+      ],
+      "meaning": "Three station blocks [visible,heat/16]; local L1 radius 3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "meaning": "Tank [visible,coolant/8]; local L1 radius 3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        35,
+        112
+      ],
+      "meaning": "Public 7x11 workshop map flattened y-major, tile value/8",
+      "visibility": "public"
+    }
+  ]
+}

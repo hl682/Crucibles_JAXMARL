@@ -1,0 +1,367 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "622a920b97e807f13f4ba8632b8e526922e856f0a66a2f5dc81f096081e2f0eb",
+  "manifest_sha256": "5b12e9eda807ad04643839e98bc94b9fcfe2bd1442c8eca641598ab96972013b",
+  "title": "Floodgate Commons",
+  "rules": [
+    "Move on land; keepers may co-locate. Waterway cells are impassable. Operate a gate from Manhattan distance at most one.",
+    "Each toggle targets the lowest-index reachable gate; simultaneous operators toggle it only when their count is odd.",
+    "Every fourth tick adds two units upstream. Open gates send up to two pre-flux units to the next basin; gate 2 drains the outlet. Incoming water cannot cascade in the same tick.",
+    "Capacity is six plus bank reinforcement. Overflow loses excess water, damages plot integrity and sets a three-tick inundation timer.",
+    "Near a plot, spend a kit to add bank capacity up to two, then repair integrity. Gifts send one kit to a nearby peer with space.",
+    "Irrigate your own adjacent plot using one unit. Three accepted irrigations yield one privately valued harvest; two harvests per plot complete the task.",
+    "Any destroyed plot ends the episode. Private values are excluded from peers and scene attributes."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable land",
+          "color": "#D5C998"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable native waterway",
+          "color": "#79AEDD"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "keepers",
+      "glyph": "worker",
+      "label": "Controlled keepers",
+      "color": "#DDA64B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "kits"
+          ],
+          "label": "Repair kits remaining"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Water gates",
+      "color": "#8B6A4F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Gate open"
+        }
+      ]
+    },
+    {
+      "id": "basins",
+      "glyph": "water",
+      "label": "Connected storage basins",
+      "color": "#398BCB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Stored water units"
+        },
+        {
+          "state_path": [
+            "bank"
+          ],
+          "label": "Added storage capacity"
+        },
+        {
+          "state_path": [
+            "flow"
+          ],
+          "label": "Outgoing units this tick"
+        }
+      ]
+    },
+    {
+      "id": "plots",
+      "glyph": "plant",
+      "label": "Individually valued plots",
+      "color": "#68A653",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "integrity"
+          ],
+          "label": "Plot integrity"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Irrigation progress"
+        },
+        {
+          "state_path": [
+            "harvests"
+          ],
+          "label": "Completed harvests"
+        },
+        {
+          "state_path": [
+            "flood"
+          ],
+          "label": "Inundation ticks remaining"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "toggled"
+      ],
+      "meaning": "Odd operator parity changed this gate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "reinforced"
+      ],
+      "meaning": "At least one accepted reinforcement or repair at this plot this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shared"
+      ],
+      "meaning": "This keeper gave one kit to an adjacent peer this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "irrigated"
+      ],
+      "meaning": "This keeper consumed water at its own plot this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "harvest_event"
+      ],
+      "meaning": "This plot completed a harvest this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill"
+      ],
+      "meaning": "Spilled water units at each basin this tick; zero means none",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "flood"
+      ],
+      "meaning": "Remaining native inundation timer at each plot",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "toggle reachable gate"
+    },
+    {
+      "id": 6,
+      "label": "reinforce bank or repair plot"
+    },
+    {
+      "id": 7,
+      "label": "give one repair kit"
+    },
+    {
+      "id": 8,
+      "label": "irrigate own plot"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own private harvest value / 3; peer values absent",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Clock / 96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        11
+      ],
+      "meaning": "Keeper-major [x/8,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        14
+      ],
+      "meaning": "Repair kits per keeper / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        17
+      ],
+      "meaning": "Water per basin / 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        20
+      ],
+      "meaning": "Gate-open flags in upstream-to-outlet order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        23
+      ],
+      "meaning": "Bank added capacity / 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        26
+      ],
+      "meaning": "Plot integrity / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        29
+      ],
+      "meaning": "Plot irrigation progress / 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        32
+      ],
+      "meaning": "Plot harvests / 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        35
+      ],
+      "meaning": "Inundation timers / 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        38
+      ],
+      "meaning": "Last raw-step outgoing edge flux / 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        44
+      ],
+      "meaning": "Plot-major [x/8,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        50
+      ],
+      "meaning": "Gate-major [x/8,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        56
+      ],
+      "meaning": "Basin-major [x/8,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        59
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ]
+}

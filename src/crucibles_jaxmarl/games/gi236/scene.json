@@ -1,0 +1,286 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "21d55ee55532f079c6fcd041163b2e64bdd044f859fb8cf0263ff04e1fcfba67",
+  "manifest_sha256": "a3363bb8dbe40b636a3aa7439c4ada0e50241f9b0b95372eb61a0bed593ca303",
+  "title": "Icebound Harbor Builders",
+  "rules": [
+    "Select any of 512 crew members. Tools can change hands; arrows move one native cell and waiting actors can receive cargo.",
+    "Heavy freight moves on foot only beside another actor choosing Anchor that step. Ice takes load stress; roads spend durability under heavy sleds.",
+    "A stone builds a nearby wind shelter or ferry landing, otherwise an east-adjacent ice road. Wood fuels shelters; an unbuilt shelter warms nobody.",
+    "Quarry, timber and outward freight are finite shared stocks. Deliver freight to a different crew depot for personal and recipient-crew rewards.",
+    "A built landing moves a pilot three cells east to actual land and spends local shelter fuel. A rescuer can revive a fallen neighbor with wood.",
+    "Sixteen-tick cold exposure reduces health outside heated built shelters. Thirty-two-tick thaw/freeze phases change ice. All actors fallen ends the episode; otherwise stop at 1024."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      63,
+      31
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Stone and tundra land",
+          "color": "#C2D3D9"
+        },
+        {
+          "value": 1,
+          "meaning": "Intact ice",
+          "color": "#9BD9EC"
+        },
+        {
+          "value": 2,
+          "meaning": "Cracked ice",
+          "color": "#4886A2"
+        },
+        {
+          "value": 3,
+          "meaning": "Built ice road",
+          "color": "#9A7556"
+        },
+        {
+          "value": 4,
+          "meaning": "Open water",
+          "color": "#163B60"
+        }
+      ],
+      "visibility": [
+        "map_visible"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "worker",
+      "label": "Actors",
+      "color": "#DE9B42",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Crew identity"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 quarry,1 timber,2 sled,3 pilot,4 rescue tool"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "0 empty,1 stone,2 wood,3 heavy freight"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Warmth/injury health; zero waits for rescue"
+        },
+        {
+          "state_path": [
+            "signal"
+          ],
+          "label": "Help signal ticks remaining"
+        },
+        {
+          "state_path": [
+            "anchor"
+          ],
+          "label": "Anchoring intent this step"
+        }
+      ]
+    },
+    {
+      "id": "sites",
+      "glyph": "resource",
+      "label": "Sites",
+      "color": "#77AFC8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "site_kind"
+          ],
+          "label": "0 quarry,1 timber,2 shelter,3 landing,4 depot"
+        },
+        {
+          "state_path": [
+            "site_crew"
+          ],
+          "label": "Local crew"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Remaining material or outward freight"
+        },
+        {
+          "state_path": [
+            "built"
+          ],
+          "label": "Structure built"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Shelter firewood units"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Foreign freight received"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event"
+      ],
+      "meaning": "Actor: 0 none,1 ice break,2 gather,3 construct,4 fuel,5 handoff,6 delivery,7 rescue,8 ferry,9 tool exchange",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Foreign freight received at physical depots",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Anchor a nearby loaded sled"
+    },
+    {
+      "id": 6,
+      "label": "Gather material or depot freight with matching tool"
+    },
+    {
+      "id": 7,
+      "label": "Build nearby shelter/landing; otherwise repair ice road one cell east"
+    },
+    {
+      "id": 8,
+      "label": "Feed nearby wind shelter with wood"
+    },
+    {
+      "id": 9,
+      "label": "Hand cargo to adjacent waiting empty actor"
+    },
+    {
+      "id": 10,
+      "label": "Deliver freight at another crew depot"
+    },
+    {
+      "id": 11,
+      "label": "Rescue adjacent fallen actor using wood and rescue tool"
+    },
+    {
+      "id": 12,
+      "label": "Pilot built landing ferry three cells east using shelter fuel"
+    },
+    {
+      "id": 13,
+      "label": "Exchange tools with adjacent waiting actor"
+    },
+    {
+      "id": 14,
+      "label": "Raise visible four-tick help signal"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        12
+      ],
+      "meaning": "Self: x/63,y/31,crew/31,tool/4,cargo/3,health/8,signal/4,anchor,event/9,t/1024,thaw phase,id/511",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        92
+      ],
+      "meaning": "8 nearest agents within Manhattan 4: x/63,y/31,crew/31,tool/4,cargo/3,health/8,signal/4,anchor,id/511,presence. Self may occupy a slot; absent rows zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        92,
+        172
+      ],
+      "meaning": "8 nearest sites within Manhattan 5: x/63,y/31,kind/4,crew/31,stock/12,built,fuel/24,delivered/1024,id/159,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        172,
+        222
+      ],
+      "meaning": "Clipped 5x5 row-major patch: 25 ice integrity/8 then 25 road strength/6; outside coordinates clamp",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        222,
+        223
+      ],
+      "meaning": "Self tile/4: land,ice,cracked ice,road,water",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        223,
+        237
+      ],
+      "meaning": "Legal intents for actions 1..14; contention and geometry can still block them",
+      "visibility": "self"
+    }
+  ]
+}

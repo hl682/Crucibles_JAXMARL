@@ -1,0 +1,385 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fd343e7d228d41dfd595cd135f86e7b9925e5a8c2dc08dd5b3d075f73e5c52cb",
+  "manifest_sha256": "e744c6d5f9cb04fa3101b341cba33f32eb2cbde774d6c851528dca5f9543b85c",
+  "title": "Relay Arena",
+  "rules": [
+    "Teams 0/1 and 2/3 compete on an 11 by 7 grid; team 0 attacks x=10 and team 1 x=0, at y=2,3,4.",
+    "Entering old occupied player cells, swaps, contested destinations and player co-location are forbidden.",
+    "Carrier walking costs two energy, free walking one. Catch costs one; pass and screen two. Rest restores two up to eight.",
+    "Special actions require zero cooldown and start two ticks of cooldown. A directional pass travels one cell immediately and at most four cells total.",
+    "Screens/movement precede tackles, passes, flight, catches and goals. Closest claimant wins; rotating role order breaks ties.",
+    "A goal pays ten to scoring teammates and minus ten to opponents. Nonterminal kickoffs preserve clock, score, energy and cooldown."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ]
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "agent",
+      "label": "Arena player; team attribute identifies pair",
+      "color": "#4D83B3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Public team ID"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Energy reserve"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Special-action cooldown"
+        },
+        {
+          "state_path": [
+            "screen"
+          ],
+          "label": "Screen declared this transition"
+        },
+        {
+          "state_path": [
+            "possession"
+          ],
+          "label": "Current token carrier"
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "glyph": "circle",
+      "label": "Relay token",
+      "color": "#E6AD3C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "label": "Carrier ID; -1 loose"
+        },
+        {
+          "state_path": [
+            "velocity"
+          ],
+          "label": "Current cardinal flight velocity"
+        },
+        {
+          "state_path": [
+            "flight"
+          ],
+          "label": "Remaining flight steps"
+        },
+        {
+          "state_path": [
+            "last_passer"
+          ],
+          "label": "Last passer while loose; -1 otherwise"
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "glyph": "flag",
+      "label": "Goal and score",
+      "color": "#67A473",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Score of team attacking this goal"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "passed"
+      ],
+      "meaning": "Pass launched by player",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "caught"
+      ],
+      "meaning": "Loose ball caught by player",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "intercepted"
+      ],
+      "meaning": "Catch by opponent of last passer",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "stolen"
+      ],
+      "meaning": "Opposing carrier tackled by player",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "goal_event"
+      ],
+      "meaning": "Team scored this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "kickoff"
+      ],
+      "meaning": "Nonterminal goal placed next kickoff",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative team score",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest: regain two energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Receive loose ball or tackle opposing carrier within one cell"
+    },
+    {
+      "id": 6,
+      "label": "Carrier passes north"
+    },
+    {
+      "id": 7,
+      "label": "Carrier passes east"
+    },
+    {
+      "id": 8,
+      "label": "Carrier passes south"
+    },
+    {
+      "id": 9,
+      "label": "Carrier passes west"
+    },
+    {
+      "id": 10,
+      "label": "Screen: protect nearby carrier teammate and block nearby enemy movement"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own player ID one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        13
+      ],
+      "meaning": "All player xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        17
+      ],
+      "meaning": "All energy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        21
+      ],
+      "meaning": "All cooldowns",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        25
+      ],
+      "meaning": "Team IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        29
+      ],
+      "meaning": "Screen bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        33
+      ],
+      "meaning": "Possession bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "meaning": "Ball xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        36
+      ],
+      "meaning": "Carrier ID or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        38
+      ],
+      "meaning": "Ball flight xy velocity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        39
+      ],
+      "meaning": "Remaining flight",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        40
+      ],
+      "meaning": "Last passer while loose or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        44
+      ],
+      "meaning": "Goal centers; lanes include y 2 through 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        46
+      ],
+      "meaning": "Team scores",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        50
+      ],
+      "meaning": "Pass events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        54
+      ],
+      "meaning": "Catch events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        58
+      ],
+      "meaning": "Interception events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        62
+      ],
+      "meaning": "Tackle events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        64
+      ],
+      "meaning": "Goal events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        65
+      ],
+      "meaning": "Kickoff event",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        66
+      ],
+      "meaning": "Episode done",
+      "visibility": "public"
+    }
+  ]
+}

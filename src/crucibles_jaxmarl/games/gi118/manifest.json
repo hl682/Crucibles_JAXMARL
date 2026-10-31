@@ -1,0 +1,890 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00118",
+  "source_sha256": "f8c8a71d6aa82bf907577f8cd2b38524b9bc761447d98f42d7c5994c6d055d29",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 152,
+  "num_actions": 9,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -0.01,
+  "reward_high": 2.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "North-course skipper; buoy 0 then north-east dock"
+    },
+    {
+      "id": "agent_1",
+      "role": "South-course skipper; buoy 1 then south-east dock"
+    },
+    {
+      "id": "agent_2",
+      "role": "Return-course skipper; shared buoy 0 then west dock"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Heave to; recover one stamina if not arrived"
+    },
+    {
+      "id": 1,
+      "label": "Steer east"
+    },
+    {
+      "id": 2,
+      "label": "Steer west"
+    },
+    {
+      "id": 3,
+      "label": "Steer south"
+    },
+    {
+      "id": 4,
+      "label": "Steer north"
+    },
+    {
+      "id": 5,
+      "label": "Raise sail; leave any incoming tow"
+    },
+    {
+      "id": 6,
+      "label": "Lower sail; permit an adjacent high-sail boat to tow"
+    },
+    {
+      "id": 7,
+      "label": "Attach tow to lowest-index eligible adjacent low-sail boat"
+    },
+    {
+      "id": 8,
+      "label": "Release own outgoing and incoming tow"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "boat_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "boat_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "sail"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stamina"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "progress"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "arrived"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tow"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shadow"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wind"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wind_strength"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wind_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wind_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wind_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "buoy_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "buoy_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "buoy_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "buoy_route"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "link_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "float32"
+    },
+    {
+      "path": [
+        "link_direction"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "link_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "link_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "link_helper"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "arrival_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "buoy_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tow_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stall_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Sailable water",
+          "color": "#AED8EB"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable island",
+          "color": "#6B7654"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "boats",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "boat_active"
+      ],
+      "visibility": [
+        "boat_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "sail"
+          ],
+          "meaning": "Sail raised",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "meaning": "Rowing and towing stamina",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "meaning": "Route stage: 0 buoy, 1 dock, 2 arrived",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "arrived"
+          ],
+          "meaning": "Moored after arrival",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "tow"
+          ],
+          "meaning": "Towed boat id; -1 means no outgoing tow",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "shadow"
+          ],
+          "meaning": "Currently in another raised sail wind shadow",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "buoys",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "buoy_pos"
+      ],
+      "active": [
+        "buoy_active"
+      ],
+      "visibility": [
+        "buoy_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "docks",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "dock_owner"
+          ],
+          "meaning": "Assigned skipper id",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "wind_pos"
+      ],
+      "active": [
+        "wind_active"
+      ],
+      "visibility": [
+        "wind_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "wind"
+          ],
+          "meaning": "Public wind direction",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "wind_strength"
+          ],
+          "meaning": "Wind strength 1 or 2",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "tow_links",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "link_pos"
+      ],
+      "active": [
+        "link_active"
+      ],
+      "visibility": [
+        "link_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "link_helper"
+          ],
+          "meaning": "Towing skipper id",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tow"
+          ],
+          "meaning": "Towed skipper id",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "link_direction"
+          ],
+          "meaning": "Helper to recipient displacement",
+          "display": "direction"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "arrival_event"
+      ],
+      "meaning": "Arrived at assigned dock on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "buoy_event"
+      ],
+      "meaning": "Reached required buoy on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "tow_event"
+      ],
+      "meaning": "Helper moved and pulled a recipient on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "stall_event"
+      ],
+      "meaning": "Raised-sail movement attempt stalled in a wind shadow",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own x,y divided by 10",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own stamina divided by 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own sail raised flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own route progress divided by 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own arrived flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own outgoing tow recipient id divided by 2; -0.5 means none",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        9
+      ],
+      "meaning": "Current own required goal x,y divided by 10",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Own skipper one-hot id",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        39
+      ],
+      "meaning": "Three ordered boat records, stride 9: visibility, x/10, y/10, sail, stamina/4, progress/2, arrived, outgoing recipient/2, current shadow. All eight data values zero when invisible. Includes self.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        39,
+        138
+      ],
+      "meaning": "Public 9 by 11 terrain in yx row-major order; 0 water, 1 island",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        142
+      ],
+      "meaning": "Two public buoy xy positions in buoy-id order divided by 10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        148
+      ],
+      "meaning": "Three public assigned dock xy positions in skipper-id order divided by 10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        150
+      ],
+      "meaning": "Public wind unit dx,dy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        151
+      ],
+      "meaning": "Public wind strength divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        152
+      ],
+      "meaning": "Public clock divided by 80",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Each skipper must touch its assigned buoy and then its distinct dock. Skippers receive own progress/arrival rewards and compete for the first-arrival bonus while towing can help a partner.",
+    "natural_termination": "All three boats have arrived. A moored boat remains a stationary physical obstacle and has only action 0. Otherwise the time bound is 80 raw transitions.",
+    "interaction": "A raised sail casts a length-two downwind shadow with crosswind width one, preventing nearby high-sail movement. Low sails row at a stamina cost. Voluntary low-sail recipients can be pulled into a helper old cell; the helper loses any second movement cell and one stamina. Occupancy, islands, buoy access and first-arrival timing create additional coupling.",
+    "observation_access": "The terrain, buoy/dock locations, wind and clock are public. Another boat is visible exactly within Manhattan distance 3; its displayed attributes are present in the masked peer record. Own goal, sail, stamina and route state are always available. Tow entities are visible only when both endpoints are visible. Invisible data are zero with an explicit visibility bit; no privileged full state is a policy input."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "pos"
+      ],
+      "low": 0,
+      "high": 10,
+      "min": 0,
+      "max": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stamina"
+      ],
+      "low": 0,
+      "high": 4,
+      "min": 0,
+      "max": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "progress"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tow"
+      ],
+      "low": -1,
+      "high": 2,
+      "min": -1,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wind"
+      ],
+      "low": -1,
+      "high": 1,
+      "min": -1,
+      "max": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wind_strength"
+      ],
+      "low": 1,
+      "high": 2,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 80,
+      "min": 0,
+      "max": 80
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "buoy_route"
+      ],
+      "value": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "boat_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_resolution": "All nine intent actions are legal for unfinished boats; blocked, inapplicable or malformed actions deterministically have no effect or map to action 0. Directional actions on a currently towed recipient are suppressed while the link persists. Arrived boats and an absorbing terminal state allow only action 0. Sail/release changes precede shadow and tow allocation. New links use cyclic priority beginning at t mod 3 and lowest eligible recipient id. Normal movement cannot enter any other boat previous cell; duplicate proposed destinations cancel. Tow followers alone enter their helper vacated cell. A second downwind movement uses a new simultaneous occupancy check.",
+  "rng_contract": "Reset fixes wind east and draws strength with jax.random.randint(reset_key,(1,),1,3,dtype=int32). Each nonterminal step splits its supplied key into two keys; wind direction index 0..3 and strength 1..2 are applied only when the new clock is divisible by six. Sailing uses the input-state wind; the newly sampled wind is the next-state wind. No hidden RNG, sampled route, seed remapping or key in state exists.",
+  "event_visibility_note": "Per-step event arrays carry an explicit boat_visible binding. A role view may disclose only visible participants; full event arrays belong to a labelled debug view. No global arrival or tow event panel may reveal invisible boats.",
+  "scientific_status": "AUTHORED_NOT_EXECUTED_NOT_R0_ACCEPTED",
+  "adapter_boundary": "This package supplies the native fixed-array kernel. Agent-keyed JaxMARL adapter, __all__, real replay and presentation acceptance are separate integration deliverables; no frozen learner is replaced."
+}

@@ -1,0 +1,404 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "ef62b757a0b636495f58b3c674af5a9f4b6626dee03552d9f9bcfab9b334fe5e",
+  "manifest_sha256": "9229a270f414c647a337c6902a35ee83b6b2860463a492eb840854c0d0a0992f",
+  "title": "Basalt Archipelago Rescue",
+  "rules": [
+    "Move with actions 1–4; identical codes pilot a boat when an equipped pilot is aboard.",
+    "Pick tools quarry stone. Hammer tools spend it on shelters or causeways; exchange tools and stone with adjacent workers.",
+    "Causeways need level 2 and an open lift gate. Shoals are passable only during the low-tide half-cycle.",
+    "A rescue-kit carrier needs another nearby actor choosing Brace to pick up or move a stretcher.",
+    "Boats carry at most eight actors minus stone cargo; boarded actors follow the selected pilot's real movement.",
+    "Ash grows every 32 steps. Hammer clearing takes three subsequent ticks; strong shelters protect nearby workers and routes.",
+    "Bring a resident within one tile of any shelter and choose Deliver. All residents saved ends the episode.",
+    "Role views expose local objects and four nearby actors. These rules and scene are authored; no replay has been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      63,
+      63
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Deep tidal channel",
+          "color": "#24536D"
+        },
+        {
+          "value": 1,
+          "meaning": "Basalt island floor",
+          "color": "#676A70"
+        },
+        {
+          "value": 2,
+          "meaning": "Low-tide shoal corridor",
+          "color": "#A8ADA5"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "worker",
+      "label": "256 controllable crew members; tools can be exchanged",
+      "color": "#4EA5C9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Tool: pick 0, hammer 1, sail 2, rescue kit 3"
+        },
+        {
+          "state_path": [
+            "stone"
+          ],
+          "label": "Carried stone, capacity 4"
+        },
+        {
+          "state_path": [
+            "aboard"
+          ],
+          "label": "Boat ID, -1 when on foot"
+        },
+        {
+          "state_path": [
+            "signal"
+          ],
+          "label": "Visible signal lifetime, 0 to 3"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Leading an occupied rescue stretcher"
+        }
+      ]
+    },
+    {
+      "id": "quarry",
+      "glyph": "resource",
+      "label": "Finite basalt quarries",
+      "color": "#8D9098",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "quarry_stock"
+          ],
+          "label": "Remaining stone, at most 32"
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "glyph": "gate",
+      "label": "Buildable raised causeway and lift gates",
+      "color": "#C9A66B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "route_level"
+          ],
+          "label": "Construction level; at least 2 supports crossing"
+        },
+        {
+          "state_path": [
+            "route_open"
+          ],
+          "label": "Raised lift gate permits passage"
+        },
+        {
+          "state_path": [
+            "route_damage"
+          ],
+          "label": "Route lost one level this step"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "glyph": "square",
+      "label": "Crew shelters and rescue delivery points",
+      "color": "#E7D5A7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "shelter_level"
+          ],
+          "label": "Shelter protection level, 0 to 3"
+        },
+        {
+          "state_path": [
+            "rescued"
+          ],
+          "label": "Residents delivered here"
+        }
+      ]
+    },
+    {
+      "id": "boat",
+      "glyph": "circle",
+      "label": "Cargo boats; eight units of shared carrying capacity",
+      "color": "#62B6CB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "boat_cargo"
+          ],
+          "label": "Stone cargo; each unit removes a passenger place"
+        },
+        {
+          "state_path": [
+            "boat_load"
+          ],
+          "label": "Actual boarded actors"
+        }
+      ]
+    },
+    {
+      "id": "victim",
+      "glyph": "agent",
+      "label": "Stranded residents on rescue stretchers; ambient NPCs",
+      "color": "#F28F70",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "victim_carrier"
+          ],
+          "label": "Controlling carrier actor ID, -1 if uncarried"
+        },
+        {
+          "state_path": [
+            "victim_saved"
+          ],
+          "label": "Delivered resident"
+        }
+      ]
+    },
+    {
+      "id": "ash",
+      "glyph": "hazard",
+      "label": "Volcanic ash fields with delayed clearing",
+      "color": "#795D75",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ash_level"
+          ],
+          "label": "Ash intensity, 0 to 3"
+        },
+        {
+          "state_path": [
+            "ash_clear"
+          ],
+          "label": "Clearing countdown; effect occurs at expiry"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_rescue"
+      ],
+      "meaning": "This actor delivered a resident",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_build"
+      ],
+      "meaning": "This actor spent stone on route or shelter",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_transfer"
+      ],
+      "meaning": "Stone, tool or boat cargo changed hands",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "route_damage"
+      ],
+      "meaning": "An unprotected route lost a level",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk or pilot north"
+    },
+    {
+      "id": 2,
+      "label": "Walk or pilot east"
+    },
+    {
+      "id": 3,
+      "label": "Walk or pilot south"
+    },
+    {
+      "id": 4,
+      "label": "Walk or pilot west"
+    },
+    {
+      "id": 5,
+      "label": "Quarry nearby stone with pick"
+    },
+    {
+      "id": 6,
+      "label": "Brace a nearby stretcher carrier"
+    },
+    {
+      "id": 7,
+      "label": "Build nearest causeway with hammer and stone"
+    },
+    {
+      "id": 8,
+      "label": "Improve nearest shelter with hammer and stone"
+    },
+    {
+      "id": 9,
+      "label": "Toggle nearby causeway lift gate"
+    },
+    {
+      "id": 10,
+      "label": "Take nearby stretcher with rescue kit and a bracing partner"
+    },
+    {
+      "id": 11,
+      "label": "Deliver carried resident at shelter"
+    },
+    {
+      "id": 12,
+      "label": "Board nearby boat if capacity remains"
+    },
+    {
+      "id": 13,
+      "label": "Leave boat onto adjacent island floor"
+    },
+    {
+      "id": 14,
+      "label": "Give one stone to nearest adjacent actor"
+    },
+    {
+      "id": 15,
+      "label": "Exchange tools with nearest adjacent actor"
+    },
+    {
+      "id": 16,
+      "label": "Start delayed ash clearing with hammer"
+    },
+    {
+      "id": 17,
+      "label": "Raise a visible three-step signal"
+    },
+    {
+      "id": 18,
+      "label": "Load one stone into nearby boat"
+    },
+    {
+      "id": 19,
+      "label": "Unload one boat stone into own inventory"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        13
+      ],
+      "meaning": "Self: actor ID/255, x/63, y/63, crew/15, tool/3, stone/4, (boat+1)/16, carrying flag, signal/3, t/896, tidal phase 0/1, own-home rescued/32, own shelter level/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        53
+      ],
+      "meaning": "Four nearest visible actor slots, 10 each: visible, ID/255, x/63, y/63, crew/15, tool/3, stone/4, (boat+1)/16, carrying, signal/3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        117
+      ],
+      "meaning": "16 quarry rows, 4 each: visible, x/63, y/63, stock/32",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        117,
+        261
+      ],
+      "meaning": "24 route rows, 6 each: visible, x/63, y/63, level/3, gate open, current damage",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        261,
+        341
+      ],
+      "meaning": "16 shelter rows, 5 each: visible, x/63, y/63, level/3, rescued/32",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        341,
+        421
+      ],
+      "meaning": "16 boat rows, 5 each: visible, x/63, y/63, cargo/4, passengers/8",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        421,
+        581
+      ],
+      "meaning": "32 resident rows, 5 each: visible, x/63, y/63, (carrier+1)/256, saved",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        581,
+        661
+      ],
+      "meaning": "16 ash rows, 5 each: visible, x/63, y/63, intensity/3, clearing timer/3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        661,
+        686
+      ],
+      "meaning": "Row-major 5 by 5 terrain patch centered on actor, edge-clamped; tile code/2",
+      "visibility": "local"
+    }
+  ]
+}

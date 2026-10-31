@@ -1,0 +1,543 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "e635befe15ccb733159f2eccfc5d2594e90b39aa33dea69118cfceb21f087ee5",
+  "manifest_sha256": "a2a8aedccedc992666befead24e18aa2f2cf27890a289dbd56198ba9acd08a82",
+  "title": "Proofing House",
+  "rules": [
+    "Carry one tray at a time. Pick an accessible tray within one cell; put it on the free cell ahead. Shelf pickup requires an open cupboard door.",
+    "Knead a loose raw batch on a nearby board. Seeded batches and existing board trace leave seed trace on both the batch and the surface.",
+    "Wash an unoccupied dirty board to clear its trace, or discard and wash a carried batch at the sink. Each uses one of eight shared wash-water units.",
+    "A closed, unvented cupboard targets warmth three; ventilation targets two, and an open door targets one. Warmth changes by one per tick.",
+    "Closed-shelf proof grows by warmth minus one per tick. Other proofing batches rise only on every third tick. Proof above twelve spoils a batch.",
+    "The oven holds one tray. Baking freezes proof; three hot ticks make a loaf ready, and seven hot ticks burn a loaf left in the oven.",
+    "Plain service accepts proof five through eight and no seed trace. Seeded service accepts proof seven through ten. Serve at the hatch.",
+    "Shared loaf rewards plus owner/server bonuses compete with individual action and disposal costs. All rules use the native state and actions."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Kitchen floor and cupboard shelves",
+          "color": "#F2E5CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid cupboard wall",
+          "color": "#8B7660"
+        },
+        {
+          "value": 2,
+          "meaning": "Closed cupboard door; blocked to workers",
+          "color": "#AC8661"
+        },
+        {
+          "value": 3,
+          "meaning": "Kneading-board floor position",
+          "color": "#C7A67B"
+        },
+        {
+          "value": 4,
+          "meaning": "Single oven position",
+          "color": "#A96D4F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Bakery workers",
+      "color": "#CA7867",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "Facing: 0 north, 1 east, 2 south, 3 west"
+        },
+        {
+          "state_path": [
+            "held"
+          ],
+          "label": "Carried tray ID; -1 empty hands"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "label": "Cumulative non-wait masked actions"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "label": "Invalid request or lost walking contention"
+        }
+      ]
+    },
+    {
+      "id": "tray",
+      "glyph": "food",
+      "label": "Three reusable trays and physical batches",
+      "color": "#D7A752",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tray_holder"
+          ],
+          "label": "Tray carrier ID; -1 on a floor or station"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "0 empty, 1 raw, 2 proofing, 3 baking, 4 baked, 5 spoiled"
+        },
+        {
+          "state_path": [
+            "recipe"
+          ],
+          "label": "0 plain, 1 seeded, -1 empty"
+        },
+        {
+          "state_path": [
+            "trace"
+          ],
+          "label": "Seed ingredient trace present"
+        },
+        {
+          "state_path": [
+            "proof"
+          ],
+          "label": "Proof level, retained when baking begins"
+        },
+        {
+          "state_path": [
+            "bake"
+          ],
+          "label": "Hot-oven ticks, zero through seven"
+        },
+        {
+          "state_path": [
+            "batch_owner"
+          ],
+          "label": "Worker who filled this batch; -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "board",
+      "glyph": "tool",
+      "label": "Two finite kneading surfaces",
+      "color": "#BA9268",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "board_trace"
+          ],
+          "label": "Seed trace currently on surface"
+        },
+        {
+          "state_path": [
+            "board_dirty"
+          ],
+          "label": "Used surface; washing clears dirt and trace"
+        }
+      ]
+    },
+    {
+      "id": "door",
+      "glyph": "door",
+      "label": "Cupboard access door",
+      "color": "#AA7A51",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "door_open"
+          ],
+          "label": "Open door permits walking and tray retrieval"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "glyph": "square",
+      "label": "Pantry, oven, hatch and sink in index order",
+      "color": "#7C918B",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Cumulative accepted loaves by recipe",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Cumulative discarded batches by recipe",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "served_now"
+      ],
+      "meaning": "Worker served a loaf this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cleaned"
+      ],
+      "meaning": "Board washed this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Tray crossed an overproof or burning limit this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "wasted_now"
+      ],
+      "meaning": "Worker discarded a batch this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "temperature"
+      ],
+      "meaning": "Current cupboard warmth, one to three",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "vent"
+      ],
+      "meaning": "Ventilation setting; true targets warmth two when closed",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Step or face north"
+    },
+    {
+      "id": 2,
+      "label": "Step or face east"
+    },
+    {
+      "id": 3,
+      "label": "Step or face south"
+    },
+    {
+      "id": 4,
+      "label": "Step or face west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up lowest-ID accessible tray within one cell"
+    },
+    {
+      "id": 6,
+      "label": "Put carried tray on the cell ahead"
+    },
+    {
+      "id": 7,
+      "label": "Fill empty carried tray with plain dough at pantry"
+    },
+    {
+      "id": 8,
+      "label": "Fill empty carried tray with seeded dough at pantry"
+    },
+    {
+      "id": 9,
+      "label": "Knead nearby raw dough on a board"
+    },
+    {
+      "id": 10,
+      "label": "Open or close the cupboard door"
+    },
+    {
+      "id": 11,
+      "label": "Toggle cupboard ventilation"
+    },
+    {
+      "id": 12,
+      "label": "Put carried proofing dough in the free oven"
+    },
+    {
+      "id": 13,
+      "label": "Serve acceptable carried baked loaf at hatch"
+    },
+    {
+      "id": 14,
+      "label": "Wash an empty dirty board using one water"
+    },
+    {
+      "id": 15,
+      "label": "Discard batch and wash carried tray at sink"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Public t, done, terminated, truncated, success, failure, vent, temperature, wash_water",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        86
+      ],
+      "meaning": "Public seven-by-eleven map flattened by row; door tile follows its true state",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        92
+      ],
+      "meaning": "Worker x/y coordinates in agent order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Worker facing 0 north, 1 east, 2 south, 3 west",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        98
+      ],
+      "meaning": "Held tray IDs; -1 empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        101
+      ],
+      "meaning": "Cumulative work per worker",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        104
+      ],
+      "meaning": "Invalid request or walking-contention blocked flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        110
+      ],
+      "meaning": "Three actual tray x/y positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        113
+      ],
+      "meaning": "Tray holder IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "Tray stage codes 0 empty through 5 spoiled",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "Recipe codes -1 empty, 0 plain, 1 seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        122
+      ],
+      "meaning": "Seed trace flags per tray",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        125
+      ],
+      "meaning": "Proof levels per tray",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        128
+      ],
+      "meaning": "Hot-oven clocks per tray",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        131
+      ],
+      "meaning": "Batch owner IDs; -1 empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        135
+      ],
+      "meaning": "Two kneading-board coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        137
+      ],
+      "meaning": "Board seed-trace flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        139
+      ],
+      "meaning": "Board dirty flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        141
+      ],
+      "meaning": "Cupboard door coordinate",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        142
+      ],
+      "meaning": "Door-open flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        150
+      ],
+      "meaning": "Pantry, oven, hatch and sink coordinates in that order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        152
+      ],
+      "meaning": "Remaining pantry portions: plain, seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        154
+      ],
+      "meaning": "Accepted counts: plain, seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        156
+      ],
+      "meaning": "Discarded counts: plain, seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        159
+      ],
+      "meaning": "Per-worker service flags this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        161
+      ],
+      "meaning": "Per-board washing flags this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        161,
+        164
+      ],
+      "meaning": "Per-tray newly spoiled flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        167
+      ],
+      "meaning": "Per-worker discarded-batch flags",
+      "visibility": "public"
+    }
+  ]
+}

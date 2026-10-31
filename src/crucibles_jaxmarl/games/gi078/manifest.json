@@ -1,0 +1,846 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00078",
+  "source_sha256": "64e6242e5bd8d734c8c8be87f16bdd7b6ca683db82af27eb81b9e62312b30d32",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 209,
+  "num_actions": 12,
+  "max_steps": 192,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -4,
+  "reward_high": 4,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Ore miner: two ore units per harvest"
+    },
+    {
+      "id": "agent_1",
+      "role": "Reed weaver: two reeds per harvest and double loom labor"
+    },
+    {
+      "id": "agent_2",
+      "role": "Timber engineer: two timber units per harvest and double foundry labor"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Harvest adjacent deposit"
+    },
+    {
+      "id": 6,
+      "label": "Load one needed item into adjacent station"
+    },
+    {
+      "id": 7,
+      "label": "Take one finished product"
+    },
+    {
+      "id": 8,
+      "label": "Operate eligible adjacent station"
+    },
+    {
+      "id": 9,
+      "label": "Pass one item to adjacent least-loaded teammate"
+    },
+    {
+      "id": 10,
+      "label": "Rest within heated shelter radius"
+    },
+    {
+      "id": 11,
+      "label": "Burn timber for self and adjacent teammates"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_warmth"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_bag"
+      ],
+      "shape": [
+        3,
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_facing"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "node_visibility"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "node_kind"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_stock"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visibility"
+      ],
+      "shape": [
+        3,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_stock"
+      ],
+      "shape": [
+        5,
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_progress"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_level"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_heat"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ev_harvest"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_take"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_pass"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_fire"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_craft"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_upgrade"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "work_effort"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "manufactured"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable ice path",
+          "color": "#D8E5E9"
+        },
+        {
+          "value": 1,
+          "meaning": "impassable boundary rock",
+          "color": "#384554"
+        },
+        {
+          "value": 2,
+          "meaning": "impassable production or shelter station",
+          "color": "#80624C"
+        },
+        {
+          "value": 3,
+          "meaning": "impassable resource deposit",
+          "color": "#55765B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "meaning": "0 ore miner; 1 reed weaver; 2 timber engineer",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_warmth"
+          ],
+          "meaning": "Warmth; zero causes joint survival failure",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_bag"
+          ],
+          "meaning": "Inventory order: ore, reeds, timber, metal plate, gasket; total capacity six",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "meaning": "Last successful movement direction",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "deposits",
+      "kind": "resource",
+      "count": 6,
+      "position": [
+        "node_pos"
+      ],
+      "active": [
+        "node_active"
+      ],
+      "visibility": [
+        "node_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "node_kind"
+          ],
+          "meaning": "0 ore; 1 reeds; 2 timber",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "node_stock"
+          ],
+          "meaning": "Remaining finite raw units at the deposit",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "workshops",
+      "kind": "object",
+      "count": 5,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_stock"
+          ],
+          "meaning": "Five item counts; station order foundry, loom, hearth, shelter, rescue beacon",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "station_progress"
+          ],
+          "meaning": "Foundry/loom remaining labor; beacon synchronized charge; other entries zero",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "station_level"
+          ],
+          "meaning": "Shelter insulation level at index 3; other entries zero",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "station_heat"
+          ],
+          "meaning": "Shared hearth fuel reserve at index 2; other entries zero",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "work_effort"
+          ],
+          "meaning": "Labor applied to each station on the latest transition",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_harvest"
+      ],
+      "meaning": "Agent removed raw units from a finite deposit on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_load"
+      ],
+      "meaning": "Agent transferred one item into infrastructure or hearth fuel on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_take"
+      ],
+      "meaning": "Agent collected a manufactured plate or gasket on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_pass"
+      ],
+      "meaning": "Agent passed one carried item to a neighboring teammate on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_fire"
+      ],
+      "meaning": "Agent consumed one timber for an emergency warming fire on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_craft"
+      ],
+      "meaning": "Station completed one actual material transformation on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_upgrade"
+      ],
+      "meaning": "Shelter consumed one plate and one gasket to gain one insulation level on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "manufactured"
+      ],
+      "meaning": "Total completed metal plates and gaskets",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Rescue beacon charged with all crew still alive",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Elapsed clock /192, cold-cycle phase /12, joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        102
+      ],
+      "meaning": "Public 9 by 11 terrain, row-major tile code /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        108
+      ],
+      "meaning": "All crew x,y positions /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        111
+      ],
+      "meaning": "All crew warmth /80",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        126
+      ],
+      "meaning": "All crew five-item inventories /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        129
+      ],
+      "meaning": "All crew role codes /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        141
+      ],
+      "meaning": "Six deposit x,y positions /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        147
+      ],
+      "meaning": "Deposit material kinds /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        153
+      ],
+      "meaning": "Remaining deposit stock /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        163
+      ],
+      "meaning": "Five station x,y positions /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        163,
+        188
+      ],
+      "meaning": "Station item stores in station-major item-major order /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        188,
+        193
+      ],
+      "meaning": "Station remaining work or beacon charge /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        193,
+        198
+      ],
+      "meaning": "Station upgrade levels /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        198,
+        203
+      ],
+      "meaning": "Station heat reserves /60",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        203,
+        206
+      ],
+      "meaning": "Crew survival flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        206,
+        209
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Keep all three crew warm, manufacture three plates and two gaskets, install them into the rescue beacon, and operate it with at least two adjacent crew for three consecutive effective charge steps while the shared hearth has fuel.",
+    "natural_termination": "Success when beacon charge reaches three and all warmth values remain positive; failure when any crew reaches zero warmth. Otherwise truncate at 192. Natural termination takes priority on the horizon step. Terminal raw calls preserve all state and clock and return zero reward.",
+    "interaction": "Finite spatial deposits, six-unit bags, shared recipe buffers, cooperative labor, handoffs, shared hearth fuel, optional collective insulation investment, and two-person beacon operation create direct dependencies in resources, opportunities and timing.",
+    "observation_access": "All dynamic variables needed for transitions are public in a fixed flat vector. Every role sees all entity positions and attributes. Observer identity is appended. Event/facing display fields are cosmetic records of transitions, not additional policy inputs."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_pos"
+      ],
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_warmth"
+      ],
+      "low": 0,
+      "high": 80
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_bag"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "node_stock"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "station_stock"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_progress"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_level"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_heat"
+      ],
+      "low": 0,
+      "high": 60
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

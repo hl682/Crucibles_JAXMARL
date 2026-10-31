@@ -1,0 +1,320 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "600fbe762c0281fb92813bee6baabf6f3219ad1be84c1abd4346bd1b0de72ca1",
+  "manifest_sha256": "da64bf618fa9d30803de293f1ef1879e529c26b8b5c76ef057809ea8412f8163",
+  "title": "Cipher Causeway",
+  "rules": [
+    "Courier and engineer must bring cipher to exact west exit. Wardens seek both runners restrained.",
+    "Either runner can carry. An adjacent warden tag restrains and drops carried cipher in place.",
+    "A free adjacent runner choosing rescue can release its partner after tags resolve that tick.",
+    "Runner gate work opens five ticks; courier pays two cells and engineer one. Warden pays one to lock.",
+    "An occupied gate stays open until vacated, preventing a closing wall from trapping a body.",
+    "Cloaks hide nearby runners from nonadjacent wardens. Scanners reveal through cloaks and share radius-four agent sensing.",
+    "Live flares relay radius-three agent sensing to teammates but disclose emitter position to all roles.",
+    "Shared cells fund gates and devices. Either team may recover either two-cell cache.",
+    "Restrained roles keep no-op only. Natural extraction or both-captured ends; otherwise step 96 truncates."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "grid"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable chamber floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid divider"
+        },
+        {
+          "value": 2,
+          "meaning": "Controlled gate tile; dynamic status comes only from locally visible gate entity"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "roles",
+      "glyph": "agent",
+      "label": "Roles",
+      "color": "#60A5FA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "captured"
+          ],
+          "label": "Restrained runner has no-op only until freed"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "One means carries the cipher"
+        },
+        {
+          "state_path": [
+            "flare_ttl"
+          ],
+          "label": "Remaining public live-location ticks"
+        }
+      ]
+    },
+    {
+      "id": "cipher",
+      "glyph": "key",
+      "label": "Cipher",
+      "color": "#FBBF24",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cipher_carrier"
+          ],
+          "label": "-1 ground; 0 courier; 1 engineer"
+        }
+      ]
+    },
+    {
+      "id": "causeway_gates",
+      "glyph": "gate",
+      "label": "Causeway Gates",
+      "color": "#94A3B8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Actual openness including occupancy safety hold"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "label": "Powered opening ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "field_devices",
+      "glyph": "beacon",
+      "label": "Field Devices",
+      "color": "#C084FC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "device_ttl"
+          ],
+          "label": "Device operation ticks remaining"
+        },
+        {
+          "state_path": [
+            "device_type"
+          ],
+          "label": "0 cloak buoy; 1 scanner"
+        }
+      ]
+    },
+    {
+      "id": "tracking_flares",
+      "glyph": "beacon",
+      "label": "Tracking Flares",
+      "color": "#F97316",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "flare_ttl"
+          ],
+          "label": "Public live tracking and friendly relay ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "battery_caches",
+      "glyph": "battery",
+      "label": "Battery Caches",
+      "color": "#34D399",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cache_value"
+          ],
+          "label": "Cells added to recovering role team"
+        }
+      ]
+    },
+    {
+      "id": "extraction_exit",
+      "glyph": "flag",
+      "label": "Extraction Exit",
+      "color": "#2DD4BF",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_extract"
+      ],
+      "meaning": "Cipher extracted on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "device_ttl"
+      ],
+      "meaning": "Public device lifetimes",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "flare_ttl"
+      ],
+      "meaning": "Public live tracking lifetimes",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Runner picks adjacent cipher; warden tags adjacent unrestrained runner"
+    },
+    {
+      "id": 6,
+      "label": "Runner opens nearest adjacent gate for five ticks; warden locks it"
+    },
+    {
+      "id": 7,
+      "label": "Emit three-tick public live flare and share radius-three agent sensing with teammates"
+    },
+    {
+      "id": 8,
+      "label": "Spend shared cell to deploy four-tick cloak buoy for runner or scanner for warden"
+    },
+    {
+      "id": 9,
+      "label": "Runner frees adjacent captured teammate first; otherwise recover adjacent battery cache"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Own role one-hot(4), x,y,captured,carrying,own-team energy",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Clock, extracted flag, joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        36
+      ],
+      "meaning": "Visible roles: x,y,captured,carrying,flare TTL each (20), then four visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        36,
+        41
+      ],
+      "meaning": "Visible cipher x,y,carrier,active (4), then visibility flag; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        41,
+        51
+      ],
+      "meaning": "Visible gates x,y,open,timer each (8), then two visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        51,
+        67
+      ],
+      "meaning": "Public devices x,y,TTL,type per slot; inactive features -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        79
+      ],
+      "meaning": "Public live flares x,y,TTL per slot; inactive features -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        89
+      ],
+      "meaning": "Visible caches x,y,value,active each (8), then two visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        89,
+        91
+      ],
+      "meaning": "Public extraction exit x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        154
+      ],
+      "meaning": "Public 7-by-9 map flattened row-major yx",
+      "visibility": "public"
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>astra-d2-00029: Consumable filtration with transported regeneration waste · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI029 / LEGACY_ARRAY</p><h1>astra-d2-00029: Consumable filtration with transported regeneration waste</h1><p class="lead"></p><div class="stats"><span>2 agents</span><span>5 actions</span><span>16 observation columns</span><span>32 original horizon</span><span>Runtime: PASS</span></div><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi029.gif" alt="Actual verification episode gi029"></section><section><h2>Run this game</h2><pre>crucibles play --game 29</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;termination&quot;: &quot;Original kernel t &gt;= 32; see mechanism and source&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 1.0. Observability: source_defined.</p></section><section><h2>Rules</h2><ol></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># astra-d2-00029: Consumable filtration with transported regeneration waste
+
+This initial parentless proposal uses generic flow processing, delayed externalities and filter-regeneration reasoning. It is not a claim of a new game class or nonisomorphism. No benchmark, other proposal, training result, development result or final-test data was supplied to this author.
+
+## Transition mechanism and actions
+
+Each agent controls a four-unit vessel containing volume and contaminant mass, and a filter with one unit of initially unused capacity. Contaminant removed by filtration is stored implicitly as one minus remaining filter capacity. Each role also has one outgoing, one-transition transport compartment.
+
+Actions are 0 admit one unit from one&#x27;s private inlet, 1 process up to one unit, 2 forward up to one unit to the partner, 3 remove as much vessel contaminant as the remaining filter can hold, and 4 regenerate the filter. All actions are legal even when ineffective. Incoming material from the partner&#x27;s previously created compartment arrives before the current action is evaluated. All vessel material is mixed; overflow beyond four units discards volume and contaminant in the same proportion.
+
+Forwarding transports the current mixture. Regeneration restores filter capacity to one and, when the filter contains any stored contaminant, sends one unit of externally supplied carrier water containing that stored contaminant to the partner. This carrier water is an explicit exogenous resource rather than a conserved part of the regenerating vessel. The outgoing compartment arrives on the next raw step. The partner can consequently be harmed by a regeneration action that locally restores useful filtering capacity. The partner can also benefit from clean forwarded material.
+
+Processing and forwarding remove contaminant in the mixture proportion. Filtration removes contaminant without removing volume. Each role selects one action, so processing, forwarding, filtration and regeneration do not occur simultaneously within a role.
+
+## Information and delayed interaction
+
+A role sees its own contamination, filter capacity, inlet quality and outbound mixture. Vessel volumes, throughputs, overflows and the preceding actions of both roles are public. The next inbound volume is visible, but the partner&#x27;s contaminant load and filter capacity are not directly observed. Incoming quality becomes part of the local mixture after arrival.
+
+The sixteen columns are: time/32; own and partner vessel volume/4; own vessel contaminant fraction; own remaining filter capacity; own outbound volume; own outbound contaminant fraction; next inbound volume; own inlet contaminant fraction; own last reward; own and partner previous overflow/2; own and partner cumulative processed volume/32; own and partner previous action/4. Zero-volume fractions use a positive denominator floor and are zero.
+
+Both agents alter their own future processing opportunities and can alter the other&#x27;s future mixture through forwarding or filter waste. Incoming material can also induce overflow, so the externality depends on the receiver&#x27;s state rather than solely on a sender action label.
+
+## Incentives and reward bounds
+
+Processing yields 0.8 times processed volume times one minus twice the contaminant fraction: clean processing is valuable and sufficiently dirty processing is costly. Forwarding earns a small 0.04 reward per unit, admitting costs 0.04, filtering costs 0.03 even if ineffective, and regeneration costs 0.05. Overflow costs 0.10 times the smaller of overflow and one. This permits conflict between locally beneficial disposal and the partner&#x27;s throughput.
+
+A processed quantity is at most one and contaminant fraction lies in [0, 1]. Even summing mutually exclusive action costs, total negative magnitude is at most 1.02, so the explicit [-1, 1] clip is the authoritative reward bound. Under the intended mutually exclusive action semantics, a processing transition ranges from -0.9 to 0.8; the other actions are more tightly bounded. Clipping is a declared saturation rule, not an unreported normalization. No terminal inventory bonus is added.
+
+## Interface and evidence status
+
+The source intends the required A2/O16/U5 interface, 32 transitions, all-legal masks and preserved terminal state. Reset samples initial dirt and private inlet quality through the supplied random key. Later transitions are deterministic and do not use the step key.
+
+No candidate execution, JAX initialization, compiler invocation, isolated validation, duplicate review, mechanism qualification or learning measurement has occurred in the author&#x27;s process. Syntax parsing alone is not validation. Model backend revision and token telemetry remain unknown.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Action 0; see mechanism and source</span></div><div class="action"><b>1</b><span>Action 1; see mechanism and source</span></div><div class="action"><b>2</b><span>Action 2; see mechanism and source</span></div><div class="action"><b>3</b><span>Action 3; see mechanism and source</span></div><div class="action"><b>4</b><span>Action 4; see mechanism and source</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Original legacy agent; see mechanism and source</p><p><b>agent_1</b> Original legacy agent; see mechanism and source</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi029&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;b2ae5dd67e937dc44a23ee49fafdf2ffa4c97aa2a4706880b6aa391353cfa813&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.6540653705596924
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.14927244186401367
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.48120999336242676
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.28645825386047363
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.4124181270599365
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.000591278076171875
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.3493509292602539
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5076262950897217
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5490694046020508
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.203148365020752
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 5.334123134613037,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;NOT_PART_OF_ORIGINAL_LEGACY_CONTRACT&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 32,
+  &quot;scripted_random_returns&quot;: [
+    0.13613844034262002,
+    0.4525651652365923
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 33,
+  &quot;render_roles_checked&quot;: 2
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi029&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;ui_sha256&quot;: &quot;15b5861d23b3c42811865c954d5a988280bbfd21cf8e93754be2437a027158c5&quot;,
+  &quot;seconds&quot;: 2.7972664833068848
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 29,
+  &quot;key&quot;: &quot;gi029&quot;,
+  &quot;title&quot;: &quot;astra-d2-00029: Consumable filtration with transported regeneration waste&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;legacy_array&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;source_sha256&quot;: &quot;b2ae5dd67e937dc44a23ee49fafdf2ffa4c97aa2a4706880b6aa391353cfa813&quot;,
+  &quot;manifest_sha256&quot;: &quot;b662008104a9c2f3f679547cf06faf85fcb33a0b44ef178d6939470a47a6fb88&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;b2ae5dd67e937dc44a23ee49fafdf2ffa4c97aa2a4706880b6aa391353cfa813&quot;,
+      &quot;bytes&quot;: 4725,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00029/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;3a804e7e9bdf1e4a452eb6ee5b251c8e703512a680fc7b9baedabc19c883eabd&quot;,
+      &quot;bytes&quot;: 4743,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00029/attempt_00/mechanism.md&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;LEGACY_SOURCE&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi029">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

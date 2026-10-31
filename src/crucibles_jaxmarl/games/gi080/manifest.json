@@ -1,0 +1,892 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00080",
+  "source_sha256": "9f565752dd7ac1a41501c7c13853d168a668acc5d657f214a13be961c5f32f53",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 435,
+  "num_actions": 13,
+  "max_steps": 120,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -3,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West-farm charter holder; acts on turns congruent to 0 modulo 3"
+    },
+    {
+      "id": "agent_1",
+      "role": "Middle-farm charter holder; acts on turns congruent to 1 modulo 3"
+    },
+    {
+      "id": "agent_2",
+      "role": "East-farm charter holder; acts on turns congruent to 2 modulo 3"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Pass turn"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lay north-facing conduit under pawn"
+    },
+    {
+      "id": 6,
+      "label": "Lay east-facing conduit under pawn"
+    },
+    {
+      "id": 7,
+      "label": "Lay south-facing conduit under pawn"
+    },
+    {
+      "id": 8,
+      "label": "Lay west-facing conduit under pawn"
+    },
+    {
+      "id": 9,
+      "label": "Rotate current conduit clockwise; pay foreign owner permit"
+    },
+    {
+      "id": 10,
+      "label": "Toggle current public or own shutter"
+    },
+    {
+      "id": 11,
+      "label": "Charter current own conduit as permanently public"
+    },
+    {
+      "id": 12,
+      "label": "Bail up to two water here for one coin"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tile_pos"
+      ],
+      "shape": [
+        81,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile_active"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tile_visibility"
+      ],
+      "shape": [
+        3,
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "farm_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "farm_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "farm_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "drain_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "drain_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "drain_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_coins"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_kits"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_facing"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_harvest"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "farm_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "farm_water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile_direction"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile_owner"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile_water"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile_flow"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile_open"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tile_fixed"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_build"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_rotate"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_shutter"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_charter"
+      ],
+      "shape": [
+        81
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "total_spill"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spill_step"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ev_harvest"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_toll"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ev_bail"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "buildable ground",
+          "color": "#D8D0AF"
+        },
+        {
+          "value": 1,
+          "meaning": "solid boundary",
+          "color": "#556168"
+        },
+        {
+          "value": 2,
+          "meaning": "farm sink; two water make one harvest",
+          "color": "#8AB16E"
+        },
+        {
+          "value": 3,
+          "meaning": "public spring supplies two water per hydraulic pulse",
+          "color": "#69B8D1"
+        },
+        {
+          "value": 4,
+          "meaning": "drain removes arriving water",
+          "color": "#487F9D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_coins"
+          ],
+          "meaning": "Construction, bailing and toll currency; maximum 30",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "agent_kits"
+          ],
+          "meaning": "Remaining finite conduit construction kits",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "agent_harvest"
+          ],
+          "meaning": "Cumulative harvest at this player-owned farm",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "meaning": "Last movement orientation: 0 north, 1 east, 2 south, 3 west",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "tile",
+      "kind": "object",
+      "count": 81,
+      "position": [
+        "tile_pos"
+      ],
+      "active": [
+        "tile_active"
+      ],
+      "visibility": [
+        "tile_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tile_direction"
+          ],
+          "meaning": "Outgoing conduit direction: 0 north, 1 east, 2 south, 3 west",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tile_owner"
+          ],
+          "meaning": "-1 public charter; 0-2 private owner who receives access tolls",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tile_open"
+          ],
+          "meaning": "Shutter open permits outgoing water",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "tile_water"
+          ],
+          "meaning": "Actual stored water after the last transition",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "tile_flow"
+          ],
+          "meaning": "Actual units sent from this tile on the last hydraulic pulse; zero between pulses",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "farm",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "farm_pos"
+      ],
+      "active": [
+        "farm_active"
+      ],
+      "visibility": [
+        "farm_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "farm_owner"
+          ],
+          "meaning": "Player owning this farm",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "farm_water"
+          ],
+          "meaning": "Actual farm water remaining after automatic harvest",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_harvest"
+          ],
+          "meaning": "Cumulative harvest of the corresponding farm owner",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "drain",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "drain_pos"
+      ],
+      "active": [
+        "drain_active"
+      ],
+      "visibility": [
+        "drain_visibility"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_build"
+      ],
+      "meaning": "A finite kit and one coin became a real owned conduit this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_rotate"
+      ],
+      "meaning": "Actual outgoing flow direction changed this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_shutter"
+      ],
+      "meaning": "Actual hydraulic shutter was toggled this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_charter"
+      ],
+      "meaning": "Owned conduit permanently changed to public access this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_harvest"
+      ],
+      "meaning": "Farm consumed two real water to make one harvest this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_toll"
+      ],
+      "meaning": "Number of coins actually received by each owner through passage or rotation permits this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_bail"
+      ],
+      "meaning": "Water units physically removed by each player this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill_step"
+      ],
+      "meaning": "Water exceeding local capacity and lost as floodwater on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "total_spill"
+      ],
+      "meaning": "Cumulative spilled water, triggering closure at eighteen",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Every farm has at least three harvests and flood closure has not occurred",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Elapsed turn /120",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        4
+      ],
+      "meaning": "Player-to-move one-hot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        6
+      ],
+      "meaning": "Total spill /100 and joint-done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        87
+      ],
+      "meaning": "Public 9 by 9 terrain row-major, tile code /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        87,
+        93
+      ],
+      "meaning": "Three pawn x,y positions /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        96
+      ],
+      "meaning": "Player coins /30",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        96,
+        99
+      ],
+      "meaning": "Remaining construction kits /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        99,
+        102
+      ],
+      "meaning": "Last movement orientation /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        105
+      ],
+      "meaning": "Cumulative owned-farm harvests /40",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        186
+      ],
+      "meaning": "81 conduit directions encoded (direction+1)/4; zero means absent",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        186,
+        267
+      ],
+      "meaning": "81 owners encoded (owner+1)/3; zero is public or absent",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        267,
+        348
+      ],
+      "meaning": "81 open-shutter flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        348,
+        429
+      ],
+      "meaning": "81 actual water volumes /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        429,
+        432
+      ],
+      "meaning": "Three actual farm water volumes /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        432,
+        435
+      ],
+      "meaning": "Observer player identity one-hot",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Earn own-farm harvests and access income while constructing and scheduling the shared canal network. Collective completion occurs when every farm has three harvests before flood closure.",
+    "natural_termination": "All three farms reaching at least three harvests or cumulative spill reaching eighteen naturally closes the season. Flood takes priority for the success flag if both occur together. Otherwise 120 turns truncates; natural completion wins over the horizon.",
+    "interaction": "Directed, shuttered, owned conduits route a conserved water resource one edge per hydraulic pulse. Construction and reorientation change other farms future supply. Foreign passage and rotation consume a coin and pay the owner; irreversible public charters remove that barrier.",
+    "observation_access": "The complete strategic board, water volumes, ownership, shutters, resources, turn identity and harvests are public. Each observer also receives its player identity. Only the player to move may use a non-noop action; inactive players retain no-op."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_coins"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_kits"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_harvest"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tile_water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tile_flow"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "total_spill"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

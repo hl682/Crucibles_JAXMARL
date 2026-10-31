@@ -1,0 +1,830 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00155",
+  "source_sha256": "79ada6b56599ca59b250462366078ce1963c5d018bc64458658179e09f04dc79",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 165,
+  "num_actions": 14,
+  "max_steps": 144,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 144,
+  "reward_low": -1,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Scout with radius-four sonar and temporary radius-six ping"
+    },
+    {
+      "id": "agent_1",
+      "role": "Left/right-capable tug 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "Left/right-capable tug 2"
+    },
+    {
+      "id": "agent_3",
+      "role": "Current-diversion engineer"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north or request synchronized northward tow"
+    },
+    {
+      "id": 2,
+      "label": "Move east or request synchronized eastward tow"
+    },
+    {
+      "id": 3,
+      "label": "Move south or request synchronized southward tow"
+    },
+    {
+      "id": 4,
+      "label": "Move west or request synchronized westward tow"
+    },
+    {
+      "id": 5,
+      "label": "Tug: attach at a horizontal cargo flank, or release"
+    },
+    {
+      "id": 6,
+      "label": "Scout: extend sonar radius to six for three ticks"
+    },
+    {
+      "id": 7,
+      "label": "Scout: broadcast nearest visible active cargo, otherwise nearest visible current"
+    },
+    {
+      "id": 8,
+      "label": "Engineer: divert nearest adjacent current for four ticks"
+    },
+    {
+      "id": 9,
+      "label": "Request oxygen from nearest adjacent dock"
+    },
+    {
+      "id": 10,
+      "label": "Give three oxygen to adjacent agent 0"
+    },
+    {
+      "id": 11,
+      "label": "Give three oxygen to adjacent agent 1"
+    },
+    {
+      "id": 12,
+      "label": "Give three oxygen to adjacent agent 2"
+    },
+    {
+      "id": 13,
+      "label": "Give three oxygen to adjacent agent 3"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ping"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "oxygen"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hook"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "sight"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "current_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "berth_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "divert_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "marker_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "marker_kind"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "marker_ref"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "marker_age"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "marker_ttl"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "abort"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "salvaged"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "current_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flowing"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "berth_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "salvage_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "current_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "berth_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "marker_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "marker_visible"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Water cell",
+          "color": "#D7D8CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable boundary",
+          "color": "#394751"
+        },
+        {
+          "value": 2,
+          "meaning": "Oxygen charging dock",
+          "color": "#6E9FAC"
+        },
+        {
+          "value": 3,
+          "meaning": "Salvage berth",
+          "color": "#C39A58"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "divers",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "oxygen"
+          ],
+          "meaning": "Remaining oxygen, zero to twenty-four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "hook"
+          ],
+          "meaning": "Attached cargo id; -1 is free swimming",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "salvaged"
+          ],
+          "meaning": "Cargo accounted for at its matching berth",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "currents",
+      "kind": "hazard",
+      "count": 2,
+      "position": [
+        "current_pos"
+      ],
+      "active": [
+        "current_active"
+      ],
+      "visibility": [
+        "current_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "divert_ttl"
+          ],
+          "meaning": "Remaining diversion ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "flowing"
+          ],
+          "meaning": "Active current: diversion timer is zero",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "dock_stock"
+          ],
+          "meaning": "Available dock oxygen; replenishes one unit per tick up to eighteen",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "berths",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "berth_pos"
+      ],
+      "active": [
+        "berth_active"
+      ],
+      "visibility": [
+        "berth_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "salvaged"
+          ],
+          "meaning": "Matching cargo recovered",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "radio",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "marker_pos"
+      ],
+      "active": [
+        "marker_active"
+      ],
+      "visibility": [
+        "marker_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "marker_kind"
+          ],
+          "meaning": "0 cargo, 1 current: true snapshot kind",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "marker_ref"
+          ],
+          "meaning": "Snapshot object id within its kind",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "marker_age"
+          ],
+          "meaning": "Ticks since the snapshot was broadcast",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "marker_ttl"
+          ],
+          "meaning": "Remaining public snapshot lifetime",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "salvage_event"
+      ],
+      "meaning": "Public salvage bells by cargo this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "salvaged"
+      ],
+      "meaning": "Public recovered cargo flags",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "abort"
+      ],
+      "meaning": "Oxygen depletion caused joint emergency abort",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "visibility": "self",
+      "meaning": "Own id,x,y,oxygen,hook id,public scout ping timer,clock,joint done."
+    },
+    {
+      "slice": [
+        8,
+        13
+      ],
+      "visibility": "public",
+      "meaning": "Salvaged flags[2],salvage event flags[2],joint abort flag."
+    },
+    {
+      "slice": [
+        13,
+        33
+      ],
+      "visibility": "local",
+      "meaning": "Four diver records: x,y,oxygen,hook,visible. Scout radius 4 or 6; others radius 2. Hidden values -1."
+    },
+    {
+      "slice": [
+        33,
+        41
+      ],
+      "visibility": "local",
+      "meaning": "Two cargo records: x,y,salvaged,visible. Only unsalvaged locally sensed cargo is shown."
+    },
+    {
+      "slice": [
+        41,
+        49
+      ],
+      "visibility": "local",
+      "meaning": "Two current records: x,y,diversion timer,visible. Flowing is exactly timer==0."
+    },
+    {
+      "slice": [
+        49,
+        55
+      ],
+      "visibility": "public",
+      "meaning": "Two docks: x,y,available oxygen stock."
+    },
+    {
+      "slice": [
+        55,
+        62
+      ],
+      "visibility": "public",
+      "meaning": "Radio snapshot x,y,kind,object id,age,remaining ttl,active. Inactive first six values are -1. Snapshot coordinates do not track later object motion."
+    },
+    {
+      "slice": [
+        62,
+        66
+      ],
+      "visibility": "public",
+      "meaning": "Two matching berth x,y coordinates."
+    },
+    {
+      "slice": [
+        66,
+        165
+      ],
+      "visibility": "public",
+      "meaning": "Static 9 by 11 public terrain map, yx row-major. Hidden cargo/current locations are not encoded in terrain."
+    }
+  ],
+  "task": {
+    "objective": "Recover two heavy cargo objects at matching berths by coordinating two attached tugs, scout information, current diversion and shared oxygen resupply.",
+    "natural_termination": "Both cargo recovered ends naturally. Any crew oxygen reaching zero before complete recovery causes joint emergency abort. Otherwise the horizon is 144.",
+    "interaction": "Cargo moves only with opposite tug alignment and matching movement commands. Engineer diversion changes whether a cargo can enter a current cell; scout broadcasts alter other roles received observations; nearby divers compete for one dock service per tick.",
+    "observation_access": "Map, docks/stock, berths, recovery announcements, ping timer and aged radio snapshot are public. The scout sees within Manhattan radius four or six after ping; other roles see within radius two. These are range-only sensors without occlusion. The snapshot is not privileged live tracking."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "oxygen"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "sight"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "divert_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "dock_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "marker_kind"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "marker_ref"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "marker_age"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "marker_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "ping"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

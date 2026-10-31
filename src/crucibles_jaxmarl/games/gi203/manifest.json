@@ -1,0 +1,1137 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00203",
+  "source_sha256": "e635befe15ccb733159f2eccfc5d2594e90b39aa33dea69118cfceb21f087ee5",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 167,
+  "num_actions": 16,
+  "max_steps": 180,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 180,
+  "reward_low": -4,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Kneading-board worker; may perform every action"
+    },
+    {
+      "id": "agent_1",
+      "role": "Cupboard attendant; may perform every action"
+    },
+    {
+      "id": "agent_2",
+      "role": "Oven and service porter; may perform every action"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Step or face north"
+    },
+    {
+      "id": 2,
+      "label": "Step or face east"
+    },
+    {
+      "id": 3,
+      "label": "Step or face south"
+    },
+    {
+      "id": 4,
+      "label": "Step or face west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up lowest-ID accessible tray within one cell"
+    },
+    {
+      "id": 6,
+      "label": "Put carried tray on the cell ahead"
+    },
+    {
+      "id": 7,
+      "label": "Fill empty carried tray with plain dough at pantry"
+    },
+    {
+      "id": 8,
+      "label": "Fill empty carried tray with seeded dough at pantry"
+    },
+    {
+      "id": 9,
+      "label": "Knead nearby raw dough on a board"
+    },
+    {
+      "id": 10,
+      "label": "Open or close the cupboard door"
+    },
+    {
+      "id": 11,
+      "label": "Toggle cupboard ventilation"
+    },
+    {
+      "id": 12,
+      "label": "Put carried proofing dough in the free oven"
+    },
+    {
+      "id": 13,
+      "label": "Serve acceptable carried baked loaf at hatch"
+    },
+    {
+      "id": 14,
+      "label": "Wash an empty dirty board using one water"
+    },
+    {
+      "id": 15,
+      "label": "Discard batch and wash carried tray at sink"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "failure"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "held"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "work"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tray_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tray_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tray_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tray_holder"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stage"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "recipe"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trace"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "proof"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bake"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "batch_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "board_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "board_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "board_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "board_trace"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "board_dirty"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "door_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "door_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "door_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "door_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "vent"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "temperature"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_vis"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pantry"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wash_water"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "served"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "waste"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "served_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cleaned"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "spoiled"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wasted_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Kitchen floor and cupboard shelves",
+          "color": "#F2E5CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid cupboard wall",
+          "color": "#8B7660"
+        },
+        {
+          "value": 2,
+          "meaning": "Closed cupboard door; blocked to workers",
+          "color": "#AC8661"
+        },
+        {
+          "value": 3,
+          "meaning": "Kneading-board floor position",
+          "color": "#C7A67B"
+        },
+        {
+          "value": 4,
+          "meaning": "Single oven position",
+          "color": "#A96D4F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "Facing: 0 north, 1 east, 2 south, 3 west",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "held"
+          ],
+          "meaning": "Carried tray ID; -1 empty hands",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "meaning": "Cumulative non-wait masked actions",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "meaning": "Invalid request or lost walking contention",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "tray",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "tray_pos"
+      ],
+      "active": [
+        "tray_active"
+      ],
+      "visibility": [
+        "tray_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tray_holder"
+          ],
+          "meaning": "Tray carrier ID; -1 on a floor or station",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "meaning": "0 empty, 1 raw, 2 proofing, 3 baking, 4 baked, 5 spoiled",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "recipe"
+          ],
+          "meaning": "0 plain, 1 seeded, -1 empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "trace"
+          ],
+          "meaning": "Seed ingredient trace present",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "proof"
+          ],
+          "meaning": "Proof level, retained when baking begins",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "bake"
+          ],
+          "meaning": "Hot-oven ticks, zero through seven",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "batch_owner"
+          ],
+          "meaning": "Worker who filled this batch; -1 empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "board",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "board_pos"
+      ],
+      "active": [
+        "board_active"
+      ],
+      "visibility": [
+        "board_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "board_trace"
+          ],
+          "meaning": "Seed trace currently on surface",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "board_dirty"
+          ],
+          "meaning": "Used surface; washing clears dirt and trace",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "door",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "door_pos"
+      ],
+      "active": [
+        "door_active"
+      ],
+      "visibility": [
+        "door_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "door_open"
+          ],
+          "meaning": "Open door permits walking and tray retrieval",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Cumulative accepted loaves by recipe",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Cumulative discarded batches by recipe",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "served_now"
+      ],
+      "meaning": "Worker served a loaf this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cleaned"
+      ],
+      "meaning": "Board washed this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Tray crossed an overproof or burning limit this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "wasted_now"
+      ],
+      "meaning": "Worker discarded a batch this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "temperature"
+      ],
+      "meaning": "Current cupboard warmth, one to three",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "vent"
+      ],
+      "meaning": "Ventilation setting; true targets warmth two when closed",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Public t, done, terminated, truncated, success, failure, vent, temperature, wash_water",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        86
+      ],
+      "meaning": "Public seven-by-eleven map flattened by row; door tile follows its true state",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        92
+      ],
+      "meaning": "Worker x/y coordinates in agent order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Worker facing 0 north, 1 east, 2 south, 3 west",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        98
+      ],
+      "meaning": "Held tray IDs; -1 empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        101
+      ],
+      "meaning": "Cumulative work per worker",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        104
+      ],
+      "meaning": "Invalid request or walking-contention blocked flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        110
+      ],
+      "meaning": "Three actual tray x/y positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        113
+      ],
+      "meaning": "Tray holder IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "Tray stage codes 0 empty through 5 spoiled",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "Recipe codes -1 empty, 0 plain, 1 seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        122
+      ],
+      "meaning": "Seed trace flags per tray",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        125
+      ],
+      "meaning": "Proof levels per tray",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        128
+      ],
+      "meaning": "Hot-oven clocks per tray",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        131
+      ],
+      "meaning": "Batch owner IDs; -1 empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        135
+      ],
+      "meaning": "Two kneading-board coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        137
+      ],
+      "meaning": "Board seed-trace flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        139
+      ],
+      "meaning": "Board dirty flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        141
+      ],
+      "meaning": "Cupboard door coordinate",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        142
+      ],
+      "meaning": "Door-open flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        150
+      ],
+      "meaning": "Pantry, oven, hatch and sink coordinates in that order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        152
+      ],
+      "meaning": "Remaining pantry portions: plain, seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        154
+      ],
+      "meaning": "Accepted counts: plain, seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        156
+      ],
+      "meaning": "Discarded counts: plain, seeded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        159
+      ],
+      "meaning": "Per-worker service flags this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        161
+      ],
+      "meaning": "Per-board washing flags this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        161,
+        164
+      ],
+      "meaning": "Per-tray newly spoiled flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        167
+      ],
+      "meaning": "Per-worker discarded-batch flags",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Serve two plain and two seeded loaves from finite ingredients using the three reusable trays.",
+    "natural_termination": "Success when accepted counts reach two for both recipes. Failure when either recipe's accepted plus pantry plus unspoiled active batches falls below two, unless success. Otherwise truncate at 180.",
+    "interaction": "Opening access to shared proofing shelves changes every sheltered batch's proof rate. Seeded kneading leaves a surface trace inherited by later dough; washing the finite boards consumes shared water. Moving trays clears or occupies proofing shelves and the one oven.",
+    "observation_access": "Fully observable native kitchen. Every role gets the same complete map, worker/tray/surface/station data, cupboard state, resource ledgers and event flags. All entity groups remain active and public; empty trays are persistent reusable objects."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 180
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stage"
+      ],
+      "low": 0,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "recipe"
+      ],
+      "low": -1,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tray_holder"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "held"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "proof"
+      ],
+      "low": 0,
+      "high": 15
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "bake"
+      ],
+      "low": 0,
+      "high": 7
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "temperature"
+      ],
+      "low": 1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "pantry"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "served"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wash_water"
+      ],
+      "low": 0,
+      "high": 8
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

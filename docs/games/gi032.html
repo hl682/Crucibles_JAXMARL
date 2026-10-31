@@ -1,0 +1,145 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>astra-d2-00032: delayed lots with assays and sender warranties · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI032 / LEGACY_ARRAY</p><h1>astra-d2-00032: delayed lots with assays and sender warranties</h1><p class="lead"></p><div class="stats"><span>2 agents</span><span>5 actions</span><span>16 observation columns</span><span>32 original horizon</span><span>Runtime: PASS</span></div><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi032.gif" alt="Actual verification episode gi032"></section><section><h2>Run this game</h2><pre>crucibles play --game 32</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;termination&quot;: &quot;Original kernel t &gt;= 32; see mechanism and source&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 1.0. Observability: source_defined.</p></section><section><h2>Rules</h2><ol></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># astra-d2-00032: delayed lots with assays and sender warranties
+
+This is an original parentless source proposal under work request `astra-d2-initial-00032-00035-a00`. It uses generic bilateral trade, hidden quality, costly inspection and warranty ideas. No benchmark or other candidate source was consulted. The relationship to those familiar mechanisms is intentional; program nonisomorphism and pool qualification have not been established.
+
+Each participant owns a stock quality and a private acceptance threshold. A sender can improve its stock, dispatch it into the other participant&#x27;s one-slot mailbox, or attach a persistent warranty to its next dispatched lot. The receiving participant can inspect an existing lot or accept it. Dispatch clears the sender&#x27;s quality to a low base. Received quality remains hidden until an inspection has completed. Public reputation averages acceptance/expiration reviews, rather than directly revealing the sender&#x27;s current stock.
+
+The five actions are: 0 refine own stock; 1 dispatch when the receiver has capacity; 2 assay an unassayed incoming lot; 3 accept an incoming lot; 4 arm a warranty for the next outgoing lot. All actions are legal. An inapplicable operation has no material effect except that refining still incurs its stated cost. Arming an already armed warranty and repeated assays do not incur a second cost.
+
+A dispatch becomes an incoming lot only in the next observation. An assay is likewise available only after its action. Unaccepted lots expire when the old mailbox age reaches three; acceptance on that step takes precedence. A mailbox freed by acceptance or expiration can receive a new lot in the same transition, and the new lot is neither accepted nor inspected by that transition&#x27;s receiving action. These orderings prevent a receiver from using a newly arriving hidden quality immediately.
+
+Acceptance rewards the receiver according to quality minus its private threshold, with a success bonus and insurance for an unsatisfactory warranted lot. The sender obtains a sale payment, loses a larger amount on an unsatisfactory warranted sale, and pays a smaller loss on expiration. Refining, successful dispatch, first assay and newly arming a warranty have explicit costs. The joint receiver and sender payoff for an agent is clipped to [-1, 1]; clipping is a per-step utility cap, not a physical conservation claim. Both agents change their own production and the other agent&#x27;s future mailbox, reputation and settlement payoff. Inspection consumes scarce episode time; warranties can trade a current cost for altered acceptance incentives, but learning value is untested.
+
+Observation columns are: normalized clock; own stock quality; own acceptance threshold; incoming presence; normalized incoming age; assay-known flag; revealed assay or zero; incoming warranty; own armed warranty; own reputation; other reputation; other mailbox occupied; other mailbox age; last receiver payoff; last sender payoff; role index. The other stock quality and acceptance threshold are not exposed. Initial stock and threshold use only the supplied reset key; transitions thereafter are deterministic and do not need the step key.
+
+The interface is two agents, 16 float32 observation entries, five actions and a 32-step terminal condition. This handoff contains source and provenance only. Syntax parsing is not compilation, isolated validation, mechanism eligibility or evidence of learning effectiveness. Those outcomes remain unknown and belong to experimenter2.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Action 0; see mechanism and source</span></div><div class="action"><b>1</b><span>Action 1; see mechanism and source</span></div><div class="action"><b>2</b><span>Action 2; see mechanism and source</span></div><div class="action"><b>3</b><span>Action 3; see mechanism and source</span></div><div class="action"><b>4</b><span>Action 4; see mechanism and source</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Original legacy agent; see mechanism and source</p><p><b>agent_1</b> Original legacy agent; see mechanism and source</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi032&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;8a459ef8071c320a9dae7e3cd0c2a0ef365926aa4f96c1c61e93e8e660d7cfe2&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.815185546875
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.15327143669128418
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.655794620513916
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5086052417755127
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.898040771484375
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0010006427764892578
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7193267345428467
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.49196696281433105
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8459744453430176
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.755488395690918
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 7.430030584335327,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;NOT_PART_OF_ORIGINAL_LEGACY_CONTRACT&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 32,
+  &quot;scripted_random_returns&quot;: [
+    0.26619979180395603,
+    1.222267508506775
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 33,
+  &quot;render_roles_checked&quot;: 2
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi032&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;ui_sha256&quot;: &quot;15b5861d23b3c42811865c954d5a988280bbfd21cf8e93754be2437a027158c5&quot;,
+  &quot;seconds&quot;: 3.4246065616607666
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 32,
+  &quot;key&quot;: &quot;gi032&quot;,
+  &quot;title&quot;: &quot;astra-d2-00032: delayed lots with assays and sender warranties&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;legacy_array&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;source_sha256&quot;: &quot;8a459ef8071c320a9dae7e3cd0c2a0ef365926aa4f96c1c61e93e8e660d7cfe2&quot;,
+  &quot;manifest_sha256&quot;: &quot;ea4fd279cd2c9c2dfa302dcea2cc20f5bacc73030a9661b3c073dca800204b8f&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;8a459ef8071c320a9dae7e3cd0c2a0ef365926aa4f96c1c61e93e8e660d7cfe2&quot;,
+      &quot;bytes&quot;: 5746,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00032/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;1e676f9f322534ce1728f31621fefd40f8538832f04854560267fcfdfb5b59d3&quot;,
+      &quot;bytes&quot;: 3522,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00032/attempt_00/mechanism.md&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;LEGACY_SOURCE&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi032">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

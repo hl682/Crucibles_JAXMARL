@@ -1,0 +1,475 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f0c6cf463d29edd7e5870f6c15c590ca922820e224adf38026aef485afe7b7c7",
+  "manifest_sha256": "0ba5037f2aef0b015ebfed0c8753c104fa900e73dd46dfcc9a1fc5212274f9a9",
+  "title": "Estuary Council Cities",
+  "rules": [
+    "Twenty towns each contain sixteen independently controlled residents. Tools are exchangeable and original professions remain visible.",
+    "Two different residents must contribute supply at the same assembly within four ticks; a seal-holder must witness before a permit appears.",
+    "Carry a permit to open a river sluice for twelve ticks, or spend it at a reservoir for four irrigation units.",
+    "Levees protect local fields but redirect later flood pressure to the neighboring town downstream. Sluices improve access and can increase exposure.",
+    "Plant, irrigate and harvest actual fields. Carry crops to markets, invest in markets or build roads for cheaper movement.",
+    "Ferries cross the actual river to a free landing. Native action rows can support human selection; the interface is not yet verified."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      -0.5,
+      -0.5,
+      69.5,
+      47.5
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_visibility"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "town land",
+          "color": "#B6BD83"
+        },
+        {
+          "value": 1,
+          "meaning": "river",
+          "color": "#719AAF"
+        },
+        {
+          "value": 2,
+          "meaning": "closed sluice crossing",
+          "color": "#615E6F"
+        },
+        {
+          "value": 3,
+          "meaning": "open sluice crossing",
+          "color": "#C1AC7A"
+        },
+        {
+          "value": 4,
+          "meaning": "built road",
+          "color": "#C8B18D"
+        },
+        {
+          "value": 5,
+          "meaning": "levee",
+          "color": "#8B8978"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "agent",
+      "label": "town actors; select by native actor index",
+      "color": "#B36554",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "fixed profession code"
+        },
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "home crew identifier"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "current exchangeable tool code"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "carried cargo kind"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "carried cargo units"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "stamina, 0 to 20"
+        },
+        {
+          "state_path": [
+            "memory"
+          ],
+          "label": "physically carried information code"
+        }
+      ]
+    },
+    {
+      "id": "hall",
+      "glyph": "flag",
+      "label": "town assembly hall",
+      "color": "#B08A5B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "credits"
+          ],
+          "label": "material contributions in current assembly"
+        },
+        {
+          "state_path": [
+            "window"
+          ],
+          "label": "ticks remaining in assembly"
+        },
+        {
+          "state_path": [
+            "first_donor"
+          ],
+          "label": "first donor actor index plus one"
+        },
+        {
+          "state_path": [
+            "permit"
+          ],
+          "label": "available carried permit"
+        }
+      ]
+    },
+    {
+      "id": "stock",
+      "glyph": "crate",
+      "label": "public supply depot",
+      "color": "#A79569",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "supplies"
+          ],
+          "label": "supply stock"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "sluice crossing",
+      "color": "#728599",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "sluice"
+          ],
+          "label": "open crossing ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "field",
+      "glyph": "plant",
+      "label": "town grain field",
+      "color": "#9BAA53",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "crop maturity"
+        },
+        {
+          "state_path": [
+            "wet"
+          ],
+          "label": "field moisture"
+        }
+      ]
+    },
+    {
+      "id": "harbor",
+      "glyph": "water",
+      "label": "ferry terminal and landing route",
+      "color": "#669AAB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ferry_count"
+          ],
+          "label": "ferry trips"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "glyph": "crate",
+      "label": "town market",
+      "color": "#C19A68",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "market_level"
+          ],
+          "label": "market investment"
+        },
+        {
+          "state_path": [
+            "sales"
+          ],
+          "label": "delivered crop cargos"
+        }
+      ]
+    },
+    {
+      "id": "reservoir",
+      "glyph": "water",
+      "label": "allocated irrigation reservoir",
+      "color": "#5C93B0",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "irrigation water"
+        }
+      ]
+    },
+    {
+      "id": "gauge",
+      "glyph": "beacon",
+      "label": "levee and flood gauge",
+      "color": "#7B8482",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "levee"
+          ],
+          "label": "levee strength"
+        },
+        {
+          "state_path": [
+            "pending"
+          ],
+          "label": "incoming delayed pressure"
+        },
+        {
+          "state_path": [
+            "flood"
+          ],
+          "label": "local flood pressure"
+        },
+        {
+          "state_path": [
+            "tide_phase"
+          ],
+          "label": "local tide offset"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "granted"
+      ],
+      "meaning": "new permit granted this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "damage"
+      ],
+      "meaning": "field flood damage this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sold"
+      ],
+      "meaning": "crop cargos sold this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sales"
+      ],
+      "meaning": "cumulative market deliveries",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest"
+    },
+    {
+      "id": 1,
+      "label": "East"
+    },
+    {
+      "id": 2,
+      "label": "West"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "North"
+    },
+    {
+      "id": 5,
+      "label": "Take two supply units"
+    },
+    {
+      "id": 6,
+      "label": "Contribute supply at assembly"
+    },
+    {
+      "id": 7,
+      "label": "Witness assembly with civic seal"
+    },
+    {
+      "id": 8,
+      "label": "Pick up granted permit"
+    },
+    {
+      "id": 9,
+      "label": "Spend permit to open sluice"
+    },
+    {
+      "id": 10,
+      "label": "Spend permit on reservoir allocation"
+    },
+    {
+      "id": 11,
+      "label": "Build levee at flood gauge"
+    },
+    {
+      "id": 12,
+      "label": "Ferry across river"
+    },
+    {
+      "id": 13,
+      "label": "Irrigate field"
+    },
+    {
+      "id": 14,
+      "label": "Plant with supply unit"
+    },
+    {
+      "id": 15,
+      "label": "Harvest ripe field"
+    },
+    {
+      "id": 16,
+      "label": "Sell crop at market"
+    },
+    {
+      "id": 17,
+      "label": "Lay road underfoot"
+    },
+    {
+      "id": 18,
+      "label": "Invest supply in market"
+    },
+    {
+      "id": 19,
+      "label": "Exchange tools"
+    },
+    {
+      "id": 20,
+      "label": "Handoff cargo and message"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "native clock / H",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "own x / (width - 1)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "own y / (height - 1)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "own stamina / 20",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "own tool / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "own cargo kind / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "own cargo units / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "own carried information / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        833
+      ],
+      "meaning": "5 by 5 local patch, dy then dx from -2 through +2, then channel; outside world all -1. Channels: 0=terrain value / 10; 1=actor identity (id + 1) / A; 2=role (role + 1) / R; 3=home crew (team + 1) / C; 4=held tool / 4; 5=cargo type / 4; 6=cargo amount / 4; 7=stamina / 20; 8=carried message / 4; 9=hall identity (index + 1) / capacity; 10=material contributions in current assembly / 2; 11=ticks remaining in assembly / 4; 12=first donor actor index plus one / 320; 13=available carried permit / 1; 14=stock identity (index + 1) / capacity; 15=supply stock / 32; 16=gate identity (index + 1) / capacity; 17=open crossing ticks remaining / 12; 18=field identity (index + 1) / capacity; 19=crop maturity / 8; 20=field moisture / 4; 21=harbor identity (index + 1) / capacity; 22=ferry trips / 1024; 23=market identity (index + 1) / capacity; 24=market investment / 2; 25=delivered crop cargos / 40; 26=reservoir identity (index + 1) / capacity; 27=irrigation water / 8; 28=gauge identity (index + 1) / capacity; 29=levee strength / 2; 30=incoming delayed pressure / 4; 31=local flood pressure / 6; 32=local tide offset / 7",
+      "visibility": "local"
+    }
+  ]
+}

@@ -1,0 +1,656 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00170",
+  "source_sha256": "7a946fd4f66075d95dfd90d9c047c13c5aafbca39d647bf9b5f12a10b2753c99",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 119,
+  "num_actions": 7,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -3,
+  "observation_high": 80,
+  "reward_low": -1,
+  "reward_high": 24,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Worker 0 favors west depot"
+    },
+    {
+      "id": "agent_1",
+      "role": "Worker 1 favors northeast depot"
+    },
+    {
+      "id": "agent_2",
+      "role": "Worker 2 favors southeast depot"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Rest: recover two stamina"
+    },
+    {
+      "id": 1,
+      "label": "North: walk or exert north tether force"
+    },
+    {
+      "id": 2,
+      "label": "East: walk or exert east tether force"
+    },
+    {
+      "id": 3,
+      "label": "South: walk or exert south tether force"
+    },
+    {
+      "id": 4,
+      "label": "West: walk or exert west tether force"
+    },
+    {
+      "id": 5,
+      "label": "Attach to nearest active cargo within one cell; cargo ID breaks distance ties"
+    },
+    {
+      "id": 6,
+      "label": "Release current tether"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stamina"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "attachment"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_weight"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "force"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "effort"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "moved"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "values"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#D9E2E8"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable bulkhead",
+          "color": "#596674"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "meaning": "Stamina reserve",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "attachment"
+          ],
+          "meaning": "Cargo attachment index; -1 means free",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "effort"
+          ],
+          "meaning": "Directional effort spent this transition",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "values"
+          ],
+          "meaning": "Public values for west northeast southeast depots",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_weight"
+          ],
+          "meaning": "Net force required to move",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "force"
+          ],
+          "meaning": "Chosen net xy force",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "moved"
+          ],
+          "meaning": "Moved this transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "effort"
+      ],
+      "meaning": "Directional stamina spent by worker",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "moved"
+      ],
+      "meaning": "Actual cargo displacement",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_event"
+      ],
+      "meaning": "Cargo newly delivered",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_delivered"
+      ],
+      "meaning": "Cargo delivered status",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own worker ID one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        10
+      ],
+      "meaning": "All worker xy positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "All stamina",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "All attachment indices; -1 free",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        22
+      ],
+      "meaning": "Cargo xy positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Active cargo bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Cargo weights",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        34
+      ],
+      "meaning": "Cargo net xy force",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        40
+      ],
+      "meaning": "Depot xy positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        49
+      ],
+      "meaning": "Public worker by depot value matrix row-major",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        112
+      ],
+      "meaning": "Public 7 by 9 yx tile map; 0 floor, 1 bulkhead",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        112,
+        113
+      ],
+      "meaning": "Episode done",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "Worker effort flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "Cargo moved flags",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver three salvage cargoes. Rewards equal individual public depot values times cargo weight less directional effort.",
+    "natural_termination": "All cargo delivered; otherwise horizon 80. Raw completed states absorb.",
+    "interaction": "Persistent tethers sum simultaneous force. Heavy cargo requires two net force; partner rest release opposition and blocking change the group route. Light cargo offers outside options.",
+    "observation_access": "All spatial and payoff-relevant information is public, plus own role identity."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "min": 0,
+      "max": 80,
+      "low": 0,
+      "high": 80
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_pos"
+      ],
+      "min": 0,
+      "max": 8,
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cargo_pos"
+      ],
+      "min": 0,
+      "max": 8,
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "depot_pos"
+      ],
+      "min": 0,
+      "max": 8,
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stamina"
+      ],
+      "min": 0,
+      "max": 10,
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "attachment"
+      ],
+      "min": -1,
+      "max": 2,
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "force"
+      ],
+      "min": -3,
+      "max": 3,
+      "low": -3,
+      "high": 3
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "cargo_pos"
+      ],
+      "active_path": [
+        "cargo_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

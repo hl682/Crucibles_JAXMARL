@@ -1,0 +1,374 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "174bcf03003597af838bc1e3deda78823f72ba639ef3eddbc95133e55f1f29d6",
+  "manifest_sha256": "037092dc37c912b78b41fe41064ba50d48910040baf856cfc6c8ae218d5b2ff9",
+  "title": "Lantern Ferry Supper",
+  "rules": [
+    "All twelve cooks use the same native tools/actions. For station actions stand on or beside the nearest station; ID resolves distance ties.",
+    "Two empty-handed cooks at opposite banks must carry a counter in the same direction. Its actual position defines the crossing.",
+    "Chop food, load a pot and retrieve it with a clean plate at progress4. Uncollected food burns at progress8.",
+    "Fish contaminates boards and pots. Clean boards empty-handed; contaminated vegetables are rejected.",
+    "One central furnace drives every pot and the dryer. Stoking spends finite fuel; venting reduces heat and slows both processes.",
+    "Delivery leaves a dirty plate at the window: carry, wash, dry and reuse it.",
+    "Separate dining windows reveal local staggered orders. Carry a ticket or hand it to an adjacent waiting cook.",
+    "Only radius-three local information appears in role views; human and AI actions call this same native transition."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      22,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Ferry deck",
+          "color": "#E9D6AC"
+        },
+        {
+          "value": 1,
+          "meaning": "Deck gap; impassable",
+          "color": "#548B9B"
+        },
+        {
+          "value": 2,
+          "meaning": "Actual counter gangway; passable",
+          "color": "#986D43"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "cooks",
+      "glyph": "worker",
+      "color": "#EAA05B",
+      "label": "Twelve ferry cooks",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Home kitchen 0..2"
+        },
+        {
+          "state_path": [
+            "item"
+          ],
+          "label": "0 empty;1 veg;2 fish;3 chopped veg;4 chopped fish;5 plated veg;6 plated fish;7 dirty;8 wet;9 clean p"
+        },
+        {
+          "state_path": [
+            "allergen"
+          ],
+          "label": "Fish contamination on carried food"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "Carried plated meal age"
+        },
+        {
+          "state_path": [
+            "ticket"
+          ],
+          "label": "Order ticket 0 none;1 veg;2 fish"
+        },
+        {
+          "state_path": [
+            "spill"
+          ],
+          "label": "Spoilage or rejected meal this step"
+        },
+        {
+          "state_path": [
+            "burn"
+          ],
+          "label": "Overheated-pot exposure this step"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "food",
+      "color": "#DDC76D",
+      "label": "Pantries, boards, pots, sinks and windows",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_type"
+          ],
+          "label": "0 veg;1 fish pantry;2 board;3 pot;4 sink;5 dining window"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Pantry ingredients, sink clean plates or window dirty plates"
+        },
+        {
+          "state_path": [
+            "recipe"
+          ],
+          "label": "0 empty;3 chopped veg;4 chopped fish"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "label": "Cook progress: ready at4; burns at8"
+        },
+        {
+          "state_path": [
+            "contamination"
+          ],
+          "label": "Board/pot fish contamination"
+        },
+        {
+          "state_path": [
+            "order"
+          ],
+          "label": "0 none;1 vegetable;2 fish order"
+        },
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "label": "Order ticks remaining"
+        },
+        {
+          "state_path": [
+            "served"
+          ],
+          "label": "Correct order served this step"
+        },
+        {
+          "state_path": [
+            "missed"
+          ],
+          "label": "Order expired this step"
+        }
+      ]
+    },
+    {
+      "id": "gangways",
+      "glyph": "crate",
+      "color": "#9A7656",
+      "label": "Two-person counter gangways",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "counter_shift"
+          ],
+          "label": "Signed vertical displacement this step"
+        }
+      ]
+    },
+    {
+      "id": "thermal",
+      "glyph": "tool",
+      "color": "#E46F48",
+      "label": "Shared furnace and dish dryer",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "thermal_kind"
+          ],
+          "label": "0 furnace;1 drying cabinet"
+        },
+        {
+          "state_path": [
+            "thermal_level"
+          ],
+          "label": "Furnace heat 0..10 or drying progress 0..4"
+        },
+        {
+          "state_path": [
+            "thermal_stock"
+          ],
+          "label": "Furnace fuel remaining or cabinet occupied 0/1"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Correct window delivery",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "missed"
+      ],
+      "meaning": "Expired window order",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill"
+      ],
+      "meaning": "Spoiled/rejected plated meal",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "burn"
+      ],
+      "meaning": "Overheated-pot exposure",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "counter_shift"
+      ],
+      "meaning": "Signed counter displacement this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "completed"
+      ],
+      "meaning": "Correct kitchen deliveries accumulated",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive adjacent handoff"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick pantry food, plate, plated ready pot meal or dry cabinet plate"
+    },
+    {
+      "id": 6,
+      "label": "Chop carried raw ingredient at board"
+    },
+    {
+      "id": 7,
+      "label": "Wash dirty plate at sink or empty-handed clean board"
+    },
+    {
+      "id": 8,
+      "label": "Load chopped food into pot or wet plate into dryer"
+    },
+    {
+      "id": 9,
+      "label": "Serve plated meal at dining window"
+    },
+    {
+      "id": 10,
+      "label": "Stoke nearby shared furnace with fuel"
+    },
+    {
+      "id": 11,
+      "label": "Vent nearby shared furnace"
+    },
+    {
+      "id": 12,
+      "label": "Empty-handed carry gangway downward with opposite-bank partner"
+    },
+    {
+      "id": 13,
+      "label": "Empty-handed carry gangway upward with opposite-bank partner"
+    },
+    {
+      "id": 14,
+      "label": "Take local current order ticket"
+    },
+    {
+      "id": 15,
+      "label": "Handoff item and ticket to adjacent empty waiting cook"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        12
+      ],
+      "visibility": "self",
+      "meaning": "Time/512,ID/11,team/2,x/22,y/10,item/9,allergen,age/32,ticket/2,spill,burn,home completed orders/4."
+    },
+    {
+      "slice": [
+        12,
+        132
+      ],
+      "visibility": "local",
+      "meaning": "12 actor slots: x/22,y/10,team/2,item/9,allergen,age/32,ticket/2,spill,burn,presence."
+    },
+    {
+      "slice": [
+        132,
+        348
+      ],
+      "visibility": "local",
+      "meaning": "18 station slots: x/22,y/10,type/5,stock/16,recipe/4,progress/8,contamination,order/2,deadline/96,served,missed,presence."
+    },
+    {
+      "slice": [
+        348,
+        356
+      ],
+      "visibility": "local",
+      "meaning": "Two gangway slots: x/22,y/10,signed displacement {-1,0,1},presence."
+    },
+    {
+      "slice": [
+        356,
+        368
+      ],
+      "visibility": "local",
+      "meaning": "Two thermal slots: x/22,y/10,kind,level/10,stock/36,presence."
+    },
+    {
+      "slice": [
+        368,
+        466
+      ],
+      "visibility": "local",
+      "meaning": "7x7 dy-major patch: tile/2,in-bounds; unavailable cells zero."
+    }
+  ]
+}

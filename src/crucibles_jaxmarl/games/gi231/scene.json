@@ -1,0 +1,491 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "b96f8fe5123543183ed78649d8991a974ff64e0299f0a83505d29b761a179467",
+  "manifest_sha256": "c02ae70c661d07802515a90119d0f0b9912f370987cf3c61314cab1aed4872d8",
+  "title": "Orchard Pollination Commons",
+  "rules": [
+    "Twelve four-person households provide exactly 48 controllable actors. The twelve pollinators are separate ecology entities with no action rows.",
+    "The valley uses actual grass, hedges, plots, orchard gates, sluices and village stores. Work on the cell you face; turn actions do not move.",
+    "Flowering plots need at least two pollination visits and enough growth age to fruit. Grafting advances their timing; pruning reduces disease or composts a spent plot.",
+    "Every second non-winter tick, a placed apiary's bee follows its horizontal corridor within five cells of the hive. After relocation an out-of-range bee heads back toward the hive; gates and hedges can stop and reverse it.",
+    "Apiarists can lift and carry a hive; its bee waits until it is placed on that hive's original lane. A relocated hive changes which flowering plots its bee can reach.",
+    "An open sluice diverts passing water to its two plots. Closing it sends water downstream. Wet soil can spread disease through visiting bees; a new barrier directly hitting a bee reduces its real health.",
+    "Harvest with a basket and bring fruit to a store. Every four ticks each row market chooses one nonempty queue using rotating priority; other queues wait.",
+    "This warm orchard scene is bound to source state. No native play session, animation, action effect, solvability, training or transfer has been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      47,
+      23
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Grass and footpath",
+          "color": "#B5CC82"
+        },
+        {
+          "value": 1,
+          "meaning": "Hedge barrier; can be removed or built",
+          "color": "#477C47"
+        },
+        {
+          "value": 2,
+          "meaning": "Planting plot with actual crop state",
+          "color": "#A8895F"
+        },
+        {
+          "value": 3,
+          "meaning": "Orchard gate",
+          "color": "#AF8C64"
+        },
+        {
+          "value": 4,
+          "meaning": "Canal and sluice access",
+          "color": "#74B5C2"
+        },
+        {
+          "value": 5,
+          "meaning": "Household store and shipping queue",
+          "color": "#CC9F6D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "orchard_households",
+      "glyph": "worker",
+      "label": "Orchard households",
+      "color": "#CE9D6A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Household 0..11"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 pruning/grafting, 1 watering can, 2 apiary gloves, 3 harvest basket"
+        },
+        {
+          "state_path": [
+            "fruit"
+          ],
+          "label": "Carried fruit; 0..3"
+        },
+        {
+          "state_path": [
+            "bucket"
+          ],
+          "label": "Carried water; 0..3"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "0 silent; 1 general, plus 1 flowering, plus 1 disease"
+        }
+      ]
+    },
+    {
+      "id": "orchard_plots",
+      "glyph": "plant",
+      "label": "Seasonal orchard plots",
+      "color": "#82A953",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "0 empty, 1 sapling, 2 flowering, 3 fruiting, 4 spent"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "Growth age; 0..32"
+        },
+        {
+          "state_path": [
+            "wet"
+          ],
+          "label": "Soil moisture; 0..8"
+        },
+        {
+          "state_path": [
+            "pollen"
+          ],
+          "label": "Accumulated visits; 0..3"
+        },
+        {
+          "state_path": [
+            "disease"
+          ],
+          "label": "Disease load; 0..3"
+        },
+        {
+          "state_path": [
+            "crop"
+          ],
+          "label": "Fruit remaining; 0..2"
+        },
+        {
+          "state_path": [
+            "variety"
+          ],
+          "label": "Grafted variety flowers and fruits earlier"
+        }
+      ]
+    },
+    {
+      "id": "orchard_gates",
+      "glyph": "gate",
+      "label": "Wooden orchard gates",
+      "color": "#A17B53",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Gate admits people and pollinators"
+        }
+      ]
+    },
+    {
+      "id": "water_channels",
+      "glyph": "water",
+      "label": "Connected irrigation channels",
+      "color": "#6BACBD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "canal"
+          ],
+          "label": "Native incoming water packet; 0..8"
+        },
+        {
+          "state_path": [
+            "sluice"
+          ],
+          "label": "Open sluice diverts water onto its two plots"
+        },
+        {
+          "state_path": [
+            "draw"
+          ],
+          "label": "Water diverted this step; 0..2"
+        }
+      ]
+    },
+    {
+      "id": "village_stores",
+      "glyph": "crate",
+      "label": "Village shipping stores",
+      "color": "#BC8C58",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "queue"
+          ],
+          "label": "Fruit awaiting shared-row market slot; 0..4"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Fruit actually shipped; goal 2"
+        }
+      ]
+    },
+    {
+      "id": "movable_apiaries",
+      "glyph": "square",
+      "label": "Movable apiary boxes",
+      "color": "#DBB85D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "hive_carried"
+          ],
+          "label": "Apiary is being carried; its position follows the carrier"
+        }
+      ]
+    },
+    {
+      "id": "pollinators",
+      "glyph": "circle",
+      "label": "Pollinator ecology",
+      "color": "#E4BD49",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bee_dir"
+          ],
+          "label": "Horizontal flight direction: -1 west, +1 east"
+        },
+        {
+          "state_path": [
+            "bee_spore"
+          ],
+          "label": "Transported disease spores; 0..4"
+        },
+        {
+          "state_path": [
+            "bee_health"
+          ],
+          "label": "Pollinator health; 0..4"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "harvested"
+      ],
+      "meaning": "Actor harvested a fruit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gated"
+      ],
+      "meaning": "Actor changed an orchard gate",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tended"
+      ],
+      "meaning": "Actor pruned or composted a plot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "moved_hive"
+      ],
+      "meaning": "Actor lifted or placed an apiary",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pollinated"
+      ],
+      "meaning": "Plot pollen increased this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ripened"
+      ],
+      "meaning": "Flowering plot became fruiting this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "bee_hurt"
+      ],
+      "meaning": "Pollinator was struck by a newly closed gate or built hedge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shipped"
+      ],
+      "meaning": "Store shipped one fruit using its shared-row market slot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative shipped fruit by household",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; no movement"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Face north"
+    },
+    {
+      "id": 6,
+      "label": "Face east"
+    },
+    {
+      "id": 7,
+      "label": "Face south"
+    },
+    {
+      "id": 8,
+      "label": "Face west"
+    },
+    {
+      "id": 9,
+      "label": "Plant facing empty or spent plot using one seed"
+    },
+    {
+      "id": 10,
+      "label": "Graft facing growing or flowering plot using compost"
+    },
+    {
+      "id": 11,
+      "label": "Prune disease or compost a spent plot"
+    },
+    {
+      "id": 12,
+      "label": "Harvest one ripe fruit with basket"
+    },
+    {
+      "id": 13,
+      "label": "Deposit one fruit in adjacent store's shipping queue"
+    },
+    {
+      "id": 14,
+      "label": "Fill watering can or irrigate facing plot"
+    },
+    {
+      "id": 15,
+      "label": "Toggle nearby sluice using watering tool"
+    },
+    {
+      "id": 16,
+      "label": "Open or close facing orchard gate"
+    },
+    {
+      "id": 17,
+      "label": "Give fruit, then water, then compost to actor ahead"
+    },
+    {
+      "id": 18,
+      "label": "Lift nearby apiary or place carried apiary on its original corridor lane"
+    },
+    {
+      "id": 19,
+      "label": "Swap tools with actor ahead"
+    },
+    {
+      "id": 20,
+      "label": "Signal local flowering or disease information"
+    },
+    {
+      "id": 21,
+      "label": "Build hedge in clear facing grass cell using compost"
+    },
+    {
+      "id": 22,
+      "label": "Remove facing hedge and recover compost"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "meaning": "Self: x/47,y/23,facing/3,tool/3,team/11,fruit/3,bucket/3,compost/3,seeds/2,(held_hive+1)/12,heard/3,t/768,season/3,harvested,tended,moved_hive.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        16,
+        212
+      ],
+      "meaning": "7x7 row-major [terrain/5 plus 0.1 for open gate (outside=-1), crop stage/4 at cell, 0.25 actor occupancy + 0.5 hive occupancy, active bee count/12].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        212,
+        244
+      ],
+      "meaning": "Up to 4 nearest detailed actors in Chebyshev 3: [visible,dx/3,dy/3,tool/3,fruit/3,bucket/3,message/3,team/11], zero missing.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        244,
+        264
+      ],
+      "meaning": "Up to 2 locally visible plots selected by Manhattan distance, then ordered by Chebyshev distance: [visible,dx/3,dy/3,stage/4,age/32,wet/8,pollen/3,disease/3,crop/2,variety]. Missing records zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        264,
+        270
+      ],
+      "meaning": "Nearest detailed local apiary: [visible,dx/3,dy/3,is carried,hive id/11,is carried by self]. Other hive positions remain occupancy only.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        270,
+        277
+      ],
+      "meaning": "Nearest local water node: [visible,dx/3,dy/3,canal/8,sluice,draw/2,household/11].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        277,
+        283
+      ],
+      "meaning": "Nearest local store: [visible,dx/3,dy/3,queue/4,shipped total/2,household/11].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        283,
+        315
+      ],
+      "meaning": "Up to 4 detailed local active pollinators selected by Manhattan then ordered by Chebyshev distance: [visible,dx/3,dy/3,direction,spore/4,hive id/11,hive placed,health/4]. Missing records zero.",
+      "visibility": "local"
+    }
+  ]
+}
+

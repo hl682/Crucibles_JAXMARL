@@ -1,0 +1,273 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "77e414f83595f8e956845a9273d39bf6e347e9f43075f77e97ffe07f8d39d772",
+  "manifest_sha256": "b148d75469e728b7b9dc939ae02d14bdcb05ebe73d0d6b75d4cd69794e8b4312",
+  "title": "Bridge builders with unequal tool kits",
+  "rules": [
+    "Four identified parts may lie on land, be carried or be installed. No part is created or destroyed.",
+    "The stabilizer carries zero parts, builder one and porter two. Body mass is one plus the current load.",
+    "Installed unbraced spans support total mass one; a live brace raises it to two and prevents lifetime decay.",
+    "Only the builder assembles or retrieves spans. Only the stabilizer renews support. Part handoff needs give and receive in the same step.",
+    "Land permits co-location; simultaneous bridge entries are resolved in rotating order against actual total mass.",
+    "Unsupported spans expire. Expiry or overload returns their material and any falling crew and held parts to the socket western bank.",
+    "All three crew must be on the far bank together. First arrivals pay once; collapses can cause delays and negative reward.",
+    "The dynamic span tiles and part locations derive from real state. This package contains no executed crossing proof."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      4.5
+    ],
+    "map": {
+      "state_path": [
+        "render_tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Safe island ground; agents may share a cell",
+          "color": "#B7C98D"
+        },
+        {
+          "value": 1,
+          "meaning": "Uncrossable water",
+          "color": "#6DAEDB"
+        },
+        {
+          "value": 2,
+          "meaning": "Unbuilt bridge socket, not traversable",
+          "color": "#607D8B"
+        },
+        {
+          "value": 3,
+          "meaning": "Far-bank goal ground",
+          "color": "#81C784"
+        },
+        {
+          "value": 4,
+          "meaning": "Installed traversable span, subject to mass and lifetime",
+          "color": "#C9A66B"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "builders",
+      "glyph": "worker",
+      "label": "Complementary construction crew",
+      "color": "#5BA1CF",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Tool kit: zero stabilizer, one builder, two porter"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "Number of held structural parts"
+        },
+        {
+          "state_path": [
+            "arrived"
+          ],
+          "label": "Has reached the far bank at least once"
+        }
+      ]
+    },
+    {
+      "id": "structural_parts",
+      "glyph": "crate",
+      "label": "Conserved structural parts",
+      "color": "#CF995F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "part_owner"
+          ],
+          "label": "Minus one ground, zero to two carrier, three to six installed bridge site"
+        }
+      ]
+    },
+    {
+      "id": "bridge_sites",
+      "glyph": "gate",
+      "label": "Bridge sockets and spans",
+      "color": "#A5BE78",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "built"
+          ],
+          "label": "A physical span is currently installed"
+        },
+        {
+          "state_path": [
+            "life"
+          ],
+          "label": "Remaining unsupported span lifetime"
+        },
+        {
+          "state_path": [
+            "support"
+          ],
+          "label": "Remaining support timer"
+        },
+        {
+          "state_path": [
+            "capacity"
+          ],
+          "label": "Allowed total crossing mass at this site"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "collapse_count"
+      ],
+      "meaning": "Number of collapsed spans over the episode",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "fall_count"
+      ],
+      "meaning": "Number of crew falls with a deterministic recovery to the western bank",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up a nearby ground part on land if capacity allows"
+    },
+    {
+      "id": 6,
+      "label": "Builder assembles a held part at a nearby empty socket"
+    },
+    {
+      "id": 7,
+      "label": "Stabilizer braces the first nearby socket"
+    },
+    {
+      "id": 8,
+      "label": "Offer one held part to an adjacent consenting receiver"
+    },
+    {
+      "id": 9,
+      "label": "Consent to receive one offered part"
+    },
+    {
+      "id": 10,
+      "label": "Builder recovers an adjacent unoccupied span if hand is free"
+    },
+    {
+      "id": 11,
+      "label": "Drop one held part onto current land cell"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role identity one-hot: stabilizer, builder, porter",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Elapsed ticks divided by 144",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        49
+      ],
+      "meaning": "Row-major base terrain /3; bridge installation is separately observed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        64
+      ],
+      "meaning": "Three crew records: x/8,y/8,load/2,role/2,ever-arrived",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        76
+      ],
+      "meaning": "Four part records: x/8,y/8,(owner+1)/7; installed parts retain identity even though their separate sprite is inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        100
+      ],
+      "meaning": "Four bridge records: x/8,y/8,built,life/12,support/10,capacity/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        102
+      ],
+      "meaning": "Cumulative collapse count /576 and fallen-person count /432; normalization uses finite episode maxima",
+      "visibility": "public"
+    }
+  ]
+}

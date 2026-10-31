@@ -1,0 +1,391 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "2ff9049e2a74bd9620bacf42c02884d6ac553d43048039c5fa50fcc13961ebb6",
+  "manifest_sha256": "aa8634d80ec3d52873c379c07d3743d59c60ef6739df71df04e26043c89df04f",
+  "title": "Mist Runners",
+  "rules": [
+    "Two courier teams carry their own finite packet to the opposite base. Adjacent waiting teammates can receive handoffs.",
+    "Tags outside the target's home tile freeze the target in place and drop its real packet; tags resolve simultaneously.",
+    "Each actor has two sensing charges shared by scanners and decoy jammers.",
+    "Scanner life 4 is warmup; life 3, 2 and 1 reveals radius-4 contacts to its team.",
+    "A decoy jams enemy remote scans of friendly agents, packets and scanners within radius 2. Local radius-2 sight still works; the decoy transmitter can itself be scanned.",
+    "Walls block movement, not radial sensing. Only actual visible entities are shown in a role view.",
+    "The separate report marker is an aged teammate sample for that recipient, not a current physical actor.",
+    "Map, bases and delivery announcements are public. Other actors' charges and all unobserved current positions are absent from role HUDs.",
+    "A full-state audit is privileged and must be labeled separately. This scene does not authorize exposing hidden state.",
+    "Actual trajectory replay, device effects and animation remain unexecuted."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "public": true,
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#CBD5E1"
+        },
+        {
+          "value": 1,
+          "meaning": "Movement obstacle; does not block radial sensing",
+          "color": "#334155"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "glyph": "agent",
+      "label": "couriers",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team identity"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "Held packet identity"
+        },
+        {
+          "state_path": [
+            "frozen"
+          ],
+          "label": "Freeze timer"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Tag cooldown"
+        }
+      ]
+    },
+    {
+      "id": "packets",
+      "glyph": "flag",
+      "label": "packets",
+      "color": "#EAB308",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "packet_team"
+          ],
+          "label": "Packet origin team"
+        },
+        {
+          "state_path": [
+            "packet_holder"
+          ],
+          "label": "Carrier or ground"
+        }
+      ]
+    },
+    {
+      "id": "scanners",
+      "glyph": "beacon",
+      "label": "scanners",
+      "color": "#0891B2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team identity"
+        },
+        {
+          "state_path": [
+            "scan_life"
+          ],
+          "label": "Scanner warmup/lifetime"
+        }
+      ]
+    },
+    {
+      "id": "decoys",
+      "glyph": "beacon",
+      "label": "decoys",
+      "color": "#C026D3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team identity"
+        },
+        {
+          "state_path": [
+            "decoy_life"
+          ],
+          "label": "Decoy-jammer lifetime"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "glyph": "gate",
+      "label": "bases",
+      "color": "#64748B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "base_team"
+          ],
+          "label": "Home team"
+        }
+      ]
+    },
+    {
+      "id": "reports",
+      "glyph": "beacon",
+      "label": "Recipient-only aged teammate report",
+      "color": "#94A3B8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "report_age"
+          ],
+          "label": "Delayed report age"
+        },
+        {
+          "state_path": [
+            "report_cargo"
+          ],
+          "label": "Cargo at sample time"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public base announcement: this team's packet arrived this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Public delivered-packet scoreboard",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive packet"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up own team's ground packet underfoot"
+    },
+    {
+      "id": 6,
+      "label": "Spend sensing charge to plant scanner with one-transition warmup"
+    },
+    {
+      "id": 7,
+      "label": "Spend sensing charge to plant decoy jammer"
+    },
+    {
+      "id": 8,
+      "label": "Tag adjacent opponent outside its home safe tile"
+    },
+    {
+      "id": 9,
+      "label": "Pass packet to adjacent waiting unfrozen teammate"
+    },
+    {
+      "id": 10,
+      "label": "Deliver carried packet at opposing base"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own current xy",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own unspent sensing charges",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own freeze timer",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own tag cooldown",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own packet identity or -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own actor index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Own team",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        10
+      ],
+      "meaning": "Recipient-private sampled teammate xy, not current hidden position",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Age in transitions of that teammate report",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "meaning": "Teammate cargo at report sampling time",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        75
+      ],
+      "meaning": "Public 7 by 9 map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        79
+      ],
+      "meaning": "Public base xy coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        81
+      ],
+      "meaning": "Public delivered-packet flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "meaning": "Public transition clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        110
+      ],
+      "meaning": "Four visible-contact rows: visible,x,y,team,frozen,cooldown,cargo; six payload fields zero when hidden",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        110,
+        122
+      ],
+      "meaning": "Two packet rows: visible,x,y,holder,origin_team,active; five payload fields zero when hidden",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        122,
+        142
+      ],
+      "meaning": "Four scanner rows: visible,x,y,life,team; four payload fields zero when hidden",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        142,
+        162
+      ],
+      "meaning": "Four decoy-jammer rows: visible,x,y,life,team; four payload fields zero when hidden",
+      "visibility": "local"
+    }
+  ]
+}

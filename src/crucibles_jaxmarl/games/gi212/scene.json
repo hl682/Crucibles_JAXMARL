@@ -1,0 +1,334 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "addbf61f680e09e17fbfdf0a28637beb2594f8e5d23804606c7903259bd01204",
+  "manifest_sha256": "aba75fbbab8e20bcea1596ec14fa05fa80c8a748fe402ea087e31649b1b71da5",
+  "title": "Beacon Council",
+  "rules": [
+    "Each settlement has one physical caravan and one original shipment. Homes and destination markets are public.",
+    "The mountain spine has one pass cell. Multiple caravans targeting it together are blocked; occupied cells cannot be entered.",
+    "Spend fuel near home or beacon to reserve the next five ticks. The owner may relinquish the lease earlier.",
+    "Escorting a nearby loaded peer grants three ticks of protection. Protection permits entry during closure and is consumed upon entering.",
+    "Actual storm state is local. A clear pass may begin a three-tick closure with supplied-key probability 0.18 each tick.",
+    "A relay spends fuel and copies the sender's existing observation and timestamp. Delivery takes two ticks at source plus two per chain hop.",
+    "Read a nearby beacon to retain a report; dated reports do not reveal hidden current conditions.",
+    "Each market receipt rewards its own settlement more strongly while benefiting every settlement. All three deliveries finish naturally."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Valley travel and settlement land",
+          "color": "#D9D2B0"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable mountain spine",
+          "color": "#756D83"
+        },
+        {
+          "value": 2,
+          "meaning": "Single-cell mountain crossing",
+          "color": "#AA9264"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "caravans",
+      "glyph": "agent",
+      "label": "Settlement caravans",
+      "color": "#5A7498",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Caravan fuel, 0..9"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Home fuel bundles remaining, 0..2"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "label": "Escort protection ticks remaining"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "Original shipment still aboard"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "glyph": "flag",
+      "label": "Homes 0..2, matching markets 3..5",
+      "color": "#9A7B49",
+      "attribute_labels": []
+    },
+    {
+      "id": "beacons",
+      "glyph": "beacon",
+      "label": "Physical signal chain",
+      "color": "#DBA347",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_report"
+          ],
+          "label": "Published dated report: -1 unknown, 0 clear, 1 storm"
+        },
+        {
+          "state_path": [
+            "beacon_stamp"
+          ],
+          "label": "Original observation tick; not current truth"
+        }
+      ]
+    },
+    {
+      "id": "mountain_pass",
+      "glyph": "gate",
+      "label": "Mountain pass and local storm",
+      "color": "#887B9B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "weather"
+          ],
+          "label": "Actual local closure ticks remaining; 0 clear"
+        }
+      ]
+    },
+    {
+      "id": "shipments",
+      "glyph": "crate",
+      "label": "Finite settlement shipments",
+      "color": "#AE856A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "Owning caravan 0..2; -1 unloaded"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Public market receipt per settlement, 0 or 1",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "reservation"
+      ],
+      "meaning": "Public council crossing owner, -1 unreserved",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lease"
+      ],
+      "meaning": "Public crossing lease ticks remaining",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Travel north"
+    },
+    {
+      "id": 2,
+      "label": "Travel east"
+    },
+    {
+      "id": 3,
+      "label": "Travel south"
+    },
+    {
+      "id": 4,
+      "label": "Travel west"
+    },
+    {
+      "id": 5,
+      "label": "Reserve an unclaimed five-tick crossing lease near own home or a beacon; spend one fuel"
+    },
+    {
+      "id": 6,
+      "label": "Relinquish own crossing lease"
+    },
+    {
+      "id": 7,
+      "label": "Escort lowest-index adjacent loaded peer for three ticks; spend one fuel"
+    },
+    {
+      "id": 8,
+      "label": "Read nearest adjacent beacon report into own memory if at least as recent"
+    },
+    {
+      "id": 9,
+      "label": "Relay own dated report from nearest adjacent beacon; spend one fuel"
+    },
+    {
+      "id": 10,
+      "label": "Unload own cargo within one tile of own destination market"
+    },
+    {
+      "id": 11,
+      "label": "Collect two fuel from own home's finite stock when fuel <= 7"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        67
+      ],
+      "meaning": "Public 7x9 topology; 0 valley, 1 mountain, 2 pass",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        79
+      ],
+      "meaning": "Public six positions: homes 0..2 followed by matching destination markets 3..5; x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "meaning": "Public council lease owner, -1 none, 0..2 settlement",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "meaning": "Public remaining lease ticks, 0..5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        84
+      ],
+      "meaning": "Public market delivery receipt vector, one per settlement",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        90
+      ],
+      "meaning": "Self: actor index, fuel, home bundles, remembered closure report (-1/0/1), original report tick, escort ticks",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        90,
+        111
+      ],
+      "meaning": "Three local caravan records: visible, x, y, fuel, escort ticks, home bundles, cargo aboard; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        111,
+        126
+      ],
+      "meaning": "Three local beacon records: visible, x, y, published report, original report tick; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        126,
+        130
+      ],
+      "meaning": "Local pass record: visible, x, y, actual closure ticks; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        130,
+        145
+      ],
+      "meaning": "Three local cargo records: visible, x, y, holder, active; hidden data -1",
+      "visibility": "local"
+    }
+  ]
+}

@@ -1,0 +1,646 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00167",
+  "source_sha256": "4063107ebba39493e0237a3e79e2b174741ff016dbe2e19c5afac143c66e10f4",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 40,
+  "num_actions": 8,
+  "max_steps": 48,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 48,
+  "reward_low": -23,
+  "reward_high": 20,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Controlled hunter 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "Controlled hunter 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "Controlled evader"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait and recover one energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Hunter: scan for two energy; evader: place decoy for two energy and one decoy"
+    },
+    {
+      "id": 6,
+      "label": "Hunter: relay own old contact for one energy; evader: cloak for one energy"
+    },
+    {
+      "id": 7,
+      "label": "Hunter: attempt adjacent capture; evader: attempt escape through open gate"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "budget"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cloak"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pulse"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_ttl"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "scan_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "capture"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "escape"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable cell",
+          "color": "#e2e8f0"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid movement barrier",
+          "color": "#334155"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Fixed role: 0 hunter, 1 evader",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pulse"
+          ],
+          "meaning": "Remaining scanner broadcast ticks",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "decoy",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "decoy_pos"
+      ],
+      "active": [
+        "decoy_active"
+      ],
+      "visibility": [
+        "decoy_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "decoy_ttl"
+          ],
+          "meaning": "Physical decoy lifetime",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "contacts",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "signal_pos"
+      ],
+      "active": [
+        "signal_active"
+      ],
+      "visibility": [
+        "signal_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "meaning": "Receiver contact lifetime; coordinates may be stale or false",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "escape_gate",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Open from tick eight",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "scan_event"
+      ],
+      "meaning": "Hunter deliberately broadcast a scan this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "capture"
+      ],
+      "meaning": "Controlled evader captured by explicit adjacent tag",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "escape"
+      ],
+      "meaning": "Controlled evader explicitly escaped through open gate",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own x,y.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own energy 0..8.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own remaining decoys; hunters have zero.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own remaining cloak ticks.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        8
+      ],
+      "meaning": "Own identity one-hot; identities 0,1 are hunters and 2 is the controlled evader.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "meaning": "Public elapsed ticks.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Public escape-gate open flag (t>=8).",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        22
+      ],
+      "meaning": "Subject-major rows for agents 0,1,2: masked x,y (-1 hidden), visible flag, visible pulse ticks (0 hidden). Local radius two, cloaked evader radius one; active scanner pulse broadcasts current position to everyone.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        22,
+        26
+      ],
+      "meaning": "Decoy x,y or -1; visible flag; visible TTL or zero. Radius two or evader ownership; inactive decoy hidden.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        26,
+        34
+      ],
+      "meaning": "Receiver-major echo records 0 and 1: x,y or -1; visible flag; remaining contact TTL or zero. Only the respective receiver can see its record. Coordinates may be stale or a decoy, not evader identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        34,
+        36
+      ],
+      "meaning": "Public escape-gate x,y.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        38
+      ],
+      "meaning": "Public scan action flags for hunters 0 and 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        39
+      ],
+      "meaning": "Public terminal capture event.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        40
+      ],
+      "meaning": "Public terminal escape event.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Two controlled hunters seek a capture; the controlled evader seeks an explicit gate escape after tick eight. Scans exchange energy and concealment for imperfect persistent contacts.",
+    "natural_termination": "Explicit hunter tag within Manhattan one after movement causes capture; otherwise explicit evader action at open gate causes escape. Capture takes precedence if simultaneous. H=48 is only truncation, not evader victory.",
+    "interaction": "Costly scans reveal the scanner current position for two ticks while obtaining nearest radius-five echo; a physical decoy can replace the true contact. A relay copies contact information to the teammate without refreshing age. Movement, cloak, decoys and explicit capture alter interception opportunities.",
+    "observation_access": "Map/gate and scan broadcasts are public. Agents use Manhattan local sight two, reduced to one for cloaked evader; active scanner beacons reveal their position globally. Contact records are receiver-private. Scene uses exactly these native masks and never reveals hidden evader or unseen decoy."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "energy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "budget"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cloak"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pulse"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "decoy_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "signal_ttl"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

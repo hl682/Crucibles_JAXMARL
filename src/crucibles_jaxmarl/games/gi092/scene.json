@@ -1,0 +1,403 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "6c3f3acbcd8f41c155ff02f5e78f4fa050fcb20678cb50867b5cba45e22b5155",
+  "manifest_sha256": "f1b23863c68a151f1b3e0607b2eed19190f51e5ebbc5422407734852ae750a4f",
+  "title": "Lumen Locks: Cross-Wired Signals",
+  "rules": [
+    "Role 0 reads sensor 0 only nearby, but its panel needs sensor 1's bit. Role 1 reads sensor 1 nearby, but its panel needs sensor 0's bit.",
+    "Walls separate both operators and the courier. Operators can move, read, send and pulse; only the courier can carry cargo.",
+    "Broadcast bit 0 or 1 for four steps; sending has a three-step cooldown and replaces movement for that turn.",
+    "A correct panel pulse costs one energy and opens its distant gate for six steps. Wrong pulses close it and jam the panel for two steps.",
+    "Delivering cargo redraws both clues, clears broadcasts and closes gates. Deliver both cargo objects before step 128."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable room or courier corridor",
+          "color": "#283C56"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall separating physical roles",
+          "color": "#67798A"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "roles",
+      "glyph": "robot",
+      "label": "Operators and courier",
+      "color": "#89BFED",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Panel pulse energy, max four; courier does not consume this field"
+        },
+        {
+          "state_path": [
+            "signal_cooldown"
+          ],
+          "label": "Remaining steps before another signal may be sent"
+        }
+      ]
+    },
+    {
+      "id": "panels",
+      "glyph": "tool",
+      "label": "Remote panels",
+      "color": "#C59BEA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "panel_value"
+          ],
+          "label": "Last attempted panel bit, -1 before any pulse"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Courier gates",
+      "color": "#E3AE5D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "label": "Remaining open time in steps"
+        },
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Whether entry is currently permitted"
+        },
+        {
+          "state_path": [
+            "jam"
+          ],
+          "label": "Remaining operator lockout after a wrong pulse"
+        }
+      ]
+    },
+    {
+      "id": "private_sensors",
+      "glyph": "key",
+      "label": "Private clue sensors",
+      "color": "#BBE68A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "code_value"
+          ],
+          "label": "Current bit, visible only to the assigned nearby operator"
+        }
+      ]
+    },
+    {
+      "id": "signals",
+      "glyph": "beacon",
+      "label": "Live binary broadcasts",
+      "color": "#F6D978",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "signal_value"
+          ],
+          "label": "Currently broadcast bit"
+        },
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "label": "Remaining visible lifetime of this broadcast"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Courier cargo",
+      "color": "#D89963",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "label": "-1 on ground; 2 when held by courier"
+        },
+        {
+          "state_path": [
+            "cargo_delivered"
+          ],
+          "label": "Whether this cargo has reached the goal"
+        }
+      ]
+    },
+    {
+      "id": "destination",
+      "glyph": "flag",
+      "label": "Delivery destination",
+      "color": "#63D3A6",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices 0 to 5: any bit broadcast, correct gate pulse, wrong gate pulse, cargo pickup or release, cargo delivered, both private clues redrawn; last-step flags. The final two flags coincide because delivery redraws clues.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; operators recharge one energy only on own sensor"
+    },
+    {
+      "id": 1,
+      "label": "Move north attempt"
+    },
+    {
+      "id": 2,
+      "label": "Move east attempt"
+    },
+    {
+      "id": 3,
+      "label": "Move south attempt"
+    },
+    {
+      "id": 4,
+      "label": "Move west attempt"
+    },
+    {
+      "id": 5,
+      "label": "At your operator panel, pulse binary setting zero"
+    },
+    {
+      "id": 6,
+      "label": "At your operator panel, pulse binary setting one"
+    },
+    {
+      "id": 7,
+      "label": "Broadcast bit zero if cooldown is clear"
+    },
+    {
+      "id": 8,
+      "label": "Broadcast bit one if cooldown is clear"
+    },
+    {
+      "id": 9,
+      "label": "Courier: pick one colocated cargo, or release held cargo; delivery at goal"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Current sensor bits in sensor order, with -1 when inaccessible; own sensor only within Manhattan distance one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        5,
+        7
+      ],
+      "meaning": "Visibility flags for those two sensor-value slots",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        7,
+        13
+      ],
+      "meaning": "All role positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "All pulse energy divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        20
+      ],
+      "meaning": "Both panel positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        22
+      ],
+      "meaning": "Last attempted panel bits; -1 before any pulse",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        26
+      ],
+      "meaning": "Gate positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        28
+      ],
+      "meaning": "Gate open timers divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        30
+      ],
+      "meaning": "Wrong-pulse jam timers divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        34
+      ],
+      "meaning": "Public sensor locations xy divided by 16; values are not included here",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Each role's signal bit, or -1 after signal expiry",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Signal lifetime divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        43
+      ],
+      "meaning": "Signal cooldown divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        47
+      ],
+      "meaning": "Cargo positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        47,
+        49
+      ],
+      "meaning": "Cargo owner plus one divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        51
+      ],
+      "meaning": "Delivered cargo flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        51,
+        53
+      ],
+      "meaning": "Goal xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        144
+      ],
+      "meaning": "Public wall layout flattened yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        145
+      ],
+      "meaning": "Clock divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        145,
+        151
+      ],
+      "meaning": "Last-step flags: send, correct pulse, wrong pulse, cargo interaction, delivery, clue redraw",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        154
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ]
+}
+

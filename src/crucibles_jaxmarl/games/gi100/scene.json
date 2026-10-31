@@ -1,0 +1,402 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "75b5f4dac757265e7743226b2f47873f4d574b063eb4c68dec0e0e105e548ab5",
+  "manifest_sha256": "0345749c18a93cdec3fd526bd1d6598c52cdbd86977de38bc0e35aac9c7e0232",
+  "title": "Three Quays",
+  "rules": [
+    "Each merchant initially owns goods that another merchant needs.",
+    "Carry one owned or publicly gifted good at a time through the shared corridors.",
+    "Deposit cargo on your own escrow pad and commit to a visible recipient for three ticks.",
+    "A compatible complete two-party or three-party cycle transfers ownership only after every offer matures.",
+    "Settled cargo stays at its real pad. Its new owner must collect and deliver it.",
+    "Mature offers can be withdrawn at the seller's pad; public gifts can be claimed without a reciprocal promise."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open traversable board",
+          "color": "#E7EDF3"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable fixed wall",
+          "color": "#4A5568"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Agent",
+      "color": "#397BBA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "quote"
+          ],
+          "label": "Chosen prospective recipient for the next escrow offer"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "glyph": "gate",
+      "label": "Home",
+      "color": "#879648",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "demand"
+          ],
+          "label": "Cargo kind required by this depot"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Required-kind units delivered; target two"
+        }
+      ]
+    },
+    {
+      "id": "pad",
+      "glyph": "square",
+      "label": "Pad",
+      "color": "#9572B8",
+      "attribute_labels": []
+    },
+    {
+      "id": "goods",
+      "glyph": "crate",
+      "label": "Goods",
+      "color": "#C78B46",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goods_kind"
+          ],
+          "label": "Cargo kind 0, 1 or 2"
+        },
+        {
+          "state_path": [
+            "goods_owner"
+          ],
+          "label": "Legal owner; -1 public gift, -2 delivered"
+        },
+        {
+          "state_path": [
+            "goods_carrier"
+          ],
+          "label": "Carrier role or -1 resting cargo"
+        },
+        {
+          "state_path": [
+            "goods_escrow"
+          ],
+          "label": "Committing seller or -1 outside escrow"
+        },
+        {
+          "state_path": [
+            "goods_timer"
+          ],
+          "label": "Nonwithdrawable commitment ticks remaining"
+        },
+        {
+          "state_path": [
+            "goods_target"
+          ],
+          "label": "Conditional recipient or -1 when no offer"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "offer_event"
+      ],
+      "meaning": "Goods physically deposited into new commitments",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "exchange_event"
+      ],
+      "meaning": "Recipients gaining title in completed conditional cycles",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "withdraw_event"
+      ],
+      "meaning": "Mature commitments withdrawn at the seller's pad",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gift_event"
+      ],
+      "meaning": "Carried goods released to public ownership",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Required-kind cargo consumed at its owner's depot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pickup_event"
+      ],
+      "meaning": "Physical cargo lifted by merchants",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lift owned or gifted cargo; if carrying, fulfil own depot or drop"
+    },
+    {
+      "id": 6,
+      "label": "Commit carried cargo at own escrow pad for three ticks"
+    },
+    {
+      "id": 7,
+      "label": "Toggle next-offer recipient between the two other merchants; unavailable while committed"
+    },
+    {
+      "id": 8,
+      "label": "Withdraw own mature offer while at own pad"
+    },
+    {
+      "id": 9,
+      "label": "Drop carried cargo as a public gift that any merchant may claim"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Observer merchant index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Public clock, done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        11
+      ],
+      "meaning": "Merchant x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        17
+      ],
+      "meaning": "Private depot x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        23
+      ],
+      "meaning": "Seller-specific escrow-pad x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        26
+      ],
+      "meaning": "Next-offer recipients",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        29
+      ],
+      "meaning": "Required cargo kind for each merchant",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        32
+      ],
+      "meaning": "Required-kind depot deliveries",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        44
+      ],
+      "meaning": "Six physical cargo x,y positions; carried goods follow their carrier",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        50
+      ],
+      "meaning": "Cargo active flags; delivered goods inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        56
+      ],
+      "meaning": "Cargo kind",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        62
+      ],
+      "meaning": "Cargo legal owner; -1 gifted, -2 delivered",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        68
+      ],
+      "meaning": "Cargo carrier; -1 means resting",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        68,
+        74
+      ],
+      "meaning": "Escrow seller; -1 means free of commitment",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        80
+      ],
+      "meaning": "Escrow commitment timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        86
+      ],
+      "meaning": "Conditional recipient; -1 means no offer",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        89
+      ],
+      "meaning": "New escrow deposits by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        92
+      ],
+      "meaning": "Merchants receiving title through conditional settlement this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Mature offers withdrawn by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        98
+      ],
+      "meaning": "Goods publicly gifted by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        101
+      ],
+      "meaning": "Own-depot deliveries by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        104
+      ],
+      "meaning": "Cargo pickups by merchant this tick",
+      "visibility": "public"
+    }
+  ]
+}

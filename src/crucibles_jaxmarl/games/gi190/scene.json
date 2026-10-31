@@ -1,0 +1,391 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "86f9f8fa43ec4f1331a753ef095c4f7d7c0e001374a2e58b7a02f93eceb87dac",
+  "manifest_sha256": "72327895ca034ec9293c5b13c2a163b915d79ee2977fb46dfac2daf94bc76916",
+  "title": "River Charter",
+  "rules": [
+    "Lead one of three river settlements. Use walk actions to move your cloaked envoy; all three players choose one native action per step.",
+    "Stand on your town to load grain or eat it. Carry at most 2. Unload at any town to transfer grain, or sell at the eastern market.",
+    "At your dock, build a bridge for 2 grain. An entering foreign envoy pays its owner 1 stored grain while its toll pennant is raised.",
+    "At your dock, toggle diversion. Every eighth step four water units flow north to south; each diverting settlement takes up to 2 and grows that much grain.",
+    "An open-sluice pledge costs 1 grain and locks diversion off for the next 2 floods. The remaining-flood counter is real state.",
+    "Launch cargo at your dock: barges advance one river cell per step. Upper and middle shipments supply the next town; the lower barge exports at y=8.",
+    "Granaries, satchels, sluice handles, bridge pennants and loaded boats show actual state. Ownership follows north-to-south role order.",
+    "A role sees its own consumption taste. Human controls must use that role observation and native legal mask; fixed scripts are examples only.",
+    "After the eighth flood, the game ends when outstanding boats arrive, or at the horizon. No successful replay or learned strategy is claimed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 1,
+          "meaning": "Upper polity: walkable terraced farmland",
+          "color": "#9FAD71"
+        },
+        {
+          "value": 2,
+          "meaning": "Middle polity: walkable clay plains",
+          "color": "#C7AC73"
+        },
+        {
+          "value": 3,
+          "meaning": "Lower polity: walkable reed lowlands",
+          "color": "#8AA895"
+        },
+        {
+          "value": 4,
+          "meaning": "River: enter only built bridge cells at y=1,4,7",
+          "color": "#4F92B1"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Cloaked envoys with grain satchels",
+      "color": "#B35039",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "grain"
+          ],
+          "label": "Stored grain"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "Carried grain"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Consumed/export utility"
+        }
+      ]
+    },
+    {
+      "id": "town",
+      "glyph": "flag",
+      "label": "Three terraced river settlements, north to south",
+      "color": "#8E6D48",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "grain"
+          ],
+          "label": "Town granary"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "glyph": "water",
+      "label": "Stone sluices and timber loading docks",
+      "color": "#3D7E95",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "divert"
+          ],
+          "label": "Diversion: 0 release, 1 take up to 2"
+        },
+        {
+          "state_path": [
+            "pledge"
+          ],
+          "label": "Floods still committed open"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "glyph": "gate",
+      "label": "Timber bridge sites with toll pennants",
+      "color": "#AD8855",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "built"
+          ],
+          "label": "Bridge constructed"
+        },
+        {
+          "state_path": [
+            "toll"
+          ],
+          "label": "Foreign entry toll: grain units"
+        }
+      ]
+    },
+    {
+      "id": "boat",
+      "glyph": "crate",
+      "label": "Grain barges owned by corresponding river polity",
+      "color": "#8C613E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "boat_load"
+          ],
+          "label": "Grain aboard"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "glyph": "food",
+      "label": "Eastern grain market beside the river road",
+      "color": "#D4A949",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "e_move"
+      ],
+      "meaning": "Envoy moved this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_cross"
+      ],
+      "meaning": "Envoy entered a built river bridge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_flow"
+      ],
+      "meaning": "Grain produced by each polity at this flood only",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_arrival"
+      ],
+      "meaning": "Grain arriving from each barge this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_pledge"
+      ],
+      "meaning": "Envoy bought an open-sluice commitment",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_payoff"
+      ],
+      "meaning": "Utility actually paid this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Build own bridge: 2 grain at own dock"
+    },
+    {
+      "id": 6,
+      "label": "Toggle own diversion at dock; unavailable during pledge"
+    },
+    {
+      "id": 7,
+      "label": "Pledge open sluice for 2 floods: 1 grain at own dock"
+    },
+    {
+      "id": 8,
+      "label": "Load 1 grain at own town; cargo capacity 2"
+    },
+    {
+      "id": 9,
+      "label": "Launch all cargo downstream at own dock"
+    },
+    {
+      "id": 10,
+      "label": "Unload all cargo into the town underfoot"
+    },
+    {
+      "id": 11,
+      "label": "Toggle own bridge toll at own dock"
+    },
+    {
+      "id": 12,
+      "label": "Eat 1 stored grain at own town"
+    },
+    {
+      "id": 13,
+      "label": "Sell all carried grain at eastern market"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Public t/88, completed floods/8, source water/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "Public envoy x/10,y/8, ordered roles 0,1,2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Town grain/64, roles 0,1,2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Envoy cargo/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Diversion settings: 0 release, 1 divert",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        21
+      ],
+      "meaning": "Open-sluice pledge floods remaining/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "Bridge built flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "meaning": "Bridge tolls, 0 or 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        33
+      ],
+      "meaning": "Barge x/10,y/8, indexed by sender; inactive slots remain declared",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        36
+      ],
+      "meaning": "Barge active flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        39
+      ],
+      "meaning": "Grain on each barge/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        42
+      ],
+      "meaning": "This-step flood intakes/2; zero off flood steps",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Cumulative utility/256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Own role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        48,
+        49
+      ],
+      "meaning": "Own grain-consumption taste/2; other tastes withheld",
+      "visibility": "self"
+    }
+  ]
+}

@@ -1,0 +1,461 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f3e8cc66eed591d6b8e9a972a169267b3b9c5df22ec940d80cf9e1c7a370b3f9",
+  "manifest_sha256": "c9237d9b457dd35d0da3d6d4cb5f1333c6c062491e7eca1df037f5ad7759eb58",
+  "title": "Whisper Corridors",
+  "rules": [
+    "Public topology has north, middle and south gate corridors. Only nearby sensors reveal whether a gate is open.",
+    "Scouts sense within Manhattan radius three and may cross closed gates; courier and interceptor sense radius one and require open gates.",
+    "A scout may spend switch energy to toggle an adjacent ready gate. Switch cooldown lasts four states; waiting recovers energy.",
+    "Scouts cache local gate and opposing main-role information with ages. Action 5 transmits a four-state snapshot to a teammate.",
+    "An opponent within two cells of a scout when it broadcasts receives the same report. A later visit cannot retroactively intercept it.",
+    "Each team has two public unverified activity signals. Either teammate can emit one; its marker is a claim, not the main role's actual current position.",
+    "The courier delivers with action 7 at either public exit. The interceptor captures with action 7 within one cell. Capture wins simultaneous triggers.",
+    "Reports and lures expire; moving opponents and toggled gates can invalidate old information. Rewards occur only on actual delivery or capture."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable corridor or bank",
+          "color": "#E7E5E4"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall in dividing column",
+          "color": "#475569"
+        },
+        {
+          "value": 2,
+          "meaning": "Public gate site; current gate state is locally sensed only",
+          "color": "#99F6E4"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "roles",
+      "glyph": "agent",
+      "label": "Local sensor contacts",
+      "color": "#3B82F6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "0 courier scout; 1 courier; 2 interception scout; 3 interceptor"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Switchable corridor gates",
+      "color": "#14B8A6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Current passage permission for courier and interceptor"
+        },
+        {
+          "state_path": [
+            "gate_cooldown"
+          ],
+          "label": "Ticks until another switch attempt can act"
+        }
+      ]
+    },
+    {
+      "id": "parcel",
+      "glyph": "crate",
+      "label": "Courier parcel",
+      "color": "#F59E0B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "parcel_status"
+          ],
+          "label": "0 carried; 1 delivered; 2 intercepted"
+        }
+      ]
+    },
+    {
+      "id": "exits",
+      "glyph": "flag",
+      "label": "Alternative delivery exits",
+      "color": "#22C55E",
+      "attribute_labels": []
+    },
+    {
+      "id": "reports",
+      "glyph": "beacon",
+      "label": "Team report or intercepted transmission",
+      "color": "#A855F7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "report_target"
+          ],
+          "label": "Last reported opposing main-role x,y; -1 means unknown"
+        },
+        {
+          "state_path": [
+            "report_target_age"
+          ],
+          "label": "Reported target age, saturated at nine"
+        },
+        {
+          "state_path": [
+            "report_gate"
+          ],
+          "label": "Reported north/middle/south gate values; -1 unknown"
+        },
+        {
+          "state_path": [
+            "report_gate_age"
+          ],
+          "label": "Reported north/middle/south information ages"
+        },
+        {
+          "state_path": [
+            "report_ttl"
+          ],
+          "label": "Remaining radio message lifetime"
+        }
+      ]
+    },
+    {
+      "id": "lures",
+      "glyph": "beacon",
+      "label": "Unverified public activity signal",
+      "color": "#F97316",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_claim"
+          ],
+          "label": "Unverified 0 courier-like or 1 interceptor-like signal"
+        },
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "label": "Remaining public signal lifetime"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "beacon_event"
+      ],
+      "meaning": "Public unverified signals emitted this transition by team",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "outcome"
+      ],
+      "meaning": "Current public outcome: 0 unresolved, 1 delivered, 2 intercepted",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait; scouts recover switch energy"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "scout transmits current notebook"
+    },
+    {
+      "id": 6,
+      "label": "scout toggles an adjacent ready gate"
+    },
+    {
+      "id": 7,
+      "label": "courier delivers or interceptor attempts adjacent capture"
+    },
+    {
+      "id": 8,
+      "label": "emit finite unverified public team signal"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own role one-hot; roles 0/1 and 2/3 are opposing teams",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        6
+      ],
+      "meaning": "Own x,y/8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own switch energy/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        15
+      ],
+      "meaning": "Locally detected role x,y/8 in role order; hidden pairs are -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        15,
+        19
+      ],
+      "meaning": "Actual per-role local contact visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        19,
+        22
+      ],
+      "meaning": "Locally sensed gate open values; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Locally sensed gate cooldown/4; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Gate visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        28,
+        30
+      ],
+      "meaning": "Locally detected parcel x,y/8, or -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        30,
+        31
+      ],
+      "meaning": "Locally detected parcel status/2, or -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        31,
+        33
+      ],
+      "meaning": "Own scout notebook last target x,y/8 or -1; main roles receive -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        33,
+        34
+      ],
+      "meaning": "Own scout target age/9; main roles -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Own scout cached north/middle/south gate values; unknown or main-role values -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Own scout gate ages/9; main roles -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        40,
+        44
+      ],
+      "meaning": "Accessible radio origin x,y/8 for the two messages; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        44,
+        48
+      ],
+      "meaning": "Accessible last-reported opposing-role x,y/8; unknown or inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        48,
+        50
+      ],
+      "meaning": "Accessible reported target ages/9; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        50,
+        56
+      ],
+      "meaning": "Accessible reported gate values; unknown or inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        56,
+        62
+      ],
+      "meaning": "Accessible reported gate ages/9; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        62,
+        64
+      ],
+      "meaning": "Accessible message TTL/4; inaccessible -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        64,
+        66
+      ],
+      "meaning": "Actual radio access flags from team delivery or nearby interception",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        66,
+        70
+      ],
+      "meaning": "Public unverified signal origin x,y/8; inactive -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        72
+      ],
+      "meaning": "Public signal TTL/5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        72,
+        74
+      ],
+      "meaning": "Public signal active flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        76
+      ],
+      "meaning": "Public remaining signal stock per team/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        77
+      ],
+      "meaning": "Clock/80",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        77,
+        81
+      ],
+      "meaning": "Both public exit x,y coordinates/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "meaning": "Public outcome/2: ongoing, delivered, intercepted",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        145
+      ],
+      "meaning": "Public row-major topology/2; gate sites do not reveal gate states",
+      "visibility": "public"
+    }
+  ]
+}

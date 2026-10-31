@@ -1,0 +1,400 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "64e6242e5bd8d734c8c8be87f16bdd7b6ca683db82af27eb81b9e62312b30d32",
+  "manifest_sha256": "4721007afa22cc39f7565b22e43bc5dacd8e3ecc65fea7c5d5fe9d300275bbd4",
+  "title": "Thawforge Caravan | Three hands, one warm workshop",
+  "rules": [
+    "Move on ice paths; deposits and workshop cells are solid. Conflicting movements use a rotating crew priority and never swap occupied cells.",
+    "Harvest finite ore, reeds and timber. Each specialist gathers two units of its material; everyone else gathers one. Bags hold six total items.",
+    "Load two ore plus one timber into the foundry for a plate, or two reeds plus one timber into the loom for a gasket. Four units of labor finish either recipe.",
+    "The weaver supplies double loom labor; the engineer supplies double foundry labor. Loaded ingredients and unfinished labor persist for other crew to use.",
+    "Loading timber into the hearth supplies twelve fuel turns. Nearby crew warm while fuel burns; rest adds more warmth, and timber can also warm neighbors as a field fire.",
+    "One plate plus one gasket can instead buy a shelter insulation level. This expands the heated radius and lowers later cold loss, delaying rescue assembly.",
+    "Load three plates and two gaskets into the beacon. At least two adjacent crew must operate it together for three charge steps with hearth fuel; charge leaks when cooperation breaks.",
+    "If any crew freezes, the joint mission fails. Natural success or failure precedes the 192-step timeout."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable ice path",
+          "color": "#D8E5E9"
+        },
+        {
+          "value": 1,
+          "meaning": "impassable boundary rock",
+          "color": "#384554"
+        },
+        {
+          "value": 2,
+          "meaning": "impassable production or shelter station",
+          "color": "#80624C"
+        },
+        {
+          "value": 3,
+          "meaning": "impassable resource deposit",
+          "color": "#55765B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "glyph": "worker",
+      "label": "Caravan crew",
+      "color": "#E89B48",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "label": "0 ore miner; 1 reed weaver; 2 timber engineer"
+        },
+        {
+          "state_path": [
+            "agent_warmth"
+          ],
+          "label": "Warmth; zero causes joint survival failure"
+        },
+        {
+          "state_path": [
+            "agent_bag"
+          ],
+          "label": "Inventory order: ore, reeds, timber, metal plate, gasket; total capacity six"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "label": "Last successful movement direction"
+        }
+      ]
+    },
+    {
+      "id": "deposits",
+      "glyph": "resource",
+      "label": "Finite raw-material deposits",
+      "color": "#63A46C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "node_kind"
+          ],
+          "label": "0 ore; 1 reeds; 2 timber"
+        },
+        {
+          "state_path": [
+            "node_stock"
+          ],
+          "label": "Remaining finite raw units at the deposit"
+        }
+      ]
+    },
+    {
+      "id": "workshops",
+      "glyph": "tool",
+      "label": "Foundry / loom / hearth / shelter / beacon",
+      "color": "#5F8ACB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_stock"
+          ],
+          "label": "Five item counts; station order foundry, loom, hearth, shelter, rescue beacon"
+        },
+        {
+          "state_path": [
+            "station_progress"
+          ],
+          "label": "Foundry/loom remaining labor; beacon synchronized charge; other entries zero"
+        },
+        {
+          "state_path": [
+            "station_level"
+          ],
+          "label": "Shelter insulation level at index 3; other entries zero"
+        },
+        {
+          "state_path": [
+            "station_heat"
+          ],
+          "label": "Shared hearth fuel reserve at index 2; other entries zero"
+        },
+        {
+          "state_path": [
+            "work_effort"
+          ],
+          "label": "Labor applied to each station on the latest transition"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_harvest"
+      ],
+      "meaning": "Agent removed raw units from a finite deposit on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_load"
+      ],
+      "meaning": "Agent transferred one item into infrastructure or hearth fuel on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_take"
+      ],
+      "meaning": "Agent collected a manufactured plate or gasket on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_pass"
+      ],
+      "meaning": "Agent passed one carried item to a neighboring teammate on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_fire"
+      ],
+      "meaning": "Agent consumed one timber for an emergency warming fire on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_craft"
+      ],
+      "meaning": "Station completed one actual material transformation on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_upgrade"
+      ],
+      "meaning": "Shelter consumed one plate and one gasket to gain one insulation level on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "manufactured"
+      ],
+      "meaning": "Total completed metal plates and gaskets",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Rescue beacon charged with all crew still alive",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Harvest adjacent deposit"
+    },
+    {
+      "id": 6,
+      "label": "Load one needed item into adjacent station"
+    },
+    {
+      "id": 7,
+      "label": "Take one finished product"
+    },
+    {
+      "id": 8,
+      "label": "Operate eligible adjacent station"
+    },
+    {
+      "id": 9,
+      "label": "Pass one item to adjacent least-loaded teammate"
+    },
+    {
+      "id": 10,
+      "label": "Rest within heated shelter radius"
+    },
+    {
+      "id": 11,
+      "label": "Burn timber for self and adjacent teammates"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Elapsed clock /192, cold-cycle phase /12, joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        102
+      ],
+      "meaning": "Public 9 by 11 terrain, row-major tile code /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        108
+      ],
+      "meaning": "All crew x,y positions /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        111
+      ],
+      "meaning": "All crew warmth /80",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        126
+      ],
+      "meaning": "All crew five-item inventories /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        129
+      ],
+      "meaning": "All crew role codes /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        141
+      ],
+      "meaning": "Six deposit x,y positions /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        147
+      ],
+      "meaning": "Deposit material kinds /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        153
+      ],
+      "meaning": "Remaining deposit stock /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        163
+      ],
+      "meaning": "Five station x,y positions /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        163,
+        188
+      ],
+      "meaning": "Station item stores in station-major item-major order /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        188,
+        193
+      ],
+      "meaning": "Station remaining work or beacon charge /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        193,
+        198
+      ],
+      "meaning": "Station upgrade levels /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        198,
+        203
+      ],
+      "meaning": "Station heat reserves /60",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        203,
+        206
+      ],
+      "meaning": "Crew survival flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        206,
+        209
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

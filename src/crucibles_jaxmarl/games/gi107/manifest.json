@@ -1,0 +1,817 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00107",
+  "source_sha256": "63b301253ce3f34f76e2c211b43aa64c3eb25074ced0ce39f27936f8fbfe06c1",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 109,
+  "num_actions": 9,
+  "max_steps": 120,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -1,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "bridge engineer"
+    },
+    {
+      "id": "agent_1",
+      "role": "ballast porter"
+    },
+    {
+      "id": "agent_2",
+      "role": "evacuation escort"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait and recover brace energy"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "pick up or put down evacuee; deliver at shelter"
+    },
+    {
+      "id": 6,
+      "label": "pick up or put down ballast"
+    },
+    {
+      "id": 7,
+      "label": "brace adjacent bridge"
+    },
+    {
+      "id": 8,
+      "label": "evacuate self at shelter if empty"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "brace_energy"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "evacuated"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "victim_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_owner"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_status"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "victim_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "weight_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "weight_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "weight_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "weight_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plate_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plate_load"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plate_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plate_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "brace_timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shelter_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "departed"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_changes"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "transfers"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable bank",
+          "color": "#D6D3D1"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable water channel",
+          "color": "#38BDF8"
+        },
+        {
+          "value": 2,
+          "meaning": "Bridge site; actual entry permission is bridge_open",
+          "color": "#A16207"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "responders",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "0 bridge engineer; 1 ballast porter; 2 evacuation escort",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "brace_energy"
+          ],
+          "meaning": "Brace actions available, replenished by wait",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "evacuated"
+          ],
+          "meaning": "Has irrevocably left the active world",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "evacuees",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "victim_pos"
+      ],
+      "active": [
+        "victim_active"
+      ],
+      "visibility": [
+        "victim_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "victim_status"
+          ],
+          "meaning": "0 waiting; 1 carried; 2 delivered",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "victim_owner"
+          ],
+          "meaning": "Carrier id or -1",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "ballast",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "weight_pos"
+      ],
+      "active": [
+        "weight_active"
+      ],
+      "visibility": [
+        "weight_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "weight_owner"
+          ],
+          "meaning": "Carrier id or -1; each ballast mass is two",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "plates",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "plate_pos"
+      ],
+      "active": [
+        "plate_active"
+      ],
+      "visibility": [
+        "plate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "plate_load"
+          ],
+          "meaning": "Actual mass resting on each load plate",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "bridge_pos"
+      ],
+      "active": [
+        "bridge_active"
+      ],
+      "visibility": [
+        "bridge_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "bridge_open"
+          ],
+          "meaning": "Permits entry during the next transition",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "brace_timer"
+          ],
+          "meaning": "Remaining temporary brace ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "shelter_pos"
+      ],
+      "active": [
+        "shelter_active"
+      ],
+      "visibility": [
+        "shelter_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "bridge_changes"
+      ],
+      "meaning": "Number of bridge entry flags changed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transfers"
+      ],
+      "meaning": "Cargo pickup or putdown operations this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Evacuees delivered to shelter",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "departed"
+      ],
+      "meaning": "Responders who have evacuated",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role one-hot: engineer, porter, escort",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "Responder x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Responder activity flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Brace energy/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        23
+      ],
+      "meaning": "Evacuee x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Evacuee carrier shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        31
+      ],
+      "meaning": "Evacuee status/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        35
+      ],
+      "meaning": "Ballast x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        37
+      ],
+      "meaning": "Ballast carrier shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        39
+      ],
+      "meaning": "Plate loads/11",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        41
+      ],
+      "meaning": "Bridge open flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        43
+      ],
+      "meaning": "Brace timers/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        46
+      ],
+      "meaning": "Clock/120; delivered/4; departed/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        109
+      ],
+      "meaning": "Row-major terrain/2",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver all four evacuees and evacuate all three responders to the east shelter, preserving access while others cross.",
+    "natural_termination": "All four evacuees are delivered and all three responders have chosen self-evacuation. Horizon 120 otherwise truncates; natural completion has priority.",
+    "interaction": "Agent and cargo mass on two physical plates chooses which bridge admits entry. A departing holder may close a partner's route. Transported ballast can replace a holder; temporary bracing spends energy and lasts different times by role.",
+    "observation_access": "All world layout, bodies, cargo, plate loads, bridge states, brace energy, and progress are public. Each row additionally encodes own role. Inactive evacuated agents have only wait and do not obstruct movement or contribute mass."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "plate_load"
+      ],
+      "low": 0,
+      "high": 11
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "brace_timer"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "brace_energy"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "victim_status"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "victim_owner"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "weight_owner"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "status": "AUTHORED_NOT_EXECUTED",
+  "legal_action_semantics": "Every action is a legal attempt for active responders; unavailable operations have no interaction effect. Out-of-domain ids become wait. Inactive evacuated agents and joint-terminal inputs have only wait. Movement collisions are resolved in clock-rotated sequential role order.",
+  "integration_scope": "Native fixed-array kernel. Public agent-keyed JaxMARL adapter is a separate trusted integration layer; no learner or policy-bank substitution."
+}

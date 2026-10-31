@@ -1,0 +1,424 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0c742fac8207748d82eb6f7029ace9f48b95e4b62d77e2422cbe5b8cc5adec40",
+  "manifest_sha256": "1bd5c221a5bf43752e36126384455822d3fba32580bdb0f059fc3acba298d2de",
+  "title": "Counterweight Foundry",
+  "rules": [
+    "Operate a winch from its moving side pad with empty hands. North/south requests act jointly; loaded ends need a mounted weight or another worker's brace.",
+    "The five stepped beam cells block walking. Beam motion that would overlap a worker is cancelled; jam shows this physical obstruction.",
+    "Pick up nearby loose crates or any unheld weight, including mounted weights. One object fits in a worker's hands; dropping uses the worker's cell.",
+    "Loading requires a carried crate beside the centre, an empty beam and endpoint difference at most one. A level loaded beam at row seven delivers its crate.",
+    "Moving with unequal endpoint rows or unequal weight counts adds tension. A brace reduces tension by two; ordinary rest reduces it by one.",
+    "Unbraced tilt of two or more drops a loaded crate to the floor. Tension eight breaks a loaded crate and ends the shift in failure.",
+    "Shared delivery reward and tagged-owner bonus compete with individual work costs. Bracing, balancing weights and following both winches are alternative dependencies.",
+    "All native observations are public. Scripts remain unexecuted hypotheses; human and policy controls use the same actions."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Workshop floor; walking blocked only by workers and actual beam cells",
+          "color": "#C5B9A0"
+        },
+        {
+          "value": 1,
+          "meaning": "Crane rail; traversal follows actual beam occupancy",
+          "color": "#5B646A"
+        },
+        {
+          "value": 2,
+          "meaning": "Original loose-crate loading row marker",
+          "color": "#BD9C66"
+        },
+        {
+          "value": 3,
+          "meaning": "Delivery row marker; beam must be level at row seven",
+          "color": "#76A58C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Foundry workers",
+      "color": "#CF8C47",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "held_kind"
+          ],
+          "label": "Carry kind: 0 empty, 1 crate, 2 counterweight"
+        },
+        {
+          "state_path": [
+            "held_id"
+          ],
+          "label": "Carried object ID; -1 empty"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "label": "Cumulative non-wait actions after mask coercion"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "label": "Invalid request or lost walking contention this step"
+        }
+      ]
+    },
+    {
+      "id": "beam",
+      "glyph": "square",
+      "label": "Five occupied cells of one long beam",
+      "color": "#6B7680",
+      "attribute_labels": []
+    },
+    {
+      "id": "pad",
+      "glyph": "tool",
+      "label": "Moving local winch controls",
+      "color": "#C59450",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ends"
+          ],
+          "label": "Current rail row controlled by this winch"
+        }
+      ]
+    },
+    {
+      "id": "weight",
+      "glyph": "resource",
+      "label": "Four movable counterweights",
+      "color": "#72675A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "weight_holder"
+          ],
+          "label": "Worker holding weight; -1 unheld"
+        },
+        {
+          "state_path": [
+            "weight_mount"
+          ],
+          "label": "Mounted end: -1 loose or carried, 0 west, 1 east"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Three tagged delivery crates",
+      "color": "#BD7045",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_status"
+          ],
+          "label": "0 floor, 1 carried, 2 beam, 3 delivered, 4 lost"
+        },
+        {
+          "state_path": [
+            "cargo_holder"
+          ],
+          "label": "Carrier; -1 not carried"
+        },
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "label": "Owner receiving shipment bonus"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "shipment"
+      ],
+      "meaning": "Per-crate delivery on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Per-crate slipping or breakage on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "jam"
+      ],
+      "meaning": "Requested beam motion cancelled by worker occupancy",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative delivered count for each tagged crate",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "tension"
+      ],
+      "meaning": "Current accumulated beam tension, zero to eight",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "braced"
+      ],
+      "meaning": "A nearby free-handed worker braced on this step",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up lowest-ID loose crate within one cell"
+    },
+    {
+      "id": 6,
+      "label": "Pick up lowest-ID unheld counterweight within one cell"
+    },
+    {
+      "id": 7,
+      "label": "Drop held object at own cell"
+    },
+    {
+      "id": 8,
+      "label": "Winch local end north one row"
+    },
+    {
+      "id": 9,
+      "label": "Winch local end south one row"
+    },
+    {
+      "id": 10,
+      "label": "Brace nearby beam for this joint step"
+    },
+    {
+      "id": 11,
+      "label": "Load carried crate at beam centre"
+    },
+    {
+      "id": 12,
+      "label": "Mount carried counterweight at local winch"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Public t, done, terminated, truncated, success, failure, tension, braced, jam in that order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        108
+      ],
+      "meaning": "Public map flattened y then x; nine rows by eleven columns",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        114
+      ],
+      "meaning": "All worker coordinates, agent order, interleaved x/y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        117
+      ],
+      "meaning": "held_kind per worker: 0 empty, 1 crate, 2 counterweight",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        120
+      ],
+      "meaning": "held_id per worker; -1 empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        123
+      ],
+      "meaning": "Cumulative work per worker",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        126
+      ],
+      "meaning": "Invalid request or walking-contention blocked flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        136
+      ],
+      "meaning": "Five actual beam cell coordinates, west to east",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        138
+      ],
+      "meaning": "West/east endpoint rows",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        142
+      ],
+      "meaning": "West/east local control positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        150
+      ],
+      "meaning": "Four physical counterweight positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        154
+      ],
+      "meaning": "Counterweight holder IDs, -1 unheld",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        158
+      ],
+      "meaning": "Counterweight mounted end IDs, -1 not mounted",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        164
+      ],
+      "meaning": "Three crate positions; last position retained after deactivation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        167
+      ],
+      "meaning": "Crate statuses 0 floor, 1 carried, 2 loaded, 3 delivered, 4 lost",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        167,
+        170
+      ],
+      "meaning": "Crate holder IDs, -1 unheld",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        170,
+        173
+      ],
+      "meaning": "Crate owner IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        173,
+        176
+      ],
+      "meaning": "Cumulative shipment ledger by crate",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        176,
+        179
+      ],
+      "meaning": "Per-step shipment flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        179,
+        182
+      ],
+      "meaning": "Per-step slip or breakage flags",
+      "visibility": "public"
+    }
+  ]
+}

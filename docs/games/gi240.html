@@ -1,0 +1,429 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dune Caravan Commons · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI240 / SPATIAL</p><h1>Dune Caravan Commons</h1><p class="lead"></p><div class="stats"><span>768 agents</span><span>18 actions</span><span>683 observation columns</span><span>1024 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 240</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Deliver 96 water units to moving caravan camels, using maintained wind pumps, physical pipes and shared row aquifers before H=1024.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion at 96 cumulative caravan deliveries; otherwise truncate at 1024.&quot;,
+  &quot;interaction&quot;: &quot;Pump operation needs another actor holding its intake clear at the same step. Pumps compete for shared row water in geographical upstream order. Wind buries exposed pipes; building walls changes travel, shade and beacon transmission. Staffed gates and water rescue change others opportunities.&quot;,
+  &quot;observation_access&quot;: &quot;Only own prefix and radius-two Chebyshev 5x5 patch with exact listed channels enter the policy. Visible actor identity, role, crew, tools, cargo, stamina and message are in the patch. Each object attribute is in its group channels. Hidden cells and entities remain hidden; global debugger must be labeled. Clock alone is public.&quot;
+}</pre></details><p>Declared per-step reward bounds: -8.0 to 8.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>768 separately controllable people form 48 crews. Initial tools assign engineering, intake, carrying and gate tasks; adjacent partners may trade them.</li><li>An engineer can pump only while an intake tender holds the same pump clear, both pipe cells connect to its cistern and shared water remains.</li><li>Storms bury exposed pipe cells. Clearing the intake restores buried pipe; a nearby shade wall can block sand and also obstruct beacon signals.</li><li>Take water from cisterns and carry it to moving camels, or spend it rescuing an exhausted adjacent worker.</li><li>Gate keepers hold physical gates open. Beacons relay carried messages east one crew per tick only through an unobstructed corridor.</li><li>Native local views and actions support future human takeover. No human interface or animation has been verified.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Dune Caravan Commons
+
+Status: AUTHORED_NOT_EXECUTED. All gameplay, scripts and causal predictions below are source-derived author hypotheses, not measured results.
+
+## Rules and physical dependence
+
+The 96 by 60 block world contains 48 crews of sixteen people, divided into six connected dry-channel rows. Four starting tools enable engineering, intake maintenance, carrying and gate work; fixed profession labels do not prevent trading tools. Engineers start with two building blocks. Actions 5/8/9 collect two blocks, lay pipe underfoot and build a solid wall one cell east. Construction consumes one carried block. A wall is canceled without material loss if another actor moves onto its target during that same step. All people may travel through the connected corridors; long paths around a settlement wall remain available.
+
+A pump supplies its actual cistern two cells east only if both intermediate pipe cells exist, an engineer operates (7), and a different tool-2 actor holds its intake clear (6) in that same tick. One actor cannot select both actions. Cistern capacity is twelve; each of six row aquifers holds at most 32 water. Simultaneous requests consume shared aquifer units in west-to-east geographical order. Aquifers recharge eight units every 48 ticks. Pump pressure displays the actual shared reserve.
+
+Every sixteen ticks the wind side flips and unshaded intakes acquire sand. Three or more sand units bury the actual intermediate pipe cell, blocking travel and supply. Holding clear removes two sand and restores a buried pipe. A wall immediately north or on the windward side shades a pump. The wall remains a real movement obstacle and may interrupt signals. Gates on settlement walls open only when a nearby tool-4 actor staffs them (12); bypass travel remains possible.
+
+A beacon transmits the actor&#x27;s carried code (13). Only a corridor clear of walls and closed gates relays the old signal to the next crew east one step later. Reading the local received signal (17) stores it in the actor. Intake work records the encountered sand code. Messages do not grant remote state access: the actual carried code is all a recipient receives.
+
+Cistern fill (10) withdraws one water into empty hands. Deliver (11) transfers it to a camel whose real x position advances among three cells every sixteen ticks; hydration changes over time. Water can instead rescue (16) an adjacent actor at stamina five or less, restoring six stamina and consuming the unit. Cargo/message handoff (15) and tool exchange (14) require adjacent consenting partners. Contested pickup, delivery and rescue use a deterministic lowest-index winner.
+
+## Strategies, reward and scope
+
+Crews can share scarce aquifer draw schedules or take upstream priority; invest in shade or clear frequently; staff gates or use detours; reserve water for caravan deliveries or worker rescue. Information relays require keeping their physical corridor open. None of these alternatives has measured strategic or learning evidence.
+
+Every nonrest action costs 0.01; building or laying costs an additional 0.02. Delivery pays the actor 1 and all sixteen home members of the camel&#x27;s crew 0.03. Rescue pays the rescuer 0.25 and recipient 0.1. A successful pump pays its crew members 0.005 each. Cumulative 96 caravan deliveries ends naturally; otherwise H=1024 truncates. Stamina models exertion; separate tool durability, camel agency and fluid simulation are not implemented. The camels and wind are environmental entities/processes, not extra controllable actors.
+
+## Literal diagnostics
+
+The first script pairs engineer 0 and tender 1, then courier 2 fills the cistern. The second moves engineer 0 west, builds a north shade wall, then rests. The paired hypothesis changes only tender 1 from clear to rest while engineer 0 operates, followed by identical rest ticks. It predicts cistern, reserve and later opportunity differences without claiming any measured effect.
+
+
+## Native boundary and local information
+
+Every listed actor is an independently selectable row of the same int32 action vector. Human or AI control uses that unchanged row; a frontend, keyboard binding, animation, camera, agent-keyed adapter and human usability have not been implemented or verified by this author. All actors remain active. Rest restores one stamina unit; exertion consumes one, with documented game-specific additions. Movement is cardinal; destinations occupied at the start of a step cannot be entered. Simultaneous claims for an empty destination favor the lowest actor index. Spatial interactions use start-of-step positions and Manhattan distance at most one to the nearest relevant object, unless a specific rule says otherwise. Tool exchange requires both adjacent actors to choose exchange and mutually select each other. Invalid or out-of-range actions become rest deterministically.
+
+Each role receives the own-state prefix plus a 5x5 radius-two patch. The manifest lists every channel and normalization; the renderer&#x27;s entity masks and map mask are derived from the same radius. Out-of-world patch cells are all -1. There is no omniscient policy feed. Agent IDs, fixed role and home crew are public metadata; current tools, cargo, stamina, messages and world attributes are visible only in the patch. Entity positions are used by movement, proximity, ecology or construction; none are layout-only proxies.
+
+A nonterminal call advances the int32 clock once. Natural completion has priority over horizon truncation. A terminal raw call preserves every state leaf, observation and terminal cause, returns zero reward and all dones true, and does not reset. All boundary/state integers are int32; the supplied uint32 key is used only through JAX randomness and is not copied into state. State keys/shapes remain fixed. Rewards declare conservative [-8,8] bounds and observations [-1,1]; these are interface ranges, not scientific performance gates. Concurrency, bounds, terminal absorption, JIT/vmap, causal effects, throughput and numerical parity remain unverified.
+
+## Source-line evidence
+
+- candidate.py:103 &#x27;request =&#x27;: pump needs simultaneous tender and engineering work
+- candidate.py:105 &#x27;allocation =&#x27;: upstream competing withdrawals share row reserves
+- candidate.py:127 &#x27;buried =&#x27;: wind, shade and physical pipe availability
+- candidate.py:140 &#x27;transmitted =&#x27;: wall and gate obstruction of delayed messages
+- candidate.py:153 &#x27;rescued =&#x27;: water rescues a different nearby actor
+
+## Provenance and limits
+
+The source is original for this batch and train split. Only current batch authority, four assigned design/request pairs, population/family direction, human-playability addendum and copied interface contracts/templates were read. No prior candidate, IR, result, training, heldout or memory was read; no remote query was made. Official repository references were allowed but not read or copied. The family inspiration comes solely from the supplied design direction: no commercial assets or upstream game implementation is included. PureJaxRL/Craftax baseline code is not used as a game or learner replacement.
+
+The two literal scripts and the paired single-action hypothesis in playthrough.json are unexecuted diagnostics, not a controller restriction or proof of task success. Source-authored invariants and bounds await the independent sealed validator. No candidate import, Python candidate execution, JAX/NumPy computation, validator, training, replay, browser session, human play, accepted R0/M0, solvability, learning, strategic richness, non-isomorphism or transfer result is claimed. Zero, negative, failed, missing and indeterminate outcomes remain admissible.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Rest</span></div><div class="action"><b>1</b><span>East</span></div><div class="action"><b>2</b><span>West</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>North</span></div><div class="action"><b>5</b><span>Collect building blocks</span></div><div class="action"><b>6</b><span>Hold intake clear</span></div><div class="action"><b>7</b><span>Operate wind pump</span></div><div class="action"><b>8</b><span>Lay pipe underfoot</span></div><div class="action"><b>9</b><span>Build shade wall east</span></div><div class="action"><b>10</b><span>Fill water flask</span></div><div class="action"><b>11</b><span>Deliver water to camel</span></div><div class="action"><b>12</b><span>Staff gate</span></div><div class="action"><b>13</b><span>Transmit carried message at beacon</span></div><div class="action"><b>14</b><span>Exchange tools</span></div><div class="action"><b>15</b><span>Handoff cargo and message</span></div><div class="action"><b>16</b><span>Rescue exhausted neighbor with water</span></div><div class="action"><b>17</b><span>Read received beacon message</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> engineer of caravan crew 0</p><p><b>agent_1</b> intake tender of caravan crew 0</p><p><b>agent_2</b> water courier of caravan crew 0</p><p><b>agent_3</b> gate keeper of caravan crew 0</p><p><b>agent_4</b> engineer of caravan crew 0</p><p><b>agent_5</b> intake tender of caravan crew 0</p><p><b>agent_6</b> water courier of caravan crew 0</p><p><b>agent_7</b> gate keeper of caravan crew 0</p><p><b>agent_8</b> engineer of caravan crew 0</p><p><b>agent_9</b> intake tender of caravan crew 0</p><p><b>agent_10</b> water courier of caravan crew 0</p><p><b>agent_11</b> gate keeper of caravan crew 0</p><p><b>agent_12</b> engineer of caravan crew 0</p><p><b>agent_13</b> intake tender of caravan crew 0</p><p><b>agent_14</b> water courier of caravan crew 0</p><p><b>agent_15</b> gate keeper of caravan crew 0</p><p><b>agent_16</b> engineer of caravan crew 1</p><p><b>agent_17</b> intake tender of caravan crew 1</p><p><b>agent_18</b> water courier of caravan crew 1</p><p><b>agent_19</b> gate keeper of caravan crew 1</p><p><b>agent_20</b> engineer of caravan crew 1</p><p><b>agent_21</b> intake tender of caravan crew 1</p><p><b>agent_22</b> water courier of caravan crew 1</p><p><b>agent_23</b> gate keeper of caravan crew 1</p><p><b>agent_24</b> engineer of caravan crew 1</p><p><b>agent_25</b> intake tender of caravan crew 1</p><p><b>agent_26</b> water courier of caravan crew 1</p><p><b>agent_27</b> gate keeper of caravan crew 1</p><p><b>agent_28</b> engineer of caravan crew 1</p><p><b>agent_29</b> intake tender of caravan crew 1</p><p><b>agent_30</b> water courier of caravan crew 1</p><p><b>agent_31</b> gate keeper of caravan crew 1</p><p><b>agent_32</b> engineer of caravan crew 2</p><p><b>agent_33</b> intake tender of caravan crew 2</p><p><b>agent_34</b> water courier of caravan crew 2</p><p><b>agent_35</b> gate keeper of caravan crew 2</p><p><b>agent_36</b> engineer of caravan crew 2</p><p><b>agent_37</b> intake tender of caravan crew 2</p><p><b>agent_38</b> water courier of caravan crew 2</p><p><b>agent_39</b> gate keeper of caravan crew 2</p><p><b>agent_40</b> engineer of caravan crew 2</p><p><b>agent_41</b> intake tender of caravan crew 2</p><p><b>agent_42</b> water courier of caravan crew 2</p><p><b>agent_43</b> gate keeper of caravan crew 2</p><p><b>agent_44</b> engineer of caravan crew 2</p><p><b>agent_45</b> intake tender of caravan crew 2</p><p><b>agent_46</b> water courier of caravan crew 2</p><p><b>agent_47</b> gate keeper of caravan crew 2</p><p><b>agent_48</b> engineer of caravan crew 3</p><p><b>agent_49</b> intake tender of caravan crew 3</p><p><b>agent_50</b> water courier of caravan crew 3</p><p><b>agent_51</b> gate keeper of caravan crew 3</p><p><b>agent_52</b> engineer of caravan crew 3</p><p><b>agent_53</b> intake tender of caravan crew 3</p><p><b>agent_54</b> water courier of caravan crew 3</p><p><b>agent_55</b> gate keeper of caravan crew 3</p><p><b>agent_56</b> engineer of caravan crew 3</p><p><b>agent_57</b> intake tender of caravan crew 3</p><p><b>agent_58</b> water courier of caravan crew 3</p><p><b>agent_59</b> gate keeper of caravan crew 3</p><p><b>agent_60</b> engineer of caravan crew 3</p><p><b>agent_61</b> intake tender of caravan crew 3</p><p><b>agent_62</b> water courier of caravan crew 3</p><p><b>agent_63</b> gate keeper of caravan crew 3</p><p><b>agent_64</b> engineer of caravan crew 4</p><p><b>agent_65</b> intake tender of caravan crew 4</p><p><b>agent_66</b> water courier of caravan crew 4</p><p><b>agent_67</b> gate keeper of caravan crew 4</p><p><b>agent_68</b> engineer of caravan crew 4</p><p><b>agent_69</b> intake tender of caravan crew 4</p><p><b>agent_70</b> water courier of caravan crew 4</p><p><b>agent_71</b> gate keeper of caravan crew 4</p><p><b>agent_72</b> engineer of caravan crew 4</p><p><b>agent_73</b> intake tender of caravan crew 4</p><p><b>agent_74</b> water courier of caravan crew 4</p><p><b>agent_75</b> gate keeper of caravan crew 4</p><p><b>agent_76</b> engineer of caravan crew 4</p><p><b>agent_77</b> intake tender of caravan crew 4</p><p><b>agent_78</b> water courier of caravan crew 4</p><p><b>agent_79</b> gate keeper of caravan crew 4</p><p><b>agent_80</b> engineer of caravan crew 5</p><p><b>agent_81</b> intake tender of caravan crew 5</p><p><b>agent_82</b> water courier of caravan crew 5</p><p><b>agent_83</b> gate keeper of caravan crew 5</p><p><b>agent_84</b> engineer of caravan crew 5</p><p><b>agent_85</b> intake tender of caravan crew 5</p><p><b>agent_86</b> water courier of caravan crew 5</p><p><b>agent_87</b> gate keeper of caravan crew 5</p><p><b>agent_88</b> engineer of caravan crew 5</p><p><b>agent_89</b> intake tender of caravan crew 5</p><p><b>agent_90</b> water courier of caravan crew 5</p><p><b>agent_91</b> gate keeper of caravan crew 5</p><p><b>agent_92</b> engineer of caravan crew 5</p><p><b>agent_93</b> intake tender of caravan crew 5</p><p><b>agent_94</b> water courier of caravan crew 5</p><p><b>agent_95</b> gate keeper of caravan crew 5</p><p><b>agent_96</b> engineer of caravan crew 6</p><p><b>agent_97</b> intake tender of caravan crew 6</p><p><b>agent_98</b> water courier of caravan crew 6</p><p><b>agent_99</b> gate keeper of caravan crew 6</p><p><b>agent_100</b> engineer of caravan crew 6</p><p><b>agent_101</b> intake tender of caravan crew 6</p><p><b>agent_102</b> water courier of caravan crew 6</p><p><b>agent_103</b> gate keeper of caravan crew 6</p><p><b>agent_104</b> engineer of caravan crew 6</p><p><b>agent_105</b> intake tender of caravan crew 6</p><p><b>agent_106</b> water courier of caravan crew 6</p><p><b>agent_107</b> gate keeper of caravan crew 6</p><p><b>agent_108</b> engineer of caravan crew 6</p><p><b>agent_109</b> intake tender of caravan crew 6</p><p><b>agent_110</b> water courier of caravan crew 6</p><p><b>agent_111</b> gate keeper of caravan crew 6</p><p><b>agent_112</b> engineer of caravan crew 7</p><p><b>agent_113</b> intake tender of caravan crew 7</p><p><b>agent_114</b> water courier of caravan crew 7</p><p><b>agent_115</b> gate keeper of caravan crew 7</p><p><b>agent_116</b> engineer of caravan crew 7</p><p><b>agent_117</b> intake tender of caravan crew 7</p><p><b>agent_118</b> water courier of caravan crew 7</p><p><b>agent_119</b> gate keeper of caravan crew 7</p><p><b>agent_120</b> engineer of caravan crew 7</p><p><b>agent_121</b> intake tender of caravan crew 7</p><p><b>agent_122</b> water courier of caravan crew 7</p><p><b>agent_123</b> gate keeper of caravan crew 7</p><p><b>agent_124</b> engineer of caravan crew 7</p><p><b>agent_125</b> intake tender of caravan crew 7</p><p><b>agent_126</b> water courier of caravan crew 7</p><p><b>agent_127</b> gate keeper of caravan crew 7</p><p><b>agent_128</b> engineer of caravan crew 8</p><p><b>agent_129</b> intake tender of caravan crew 8</p><p><b>agent_130</b> water courier of caravan crew 8</p><p><b>agent_131</b> gate keeper of caravan crew 8</p><p><b>agent_132</b> engineer of caravan crew 8</p><p><b>agent_133</b> intake tender of caravan crew 8</p><p><b>agent_134</b> water courier of caravan crew 8</p><p><b>agent_135</b> gate keeper of caravan crew 8</p><p><b>agent_136</b> engineer of caravan crew 8</p><p><b>agent_137</b> intake tender of caravan crew 8</p><p><b>agent_138</b> water courier of caravan crew 8</p><p><b>agent_139</b> gate keeper of caravan crew 8</p><p><b>agent_140</b> engineer of caravan crew 8</p><p><b>agent_141</b> intake tender of caravan crew 8</p><p><b>agent_142</b> water courier of caravan crew 8</p><p><b>agent_143</b> gate keeper of caravan crew 8</p><p><b>agent_144</b> engineer of caravan crew 9</p><p><b>agent_145</b> intake tender of caravan crew 9</p><p><b>agent_146</b> water courier of caravan crew 9</p><p><b>agent_147</b> gate keeper of caravan crew 9</p><p><b>agent_148</b> engineer of caravan crew 9</p><p><b>agent_149</b> intake tender of caravan crew 9</p><p><b>agent_150</b> water courier of caravan crew 9</p><p><b>agent_151</b> gate keeper of caravan crew 9</p><p><b>agent_152</b> engineer of caravan crew 9</p><p><b>agent_153</b> intake tender of caravan crew 9</p><p><b>agent_154</b> water courier of caravan crew 9</p><p><b>agent_155</b> gate keeper of caravan crew 9</p><p><b>agent_156</b> engineer of caravan crew 9</p><p><b>agent_157</b> intake tender of caravan crew 9</p><p><b>agent_158</b> water courier of caravan crew 9</p><p><b>agent_159</b> gate keeper of caravan crew 9</p><p><b>agent_160</b> engineer of caravan crew 10</p><p><b>agent_161</b> intake tender of caravan crew 10</p><p><b>agent_162</b> water courier of caravan crew 10</p><p><b>agent_163</b> gate keeper of caravan crew 10</p><p><b>agent_164</b> engineer of caravan crew 10</p><p><b>agent_165</b> intake tender of caravan crew 10</p><p><b>agent_166</b> water courier of caravan crew 10</p><p><b>agent_167</b> gate keeper of caravan crew 10</p><p><b>agent_168</b> engineer of caravan crew 10</p><p><b>agent_169</b> intake tender of caravan crew 10</p><p><b>agent_170</b> water courier of caravan crew 10</p><p><b>agent_171</b> gate keeper of caravan crew 10</p><p><b>agent_172</b> engineer of caravan crew 10</p><p><b>agent_173</b> intake tender of caravan crew 10</p><p><b>agent_174</b> water courier of caravan crew 10</p><p><b>agent_175</b> gate keeper of caravan crew 10</p><p><b>agent_176</b> engineer of caravan crew 11</p><p><b>agent_177</b> intake tender of caravan crew 11</p><p><b>agent_178</b> water courier of caravan crew 11</p><p><b>agent_179</b> gate keeper of caravan crew 11</p><p><b>agent_180</b> engineer of caravan crew 11</p><p><b>agent_181</b> intake tender of caravan crew 11</p><p><b>agent_182</b> water courier of caravan crew 11</p><p><b>agent_183</b> gate keeper of caravan crew 11</p><p><b>agent_184</b> engineer of caravan crew 11</p><p><b>agent_185</b> intake tender of caravan crew 11</p><p><b>agent_186</b> water courier of caravan crew 11</p><p><b>agent_187</b> gate keeper of caravan crew 11</p><p><b>agent_188</b> engineer of caravan crew 11</p><p><b>agent_189</b> intake tender of caravan crew 11</p><p><b>agent_190</b> water courier of caravan crew 11</p><p><b>agent_191</b> gate keeper of caravan crew 11</p><p><b>agent_192</b> engineer of caravan crew 12</p><p><b>agent_193</b> intake tender of caravan crew 12</p><p><b>agent_194</b> water courier of caravan crew 12</p><p><b>agent_195</b> gate keeper of caravan crew 12</p><p><b>agent_196</b> engineer of caravan crew 12</p><p><b>agent_197</b> intake tender of caravan crew 12</p><p><b>agent_198</b> water courier of caravan crew 12</p><p><b>agent_199</b> gate keeper of caravan crew 12</p><p><b>agent_200</b> engineer of caravan crew 12</p><p><b>agent_201</b> intake tender of caravan crew 12</p><p><b>agent_202</b> water courier of caravan crew 12</p><p><b>agent_203</b> gate keeper of caravan crew 12</p><p><b>agent_204</b> engineer of caravan crew 12</p><p><b>agent_205</b> intake tender of caravan crew 12</p><p><b>agent_206</b> water courier of caravan crew 12</p><p><b>agent_207</b> gate keeper of caravan crew 12</p><p><b>agent_208</b> engineer of caravan crew 13</p><p><b>agent_209</b> intake tender of caravan crew 13</p><p><b>agent_210</b> water courier of caravan crew 13</p><p><b>agent_211</b> gate keeper of caravan crew 13</p><p><b>agent_212</b> engineer of caravan crew 13</p><p><b>agent_213</b> intake tender of caravan crew 13</p><p><b>agent_214</b> water courier of caravan crew 13</p><p><b>agent_215</b> gate keeper of caravan crew 13</p><p><b>agent_216</b> engineer of caravan crew 13</p><p><b>agent_217</b> intake tender of caravan crew 13</p><p><b>agent_218</b> water courier of caravan crew 13</p><p><b>agent_219</b> gate keeper of caravan crew 13</p><p><b>agent_220</b> engineer of caravan crew 13</p><p><b>agent_221</b> intake tender of caravan crew 13</p><p><b>agent_222</b> water courier of caravan crew 13</p><p><b>agent_223</b> gate keeper of caravan crew 13</p><p><b>agent_224</b> engineer of caravan crew 14</p><p><b>agent_225</b> intake tender of caravan crew 14</p><p><b>agent_226</b> water courier of caravan crew 14</p><p><b>agent_227</b> gate keeper of caravan crew 14</p><p><b>agent_228</b> engineer of caravan crew 14</p><p><b>agent_229</b> intake tender of caravan crew 14</p><p><b>agent_230</b> water courier of caravan crew 14</p><p><b>agent_231</b> gate keeper of caravan crew 14</p><p><b>agent_232</b> engineer of caravan crew 14</p><p><b>agent_233</b> intake tender of caravan crew 14</p><p><b>agent_234</b> water courier of caravan crew 14</p><p><b>agent_235</b> gate keeper of caravan crew 14</p><p><b>agent_236</b> engineer of caravan crew 14</p><p><b>agent_237</b> intake tender of caravan crew 14</p><p><b>agent_238</b> water courier of caravan crew 14</p><p><b>agent_239</b> gate keeper of caravan crew 14</p><p><b>agent_240</b> engineer of caravan crew 15</p><p><b>agent_241</b> intake tender of caravan crew 15</p><p><b>agent_242</b> water courier of caravan crew 15</p><p><b>agent_243</b> gate keeper of caravan crew 15</p><p><b>agent_244</b> engineer of caravan crew 15</p><p><b>agent_245</b> intake tender of caravan crew 15</p><p><b>agent_246</b> water courier of caravan crew 15</p><p><b>agent_247</b> gate keeper of caravan crew 15</p><p><b>agent_248</b> engineer of caravan crew 15</p><p><b>agent_249</b> intake tender of caravan crew 15</p><p><b>agent_250</b> water courier of caravan crew 15</p><p><b>agent_251</b> gate keeper of caravan crew 15</p><p><b>agent_252</b> engineer of caravan crew 15</p><p><b>agent_253</b> intake tender of caravan crew 15</p><p><b>agent_254</b> water courier of caravan crew 15</p><p><b>agent_255</b> gate keeper of caravan crew 15</p><p><b>agent_256</b> engineer of caravan crew 16</p><p><b>agent_257</b> intake tender of caravan crew 16</p><p><b>agent_258</b> water courier of caravan crew 16</p><p><b>agent_259</b> gate keeper of caravan crew 16</p><p><b>agent_260</b> engineer of caravan crew 16</p><p><b>agent_261</b> intake tender of caravan crew 16</p><p><b>agent_262</b> water courier of caravan crew 16</p><p><b>agent_263</b> gate keeper of caravan crew 16</p><p><b>agent_264</b> engineer of caravan crew 16</p><p><b>agent_265</b> intake tender of caravan crew 16</p><p><b>agent_266</b> water courier of caravan crew 16</p><p><b>agent_267</b> gate keeper of caravan crew 16</p><p><b>agent_268</b> engineer of caravan crew 16</p><p><b>agent_269</b> intake tender of caravan crew 16</p><p><b>agent_270</b> water courier of caravan crew 16</p><p><b>agent_271</b> gate keeper of caravan crew 16</p><p><b>agent_272</b> engineer of caravan crew 17</p><p><b>agent_273</b> intake tender of caravan crew 17</p><p><b>agent_274</b> water courier of caravan crew 17</p><p><b>agent_275</b> gate keeper of caravan crew 17</p><p><b>agent_276</b> engineer of caravan crew 17</p><p><b>agent_277</b> intake tender of caravan crew 17</p><p><b>agent_278</b> water courier of caravan crew 17</p><p><b>agent_279</b> gate keeper of caravan crew 17</p><p><b>agent_280</b> engineer of caravan crew 17</p><p><b>agent_281</b> intake tender of caravan crew 17</p><p><b>agent_282</b> water courier of caravan crew 17</p><p><b>agent_283</b> gate keeper of caravan crew 17</p><p><b>agent_284</b> engineer of caravan crew 17</p><p><b>agent_285</b> intake tender of caravan crew 17</p><p><b>agent_286</b> water courier of caravan crew 17</p><p><b>agent_287</b> gate keeper of caravan crew 17</p><p><b>agent_288</b> engineer of caravan crew 18</p><p><b>agent_289</b> intake tender of caravan crew 18</p><p><b>agent_290</b> water courier of caravan crew 18</p><p><b>agent_291</b> gate keeper of caravan crew 18</p><p><b>agent_292</b> engineer of caravan crew 18</p><p><b>agent_293</b> intake tender of caravan crew 18</p><p><b>agent_294</b> water courier of caravan crew 18</p><p><b>agent_295</b> gate keeper of caravan crew 18</p><p><b>agent_296</b> engineer of caravan crew 18</p><p><b>agent_297</b> intake tender of caravan crew 18</p><p><b>agent_298</b> water courier of caravan crew 18</p><p><b>agent_299</b> gate keeper of caravan crew 18</p><p><b>agent_300</b> engineer of caravan crew 18</p><p><b>agent_301</b> intake tender of caravan crew 18</p><p><b>agent_302</b> water courier of caravan crew 18</p><p><b>agent_303</b> gate keeper of caravan crew 18</p><p><b>agent_304</b> engineer of caravan crew 19</p><p><b>agent_305</b> intake tender of caravan crew 19</p><p><b>agent_306</b> water courier of caravan crew 19</p><p><b>agent_307</b> gate keeper of caravan crew 19</p><p><b>agent_308</b> engineer of caravan crew 19</p><p><b>agent_309</b> intake tender of caravan crew 19</p><p><b>agent_310</b> water courier of caravan crew 19</p><p><b>agent_311</b> gate keeper of caravan crew 19</p><p><b>agent_312</b> engineer of caravan crew 19</p><p><b>agent_313</b> intake tender of caravan crew 19</p><p><b>agent_314</b> water courier of caravan crew 19</p><p><b>agent_315</b> gate keeper of caravan crew 19</p><p><b>agent_316</b> engineer of caravan crew 19</p><p><b>agent_317</b> intake tender of caravan crew 19</p><p><b>agent_318</b> water courier of caravan crew 19</p><p><b>agent_319</b> gate keeper of caravan crew 19</p><p><b>agent_320</b> engineer of caravan crew 20</p><p><b>agent_321</b> intake tender of caravan crew 20</p><p><b>agent_322</b> water courier of caravan crew 20</p><p><b>agent_323</b> gate keeper of caravan crew 20</p><p><b>agent_324</b> engineer of caravan crew 20</p><p><b>agent_325</b> intake tender of caravan crew 20</p><p><b>agent_326</b> water courier of caravan crew 20</p><p><b>agent_327</b> gate keeper of caravan crew 20</p><p><b>agent_328</b> engineer of caravan crew 20</p><p><b>agent_329</b> intake tender of caravan crew 20</p><p><b>agent_330</b> water courier of caravan crew 20</p><p><b>agent_331</b> gate keeper of caravan crew 20</p><p><b>agent_332</b> engineer of caravan crew 20</p><p><b>agent_333</b> intake tender of caravan crew 20</p><p><b>agent_334</b> water courier of caravan crew 20</p><p><b>agent_335</b> gate keeper of caravan crew 20</p><p><b>agent_336</b> engineer of caravan crew 21</p><p><b>agent_337</b> intake tender of caravan crew 21</p><p><b>agent_338</b> water courier of caravan crew 21</p><p><b>agent_339</b> gate keeper of caravan crew 21</p><p><b>agent_340</b> engineer of caravan crew 21</p><p><b>agent_341</b> intake tender of caravan crew 21</p><p><b>agent_342</b> water courier of caravan crew 21</p><p><b>agent_343</b> gate keeper of caravan crew 21</p><p><b>agent_344</b> engineer of caravan crew 21</p><p><b>agent_345</b> intake tender of caravan crew 21</p><p><b>agent_346</b> water courier of caravan crew 21</p><p><b>agent_347</b> gate keeper of caravan crew 21</p><p><b>agent_348</b> engineer of caravan crew 21</p><p><b>agent_349</b> intake tender of caravan crew 21</p><p><b>agent_350</b> water courier of caravan crew 21</p><p><b>agent_351</b> gate keeper of caravan crew 21</p><p><b>agent_352</b> engineer of caravan crew 22</p><p><b>agent_353</b> intake tender of caravan crew 22</p><p><b>agent_354</b> water courier of caravan crew 22</p><p><b>agent_355</b> gate keeper of caravan crew 22</p><p><b>agent_356</b> engineer of caravan crew 22</p><p><b>agent_357</b> intake tender of caravan crew 22</p><p><b>agent_358</b> water courier of caravan crew 22</p><p><b>agent_359</b> gate keeper of caravan crew 22</p><p><b>agent_360</b> engineer of caravan crew 22</p><p><b>agent_361</b> intake tender of caravan crew 22</p><p><b>agent_362</b> water courier of caravan crew 22</p><p><b>agent_363</b> gate keeper of caravan crew 22</p><p><b>agent_364</b> engineer of caravan crew 22</p><p><b>agent_365</b> intake tender of caravan crew 22</p><p><b>agent_366</b> water courier of caravan crew 22</p><p><b>agent_367</b> gate keeper of caravan crew 22</p><p><b>agent_368</b> engineer of caravan crew 23</p><p><b>agent_369</b> intake tender of caravan crew 23</p><p><b>agent_370</b> water courier of caravan crew 23</p><p><b>agent_371</b> gate keeper of caravan crew 23</p><p><b>agent_372</b> engineer of caravan crew 23</p><p><b>agent_373</b> intake tender of caravan crew 23</p><p><b>agent_374</b> water courier of caravan crew 23</p><p><b>agent_375</b> gate keeper of caravan crew 23</p><p><b>agent_376</b> engineer of caravan crew 23</p><p><b>agent_377</b> intake tender of caravan crew 23</p><p><b>agent_378</b> water courier of caravan crew 23</p><p><b>agent_379</b> gate keeper of caravan crew 23</p><p><b>agent_380</b> engineer of caravan crew 23</p><p><b>agent_381</b> intake tender of caravan crew 23</p><p><b>agent_382</b> water courier of caravan crew 23</p><p><b>agent_383</b> gate keeper of caravan crew 23</p><p><b>agent_384</b> engineer of caravan crew 24</p><p><b>agent_385</b> intake tender of caravan crew 24</p><p><b>agent_386</b> water courier of caravan crew 24</p><p><b>agent_387</b> gate keeper of caravan crew 24</p><p><b>agent_388</b> engineer of caravan crew 24</p><p><b>agent_389</b> intake tender of caravan crew 24</p><p><b>agent_390</b> water courier of caravan crew 24</p><p><b>agent_391</b> gate keeper of caravan crew 24</p><p><b>agent_392</b> engineer of caravan crew 24</p><p><b>agent_393</b> intake tender of caravan crew 24</p><p><b>agent_394</b> water courier of caravan crew 24</p><p><b>agent_395</b> gate keeper of caravan crew 24</p><p><b>agent_396</b> engineer of caravan crew 24</p><p><b>agent_397</b> intake tender of caravan crew 24</p><p><b>agent_398</b> water courier of caravan crew 24</p><p><b>agent_399</b> gate keeper of caravan crew 24</p><p><b>agent_400</b> engineer of caravan crew 25</p><p><b>agent_401</b> intake tender of caravan crew 25</p><p><b>agent_402</b> water courier of caravan crew 25</p><p><b>agent_403</b> gate keeper of caravan crew 25</p><p><b>agent_404</b> engineer of caravan crew 25</p><p><b>agent_405</b> intake tender of caravan crew 25</p><p><b>agent_406</b> water courier of caravan crew 25</p><p><b>agent_407</b> gate keeper of caravan crew 25</p><p><b>agent_408</b> engineer of caravan crew 25</p><p><b>agent_409</b> intake tender of caravan crew 25</p><p><b>agent_410</b> water courier of caravan crew 25</p><p><b>agent_411</b> gate keeper of caravan crew 25</p><p><b>agent_412</b> engineer of caravan crew 25</p><p><b>agent_413</b> intake tender of caravan crew 25</p><p><b>agent_414</b> water courier of caravan crew 25</p><p><b>agent_415</b> gate keeper of caravan crew 25</p><p><b>agent_416</b> engineer of caravan crew 26</p><p><b>agent_417</b> intake tender of caravan crew 26</p><p><b>agent_418</b> water courier of caravan crew 26</p><p><b>agent_419</b> gate keeper of caravan crew 26</p><p><b>agent_420</b> engineer of caravan crew 26</p><p><b>agent_421</b> intake tender of caravan crew 26</p><p><b>agent_422</b> water courier of caravan crew 26</p><p><b>agent_423</b> gate keeper of caravan crew 26</p><p><b>agent_424</b> engineer of caravan crew 26</p><p><b>agent_425</b> intake tender of caravan crew 26</p><p><b>agent_426</b> water courier of caravan crew 26</p><p><b>agent_427</b> gate keeper of caravan crew 26</p><p><b>agent_428</b> engineer of caravan crew 26</p><p><b>agent_429</b> intake tender of caravan crew 26</p><p><b>agent_430</b> water courier of caravan crew 26</p><p><b>agent_431</b> gate keeper of caravan crew 26</p><p><b>agent_432</b> engineer of caravan crew 27</p><p><b>agent_433</b> intake tender of caravan crew 27</p><p><b>agent_434</b> water courier of caravan crew 27</p><p><b>agent_435</b> gate keeper of caravan crew 27</p><p><b>agent_436</b> engineer of caravan crew 27</p><p><b>agent_437</b> intake tender of caravan crew 27</p><p><b>agent_438</b> water courier of caravan crew 27</p><p><b>agent_439</b> gate keeper of caravan crew 27</p><p><b>agent_440</b> engineer of caravan crew 27</p><p><b>agent_441</b> intake tender of caravan crew 27</p><p><b>agent_442</b> water courier of caravan crew 27</p><p><b>agent_443</b> gate keeper of caravan crew 27</p><p><b>agent_444</b> engineer of caravan crew 27</p><p><b>agent_445</b> intake tender of caravan crew 27</p><p><b>agent_446</b> water courier of caravan crew 27</p><p><b>agent_447</b> gate keeper of caravan crew 27</p><p><b>agent_448</b> engineer of caravan crew 28</p><p><b>agent_449</b> intake tender of caravan crew 28</p><p><b>agent_450</b> water courier of caravan crew 28</p><p><b>agent_451</b> gate keeper of caravan crew 28</p><p><b>agent_452</b> engineer of caravan crew 28</p><p><b>agent_453</b> intake tender of caravan crew 28</p><p><b>agent_454</b> water courier of caravan crew 28</p><p><b>agent_455</b> gate keeper of caravan crew 28</p><p><b>agent_456</b> engineer of caravan crew 28</p><p><b>agent_457</b> intake tender of caravan crew 28</p><p><b>agent_458</b> water courier of caravan crew 28</p><p><b>agent_459</b> gate keeper of caravan crew 28</p><p><b>agent_460</b> engineer of caravan crew 28</p><p><b>agent_461</b> intake tender of caravan crew 28</p><p><b>agent_462</b> water courier of caravan crew 28</p><p><b>agent_463</b> gate keeper of caravan crew 28</p><p><b>agent_464</b> engineer of caravan crew 29</p><p><b>agent_465</b> intake tender of caravan crew 29</p><p><b>agent_466</b> water courier of caravan crew 29</p><p><b>agent_467</b> gate keeper of caravan crew 29</p><p><b>agent_468</b> engineer of caravan crew 29</p><p><b>agent_469</b> intake tender of caravan crew 29</p><p><b>agent_470</b> water courier of caravan crew 29</p><p><b>agent_471</b> gate keeper of caravan crew 29</p><p><b>agent_472</b> engineer of caravan crew 29</p><p><b>agent_473</b> intake tender of caravan crew 29</p><p><b>agent_474</b> water courier of caravan crew 29</p><p><b>agent_475</b> gate keeper of caravan crew 29</p><p><b>agent_476</b> engineer of caravan crew 29</p><p><b>agent_477</b> intake tender of caravan crew 29</p><p><b>agent_478</b> water courier of caravan crew 29</p><p><b>agent_479</b> gate keeper of caravan crew 29</p><p><b>agent_480</b> engineer of caravan crew 30</p><p><b>agent_481</b> intake tender of caravan crew 30</p><p><b>agent_482</b> water courier of caravan crew 30</p><p><b>agent_483</b> gate keeper of caravan crew 30</p><p><b>agent_484</b> engineer of caravan crew 30</p><p><b>agent_485</b> intake tender of caravan crew 30</p><p><b>agent_486</b> water courier of caravan crew 30</p><p><b>agent_487</b> gate keeper of caravan crew 30</p><p><b>agent_488</b> engineer of caravan crew 30</p><p><b>agent_489</b> intake tender of caravan crew 30</p><p><b>agent_490</b> water courier of caravan crew 30</p><p><b>agent_491</b> gate keeper of caravan crew 30</p><p><b>agent_492</b> engineer of caravan crew 30</p><p><b>agent_493</b> intake tender of caravan crew 30</p><p><b>agent_494</b> water courier of caravan crew 30</p><p><b>agent_495</b> gate keeper of caravan crew 30</p><p><b>agent_496</b> engineer of caravan crew 31</p><p><b>agent_497</b> intake tender of caravan crew 31</p><p><b>agent_498</b> water courier of caravan crew 31</p><p><b>agent_499</b> gate keeper of caravan crew 31</p><p><b>agent_500</b> engineer of caravan crew 31</p><p><b>agent_501</b> intake tender of caravan crew 31</p><p><b>agent_502</b> water courier of caravan crew 31</p><p><b>agent_503</b> gate keeper of caravan crew 31</p><p><b>agent_504</b> engineer of caravan crew 31</p><p><b>agent_505</b> intake tender of caravan crew 31</p><p><b>agent_506</b> water courier of caravan crew 31</p><p><b>agent_507</b> gate keeper of caravan crew 31</p><p><b>agent_508</b> engineer of caravan crew 31</p><p><b>agent_509</b> intake tender of caravan crew 31</p><p><b>agent_510</b> water courier of caravan crew 31</p><p><b>agent_511</b> gate keeper of caravan crew 31</p><p><b>agent_512</b> engineer of caravan crew 32</p><p><b>agent_513</b> intake tender of caravan crew 32</p><p><b>agent_514</b> water courier of caravan crew 32</p><p><b>agent_515</b> gate keeper of caravan crew 32</p><p><b>agent_516</b> engineer of caravan crew 32</p><p><b>agent_517</b> intake tender of caravan crew 32</p><p><b>agent_518</b> water courier of caravan crew 32</p><p><b>agent_519</b> gate keeper of caravan crew 32</p><p><b>agent_520</b> engineer of caravan crew 32</p><p><b>agent_521</b> intake tender of caravan crew 32</p><p><b>agent_522</b> water courier of caravan crew 32</p><p><b>agent_523</b> gate keeper of caravan crew 32</p><p><b>agent_524</b> engineer of caravan crew 32</p><p><b>agent_525</b> intake tender of caravan crew 32</p><p><b>agent_526</b> water courier of caravan crew 32</p><p><b>agent_527</b> gate keeper of caravan crew 32</p><p><b>agent_528</b> engineer of caravan crew 33</p><p><b>agent_529</b> intake tender of caravan crew 33</p><p><b>agent_530</b> water courier of caravan crew 33</p><p><b>agent_531</b> gate keeper of caravan crew 33</p><p><b>agent_532</b> engineer of caravan crew 33</p><p><b>agent_533</b> intake tender of caravan crew 33</p><p><b>agent_534</b> water courier of caravan crew 33</p><p><b>agent_535</b> gate keeper of caravan crew 33</p><p><b>agent_536</b> engineer of caravan crew 33</p><p><b>agent_537</b> intake tender of caravan crew 33</p><p><b>agent_538</b> water courier of caravan crew 33</p><p><b>agent_539</b> gate keeper of caravan crew 33</p><p><b>agent_540</b> engineer of caravan crew 33</p><p><b>agent_541</b> intake tender of caravan crew 33</p><p><b>agent_542</b> water courier of caravan crew 33</p><p><b>agent_543</b> gate keeper of caravan crew 33</p><p><b>agent_544</b> engineer of caravan crew 34</p><p><b>agent_545</b> intake tender of caravan crew 34</p><p><b>agent_546</b> water courier of caravan crew 34</p><p><b>agent_547</b> gate keeper of caravan crew 34</p><p><b>agent_548</b> engineer of caravan crew 34</p><p><b>agent_549</b> intake tender of caravan crew 34</p><p><b>agent_550</b> water courier of caravan crew 34</p><p><b>agent_551</b> gate keeper of caravan crew 34</p><p><b>agent_552</b> engineer of caravan crew 34</p><p><b>agent_553</b> intake tender of caravan crew 34</p><p><b>agent_554</b> water courier of caravan crew 34</p><p><b>agent_555</b> gate keeper of caravan crew 34</p><p><b>agent_556</b> engineer of caravan crew 34</p><p><b>agent_557</b> intake tender of caravan crew 34</p><p><b>agent_558</b> water courier of caravan crew 34</p><p><b>agent_559</b> gate keeper of caravan crew 34</p><p><b>agent_560</b> engineer of caravan crew 35</p><p><b>agent_561</b> intake tender of caravan crew 35</p><p><b>agent_562</b> water courier of caravan crew 35</p><p><b>agent_563</b> gate keeper of caravan crew 35</p><p><b>agent_564</b> engineer of caravan crew 35</p><p><b>agent_565</b> intake tender of caravan crew 35</p><p><b>agent_566</b> water courier of caravan crew 35</p><p><b>agent_567</b> gate keeper of caravan crew 35</p><p><b>agent_568</b> engineer of caravan crew 35</p><p><b>agent_569</b> intake tender of caravan crew 35</p><p><b>agent_570</b> water courier of caravan crew 35</p><p><b>agent_571</b> gate keeper of caravan crew 35</p><p><b>agent_572</b> engineer of caravan crew 35</p><p><b>agent_573</b> intake tender of caravan crew 35</p><p><b>agent_574</b> water courier of caravan crew 35</p><p><b>agent_575</b> gate keeper of caravan crew 35</p><p><b>agent_576</b> engineer of caravan crew 36</p><p><b>agent_577</b> intake tender of caravan crew 36</p><p><b>agent_578</b> water courier of caravan crew 36</p><p><b>agent_579</b> gate keeper of caravan crew 36</p><p><b>agent_580</b> engineer of caravan crew 36</p><p><b>agent_581</b> intake tender of caravan crew 36</p><p><b>agent_582</b> water courier of caravan crew 36</p><p><b>agent_583</b> gate keeper of caravan crew 36</p><p><b>agent_584</b> engineer of caravan crew 36</p><p><b>agent_585</b> intake tender of caravan crew 36</p><p><b>agent_586</b> water courier of caravan crew 36</p><p><b>agent_587</b> gate keeper of caravan crew 36</p><p><b>agent_588</b> engineer of caravan crew 36</p><p><b>agent_589</b> intake tender of caravan crew 36</p><p><b>agent_590</b> water courier of caravan crew 36</p><p><b>agent_591</b> gate keeper of caravan crew 36</p><p><b>agent_592</b> engineer of caravan crew 37</p><p><b>agent_593</b> intake tender of caravan crew 37</p><p><b>agent_594</b> water courier of caravan crew 37</p><p><b>agent_595</b> gate keeper of caravan crew 37</p><p><b>agent_596</b> engineer of caravan crew 37</p><p><b>agent_597</b> intake tender of caravan crew 37</p><p><b>agent_598</b> water courier of caravan crew 37</p><p><b>agent_599</b> gate keeper of caravan crew 37</p><p><b>agent_600</b> engineer of caravan crew 37</p><p><b>agent_601</b> intake tender of caravan crew 37</p><p><b>agent_602</b> water courier of caravan crew 37</p><p><b>agent_603</b> gate keeper of caravan crew 37</p><p><b>agent_604</b> engineer of caravan crew 37</p><p><b>agent_605</b> intake tender of caravan crew 37</p><p><b>agent_606</b> water courier of caravan crew 37</p><p><b>agent_607</b> gate keeper of caravan crew 37</p><p><b>agent_608</b> engineer of caravan crew 38</p><p><b>agent_609</b> intake tender of caravan crew 38</p><p><b>agent_610</b> water courier of caravan crew 38</p><p><b>agent_611</b> gate keeper of caravan crew 38</p><p><b>agent_612</b> engineer of caravan crew 38</p><p><b>agent_613</b> intake tender of caravan crew 38</p><p><b>agent_614</b> water courier of caravan crew 38</p><p><b>agent_615</b> gate keeper of caravan crew 38</p><p><b>agent_616</b> engineer of caravan crew 38</p><p><b>agent_617</b> intake tender of caravan crew 38</p><p><b>agent_618</b> water courier of caravan crew 38</p><p><b>agent_619</b> gate keeper of caravan crew 38</p><p><b>agent_620</b> engineer of caravan crew 38</p><p><b>agent_621</b> intake tender of caravan crew 38</p><p><b>agent_622</b> water courier of caravan crew 38</p><p><b>agent_623</b> gate keeper of caravan crew 38</p><p><b>agent_624</b> engineer of caravan crew 39</p><p><b>agent_625</b> intake tender of caravan crew 39</p><p><b>agent_626</b> water courier of caravan crew 39</p><p><b>agent_627</b> gate keeper of caravan crew 39</p><p><b>agent_628</b> engineer of caravan crew 39</p><p><b>agent_629</b> intake tender of caravan crew 39</p><p><b>agent_630</b> water courier of caravan crew 39</p><p><b>agent_631</b> gate keeper of caravan crew 39</p><p><b>agent_632</b> engineer of caravan crew 39</p><p><b>agent_633</b> intake tender of caravan crew 39</p><p><b>agent_634</b> water courier of caravan crew 39</p><p><b>agent_635</b> gate keeper of caravan crew 39</p><p><b>agent_636</b> engineer of caravan crew 39</p><p><b>agent_637</b> intake tender of caravan crew 39</p><p><b>agent_638</b> water courier of caravan crew 39</p><p><b>agent_639</b> gate keeper of caravan crew 39</p><p><b>agent_640</b> engineer of caravan crew 40</p><p><b>agent_641</b> intake tender of caravan crew 40</p><p><b>agent_642</b> water courier of caravan crew 40</p><p><b>agent_643</b> gate keeper of caravan crew 40</p><p><b>agent_644</b> engineer of caravan crew 40</p><p><b>agent_645</b> intake tender of caravan crew 40</p><p><b>agent_646</b> water courier of caravan crew 40</p><p><b>agent_647</b> gate keeper of caravan crew 40</p><p><b>agent_648</b> engineer of caravan crew 40</p><p><b>agent_649</b> intake tender of caravan crew 40</p><p><b>agent_650</b> water courier of caravan crew 40</p><p><b>agent_651</b> gate keeper of caravan crew 40</p><p><b>agent_652</b> engineer of caravan crew 40</p><p><b>agent_653</b> intake tender of caravan crew 40</p><p><b>agent_654</b> water courier of caravan crew 40</p><p><b>agent_655</b> gate keeper of caravan crew 40</p><p><b>agent_656</b> engineer of caravan crew 41</p><p><b>agent_657</b> intake tender of caravan crew 41</p><p><b>agent_658</b> water courier of caravan crew 41</p><p><b>agent_659</b> gate keeper of caravan crew 41</p><p><b>agent_660</b> engineer of caravan crew 41</p><p><b>agent_661</b> intake tender of caravan crew 41</p><p><b>agent_662</b> water courier of caravan crew 41</p><p><b>agent_663</b> gate keeper of caravan crew 41</p><p><b>agent_664</b> engineer of caravan crew 41</p><p><b>agent_665</b> intake tender of caravan crew 41</p><p><b>agent_666</b> water courier of caravan crew 41</p><p><b>agent_667</b> gate keeper of caravan crew 41</p><p><b>agent_668</b> engineer of caravan crew 41</p><p><b>agent_669</b> intake tender of caravan crew 41</p><p><b>agent_670</b> water courier of caravan crew 41</p><p><b>agent_671</b> gate keeper of caravan crew 41</p><p><b>agent_672</b> engineer of caravan crew 42</p><p><b>agent_673</b> intake tender of caravan crew 42</p><p><b>agent_674</b> water courier of caravan crew 42</p><p><b>agent_675</b> gate keeper of caravan crew 42</p><p><b>agent_676</b> engineer of caravan crew 42</p><p><b>agent_677</b> intake tender of caravan crew 42</p><p><b>agent_678</b> water courier of caravan crew 42</p><p><b>agent_679</b> gate keeper of caravan crew 42</p><p><b>agent_680</b> engineer of caravan crew 42</p><p><b>agent_681</b> intake tender of caravan crew 42</p><p><b>agent_682</b> water courier of caravan crew 42</p><p><b>agent_683</b> gate keeper of caravan crew 42</p><p><b>agent_684</b> engineer of caravan crew 42</p><p><b>agent_685</b> intake tender of caravan crew 42</p><p><b>agent_686</b> water courier of caravan crew 42</p><p><b>agent_687</b> gate keeper of caravan crew 42</p><p><b>agent_688</b> engineer of caravan crew 43</p><p><b>agent_689</b> intake tender of caravan crew 43</p><p><b>agent_690</b> water courier of caravan crew 43</p><p><b>agent_691</b> gate keeper of caravan crew 43</p><p><b>agent_692</b> engineer of caravan crew 43</p><p><b>agent_693</b> intake tender of caravan crew 43</p><p><b>agent_694</b> water courier of caravan crew 43</p><p><b>agent_695</b> gate keeper of caravan crew 43</p><p><b>agent_696</b> engineer of caravan crew 43</p><p><b>agent_697</b> intake tender of caravan crew 43</p><p><b>agent_698</b> water courier of caravan crew 43</p><p><b>agent_699</b> gate keeper of caravan crew 43</p><p><b>agent_700</b> engineer of caravan crew 43</p><p><b>agent_701</b> intake tender of caravan crew 43</p><p><b>agent_702</b> water courier of caravan crew 43</p><p><b>agent_703</b> gate keeper of caravan crew 43</p><p><b>agent_704</b> engineer of caravan crew 44</p><p><b>agent_705</b> intake tender of caravan crew 44</p><p><b>agent_706</b> water courier of caravan crew 44</p><p><b>agent_707</b> gate keeper of caravan crew 44</p><p><b>agent_708</b> engineer of caravan crew 44</p><p><b>agent_709</b> intake tender of caravan crew 44</p><p><b>agent_710</b> water courier of caravan crew 44</p><p><b>agent_711</b> gate keeper of caravan crew 44</p><p><b>agent_712</b> engineer of caravan crew 44</p><p><b>agent_713</b> intake tender of caravan crew 44</p><p><b>agent_714</b> water courier of caravan crew 44</p><p><b>agent_715</b> gate keeper of caravan crew 44</p><p><b>agent_716</b> engineer of caravan crew 44</p><p><b>agent_717</b> intake tender of caravan crew 44</p><p><b>agent_718</b> water courier of caravan crew 44</p><p><b>agent_719</b> gate keeper of caravan crew 44</p><p><b>agent_720</b> engineer of caravan crew 45</p><p><b>agent_721</b> intake tender of caravan crew 45</p><p><b>agent_722</b> water courier of caravan crew 45</p><p><b>agent_723</b> gate keeper of caravan crew 45</p><p><b>agent_724</b> engineer of caravan crew 45</p><p><b>agent_725</b> intake tender of caravan crew 45</p><p><b>agent_726</b> water courier of caravan crew 45</p><p><b>agent_727</b> gate keeper of caravan crew 45</p><p><b>agent_728</b> engineer of caravan crew 45</p><p><b>agent_729</b> intake tender of caravan crew 45</p><p><b>agent_730</b> water courier of caravan crew 45</p><p><b>agent_731</b> gate keeper of caravan crew 45</p><p><b>agent_732</b> engineer of caravan crew 45</p><p><b>agent_733</b> intake tender of caravan crew 45</p><p><b>agent_734</b> water courier of caravan crew 45</p><p><b>agent_735</b> gate keeper of caravan crew 45</p><p><b>agent_736</b> engineer of caravan crew 46</p><p><b>agent_737</b> intake tender of caravan crew 46</p><p><b>agent_738</b> water courier of caravan crew 46</p><p><b>agent_739</b> gate keeper of caravan crew 46</p><p><b>agent_740</b> engineer of caravan crew 46</p><p><b>agent_741</b> intake tender of caravan crew 46</p><p><b>agent_742</b> water courier of caravan crew 46</p><p><b>agent_743</b> gate keeper of caravan crew 46</p><p><b>agent_744</b> engineer of caravan crew 46</p><p><b>agent_745</b> intake tender of caravan crew 46</p><p><b>agent_746</b> water courier of caravan crew 46</p><p><b>agent_747</b> gate keeper of caravan crew 46</p><p><b>agent_748</b> engineer of caravan crew 46</p><p><b>agent_749</b> intake tender of caravan crew 46</p><p><b>agent_750</b> water courier of caravan crew 46</p><p><b>agent_751</b> gate keeper of caravan crew 46</p><p><b>agent_752</b> engineer of caravan crew 47</p><p><b>agent_753</b> intake tender of caravan crew 47</p><p><b>agent_754</b> water courier of caravan crew 47</p><p><b>agent_755</b> gate keeper of caravan crew 47</p><p><b>agent_756</b> engineer of caravan crew 47</p><p><b>agent_757</b> intake tender of caravan crew 47</p><p><b>agent_758</b> water courier of caravan crew 47</p><p><b>agent_759</b> gate keeper of caravan crew 47</p><p><b>agent_760</b> engineer of caravan crew 47</p><p><b>agent_761</b> intake tender of caravan crew 47</p><p><b>agent_762</b> water courier of caravan crew 47</p><p><b>agent_763</b> gate keeper of caravan crew 47</p><p><b>agent_764</b> engineer of caravan crew 47</p><p><b>agent_765</b> intake tender of caravan crew 47</p><p><b>agent_766</b> water courier of caravan crew 47</p><p><b>agent_767</b> gate keeper of caravan crew 47</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;native clock / H&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;own x / (width - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;own y / (height - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;own stamina / 20&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;meaning&quot;: &quot;own tool / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;meaning&quot;: &quot;own cargo kind / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;meaning&quot;: &quot;own cargo units / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;meaning&quot;: &quot;own carried information / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      683
+    ],
+    &quot;meaning&quot;: &quot;5 by 5 local patch, dy then dx from -2 through +2, then channel; outside world all -1. Channels: 0=terrain value / 10; 1=actor identity (id + 1) / A; 2=role (role + 1) / R; 3=home crew (team + 1) / C; 4=held tool / 4; 5=cargo type / 4; 6=cargo amount / 4; 7=stamina / 20; 8=carried message / 4; 9=pump identity (index + 1) / capacity; 10=intake sand burden / 4; 11=intake actively held clear / 1; 12=shared row aquifer water / 32; 13=wind side 0 west or 1 east / 1; 14=cistern identity (index + 1) / capacity; 15=cistern water / 12; 16=stock identity (index + 1) / capacity; 17=remaining building blocks / 24; 18=gate identity (index + 1) / capacity; 19=gate staffed this tick / 1; 20=outgoing carried message / 4; 21=received upstream message / 4; 22=camel identity (index + 1) / capacity; 23=camel hydration / 8; 24=water deliveries / 96; 25=well identity (index + 1) / capacity; 26=water remaining for row / 32&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 768,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;role&quot;
+        ],
+        &quot;meaning&quot;: &quot;fixed profession code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;home crew identifier&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;current exchangeable tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo kind&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;load&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;energy&quot;
+        ],
+        &quot;meaning&quot;: &quot;stamina, 0 to 20&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;memory&quot;
+        ],
+        &quot;meaning&quot;: &quot;physically carried information code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;pump&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;pump_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;pump_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;pump_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;sand&quot;
+        ],
+        &quot;meaning&quot;: &quot;intake sand burden&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;clearing&quot;
+        ],
+        &quot;meaning&quot;: &quot;intake actively held clear&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pressure&quot;
+        ],
+        &quot;meaning&quot;: &quot;shared row aquifer water&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wind&quot;
+        ],
+        &quot;meaning&quot;: &quot;wind side 0 west or 1 east&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;cistern&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;cistern_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cistern_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cistern_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;stored&quot;
+        ],
+        &quot;meaning&quot;: &quot;cistern water&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;stock&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;stock_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;stock_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;stock_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;blocks&quot;
+        ],
+        &quot;meaning&quot;: &quot;remaining building blocks&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gate&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gate_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;open_gate&quot;
+        ],
+        &quot;meaning&quot;: &quot;gate staffed this tick&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;signal&quot;
+        ],
+        &quot;meaning&quot;: &quot;outgoing carried message&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;received&quot;
+        ],
+        &quot;meaning&quot;: &quot;received upstream message&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;camel&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;camel_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;camel_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;camel_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;thirst&quot;
+        ],
+        &quot;meaning&quot;: &quot;camel hydration&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;deliveries&quot;
+        ],
+        &quot;meaning&quot;: &quot;water deliveries&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;well&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;well_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;well_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;well_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;reserve&quot;
+        ],
+        &quot;meaning&quot;: &quot;water remaining for row&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 240,
+  &quot;key&quot;: &quot;gi240&quot;,
+  &quot;title&quot;: &quot;Dune Caravan Commons&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 768,
+    &quot;observation_size&quot;: 683,
+    &quot;num_actions&quot;: 18,
+    &quot;max_steps&quot;: 1024
+  },
+  &quot;source_sha256&quot;: &quot;79390a63883d985b3c588105772047a29e93a7dfaf03c16a5a602d2f526fa6c3&quot;,
+  &quot;manifest_sha256&quot;: &quot;074a37ac9fbcf2bdac2dbb7a4abeb07a6dfecdb833ff15585cae01811b601f82&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;79390a63883d985b3c588105772047a29e93a7dfaf03c16a5a602d2f526fa6c3&quot;,
+      &quot;bytes&quot;: 17682,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00240/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;074a37ac9fbcf2bdac2dbb7a4abeb07a6dfecdb833ff15585cae01811b601f82&quot;,
+      &quot;bytes&quot;: 143787,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00240/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;3c768a3153ad82333d6ffbc64958e7f74de936651264dea2b3bc39d1f59d12db&quot;,
+      &quot;bytes&quot;: 9564,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00240/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;cd0f362cdf737a9c458ec320b9afcec9b704184c81f5f86b9d7b6f8b10c2ea08&quot;,
+      &quot;bytes&quot;: 7660,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00240/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;a674b7c6ce1aab9f410a6c93cd4717ea4906b756608bcc30dca284d11981b776&quot;,
+      &quot;bytes&quot;: 121583,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00240/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi240">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

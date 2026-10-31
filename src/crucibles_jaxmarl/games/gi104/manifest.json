@@ -1,0 +1,802 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00104",
+  "source_sha256": "16a92c71fbadfe28e2e2cfced0a1fb27c1a3d57bd2a4ff1fd35f4c784325cad3",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 164,
+  "num_actions": 12,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -2,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West storehouse steward"
+    },
+    {
+      "id": "agent_1",
+      "role": "North storehouse steward"
+    },
+    {
+      "id": "agent_2",
+      "role": "East storehouse steward"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Harvest one fruit from nearest adjacent patch"
+    },
+    {
+      "id": 6,
+      "label": "Plant one carried fruit to restore roots, stock and soil"
+    },
+    {
+      "id": 7,
+      "label": "Irrigate nearest adjacent rooted patch with one water"
+    },
+    {
+      "id": 8,
+      "label": "Refill water bag beside public spring"
+    },
+    {
+      "id": 9,
+      "label": "Deposit fruit at your own storehouse up to quota six"
+    },
+    {
+      "id": 10,
+      "label": "Give one fruit to an adjacent receiver"
+    },
+    {
+      "id": 11,
+      "label": "Receive one offered fruit"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_fruit"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_bank"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "patch_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "patch_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "patch_vis"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "patch_stock"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "patch_roots"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "patch_soil"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pond_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pond_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pond_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "collapse"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_harvest"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_plant"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_gift"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_deposit"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_growth"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable commons ground",
+          "color": "#ECFCCB"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable boundary",
+          "color": "#365314"
+        },
+        {
+          "value": 2,
+          "meaning": "Public water spring",
+          "color": "#0284C7"
+        },
+        {
+          "value": 3,
+          "meaning": "Personal storehouse position",
+          "color": "#A16207"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "stewards",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_fruit"
+          ],
+          "meaning": "Carried fruit, capacity four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_water"
+          ],
+          "meaning": "Carried water, capacity two",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_bank"
+          ],
+          "meaning": "Fruit stored toward personal quota six",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "orchards",
+      "kind": "resource",
+      "count": 6,
+      "position": [
+        "patch_pos"
+      ],
+      "active": [
+        "patch_active"
+      ],
+      "visibility": [
+        "patch_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "patch_stock"
+          ],
+          "meaning": "Available fruit, capacity five",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "patch_roots"
+          ],
+          "meaning": "Living root strength, capacity four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "patch_soil"
+          ],
+          "meaning": "Local moisture, capacity three",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "storehouses",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "home_pos"
+      ],
+      "active": [
+        "home_active"
+      ],
+      "visibility": [
+        "home_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "spring",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "pond_pos"
+      ],
+      "active": [
+        "pond_active"
+      ],
+      "visibility": [
+        "pond_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "All three personal storehouse quotas satisfied",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "collapse"
+      ],
+      "meaning": "All roots and carried planting fruit exhausted without success",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_harvest"
+      ],
+      "meaning": "Roles that actually harvested one fruit this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_plant"
+      ],
+      "meaning": "Roles that actually invested one fruit in an orchard this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_water"
+      ],
+      "meaning": "Roles that actually irrigated a rooted patch this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_gift"
+      ],
+      "meaning": "Roles that actually gave one fruit to a receiving partner this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_deposit"
+      ],
+      "meaning": "Roles that actually deposited fruit this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_growth"
+      ],
+      "meaning": "Patch ids that grew one fruit on this ecological pulse",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot, divided by 256",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "Public [t,episode_done,terminated,truncated,success,collapse], divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        14
+      ],
+      "meaning": "Steward 0: [x,y,carried_fruit,carried_water,stored_fruit], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        19
+      ],
+      "meaning": "Steward 1: [x,y,carried_fruit,carried_water,stored_fruit], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        24
+      ],
+      "meaning": "Steward 2: [x,y,carried_fruit,carried_water,stored_fruit], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        29
+      ],
+      "meaning": "Orchard 0: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        34
+      ],
+      "meaning": "Orchard 1: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        39
+      ],
+      "meaning": "Orchard 2: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        44
+      ],
+      "meaning": "Orchard 3: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        49
+      ],
+      "meaning": "Orchard 4: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        54
+      ],
+      "meaning": "Orchard 5: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        60
+      ],
+      "meaning": "Three storehouse [x,y] coordinates in role order, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        62
+      ],
+      "meaning": "Public spring [x,y] coordinate, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        143
+      ],
+      "meaning": "Public 9x9 map flattened y then x, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        146
+      ],
+      "meaning": "Public actual harvest flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        149
+      ],
+      "meaning": "Public actual plant flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        152
+      ],
+      "meaning": "Public actual irrigate flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        155
+      ],
+      "meaning": "Public actual give flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        158
+      ],
+      "meaning": "Public actual deposit flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        164
+      ],
+      "meaning": "Public actual patch growth flags, divided by 256",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Each steward deposits six fruits at their own storehouse while preserving or restoring the shared orchard network; fruit can instead be invested or gifted.",
+    "natural_termination": "Success when all stores reach six; collapse when every root is zero and every carried fruit is zero without success. Otherwise horizon 128 truncates. An ecologically stranded state not matching collapse can persist to the horizon.",
+    "interaction": "Agents compete for local fruit, spend their own potential income on root/soil restoration, propagate moisture and seed support to neighbouring patches on delayed four-step pulses, and can transfer fruit only to willing adjacent receivers.",
+    "observation_access": "Fully observable map, all positions, inventories, banks, local ecological stocks and roots/moisture, terminal causes and actual event flags. All entity masks are true; every float32 observation is an integer feature divided by 256."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_fruit"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_bank"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "patch_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "patch_roots"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "patch_soil"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

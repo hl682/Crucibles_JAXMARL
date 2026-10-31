@@ -1,0 +1,299 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skybridge Quarry Cooperative · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI228 / SPATIAL</p><h1>Skybridge Quarry Cooperative</h1><p class="lead"></p><div class="stats"><span>160 agents</span><span>17 actions</span><span>154 observation columns</span><span>768 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 228</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Mine the twenty initial ore blocks and deliver all carried ore to physical depots while maintaining usable terrain and crew survival.&quot;,
+  &quot;natural_termination&quot;: &quot;Terminate when no ore tile remains and no actor carries ore, or when every actor has zero health. Otherwise truncate at t=768. Natural termination has priority.&quot;,
+  &quot;interaction&quot;: &quot;Removing a support removes its bridge, damages an occupant and blocks grounded movement; another actor can restore the missing floor using stone. Riding a loaded lift consumes 1 or 2 local counterweight units and supplies its paired lift (consecutive crew IDs 0/1, 2/3, ..., 18/19). Shared depots, scarce stone, tool exchange and spatial handoffs link crews.&quot;,
+  &quot;observation_access&quot;: &quot;A 7x7 local terrain/occupancy patch; self inventory and health; detailed visibility limited to self plus four nearest active neighbors. Blocks, lifts and depots are local. Signals travel Chebyshev radius 6. No global map or remote partner counterweight enters observations.&quot;
+}</pre></details><p>Declared per-step reward bounds: -256 to 256. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Select any of 160 individual actors; IDs 8*c through 8*c+7 belong to crew c. Keyboard or clickable controls must call these native action IDs; no human UI has been executed here.</li><li>Read the actual block map: dark gaps stop walking, amber ore and gray supports can be mined, tan scaffolds restore floor. Facing actions turn without moving.</li><li>Mining a support removes its bridge immediately. An actor on that bridge loses one health and cannot walk until someone builds floor under it; a zero-health actor only waits.</li><li>Pick, scaffold and rigger tools can be exchanged with the actor directly ahead. Give transfers ore before stone.</li><li>A lift spans its adjacent banks at y=6 of each terrace. A rider spends 1 counterweight, or 2 while carrying material; the paired lift gains that amount up to capacity 4.</li><li>Stone can rebuild paths or become lift ballast. Unsupported designated scaffolds lose one strength every 32 ticks; their actual tile disappears at zero.</li><li>Unload ore next to a depot. Its eight-person crew receives the shared delivery component; the carrier receives the individual component.</li><li>This block-world scene is a source-bound author specification. Its scripts, interaction effects, animation, learning and solvability remain unexecuted.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Skybridge Quarry Cooperative
+
+Status: AUTHORED_NOT_EXECUTED. Candidate game-v3-00228, source attempt 0, train-only prospective source stream. Assigned author identity: gpt-6-astra / max; root dispatch is the authority for actual model execution. A/O/U/H = 160/154/17/768. Source SHA-256: fd2690b11faacbb506703a3951159b8c5b6d75fd4d1ef5c7ed59f3ef3ac97575.
+
+## Native game and dependencies
+
+Twenty crews occupy one connected 60 by 40 stone world. Crew c has eight actor rows; no actor is an NPC or a repeated independent episode. Terraces have bypass routes at their row boundaries, while local bridges and paired lifts provide shorter routes. A crew&#x27;s depot can accept ore hauled by an actor from any crew. People, inventories, tools and damaged floor are persistent state.
+
+There are twenty ore blocks, twenty supporting blocks and twenty designated bridges. A pick extracts one ore or one stone from the block directly ahead. Removing a support immediately removes its associated bridge. An active actor on that bridge loses one health and is left without floor. It cannot walk while ungrounded; another builder can spend stone to place a scaffold under it. Repairing floor does not heal health. At zero health an actor becomes inactive and can only wait. Dead actors retain inventory; stranded ore can therefore prevent resource-exhaustion completion until the horizon.
+
+A scaffold can also be built on any facing gap. Designated unsupported bridges have strength 3 after repair and lose one strength on each 32-tick weather boundary. Other built gap cells persist. An original support can be mined once; placing scaffold on that support cell does not turn it back into a mineable support.
+
+A lift physically moves its rider between the two neighboring banks at its y-coordinate. Its counterweight must cover one unit, or two if the rider carries any ore or stone. Those units leave the local lift and enter its paired lift, capped at 4. Pairing is by consecutive crew IDs, 0/1 through 18/19; it is a declared cable coupling, not a distance-derived pairing. Counterweight beyond capacity is discarded. A rigger can instead spend a stone to add one local ballast unit. Thus an extraction crew&#x27;s route choice changes another crew&#x27;s future lift access.
+
+Tools are actual transferable inventory codes: pick, scaffold kit, rigger and courier. Any actor can move, give, ride, deliver or signal; tool codes gate mining, building and ballast work. Giving prioritizes ore, then stone. Initial role labels describe initial equipment rather than permanently fixing a player&#x27;s job.
+
+Plausible alternatives include leaving supports intact and taking longer bypass routes, accepting the cost of mining and rescue, coordinating alternating loaded lift trips, and reserving stone for either scaffolds or counterweights. These are source-level strategic alternatives. No ranking, equilibrium, solve rate or learning result has been established.
+
+## Actions, observations and presentation
+
+Actions 0 through 8 are wait, four cardinal moves and four facing-only turns. Actions 9 through 16 are mine, build, unload, give, lift ride, ballast, tool swap and signal. Conditions are in the native legal mask and rechecked during resolution. The complete labels are in manifest.json and scene.json.
+
+The 154-column row has 14 self values, a 49-cell two-channel local patch, four eight-field neighboring-actor records, five lift fields and five depot fields. The manifest specifies every column and normalizer. Detailed actor visibility is self plus the four nearest active neighbors; the patch can still show other local occupied cells without their inventories. Entity metadata exposes only attributes represented by those detailed records. Remote paired counterweights are not observed. An inventory signal reaches Chebyshev distance 6 and the maximum current code is heard; it carries no secret global state.
+
+The block palette binds the real tiles. Mined blocks disappear through their active masks; missing bridge floor, cargo, ballast, depots and actor positions bind native leaves. Health is in the selected actor&#x27;s own observation, not an extra visible neighbor attribute. No commercial assets, renderer physics or browser implementation are included.
+
+## Rewards and termination
+
+reward_parts has five float32 columns, summed into the native reward vector. All receipts are per actual native tick.
+
+- Column 0 charges the acting mover 0.01 times (1 + carried ore), and charges a miner, builder or ballast operator 0.02.
+- Column 1 gives the actor 0.4 for unloading one ore.
+- Column 2 gives each of the destination depot&#x27;s eight crew members 0.125 per ore unloaded there. The carrier need not belong to that crew.
+- Column 3 gives each rescued actor 0.2 and the builder 0.4 per actor whose missing floor it restores.
+- Column 4 charges an actor losing bridge support 0.5, and the actor who mined that support 0.2 per affected actor. Weather collapse charges the occupant only.
+
+The declared reward interval is [-256, 256]. A conservative analytic bound counts no more than 160 action resolutions, at most one unique active occupant per changed bridge tile, and one weather pass. The interval is a finite interface bound, not an achieved score or acceptance threshold. There are at most twenty ore deliveries in a world, so the depot normalization by twenty is bounded.
+
+Natural completion is no remaining ore tile and no carried ore, or loss of all active actors. H=768 is truncation only if neither natural condition holds. The native done vector additionally marks inactive actors; all actor dones become true exactly at joint termination.
+
+## Hypotheses and limits
+
+playthrough.json supplies two complete literal joint-action scripts and one paired hypothesis. The rescue comparison shares a support-mining prefix, changes only actor 1&#x27;s build versus wait, and uses identical waiting suffixes. Intended measurements include the actual bridge tile, recipient actor 2&#x27;s grounded flag and legal moves; health recovery is expressly not predicted. The alternating-lift script addresses a different cross-crew dependency.
+
+Static author review checked syntax, declared leaf names, JSON structure and literal action dimensions. It did not execute reset, raw_step, masks, scripts, JIT, vmap or scan. Causal effects, compatibility, throughput, human animation, solvability, learning and transfer remain unverified.
+
+## Literal source evidence
+
+These line references identify authored implementation expressions, not measured effects.
+
+- Tool and spatial legality: candidate.py line 30, literal source: `def legal_row(self, s, i):`.
+- Initial connected world and per-actor state: candidate.py line 81, literal source: `def reset(self, key):`.
+- Literal flat observation construction: candidate.py line 122, literal source: `def observe(self, s):`.
+- Support-to-bridge linkage: candidate.py line 179, literal source: `hit_support = jnp.all(z[&quot;support_pos&quot;] == q, axis=1) &amp; rock_gain`.
+- Affected actor selection: candidate.py line 184, literal source: `victim = jnp.any(jnp.all(z[&quot;pos&quot;][:, None, :] == z[&quot;bridge_pos&quot;][None, :, :], axis=2) &amp; hit_support[None, :], axis=1) &amp; z[&quot;active&quot;]`.
+- Cross-crew counterweight transfer: candidate.py line 201, literal source: `z[&quot;weight&quot;] = z[&quot;weight&quot;].at[pair].set(jnp.minimum(4, z[&quot;weight&quot;][pair] + ride.astype(jnp.int32) * load))`.
+- Delayed scaffold weathering: candidate.py line 229, literal source: `weather = ((s[&quot;t&quot;] + 1) % 32) == 0`.
+- Absorbing native boundary: candidate.py line 248, literal source: `def raw_step(self, key, state, actions):`.
+
+## Read-only reference use
+
+Only the current batch&#x27;s authorized files were read. author_input_freeze.json records all 26 actual input files, bytes, hashes and use. The 24 payload files include this batch&#x27;s four current designs/requests, shared contracts, current population/family control, general design and human-play requirements, and five named official reference snapshots. Three optional historical population addenda were not read. Earlier copied example numbers are noncontrolling.
+
+JaxMARL README informed the distinction between a simultaneous native action-row boundary and a later agent-keyed dictionary adapter. Pgx README informed explicit legal masks, separate termination causes and external key provenance; no Pgx game was copied. Craftax README informed bounded persistent world state and the separation between mechanics and rendering. PureJaxRL README and Craftax_Baselines_ppo_rnn.py were read only for JAX scan/vectorization and wrapper/algorithm separation. No upstream game code, PPO code, assets or performance claims were copied into this kernel. No reference links were opened, dependencies installed, local models invoked or scientific outcomes read.
+
+## Boundary and evidence status
+
+The native interface is reset(key), observe(state), legal_actions(state), and raw_step(key,state,actions). All state leaves are fixed-shape int32, bool or float32 arrays declared in manifest.json. Keys are accepted but intentionally unused: these original rules and layouts are deterministic. Small integer quantities use int32 at the boundary; there is no hidden PRNG key in state.
+
+The joint input is one int32 action per actor. Resolution uses rotating priority (k + input t) modulo A. Each actor&#x27;s action is rechecked against the current intermediate state, so contention can turn a previously legal intention into a deterministic wait. Environmental processes run once afterward. This is a simultaneous input interface with explicitly sequential conflict resolution, not a claim that actions commute.
+
+A nonterminal step advances the int32 clock once. Natural completion takes priority over H. An already-terminal raw call preserves the entire state, observation, clock and terminal causes and returns zero reward; it never auto-resets. Event flags refer to the last actual nonabsorbing step and are not new events on repeated absorbing calls. A separate trusted wrapper or public adapter remains outside this author package.
+
+No candidate was imported or executed. No JAX/NumPy runtime, validator, trajectory script, local model, remote job, HTTP endpoint, browser, training or evaluation was run. Standard-library AST parsing and data-only JSON/static consistency checks are not native validation. Source authoring is not an R0, causal, animation, solvability, learning or transfer receipt. No additional proposal or repair attempt was created.
+
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait; no movement</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Face north</span></div><div class="action"><b>6</b><span>Face east</span></div><div class="action"><b>7</b><span>Face south</span></div><div class="action"><b>8</b><span>Face west</span></div><div class="action"><b>9</b><span>Mine facing ore or support with pick</span></div><div class="action"><b>10</b><span>Build scaffold in facing gap using one stone</span></div><div class="action"><b>11</b><span>Unload one ore at adjacent depot</span></div><div class="action"><b>12</b><span>Give ore first, otherwise stone, to facing actor</span></div><div class="action"><b>13</b><span>Ride adjacent paired counterweight lift</span></div><div class="action"><b>14</b><span>Add one stone ballast using rigger tool</span></div><div class="action"><b>15</b><span>Swap tools with facing actor</span></div><div class="action"><b>16</b><span>Signal inventory: 1 empty, 2 one material kind, 3 both</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> group 0 / pick miner</p><p><b>agent_1</b> group 0 / scaffold builder</p><p><b>agent_2</b> group 0 / courier</p><p><b>agent_3</b> group 0 / lift rigger</p><p><b>agent_4</b> group 0 / pick miner</p><p><b>agent_5</b> group 0 / scaffold builder</p><p><b>agent_6</b> group 0 / courier</p><p><b>agent_7</b> group 0 / courier</p><p><b>agent_8</b> group 1 / pick miner</p><p><b>agent_9</b> group 1 / scaffold builder</p><p><b>agent_10</b> group 1 / courier</p><p><b>agent_11</b> group 1 / lift rigger</p><p><b>agent_12</b> group 1 / pick miner</p><p><b>agent_13</b> group 1 / scaffold builder</p><p><b>agent_14</b> group 1 / courier</p><p><b>agent_15</b> group 1 / courier</p><p><b>agent_16</b> group 2 / pick miner</p><p><b>agent_17</b> group 2 / scaffold builder</p><p><b>agent_18</b> group 2 / courier</p><p><b>agent_19</b> group 2 / lift rigger</p><p><b>agent_20</b> group 2 / pick miner</p><p><b>agent_21</b> group 2 / scaffold builder</p><p><b>agent_22</b> group 2 / courier</p><p><b>agent_23</b> group 2 / courier</p><p><b>agent_24</b> group 3 / pick miner</p><p><b>agent_25</b> group 3 / scaffold builder</p><p><b>agent_26</b> group 3 / courier</p><p><b>agent_27</b> group 3 / lift rigger</p><p><b>agent_28</b> group 3 / pick miner</p><p><b>agent_29</b> group 3 / scaffold builder</p><p><b>agent_30</b> group 3 / courier</p><p><b>agent_31</b> group 3 / courier</p><p><b>agent_32</b> group 4 / pick miner</p><p><b>agent_33</b> group 4 / scaffold builder</p><p><b>agent_34</b> group 4 / courier</p><p><b>agent_35</b> group 4 / lift rigger</p><p><b>agent_36</b> group 4 / pick miner</p><p><b>agent_37</b> group 4 / scaffold builder</p><p><b>agent_38</b> group 4 / courier</p><p><b>agent_39</b> group 4 / courier</p><p><b>agent_40</b> group 5 / pick miner</p><p><b>agent_41</b> group 5 / scaffold builder</p><p><b>agent_42</b> group 5 / courier</p><p><b>agent_43</b> group 5 / lift rigger</p><p><b>agent_44</b> group 5 / pick miner</p><p><b>agent_45</b> group 5 / scaffold builder</p><p><b>agent_46</b> group 5 / courier</p><p><b>agent_47</b> group 5 / courier</p><p><b>agent_48</b> group 6 / pick miner</p><p><b>agent_49</b> group 6 / scaffold builder</p><p><b>agent_50</b> group 6 / courier</p><p><b>agent_51</b> group 6 / lift rigger</p><p><b>agent_52</b> group 6 / pick miner</p><p><b>agent_53</b> group 6 / scaffold builder</p><p><b>agent_54</b> group 6 / courier</p><p><b>agent_55</b> group 6 / courier</p><p><b>agent_56</b> group 7 / pick miner</p><p><b>agent_57</b> group 7 / scaffold builder</p><p><b>agent_58</b> group 7 / courier</p><p><b>agent_59</b> group 7 / lift rigger</p><p><b>agent_60</b> group 7 / pick miner</p><p><b>agent_61</b> group 7 / scaffold builder</p><p><b>agent_62</b> group 7 / courier</p><p><b>agent_63</b> group 7 / courier</p><p><b>agent_64</b> group 8 / pick miner</p><p><b>agent_65</b> group 8 / scaffold builder</p><p><b>agent_66</b> group 8 / courier</p><p><b>agent_67</b> group 8 / lift rigger</p><p><b>agent_68</b> group 8 / pick miner</p><p><b>agent_69</b> group 8 / scaffold builder</p><p><b>agent_70</b> group 8 / courier</p><p><b>agent_71</b> group 8 / courier</p><p><b>agent_72</b> group 9 / pick miner</p><p><b>agent_73</b> group 9 / scaffold builder</p><p><b>agent_74</b> group 9 / courier</p><p><b>agent_75</b> group 9 / lift rigger</p><p><b>agent_76</b> group 9 / pick miner</p><p><b>agent_77</b> group 9 / scaffold builder</p><p><b>agent_78</b> group 9 / courier</p><p><b>agent_79</b> group 9 / courier</p><p><b>agent_80</b> group 10 / pick miner</p><p><b>agent_81</b> group 10 / scaffold builder</p><p><b>agent_82</b> group 10 / courier</p><p><b>agent_83</b> group 10 / lift rigger</p><p><b>agent_84</b> group 10 / pick miner</p><p><b>agent_85</b> group 10 / scaffold builder</p><p><b>agent_86</b> group 10 / courier</p><p><b>agent_87</b> group 10 / courier</p><p><b>agent_88</b> group 11 / pick miner</p><p><b>agent_89</b> group 11 / scaffold builder</p><p><b>agent_90</b> group 11 / courier</p><p><b>agent_91</b> group 11 / lift rigger</p><p><b>agent_92</b> group 11 / pick miner</p><p><b>agent_93</b> group 11 / scaffold builder</p><p><b>agent_94</b> group 11 / courier</p><p><b>agent_95</b> group 11 / courier</p><p><b>agent_96</b> group 12 / pick miner</p><p><b>agent_97</b> group 12 / scaffold builder</p><p><b>agent_98</b> group 12 / courier</p><p><b>agent_99</b> group 12 / lift rigger</p><p><b>agent_100</b> group 12 / pick miner</p><p><b>agent_101</b> group 12 / scaffold builder</p><p><b>agent_102</b> group 12 / courier</p><p><b>agent_103</b> group 12 / courier</p><p><b>agent_104</b> group 13 / pick miner</p><p><b>agent_105</b> group 13 / scaffold builder</p><p><b>agent_106</b> group 13 / courier</p><p><b>agent_107</b> group 13 / lift rigger</p><p><b>agent_108</b> group 13 / pick miner</p><p><b>agent_109</b> group 13 / scaffold builder</p><p><b>agent_110</b> group 13 / courier</p><p><b>agent_111</b> group 13 / courier</p><p><b>agent_112</b> group 14 / pick miner</p><p><b>agent_113</b> group 14 / scaffold builder</p><p><b>agent_114</b> group 14 / courier</p><p><b>agent_115</b> group 14 / lift rigger</p><p><b>agent_116</b> group 14 / pick miner</p><p><b>agent_117</b> group 14 / scaffold builder</p><p><b>agent_118</b> group 14 / courier</p><p><b>agent_119</b> group 14 / courier</p><p><b>agent_120</b> group 15 / pick miner</p><p><b>agent_121</b> group 15 / scaffold builder</p><p><b>agent_122</b> group 15 / courier</p><p><b>agent_123</b> group 15 / lift rigger</p><p><b>agent_124</b> group 15 / pick miner</p><p><b>agent_125</b> group 15 / scaffold builder</p><p><b>agent_126</b> group 15 / courier</p><p><b>agent_127</b> group 15 / courier</p><p><b>agent_128</b> group 16 / pick miner</p><p><b>agent_129</b> group 16 / scaffold builder</p><p><b>agent_130</b> group 16 / courier</p><p><b>agent_131</b> group 16 / lift rigger</p><p><b>agent_132</b> group 16 / pick miner</p><p><b>agent_133</b> group 16 / scaffold builder</p><p><b>agent_134</b> group 16 / courier</p><p><b>agent_135</b> group 16 / courier</p><p><b>agent_136</b> group 17 / pick miner</p><p><b>agent_137</b> group 17 / scaffold builder</p><p><b>agent_138</b> group 17 / courier</p><p><b>agent_139</b> group 17 / lift rigger</p><p><b>agent_140</b> group 17 / pick miner</p><p><b>agent_141</b> group 17 / scaffold builder</p><p><b>agent_142</b> group 17 / courier</p><p><b>agent_143</b> group 17 / courier</p><p><b>agent_144</b> group 18 / pick miner</p><p><b>agent_145</b> group 18 / scaffold builder</p><p><b>agent_146</b> group 18 / courier</p><p><b>agent_147</b> group 18 / lift rigger</p><p><b>agent_148</b> group 18 / pick miner</p><p><b>agent_149</b> group 18 / scaffold builder</p><p><b>agent_150</b> group 18 / courier</p><p><b>agent_151</b> group 18 / courier</p><p><b>agent_152</b> group 19 / pick miner</p><p><b>agent_153</b> group 19 / scaffold builder</p><p><b>agent_154</b> group 19 / courier</p><p><b>agent_155</b> group 19 / lift rigger</p><p><b>agent_156</b> group 19 / pick miner</p><p><b>agent_157</b> group 19 / scaffold builder</p><p><b>agent_158</b> group 19 / courier</p><p><b>agent_159</b> group 19 / courier</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      14
+    ],
+    &quot;meaning&quot;: &quot;Self: x/59,y/39,facing/3,stone/4,ore,tool/3,health/4,crew/19,t/768,heard/3,grounded,mined,built,rescued. Heard is the maximum current signal within Chebyshev 6; 0 silent.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      112
+    ],
+    &quot;meaning&quot;: &quot;7x7 row-major patch dy=-3..3,dx=-3..3; each cell has [tile/5 (outside=-1), active actor occupancy].&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      112,
+      144
+    ],
+    &quot;meaning&quot;: &quot;Up to 4 nearest other active actors in Chebyshev radius 3, stable distance/index order: [visible,dx/3,dy/3,tool/3,stone/4,ore,message/3,crew/19]. Missing slots all zero.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      144,
+      149
+    ],
+    &quot;meaning&quot;: &quot;Nearest lift when within Chebyshev 3: [visible,dx/3,dy/3,weight/4,weight&gt;0]; otherwise all zero. Partner lift weight is not revealed remotely.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      149,
+      154
+    ],
+    &quot;meaning&quot;: &quot;Nearest depot within Chebyshev 3: [visible,dx/3,dy/3,delivered/20,owner index/19]; otherwise all zero.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;quarry_crews&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 160,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Crew index 0..19&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 pick, 1 scaffold kit, 2 rigger, 3 courier&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stone&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried scaffold stone; capacity 4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;ore&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried ore; capacity 1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current inventory signal; 0 silent&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;blocks&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 40,
+    &quot;position&quot;: [
+      &quot;resource_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;resource_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;resource_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;resource_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;2 ore, 3 load-bearing support&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;counterweight_lifts&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;lift_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;lift_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;lift_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;weight&quot;
+        ],
+        &quot;meaning&quot;: &quot;Available counterweight units; 0..4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;ore_depots&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;depot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;depot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;depot_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ore unloaded at this crew depot&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 228,
+  &quot;key&quot;: &quot;gi228&quot;,
+  &quot;title&quot;: &quot;Skybridge Quarry Cooperative&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 160,
+    &quot;observation_size&quot;: 154,
+    &quot;num_actions&quot;: 17,
+    &quot;max_steps&quot;: 768
+  },
+  &quot;source_sha256&quot;: &quot;fd2690b11faacbb506703a3951159b8c5b6d75fd4d1ef5c7ed59f3ef3ac97575&quot;,
+  &quot;manifest_sha256&quot;: &quot;455a15abd74239598c06addea1af3cb4e4a43795d84686302ad82da2a6005934&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;fd2690b11faacbb506703a3951159b8c5b6d75fd4d1ef5c7ed59f3ef3ac97575&quot;,
+      &quot;bytes&quot;: 15599,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00228/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;455a15abd74239598c06addea1af3cb4e4a43795d84686302ad82da2a6005934&quot;,
+      &quot;bytes&quot;: 34965,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00228/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;2c6301b99736f84195ce69dd0a20c5c12087191d15bb25b1aa438e175faecdda&quot;,
+      &quot;bytes&quot;: 8005,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00228/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;76e7f3f016f4b3de273969f046e16e19f5cf884873db5218bd0cad55a00fcb48&quot;,
+      &quot;bytes&quot;: 10438,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00228/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;017361bd67bb6f7af51b06e80aee3804d718e1923130062c0c15e768c9560822&quot;,
+      &quot;bytes&quot;: 43068,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00228/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi228">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

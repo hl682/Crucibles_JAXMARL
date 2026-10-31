@@ -1,0 +1,838 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00097",
+  "source_sha256": "e079e07b06792718a4201360563bca1e92b24fc4be75d9f6899be8787072c89f",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 155,
+  "num_actions": 9,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 80,
+  "reward_low": -2,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Northwest skipper; cargo contract owner 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "East skipper; cargo contract owner 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "Southwest skipper; cargo contract owner 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Coast; refuel if initially stopped at a dock"
+    },
+    {
+      "id": 1,
+      "label": "Throttle north"
+    },
+    {
+      "id": 2,
+      "label": "Throttle east"
+    },
+    {
+      "id": 3,
+      "label": "Throttle south"
+    },
+    {
+      "id": 4,
+      "label": "Throttle west"
+    },
+    {
+      "id": 5,
+      "label": "Emergency brake; also stops tether partner"
+    },
+    {
+      "id": 6,
+      "label": "Load, drop or deliver cargo while initially stopped"
+    },
+    {
+      "id": 7,
+      "label": "Consent to an adjacent stopped tow pairing"
+    },
+    {
+      "id": 8,
+      "label": "Release own tether"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "heading"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "speed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tow_partner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carry"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_holder"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_damage"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_lost"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lost_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tethered_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Navigable water",
+          "color": "#9ECBD8"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid bank or island",
+          "color": "#596C59"
+        },
+        {
+          "value": 2,
+          "meaning": "Navigable refueling dock",
+          "color": "#B4A1C7"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "boats",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "heading"
+          ],
+          "meaning": "Heading: none 0, N 1, E 2, S 3, W 4",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "speed"
+          ],
+          "meaning": "Committed speed, maximum 2",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "meaning": "Fuel, maximum 12",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "tow_partner"
+          ],
+          "meaning": "Tether partner; -1 means independent",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carry"
+          ],
+          "meaning": "Held cargo index; -1 means empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "meaning": "Collision on the last nonabsorbing step",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_holder"
+          ],
+          "meaning": "Carrier; -1 means grounded",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "meaning": "Contract owner role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo_damage"
+          ],
+          "meaning": "Collision damage; loss at 3",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "cargo_delivered"
+          ],
+          "meaning": "Permanently delivered",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "cargo_lost"
+          ],
+          "meaning": "Permanently lost",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "meaning": "Contract owner role",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "kind": "resource",
+      "count": 4,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Cargo delivered during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lost_now"
+      ],
+      "meaning": "Cargo lost during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tethered_now"
+      ],
+      "meaning": "New tether participants during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "blocked"
+      ],
+      "meaning": "Collision flags during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "speed"
+      ],
+      "meaning": "Current movement commitment",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cargo_damage"
+      ],
+      "meaning": "Current accumulated collision damage",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Boat positions [x,y].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "Committed heading: none 0, north 1, east 2, south 3, west 4.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Integer speed, 0 to 2 cell crossings per tick.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Fuel, 0 to 12; throttle and active towing consume units.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Symmetric partner index or -1; lower-index member is the tug.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        21
+      ],
+      "meaning": "Held cargo index or -1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "Boats colliding with terrain, reservations or tether constraints on the last step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        30
+      ],
+      "meaning": "Cargo positions [x,y], following actual carriers.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        33
+      ],
+      "meaning": "Cargo still available for delivery.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        36
+      ],
+      "meaning": "Carrier index or -1 for grounded or resolved cargo.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        39
+      ],
+      "meaning": "Contract owner role for each cargo, fixed as 0,1,2.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        42
+      ],
+      "meaning": "Collision damage, 0 to 3; 3 resolves cargo as lost.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Persistent delivery status by cargo.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Persistent loss status by cargo.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        54
+      ],
+      "meaning": "Actual cargo destination coordinates in cargo index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        62
+      ],
+      "meaning": "Actual replenishment dock positions.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        139
+      ],
+      "meaning": "Public y-major canal map: water 0, land 1, dock 2.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        142
+      ],
+      "meaning": "Cargo delivered on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        145
+      ],
+      "meaning": "Cargo lost on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        145,
+        148
+      ],
+      "meaning": "Roles entering a new tether on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        149
+      ],
+      "meaning": "Elapsed nonabsorbing steps, 0 through 80.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        150
+      ],
+      "meaning": "Joint episode completion; true for natural completion or horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        151
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        152
+      ],
+      "meaning": "Horizon cause; false when natural completion coincides with horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        155
+      ],
+      "meaning": "Own agent identity as A-way one-hot in agent_0 through agent_2 order.",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Transport three physical cargo contracts through a shared narrow canal. Each contract owner receives its own outcome while every role also shares part of every delivery or loss.",
+    "natural_termination": "All three cargo items are delivered or lost, otherwise horizon 80. Natural completion takes priority at the horizon.",
+    "interaction": "Momentum persists under coast; turning while moving first reduces speed. Cell reservations block head-on passage and swaps. An empty tug can tow a laden follower at speed two while paying extra fuel; either partner can brake or release. Collisions damage carried cargo and can permanently remove future delivery opportunities.",
+    "observation_access": "All boats, committed headings, speeds, fuel, tethers, cargo and destinations are public. Flat observations repeat the complete public state and append an own-role one-hot. Every active entity is visible to each role, fixed map is public, and resolved cargo retains public final status/position in the observation."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "speed"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fuel"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cargo_damage"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_semantics": "Every integer command in [0,U) is legal for every role before joint termination. Geometrically blocked or unavailable operations are deterministic failed attempts. Out-of-range commands become action 0. In absorbing states only action 0 is legal; raw_step ignores all supplied actions and preserves terminal state.",
+  "inactive_role_semantics": "No role is individually removed before joint termination. All A role slots remain physically active; every role has no-op action 0. At joint termination all dones are true and only 0 is legal.",
+  "reset_randomness": "Deterministic fixed initial state; supplied key is accepted but intentionally unused. Script seed identifies future replay provenance, not a source of hidden state.",
+  "interface_integration": "This immutable source supplies the requested flat native kernel. The agent-keyed JaxMARL-compatible public adapter is a separate coordinator-owned integration layer and was not executed by the author."
+}

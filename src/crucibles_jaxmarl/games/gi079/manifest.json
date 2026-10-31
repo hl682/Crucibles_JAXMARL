@@ -1,0 +1,1340 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00079",
+  "source_sha256": "fcda29220e23fbd33e45d5c960bc6417993978a6af8f64bc89ac5ac649f8bf44",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 414,
+  "num_actions": 13,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -5,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Bulwark: projects one-cell shields and guards neighboring squad members"
+    },
+    {
+      "id": "agent_1",
+      "role": "Scout: broadcasts and exposes turret armor with a scan"
+    },
+    {
+      "id": "agent_2",
+      "role": "Engineer: interrupts turrets and replenishes relay charge faster"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Fire north"
+    },
+    {
+      "id": 6,
+      "label": "Fire east"
+    },
+    {
+      "id": 7,
+      "label": "Fire south"
+    },
+    {
+      "id": 8,
+      "label": "Fire west"
+    },
+    {
+      "id": 9,
+      "label": "Role support: shield / scan / jam"
+    },
+    {
+      "id": 10,
+      "label": "Channel adjacent relay, otherwise pick up or drop core"
+    },
+    {
+      "id": 11,
+      "label": "Guard; bulwark also covers adjacent squad"
+    },
+    {
+      "id": 12,
+      "label": "Refill ammunition and shared support at base"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "turret_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "turret_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "turret_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bolt_pos"
+      ],
+      "shape": [
+        24,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bolt_active"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bolt_visibility"
+      ],
+      "shape": [
+        3,
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shield_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shield_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shield_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminal_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "terminal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminal_visibility"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "core_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "core_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "core_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "supply_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "supply_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "supply_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "exit_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_health"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_ammo"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_noise"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "turret_health"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "turret_clock"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "turret_mark"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "turret_jam"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shield_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_facing"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "turret_aim"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "support"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bolt_vel"
+      ],
+      "shape": [
+        24,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bolt_origin"
+      ],
+      "shape": [
+        24,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bolt_owner"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bolt_ttl"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "terminal_charge"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_ever_open"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "core_hull"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "core_carrier"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "core_ever_picked"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "core_crossed"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "supply_stock"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ev_fire"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_ability"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_channel"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_pickup"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_drop"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_reload"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_hit_agent"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_hit_turret"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_enemy_fire"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_blocked"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable deck or open gate",
+          "color": "#DAE4EB"
+        },
+        {
+          "value": 1,
+          "meaning": "solid wall or cover; blocks motion and bolts",
+          "color": "#44546B"
+        },
+        {
+          "value": 2,
+          "meaning": "closed relay gate; blocks motion and bolts",
+          "color": "#B68A45"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "meaning": "0 bulwark, 1 scout, 2 engineer",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_health"
+          ],
+          "meaning": "Remaining health, at most four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_ammo"
+          ],
+          "meaning": "Carried bolt ammunition, at most five",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "agent_noise"
+          ],
+          "meaning": "Recent action noise used by enemy aim acquisition",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "meaning": "Movement or firing direction",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "turret",
+      "kind": "hazard",
+      "count": 3,
+      "position": [
+        "turret_pos"
+      ],
+      "active": [
+        "turret_active"
+      ],
+      "visibility": [
+        "turret_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "turret_health"
+          ],
+          "meaning": "Turret armor health, at most three",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "turret_clock"
+          ],
+          "meaning": "Remaining firing countdown; aim acquisition at two",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "turret_mark"
+          ],
+          "meaning": "Scout exposure timer; also broadcasts turret state to the squad",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "turret_jam"
+          ],
+          "meaning": "Engineer interruption timer; freezes firing clock",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "turret_aim"
+          ],
+          "meaning": "Locked cardinal firing direction",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "bolt",
+      "kind": "object",
+      "count": 24,
+      "position": [
+        "bolt_pos"
+      ],
+      "active": [
+        "bolt_active"
+      ],
+      "visibility": [
+        "bolt_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "bolt_vel"
+          ],
+          "meaning": "Actual cardinal movement per step",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "bolt_owner"
+          ],
+          "meaning": "0-2 squad source; 3-5 turret source",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "bolt_ttl"
+          ],
+          "meaning": "Remaining flight time",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "shield",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "shield_pos"
+      ],
+      "active": [
+        "shield_active"
+      ],
+      "visibility": [
+        "shield_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "shield_ttl"
+          ],
+          "meaning": "Remaining protective-field duration",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "terminal",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "terminal_pos"
+      ],
+      "active": [
+        "terminal_active"
+      ],
+      "visibility": [
+        "terminal_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "terminal_charge"
+          ],
+          "meaning": "Relay charge; drains by one without a channeler",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Open if both relay charges are positive or an object occupies the gate cell",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "core",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "core_pos"
+      ],
+      "active": [
+        "core_active"
+      ],
+      "visibility": [
+        "core_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "core_hull"
+          ],
+          "meaning": "Core hull; zero fails the mission",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "core_carrier"
+          ],
+          "meaning": "-1 is dropped; 0-2 is the carrying squad member",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "supply",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "supply_pos"
+      ],
+      "active": [
+        "supply_active"
+      ],
+      "visibility": [
+        "supply_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "supply_stock"
+          ],
+          "meaning": "Finite support-and-ammunition refill units",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "exit_pos"
+      ],
+      "active": [
+        "exit_active"
+      ],
+      "visibility": [
+        "exit_visibility"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_fire"
+      ],
+      "meaning": "Squad member actually allocated a new moving bolt and consumed ammunition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_ability"
+      ],
+      "meaning": "Squad member actually spent shared support on shield, scan or jam",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_channel"
+      ],
+      "meaning": "Squad member replenished a nearby physical relay",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_pickup"
+      ],
+      "meaning": "Squad member physically picked up the dropped core",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_drop"
+      ],
+      "meaning": "Squad member voluntarily dropped the carried core",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_reload"
+      ],
+      "meaning": "Squad member consumed a finite supply unit at the base",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_hit_agent"
+      ],
+      "meaning": "Squad member lost actual health to an unblocked incoming bolt",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_hit_turret"
+      ],
+      "meaning": "Turret lost actual armor to a vulnerable impact",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_enemy_fire"
+      ],
+      "meaning": "Turret launched an actual moving bolt",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_blocked"
+      ],
+      "meaning": "Pre-existing bolt slot was absorbed by a shield or guard this step; a reused slot is not its impact location",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "core_ever_picked"
+      ],
+      "meaning": "Core has been picked up at least once",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "core_crossed"
+      ],
+      "meaning": "Previously picked core has crossed left of the relay gate",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Core extracted at the exit with positive hull and a surviving squad member",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Own x,y position /12",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own health /4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own ammunition /5",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Own noise /8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        10
+      ],
+      "meaning": "Own cardinal facing components",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Own core-carrying flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        13
+      ],
+      "meaning": "Elapsed time /160 and public shared support /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public core beacon x,y /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        17
+      ],
+      "meaning": "Public core hull /6 and carrier index encoded as (index+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        20
+      ],
+      "meaning": "Public gate-open, ever-picked and crossed-gate flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        137
+      ],
+      "meaning": "Public 9 by 13 terrain row-major, code /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        167
+      ],
+      "meaning": "Three local squad rows: x,y /12; health /4; ammo /5; noise /8; role /2; facing x,y; active; visible. Invisible row values zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        167,
+        194
+      ],
+      "meaning": "Three turret rows: x,y /12; health /3; countdown /8; mark /8; jam /4; aim x,y; visible. Local radius five or team scan; otherwise zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        194,
+        386
+      ],
+      "meaning": "Twenty-four bolt rows: x,y /12; velocity x,y; owner /5; TTL /14; active; visible. Local radius five; otherwise zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        386,
+        401
+      ],
+      "meaning": "Three shield rows: x,y /12; TTL /4; active; visible. Local radius five; otherwise zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        401,
+        407
+      ],
+      "meaning": "Two public relay rows: x,y /12 and charge /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        407,
+        410
+      ],
+      "meaning": "Public supply position x,y /12 and stock /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        410,
+        412
+      ],
+      "meaning": "Public gate position x,y /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        412,
+        414
+      ],
+      "meaning": "Public extraction position x,y /12",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Maintain a passable relay gate, retrieve the physical core from the turret bay, and bring it to the extraction cell (1,4) with positive hull and at least one surviving squad member.",
+    "natural_termination": "Extraction with positive core hull and a living squad member succeeds. Zero core hull or no living squad member fails. Otherwise truncate at 160. Natural completion has priority at the horizon; terminal raw state is absorbing.",
+    "interaction": "Two spatial relay charge buffers control a shared choke point. A carrier sacrifices weapons and support abilities. Scout marking changes allies actual bolt damage, engineer jamming changes future firing opportunity, bulwark fields/guard absorb incoming bolts, and all abilities compete for a finite shared support pool.",
+    "observation_access": "Terrain, gate, relays, supply, extraction and the core radio beacon are public. Each role sees its own state and entities within Manhattan radius five; a scout mark broadcasts the marked turret state to every role for eight turns. Invisible local rows are zero and carry an explicit visibility bit. Radius sensing does not model wall occlusion. Renderer uses the same entity masks; no full-state tactical information belongs in a role view."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_ammo"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "turret_health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "terminal_charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "support"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "supply_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "core_hull"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

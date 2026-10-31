@@ -1,0 +1,433 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "aa5903c6cb30959ab9fd8def84eb0a7688a47ac2f0bad8105671f7e765f1ff4c",
+  "manifest_sha256": "0830be53f5bc04a96ef5f179dc856a27dd823073e0fd55d4854a130a4b893dd9",
+  "title": "Breathshare Claims",
+  "rules": [
+    "Three miners each receive one private ore-type claim sampled as a permutation at reset. Claim labels are visible only to their owner.",
+    "Every living miner outside (1,3) consumes one oxygen at the end of each call. Zero oxygen kills the miner; dead roles retain only Wait.",
+    "Veins at (7,1), (8,3), (7,5) each hold two units. Extract within Manhattan distance one with an empty one-unit ore inventory.",
+    "Simultaneous extraction uses rotating player priority starting at t modulo three; extraction really removes the shared unit.",
+    "Two movable canisters each start with six oxygen. Pick/Drop acts within distance one for a floor canister, or drops the carried one.",
+    "Offer requires a carried canister. An adjacent empty-handed miner must choose Accept/Use on the same call; it may immediately draw gas after accepting.",
+    "Accept/Use draws up to the personal oxygen deficit from the owned canister. No gas is created; the donor loses the transferred canister.",
+    "The sole station cell (1,3) is safe and accepts ore automatically. Refill draws at most four units from 24 shared units, personal deficit first then carried-canister deficit.",
+    "Other live miners old cells and contested destinations block movement; a station occupant can deny another miner access. Dead cells are passable.",
+    "Each delivery pays everyone 0.1, plus the delivering miner 1 for its claim type or 0.25 otherwise. Every newly dead miner costs everyone 0.25.",
+    "All-dead or all-ore-resolved ends play. Horizon is 80. Empty veins, empty canisters and lost-miner markers reflect actual retained state."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable asteroid cell; oxygen is consumed except at station (1,3)",
+          "color": "#DFE1E6"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable rock",
+          "color": "#595968"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "miners",
+      "glyph": "robot",
+      "label": "Live miners",
+      "color": "#6384A5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "oxygen"
+          ],
+          "label": "Personal oxygen, 0 to 12"
+        },
+        {
+          "state_path": [
+            "ore"
+          ],
+          "label": "Carried ore type; -1 means empty"
+        },
+        {
+          "state_path": [
+            "carrying_canister"
+          ],
+          "label": "Portable canister index; -1 means none"
+        }
+      ]
+    },
+    {
+      "id": "private_claims",
+      "glyph": "flag",
+      "label": "Own private delivery claim",
+      "color": "#C6975A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "claim"
+          ],
+          "label": "Private rewarded ore type; visible only to its owner"
+        }
+      ]
+    },
+    {
+      "id": "memorials",
+      "glyph": "hazard",
+      "label": "Lost miner cells",
+      "color": "#8D6871",
+      "attribute_labels": []
+    },
+    {
+      "id": "veins",
+      "glyph": "resource",
+      "label": "Finite ore veins",
+      "color": "#897DB0",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "vein_type"
+          ],
+          "label": "Ore type"
+        },
+        {
+          "state_path": [
+            "vein_remaining"
+          ],
+          "label": "Units remaining, 0 to 2"
+        }
+      ]
+    },
+    {
+      "id": "canisters",
+      "glyph": "battery",
+      "label": "Portable oxygen canisters",
+      "color": "#5A9B91",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "canister_owner"
+          ],
+          "label": "Carrier agent index; -1 means on the ground"
+        },
+        {
+          "state_path": [
+            "canister_volume"
+          ],
+          "label": "Portable oxygen units remaining, 0 to 6"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "glyph": "beacon",
+      "label": "Shared refill and delivery station",
+      "color": "#9AA570",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_stock"
+          ],
+          "label": "Finite station oxygen units remaining, initially 24"
+        },
+        {
+          "state_path": [
+            "station_occupant"
+          ],
+          "label": "Current live occupant; -1 means empty"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "mined"
+      ],
+      "meaning": "Agent extracted one actual ore unit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Agent delivered its carried ore at the station",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transferred"
+      ],
+      "meaning": "Canister changed owner by simultaneous Offer and Accept consent",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "used"
+      ],
+      "meaning": "Positive oxygen amount drawn from this canister",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "died"
+      ],
+      "meaning": "Agent newly exhausted oxygen",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "refilled"
+      ],
+      "meaning": "Agent or its canister received positive gas from finite station stock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Portable canister picked up",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Portable canister dropped voluntarily or by carrier death",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_counts"
+      ],
+      "meaning": "Cumulative delivered units by ore type",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost_counts"
+      ],
+      "meaning": "Cumulative carried units lost on death by ore type",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Extract one nearby ore if inventory empty"
+    },
+    {
+      "id": 6,
+      "label": "Pick up or drop a portable canister"
+    },
+    {
+      "id": 7,
+      "label": "Offer own canister to an adjacent consenting miner"
+    },
+    {
+      "id": 8,
+      "label": "Accept an offered canister and/or draw portable oxygen"
+    },
+    {
+      "id": 9,
+      "label": "Refill at the shared station, at most four units"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        18
+      ],
+      "meaning": "Miner-major 3 x [x/10,y/6,active,oxygen/12,(ore+1)/3,(canister_index+1)/2]. Dead miners keep their last public position.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        30
+      ],
+      "meaning": "Vein-major 3 x [x/10,y/6,type/2,remaining/2]. Depleted veins remain visibly present.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        38
+      ],
+      "meaning": "Canister-major 2 x [x/10,y/6,(owner+1)/3,volume/6]. Empty canisters persist.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        42
+      ],
+      "meaning": "Shared station [x/10,y/6,stock/24,(occupant+1)/3].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Delivered ore counts by type divided by six.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Ore lost on death by type divided by six.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        51
+      ],
+      "meaning": "One-hot of this observing miner own private claim type only; other miners claims are absent.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        51,
+        54
+      ],
+      "meaning": "One-hot observing miner identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        54,
+        55
+      ],
+      "meaning": "Elapsed calls t/80.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        55,
+        56
+      ],
+      "meaning": "Joint episode_done.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        133
+      ],
+      "meaning": "Public 7x11 terrain in y-major order: 0 traversable, 1 impassable rock.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        136
+      ],
+      "meaning": "Latest per-agent mining flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        139
+      ],
+      "meaning": "Latest per-agent delivery flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        141
+      ],
+      "meaning": "Latest per-canister consent-transfer flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        143
+      ],
+      "meaning": "Latest per-canister positive gas-use flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        146
+      ],
+      "meaning": "Latest per-agent oxygen-death flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        149
+      ],
+      "meaning": "Latest per-agent station-refill flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        151
+      ],
+      "meaning": "Latest per-canister pickup flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        153
+      ],
+      "meaning": "Latest per-canister voluntary/death drop flags.",
+      "visibility": "public"
+    }
+  ]
+}

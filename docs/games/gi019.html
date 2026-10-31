@@ -1,0 +1,186 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>astra-d2-00019: consensus switch with irreversible route commitments · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI019 / LEGACY_ARRAY</p><h1>astra-d2-00019: consensus switch with irreversible route commitments</h1><p class="lead"></p><div class="stats"><span>2 agents</span><span>5 actions</span><span>16 observation columns</span><span>32 original horizon</span><span>Runtime: PASS</span></div><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi019.gif" alt="Actual verification episode gi019"></section><section><h2>Run this game</h2><pre>crucibles play --game 19</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;termination&quot;: &quot;Original kernel t &gt;= 32; see mechanism and source&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 1.0. Observability: source_defined.</p></section><section><h2>Rules</h2><ol></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># astra-d2-00019: consensus switch with irreversible route commitments
+
+This is a parentless proposal using generic consensus, shared routing controls
+and irrevocable commitments. It is not derived from a supplied parent or a
+retrieved benchmark. Its relationship to these familiar abstractions is
+intentional, and it carries no claim of mechanism uniqueness or eligibility.
+
+Each role has an entrance lane equal to its role index, a private binary desired
+destination, an energy reserve and at most one shipment. A shared binary switch
+determines route = (role index + switch) modulo two at commitment. Once committed,
+a shipment retains that route even if the shared switch changes during transit.
+A committed shipment arrives after its countdown subsequently decreases from two
+to one and then to zero. Targets are redrawn from the explicit step key when a
+shipment arrives or expires; a redraw may equal the previous target.
+
+Actions are 0 wait, 1 load a shipment when idle, 2 commit a previously loaded
+shipment to the current route, 3 cast a switch-zero ballot, and 4 cast a
+switch-one ballot. Loading costs 0.12 energy, commitment costs 0.08 and a ballot
+costs 0.03. Insufficient energy makes the special effect ineffective. Energy
+refills by 0.03 per transition and is capped at one. All actions remain legal.
+
+Ballots persist until replaced or until their age reaches four. When both valid
+ballots match, they are cleared and their value becomes a pending switch command.
+That command applies at the beginning of the next transition, before any route
+commitments on that transition. New ballots can then be cast for a later command.
+Only agreement produces a command; one agent can prevent or delay a change.
+This creates a delay between requesting, agreeing, applying and irreversibly
+using shared infrastructure. Private targets can make demands conflict, while
+public ballots can also convey desired configurations.
+
+A shipment age starts at one on loading. An active shipment expires when its age
+reaches eight unless it arrives on the same transition, in which case arrival
+takes precedence. There is no automatic dispatch, no ability to reroute a
+committed shipment, and no carry-over of the old shipment after completion.
+The previous latched route remains observable as history while idle.
+
+Reward is +0.80 for a correct arrival, -0.40 for an incorrect arrival, -0.45 for
+expiration, -0.05 for loading, -0.015 for casting a ballot, and -0.01 for a role
+whose shipment was active at the beginning of the transition. It is explicitly
+clipped to [-1, 1]. The two roles affect each other&#x27;s feasible route changes
+through persistent votes and the shared switch, even though arrivals have
+individual rewards. No assumption of coordination or learning effectiveness
+is made.
+
+Observation columns 0 through 15 are: time/32; own private target; current switch;
+pending switch or -1; own stage/2; partner stage/2; own shipment age/8;
+partner shipment age/8; own energy; own most recently latched route; own ballot
+or -1; partner ballot or -1; own ballot age/4; partner ballot age/4;
+own transit countdown/2; and own previous outcome (1 correct, -1 wrong,
+-0.50 expired, 0 no outcome). Stages are 0 idle, 1 loaded and 2 committed.
+Partner target, energy, latched route and previous outcome are hidden.
+
+The intended interface is two agents, 16 observations each, five actions and
+32 transitions. Terminal state and observation are preserved. This source has
+author-side syntax parsing only. Isolated validation, duplicate review,
+mechanism qualification and performance assessment remain unassessed.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Action 0; see mechanism and source</span></div><div class="action"><b>1</b><span>Action 1; see mechanism and source</span></div><div class="action"><b>2</b><span>Action 2; see mechanism and source</span></div><div class="action"><b>3</b><span>Action 3; see mechanism and source</span></div><div class="action"><b>4</b><span>Action 4; see mechanism and source</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Original legacy agent; see mechanism and source</p><p><b>agent_1</b> Original legacy agent; see mechanism and source</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi019&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;2c38069c31d6cdf11dd1416f0f1d39af439cd790581609a16ddc9dffc8c12b84&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5241560935974121
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.17342638969421387
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.0061838626861572
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.2683732509613037
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.4468085765838623
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.2272779941558838
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8997013568878174
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.9492387771606445
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.2224178314208984
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 6.23632025718689,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;NOT_PART_OF_ORIGINAL_LEGACY_CONTRACT&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 32,
+  &quot;scripted_random_returns&quot;: [
+    0.08000002894550562,
+    -1.7549999207258224
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 33,
+  &quot;render_roles_checked&quot;: 2
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi019&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;ui_sha256&quot;: &quot;15b5861d23b3c42811865c954d5a988280bbfd21cf8e93754be2437a027158c5&quot;,
+  &quot;seconds&quot;: 3.2083723545074463
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 19,
+  &quot;key&quot;: &quot;gi019&quot;,
+  &quot;title&quot;: &quot;astra-d2-00019: consensus switch with irreversible route commitments&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;legacy_array&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;source_sha256&quot;: &quot;2c38069c31d6cdf11dd1416f0f1d39af439cd790581609a16ddc9dffc8c12b84&quot;,
+  &quot;manifest_sha256&quot;: &quot;98144989a7e2af696210c2bad3017181dec51a5e29028804070589f18d08631b&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;2c38069c31d6cdf11dd1416f0f1d39af439cd790581609a16ddc9dffc8c12b84&quot;,
+      &quot;bytes&quot;: 5654,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00019/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;abf566819d18be727d2d1233c895ea3b67f5339d19bbfe1f0364856b2e63dac1&quot;,
+      &quot;bytes&quot;: 3606,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00019/attempt_00/mechanism.md&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;LEGACY_SOURCE&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi019">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

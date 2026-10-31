@@ -1,0 +1,954 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00196",
+  "source_sha256": "b92429afa8deddf0ef620259fd2bd55df3d2b2b81d20409f875a4d556d1d8750",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 301,
+  "num_actions": 12,
+  "max_steps": 90,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -5,
+  "observation_high": 256,
+  "reward_low": -3,
+  "reward_high": 4,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Amber polity courier; owns southern pass"
+    },
+    {
+      "id": "agent_1",
+      "role": "Azure polity courier; owns northern pass"
+    },
+    {
+      "id": "agent_2",
+      "role": "Violet polity courier; owns central pass"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait / decline by doing nothing"
+    },
+    {
+      "id": 1,
+      "label": "North during march"
+    },
+    {
+      "id": 2,
+      "label": "East during march"
+    },
+    {
+      "id": 3,
+      "label": "South during march"
+    },
+    {
+      "id": 4,
+      "label": "West during march"
+    },
+    {
+      "id": 5,
+      "label": "Load up to two supplies at own home during works"
+    },
+    {
+      "id": 6,
+      "label": "Deliver one supply at own outpost during works"
+    },
+    {
+      "id": 7,
+      "label": "Build or refuel an accessible relay socket during works"
+    },
+    {
+      "id": 8,
+      "label": "At home in council: offer passage to next role (i+1 mod 3)"
+    },
+    {
+      "id": 9,
+      "label": "At home in council: offer passage to previous role (i+2 mod 3)"
+    },
+    {
+      "id": 10,
+      "label": "At home in council: accept next role's pending offer"
+    },
+    {
+      "id": 11,
+      "label": "At home in council: accept previous role's pending offer"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "phase"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pressure"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map_visible"
+      ],
+      "shape": [
+        3,
+        9,
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "outpost_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "outpost_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pass_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "outpost_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pass_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "offer_now"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "accepted_now"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carried"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bank"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spent"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "defense"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offers"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "grants"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_access"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_offers"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_built"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "recharged"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_visible"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_fuel"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable frontier ground",
+          "color": "#BECEA9"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable river",
+          "color": "#5286A9"
+        },
+        {
+          "value": 2,
+          "meaning": "Impassable rough-route obstruction; observed only when revealed",
+          "color": "#6B7765"
+        },
+        {
+          "value": 3,
+          "meaning": "Fortified pass requiring ownership or an active grant",
+          "color": "#BCA473"
+        }
+      ],
+      "visibility": [
+        "map_visible"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carried"
+          ],
+          "meaning": "Courier supply units, capacity two; visible with courier.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "home_pos"
+      ],
+      "active": [
+        "home_active"
+      ],
+      "visibility": [
+        "home_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "bank"
+          ],
+          "meaning": "Remaining supplies in this polity's home bank, initially six.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "outposts",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "outpost_pos"
+      ],
+      "active": [
+        "outpost_active"
+      ],
+      "visibility": [
+        "outpost_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "defense"
+          ],
+          "meaning": "Outpost defense 0..6, publicly reported.",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Cumulative owner supply deliveries, target two.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "passes",
+      "kind": "gate",
+      "count": 3,
+      "position": [
+        "pass_pos"
+      ],
+      "active": [
+        "pass_active"
+      ],
+      "visibility": [
+        "pass_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pass_owner"
+          ],
+          "meaning": "Pass owner role: north 1, middle 2, south 0.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pass_access"
+          ],
+          "meaning": "Remaining works-tick durations by guest role for this pass owner's grants.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "pass_offers"
+          ],
+          "meaning": "Remaining offer lifetimes by guest role for this pass owner.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "kind": "landmark",
+      "count": 6,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_built"
+          ],
+          "meaning": "A beacon has actually been built at this socket.",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "beacon_owner"
+          ],
+          "meaning": "Builder/owner role; -1 if never built.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "beacon_fuel"
+          ],
+          "meaning": "Powered works ticks remaining, 0..6.",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "recharged"
+          ],
+          "meaning": "This beacon was built or refueled during this step.",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "offer_now"
+      ],
+      "meaning": "Public owner-to-guest offer matrix created this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "accepted_now"
+      ],
+      "meaning": "Public owner-to-guest acceptance matrix this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Public outpost deliveries this step by owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pressure"
+      ],
+      "meaning": "Public frontier pressure reduced defenses this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative public outpost deliveries by owner.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot in polity order 0,1,2.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        8
+      ],
+      "meaning": "Public t, phase (0 council / 1 march / 2 works), done, terminated, truncated.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "Own carried supplies, own home bank, own cumulative supplies spent, own blocked-move flag.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        24
+      ],
+      "meaning": "Three courier rows [x,y,carried,visible]; invisible numeric fields are -1. Visibility is the role's revealed map.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        24,
+        36
+      ],
+      "meaning": "Three settlement rows [x,y,bank,visible]; own home is always known, other homes require map visibility; masked fields -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        36,
+        42
+      ],
+      "meaning": "Public outpost [x,y] positions in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Public outpost defense levels in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Cumulative public outpost deliveries in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        54
+      ],
+      "meaning": "Public fortified-pass [x,y] positions, north/middle/south.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        57
+      ],
+      "meaning": "Public pass owner roles: 1,2,0.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        66
+      ],
+      "meaning": "Public pending-offer lifetimes, row owner / column guest, flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        75
+      ],
+      "meaning": "Public accepted passage durations, row owner / column guest, flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        111
+      ],
+      "meaning": "Six relay rows [x,y,owner,fuel,built,visible]; unknown numeric fields -1. A role always receives its owned beacon telemetry, but a dark beacon reveals no surrounding tiles.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        111,
+        192
+      ],
+      "meaning": "Actual 9x9 terrain codes where map_visible is true; -1 elsewhere. Row-major yx.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        192,
+        273
+      ],
+      "meaning": "The role's explicit 9x9 map visibility mask, row-major yx.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        273,
+        276
+      ],
+      "meaning": "Public per-step delivery counts in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        276,
+        285
+      ],
+      "meaning": "Public per-step new-offer matrix, row owner / column guest.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        285,
+        294
+      ],
+      "meaning": "Public per-step accepted-offer matrix, row owner / column guest.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        294,
+        300
+      ],
+      "meaning": "Per-relay build/refuel flags where that relay is visible; -1 elsewhere.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        300,
+        301
+      ],
+      "meaning": "Public per-step frontier pressure flag.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Supply each polity's opposite-bank outpost twice before any outpost defense reaches zero; manage couriers, fuel, relay information and timed passage agreements.",
+    "natural_termination": "Failure when any defense is zero after pressure. Otherwise success when every outpost has at least two deliveries. If these coincide, defense loss prevents success; both are natural completion, with natural causes taking priority over H.",
+    "interaction": "One polity's offer changes another's legal council choices; acceptance creates temporary pass access and access to the grantor's powered beacon information. Supply investments compete with delivering and defending each polity's outpost.",
+    "observation_access": "Partially observable. Every role sees Manhattan radius two around its courier and radius three around its own powered relays or relays owned by a polity currently granting it passage. Other roles' couriers, cargo and home stocks are masked outside revealed cells; owned home and owned beacon telemetry remain known. Public outposts/defenses, pass locations/owners, pending offers, accepted agreement timers and specified public events are broadcast. The world map declares map_visible and never public=true. Hidden map/objects are -1 in the flat observation with explicit visibility bits. Role renderers bind the same masks; hidden blocked-move events and unrevealed refuel events are not public event channels."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "phase"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "bank"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "carried"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "spent"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "defense"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "offers"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "grants"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "beacon_fuel"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

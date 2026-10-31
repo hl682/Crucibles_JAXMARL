@@ -1,0 +1,15 @@
+# astra-d2-00045: Coupled oscillators with paid measurement and polarity memory
+
+Status: original parentless source proposal; runtime behavior has not been executed by the author.
+
+Each role controls one bounded oscillator and privately sees its own sinusoidal tracking target and one-step target preview. The five actions are coast, positive impulse, negative impulse, invert its incoming coupling polarity, and brake while measuring the other oscillator. Impulses, switching, and measurements require local stored energy. Coasting recovers energy more quickly. All action indices are legal; an unaffordable intervention has no actuation effect.
+
+Velocity persists, is damped, and responds to local restoring force, the other oscillator's previous position, and the current local impulse. Position integrates that velocity. A polarity switch changes the stored sign of future incoming coupling, not the current transition's force. Thus each role can affect the other's later tracking through its physical trajectory, while polarity changes alter how a role responds to that trajectory. The polarity is directed rather than a symmetric physical spring; this is a synthetic control mechanism, not a claim of a faithful mechanical model. Position and velocity saturate at declared bounds.
+
+Braking halves the computed local velocity and simultaneously acquires a post-transition measurement of the other position and velocity. That observation is available only after the action and then becomes stale until refreshed. Public information includes both polarities, both energy reserves, and unsigned strain between positions. Strain can partially reveal the other position but does not directly disclose its target. The reward also supplies indirect information about local tracking, so this is partial observation with structured leakage rather than perfect privacy.
+
+The 16 observation columns are time, local position, local velocity, local target, local energy, local and other polarity, cached other position and velocity, cache age, public strain, preceding impulse, local tracking error, preceding reward, local target preview, and other energy. Normalizers are fixed. Randomness is confined to explicit-key initial positions and target phases; transitions thereafter are deterministic conditional on joint actions.
+
+Reward is tanh of a tracking-quality offset minus squared position error, squared velocity, and actuation costs. This analytically bounds each reward within [-1, 1] without claiming measured learning results. Dynamics and observation persist through transition 32; the terminal state is not reset.
+
+The proposal relates to familiar coupled control systems, delayed sensing, and active sensing. Its candidate mechanism couples second-order state persistence, action-controlled directed coupling signs, and a measurement action with a physical braking consequence. No uniqueness theorem, compiler result, mechanism-eligibility judgment, benchmark comparison, or learning effectiveness is asserted. No parent or feedback evidence was supplied.

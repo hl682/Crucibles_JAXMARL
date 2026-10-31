@@ -1,0 +1,624 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f58a6fc02ef1f4542e3bd11b49c1914cdcb401f41f51f6e198b518df8cef4b87",
+  "manifest_sha256": "6b6cdd94fb94d20920f677c30aac5c15ced14b41c141d2253ea0f12e87967aac",
+  "title": "Tetherwake",
+  "rules": [
+    "Rigger cables reach three cells, the other two reach two. An attached crew member may walk only while its cable remains within that Manhattan length.",
+    "A cargo pull needs matching directions from at least two attached crew including the drive operator. It costs two shared power and obeys every crew cable and anchor.",
+    "The rigger can pin nearby cargo to a bollard with a length-three anchor cable, or detach it. Anchored cargo does not drift.",
+    "Every third transition, unanchored cargo without a successful pull tries to drift east. A taut crew cable blocks it for one shared power; with no power the affected cargo cables snap.",
+    "Top and bottom gates alternate in four-tick blocks. Occupied gates remain open. The technician can spend three power to hold a nearby gate open for three ticks.",
+    "The technician recharges four shared power near the charger. Personal chips give their collector a reward and contribute two shared power, creating an assistance-versus-detour choice.",
+    "Starting occupied destinations and simultaneous agent destination conflicts block walking. Cargo requests and drift resolve in cargo index order.",
+    "Reach both assigned recovery docks for natural completion. True endpoint pairs and displacement vectors bind the real tether network; no simulated physics or invented replay is included."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable interior",
+          "color": "#253440"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#111C26"
+        },
+        {
+          "value": 2,
+          "meaning": "Door or gate tile; passability follows its actual state",
+          "color": "#526B78"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "glyph": "worker",
+      "label": "Orbital salvage crew",
+      "color": "#54A2C7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Tool role"
+        },
+        {
+          "state_path": [
+            "attached"
+          ],
+          "label": "Cargo connection ID"
+        },
+        {
+          "state_path": [
+            "rope_limit"
+          ],
+          "label": "Maximum cable length"
+        },
+        {
+          "state_path": [
+            "tension"
+          ],
+          "label": "Attached cable length"
+        },
+        {
+          "state_path": [
+            "personal"
+          ],
+          "label": "Collected personal chips"
+        },
+        {
+          "state_path": [
+            "last_action"
+          ],
+          "label": "Latest sanitized action"
+        },
+        {
+          "state_path": [
+            "snapped"
+          ],
+          "label": "Cable snapped this transition"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Salvage modules",
+      "color": "#DFAE5D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "anchored"
+          ],
+          "label": "Bollard ID or minus one"
+        },
+        {
+          "state_path": [
+            "pulled"
+          ],
+          "label": "Powered movement this transition"
+        },
+        {
+          "state_path": [
+            "drifted"
+          ],
+          "label": "Passive drift this transition"
+        },
+        {
+          "state_path": [
+            "strained"
+          ],
+          "label": "Crew cable blocked drift this transition"
+        }
+      ]
+    },
+    {
+      "id": "anchors",
+      "glyph": "key",
+      "label": "Fixed anchor bollards",
+      "color": "#A8A2C7",
+      "attribute_labels": []
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Alternating orbital locks",
+      "color": "#D17E73",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Currently passable"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "label": "Forced-open ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "glyph": "flag",
+      "label": "Assigned recovery docks",
+      "color": "#76B98A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Assigned module recovered"
+        }
+      ]
+    },
+    {
+      "id": "charger",
+      "glyph": "battery",
+      "label": "Technician charger and shared battery",
+      "color": "#D8C869",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "power"
+          ],
+          "label": "Shared battery charge"
+        }
+      ]
+    },
+    {
+      "id": "chips",
+      "glyph": "resource",
+      "label": "Optional personal salvage chips",
+      "color": "#C88AD4",
+      "attribute_labels": []
+    },
+    {
+      "id": "cables",
+      "glyph": "tool",
+      "label": "Active cable starts and endpoint vectors",
+      "color": "#82BFC6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cable_vector"
+          ],
+          "label": "True vector to far endpoint"
+        },
+        {
+          "state_path": [
+            "cable_length"
+          ],
+          "label": "Manhattan cable length"
+        },
+        {
+          "state_path": [
+            "cable_taut"
+          ],
+          "label": "At cable length limit"
+        }
+      ]
+    },
+    {
+      "id": "endpoints",
+      "glyph": "circle",
+      "label": "Both actual endpoints of every active cable",
+      "color": "#B6D7DC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "endpoint_link"
+          ],
+          "label": "Cable ID"
+        },
+        {
+          "state_path": [
+            "endpoint_side"
+          ],
+          "label": "Endpoint side: zero start, one end"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pulled"
+      ],
+      "meaning": "Powered cargo displacement this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "drifted"
+      ],
+      "meaning": "Passive cargo displacement this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "strained"
+      ],
+      "meaning": "Unanchored drift strained a crew cable this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "snapped"
+      ],
+      "meaning": "Unpowered strained crew cable snapped this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_step"
+      ],
+      "meaning": "Cargo newly recovered this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "personal"
+      ],
+      "meaning": "Collected personal salvage chips",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "power"
+      ],
+      "meaning": "Shared power level",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cable_taut"
+      ],
+      "meaning": "Active cables currently at their length limits",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Attach nearest reachable cargo or detach current cable"
+    },
+    {
+      "id": 6,
+      "label": "Vote pull north"
+    },
+    {
+      "id": 7,
+      "label": "Vote pull east"
+    },
+    {
+      "id": 8,
+      "label": "Vote pull south"
+    },
+    {
+      "id": 9,
+      "label": "Vote pull west"
+    },
+    {
+      "id": 10,
+      "label": "Technician hold nearest gate open for three ticks"
+    },
+    {
+      "id": 11,
+      "label": "Technician recharge four shared power at charger"
+    },
+    {
+      "id": 12,
+      "label": "Collect nearby personal salvage chip and add two shared power"
+    },
+    {
+      "id": 13,
+      "label": "Rigger toggle nearest cargo anchor"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer role one-hot in fixed agent order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        102
+      ],
+      "meaning": "Public walls and gate tiles, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        108
+      ],
+      "meaning": "Crew positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        111
+      ],
+      "meaning": "Equipment roles",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        114
+      ],
+      "meaning": "Cargo attachment IDs or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        117
+      ],
+      "meaning": "Maximum agent cable lengths",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        120
+      ],
+      "meaning": "Current attached cable Manhattan lengths",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        123
+      ],
+      "meaning": "Latest sanitized commands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        126
+      ],
+      "meaning": "Collected chips by crew member",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        130
+      ],
+      "meaning": "Cargo positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        132
+      ],
+      "meaning": "Cargo delivered flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        134
+      ],
+      "meaning": "Anchor IDs or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        136
+      ],
+      "meaning": "Cargo powered pull this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        138
+      ],
+      "meaning": "Cargo drift this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        140
+      ],
+      "meaning": "Attempted drift strained a crew cable this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        143
+      ],
+      "meaning": "Crew cables snapped this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        145
+      ],
+      "meaning": "Cargo delivered this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        145,
+        149
+      ],
+      "meaning": "Bollard positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        153
+      ],
+      "meaning": "Timed gate positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        155
+      ],
+      "meaning": "Current passable gate states",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        157
+      ],
+      "meaning": "Remaining forced-open timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "meaning": "Shared power",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        162
+      ],
+      "meaning": "Assigned cargo dock positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        164
+      ],
+      "meaning": "Technician charger position",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        170
+      ],
+      "meaning": "Personal salvage chip positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        170,
+        173
+      ],
+      "meaning": "Uncollected chip flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        173,
+        183
+      ],
+      "meaning": "Crew and anchored-cargo cable starts",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        183,
+        193
+      ],
+      "meaning": "True displacement to other endpoint for each cable",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        193,
+        198
+      ],
+      "meaning": "Connected cable flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        198,
+        203
+      ],
+      "meaning": "Cable Manhattan length",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        203,
+        208
+      ],
+      "meaning": "Active cable at its maximum permitted length",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        208,
+        210
+      ],
+      "meaning": "Clock and joint done flag",
+      "visibility": "public"
+    }
+  ]
+}

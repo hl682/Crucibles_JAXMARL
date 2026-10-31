@@ -1,0 +1,798 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00105",
+  "source_sha256": "994910a436c59589c5c58c73badc570d3df80fc880e10b527c42dca5d2c55e7f",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 182,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Team 0 kickoff carrier"
+    },
+    {
+      "id": "agent_1",
+      "role": "Team 0 support receiver"
+    },
+    {
+      "id": "agent_2",
+      "role": "Team 1 defender"
+    },
+    {
+      "id": "agent_3",
+      "role": "Team 1 support interceptor"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Throw held token north"
+    },
+    {
+      "id": 6,
+      "label": "Throw held token east"
+    },
+    {
+      "id": 7,
+      "label": "Throw held token south"
+    },
+    {
+      "id": 8,
+      "label": "Throw held token west"
+    },
+    {
+      "id": 9,
+      "label": "Guard: reach for hostile token or tackle adjacent carrier"
+    },
+    {
+      "id": 10,
+      "label": "Receive: reach for allied or neutral loose token"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_vis"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_carrier"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_velocity"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_flight"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_relay"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_age"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_travel"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_last_thrower"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_last_team"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "event_throw"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_catch"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_intercept"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_tackle"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_drop"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_goal"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable arena court",
+          "color": "#E0F2FE"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable arena wall",
+          "color": "#1E293B"
+        },
+        {
+          "value": 2,
+          "meaning": "Team 0 target goal cells at x=11, y=3..5",
+          "color": "#2563EB"
+        },
+        {
+          "value": 3,
+          "meaning": "Team 1 target goal cells at x=1, y=3..5",
+          "color": "#EA580C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "meaning": "Team: 0 blue, 1 orange",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_cooldown"
+          ],
+          "meaning": "Remaining pickup lock after throw or forced drop",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "token",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "ball_pos"
+      ],
+      "active": [
+        "ball_active"
+      ],
+      "visibility": [
+        "ball_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "ball_carrier"
+          ],
+          "meaning": "Carrier role id; -1 means loose or airborne",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "ball_velocity"
+          ],
+          "meaning": "Current flight velocity in [x,y]",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "ball_flight"
+          ],
+          "meaning": "Remaining single-tile flight steps",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "ball_relay"
+          ],
+          "meaning": "Goal armed by an allied in-flight catch",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "ball_age"
+          ],
+          "meaning": "Completed held ticks since latest acquisition",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "ball_travel"
+          ],
+          "meaning": "Successful carrier moves since acquisition",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "ball_last_thrower"
+          ],
+          "meaning": "Last throwing role; -1 means no throw yet",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "ball_last_team"
+          ],
+          "meaning": "Last throwing team; -1 means no throw yet",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "goal_team"
+          ],
+          "meaning": "Team that scores at this goal zone",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Actual scored goals in team order",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "event_throw"
+      ],
+      "meaning": "Roles that actually threw the held token this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_catch"
+      ],
+      "meaning": "Roles that actually caught an airborne or loose token this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_intercept"
+      ],
+      "meaning": "Roles that caught an opposing in-flight pass this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_tackle"
+      ],
+      "meaning": "Roles that stole an adjacent held token this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_drop"
+      ],
+      "meaning": "Roles forced to drop by the four-tick holding limit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_goal"
+      ],
+      "meaning": "Teams that actually scored an armed-token goal this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self role one-hot, divided by 128",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        8
+      ],
+      "meaning": "Public [t,episode_done,terminated,truncated], divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "Player 0: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        16
+      ],
+      "meaning": "Player 1: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        20
+      ],
+      "meaning": "Player 2: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        24
+      ],
+      "meaning": "Player 3: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        35
+      ],
+      "meaning": "Token [x,y,carrier,vx,vy,flight_remaining,relay_armed,held_age,carrier_moves,last_thrower,last_throw_team]. -1 carrier/throw sentinels are literal; all divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        38
+      ],
+      "meaning": "Goal 0: [center_x,center_y,scoring_team], divided by 128. Its three cells are also in the map.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        41
+      ],
+      "meaning": "Goal 1: [center_x,center_y,scoring_team], divided by 128. Its three cells are also in the map.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        158
+      ],
+      "meaning": "Public 9x13 court map flattened y then x, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        160
+      ],
+      "meaning": "Public team goal counts, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        160,
+        164
+      ],
+      "meaning": "Public actual throw role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        168
+      ],
+      "meaning": "Public actual catch role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        172
+      ],
+      "meaning": "Public actual intercept role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        172,
+        176
+      ],
+      "meaning": "Public actual tackle role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        176,
+        180
+      ],
+      "meaning": "Public actual forced-drop role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        180,
+        182
+      ],
+      "meaning": "Public actual scoring-team flags, divided by 128",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Two teams relay a physical token through space. An allied in-flight catch arms scoring; carry the armed token onto your three-cell target goal.",
+    "natural_termination": "The first armed-token carried goal naturally ends play; otherwise horizon 96 truncates. Natural completion at the horizon takes priority.",
+    "interaction": "Each possession permits only two successful carrier moves and drops after four held ticks. Cardinal throws advance a real token one tile per transition. Teammate receiving and opponent guarding extend contact reach; interceptions and adjacent tackles reset goal arming. Bodies block each other routes.",
+    "observation_access": "Fully observable public map, every player and token position/velocity/possession/timer, goals, scores and actual event flags. All entity masks are true; each float32 feature is an integer divided by 128."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "ball_flight"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "ball_age"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "ball_travel"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

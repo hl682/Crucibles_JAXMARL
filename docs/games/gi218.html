@@ -1,0 +1,669 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>索道共作谷 · Ropeway Commons · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI218 / SPATIAL</p><h1>索道共作谷 · Ropeway Commons</h1><p class="lead">十二位工人采矿、建塔、配重并跨索道运货。</p><div class="stats"><span>12 agents</span><span>28 actions</span><span>671 observation columns</span><span>512 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi218.gif" alt="Original saved demonstration gi218"></section><section><h2>Run this game</h2><pre>crucibles play --game 218</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Move extracted stone and ore to other crews&#x27; villages while choosing between hand-carry routes and a shared, repairable ropeway; leave infrastructure and depleted deposits persistent through the 512-step window.&quot;,
+  &quot;natural_termination&quot;: &quot;No natural success or joint-failure terminal. This is a continuing finite world. H=512 truncates the observation window, not a success event; done inputs are absorbing.&quot;,
+  &quot;interaction&quot;: &quot;Each pylon supports both incident loaded spans. A second crew loading its carrier can overload a neighbor&#x27;s transport; a hauler&#x27;s temporary brace, permanent counterweight, unload or reroute changes both crews&#x27; next feasible movements. Material and tool handoffs physically change a neighbor&#x27;s inventory and capabilities.&quot;,
+  &quot;observation_access&quot;: &quot;Full public physical state: every observer receives actor ID followed by the identical public_keys vector. Agent inventories, anchor load/support, finite deposits, carrier positions, routing direction, village receipts and component rewards are public. Visibility masks for all entity groups are true. Constant active/visibility arrays contain no private information.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 20. Observability: fully_observable.</p></section><section><h2>Rules</h2><ol><li>Four three-person crews share a square ropeway and foreign-village delivery goals. Crew numbers and current tools are native actor attributes.</li><li>Move on block terrain. Rock blocks foot travel, while the central gap and cable routes permit hand-carry alternatives. Occupied or contested cells stop movement.</li><li>Pick miners extract stone/ore; anyone gathers fibre. Spanner riggers craft cable, install pylons and repair anchors. Yoke haulers install or reclaim counterweights and brace.</li><li>Each carrier holds one stone or ore. Load, unload and reverse actions name the span and require distance at most one from its real current position.</li><li>Every incident loaded carrier adds two tension to a shared pylon. A gust adds one. Support is two plus counterweights plus this step&#x27;s braces.</li><li>Overloaded anchors stall their adjacent carriers and lose health every third tick. Zero-health anchors need repair; their installed structures persist.</li><li>Delivering consumes a unit at another crew&#x27;s depot. The courier, origin crew and recipient crew receive distinct native rewards; material and energy costs are explicit.</li><li>The public map shows installed and broken cable routes. Wait recovers two energy; rest recovers four. H=512 truncates a continuing finite valley, without declaring success.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Ropeway Commons
+
+Status: AUTHORED_NOT_EXECUTED. Parentless initial blind source, attempt_00, train only. Requested author gpt-6-astra / max; measured provider identity, tokens, cost and reasoning telemetry are unavailable.
+
+Native dimensions are A=12, O=671, U=28, H=512. This source is an original proposal, not a claim of runtime compatibility, solvability, learned behavior or transfer.
+
+## Spatial rules and persistence
+
+A 21 by 17 block valley contains eight finite deposits, four village depots, four pylon footings and four carriers on a clockwise square. Actors begin as four miner/rigger/hauler crews. Their current tool, rather than fixed identity, controls specialized actions; exchange tools changes which actor can mine ore, build, repair, brace or install weights. Agents carry at most eight material units in four inventory columns. Reset varies only deposit stocks from 18 through 24 using the supplied key.
+
+Pylons 0 and 1 start built with health six. Pylons 2 and 3 require two stone and one cable; each rigger begins with three stone and one cable. Making cable consumes two fibre and one ore. Quarrying reduces visible stock permanently. Construction, counterweight placement, extraction and village receipts persist within the episode. Anchors can wear to zero but remain installed and can be repaired by three health for one stone. No resource regrowth or cross-process persistence is claimed.
+
+A carrier is a genuine moving object on a straight span between consecutive pylons, with one cargo unit, loading-crew tag, integer progress and signed direction. It advances at most one grid cell per tick and only while loaded. At an endpoint it remains parked until reversed, unloaded or otherwise acted upon. Any nearby crew can unload it, allowing intermediate transfers onto another span and conflicting claims over shared freight. Empty carriers can be hand-positioned only by loading, moving, reversing and unloading; there is no off-scene teleport.
+
+At each anchor, tension is twice the number of loaded incident spans plus a 0/1 gust alternating in 16-tick blocks. Support is two plus installed counterweights plus two for every current brace. Both endpoint anchors must be built, nonbroken and not overloaded for a carrier to advance. Excess tension stalls the adjacent carriers; on old-clock t mod 3 equal to 2 it removes one health from each overloaded nonbroken anchor. Unloading, bracing or redistributing stone as counterweights therefore changes another crew&#x27;s movement opportunities immediately and its repair bill later.
+
+Hand-carrying around the central rock wall avoids cable congestion but spends actor energy and time. Installing weights uses deliverable stone and can later be reversed to reclaim it, at the price of renewed overload risk. A crew can choose to support another delivery, unload a contested carrier, reverse its route or bypass the network. Deposits and carried materials are finite, and only consumed foreign-village deliveries and first construction produce positive event rewards; harvesting alone has no reward.
+
+Objects at distance at most one in Manhattan geometry can be manipulated. Span actions explicitly select one of four carriers; other interactions choose eligible nearest objects or lowest-ID adjacent recipients. Rest and wait restore finite energy, so local mistakes and broken anchors do not naturally end the world.
+
+## Native action dictionary
+
+0. Wait and recover two energy.
+1. Move north.
+2. Move east.
+3. Move south.
+4. Move west.
+5. Quarry adjacent stock; pick required for stone or ore.
+6. Make one cable from two fibre and one ore with spanner.
+7. Build adjacent pylon: two stone and one cable, spanner.
+8. Brace adjacent pylon this step with hauling yoke.
+9. Repair adjacent anchor by three health for one stone, spanner.
+10. Load span 0 carrier; ore before stone.
+11. Load span 1 carrier; ore before stone.
+12. Load span 2 carrier; ore before stone.
+13. Load span 3 carrier; ore before stone.
+14. Unload span 0 carrier.
+15. Unload span 1 carrier.
+16. Unload span 2 carrier.
+17. Unload span 3 carrier.
+18. Reverse span 0 carrier direction.
+19. Reverse span 1 carrier direction.
+20. Reverse span 2 carrier direction.
+21. Reverse span 3 carrier direction.
+22. Install one stone counterweight, hauling yoke.
+23. Withdraw one counterweight stone, hauling yoke.
+24. Deliver ore or stone to an adjacent foreign village.
+25. Give first carried material to lowest-ID adjacent actor with room.
+26. Exchange tools with lowest-ID adjacent actor.
+27. Rest and recover four energy.
+
+## Observation, terminal and human-control contract
+
+Full public physical state: every observer receives actor ID followed by the identical public_keys vector. Agent inventories, anchor load/support, finite deposits, carrier positions, routing direction, village receipts and component rewards are public. Visibility masks for all entity groups are true. Constant active/visibility arrays contain no private information.
+
+Observations prepend the explicit self fields in manifest order, then flatten public_keys in their literal source order. Every column is labelled; all values are float32 and bounded by [-2, 6144]. Native legal_actions is bool[A,U]; the renderer must not display hidden order/granary attributes to another role. Full-state debug views are separate from role views.
+
+This finite world has no natural joint terminal. H=512 is a truncation window, not success. A nonterminal call increments int32 t once; terminated remains false; truncated=(t&gt;=H)&amp;~terminated; done is their disjunction. The absorbing raw branch returns the identical state and observation, zero float32 rewards, all dones true and unchanged causes. There is no raw autoreset.
+
+All integer design fields use int32 and all flags bool; the supplied uint32 reset key remains external trajectory provenance. Stochastic reset variables use only that key; subsequent rules are deterministic and the step key is unused. No imported benchmark implementation, upstream game source, policy, asset or training baseline is embedded.
+
+Human and AI controls supply the same scalar int32 actor components to the same raw_step. Actor IDs and crew/farm/settlement attributes support selecting one or multiple actors. Scene metadata supplies actual positions, attributes, visibility and actions; it does not implement a browser, camera UI, animation, JaxMARL adapter or runtime integration.
+
+Movement is simultaneous and conservative: proposals entering another actor pre-step cell, any contested destination, a blocked tile or an outer boundary fail. Swaps and following into a just-vacated cell fail. Movement masks permit attempted blocked directions; failed movement leaves position unchanged. Interactions then resolve by ascending actor ID, with resource checks repeated against the current carried state. A mask-valid interaction can become a no-op after a lower-ID actor consumes the object or a neighbor moves. Nearest eligible object and then lowest index resolve spatial ties as defined in source. Invalid/out-of-range actions become wait; only wait remains legal after done.
+
+## Reward allocation and analytic bounds
+
+All five float32 components are returned and exposed. Each actor has one action. At most three own-crew deliveries contribute 4.2 to a member and at most nine foreign deliveries to that crew contribute 9.0; personal reward is at most 0.6. Only two initially unbuilt pylons can produce first-installation events, at most 0.5 shared reward. Thus 14.3 is a loose positive per-actor bound. One action spends at most three material units plus one effort, and at most four anchors wear, so the lower bound is no smaller than -0.57. Declared [-2,20] is conservative. Village cumulative receipt cannot exceed 12*512=6144. Counts, energy, tools, progress and all observed reward components fit [-2,6144].
+
+- Component 0: Personal: 0.6 per actor delivery.
+- Component 1: Crew/recipient: 1.4 to each member of the delivering crew and 1.0 to each member of the receiving foreign crew per unit.
+- Component 2: Infrastructure: 0.25 to every actor per first pylon installation.
+- Component 3: Costs: -0.02 per move or non-rest interaction effort and -0.05 per material unit spent on construction, repair, counterweight installation or cable crafting.
+- Component 4: Damage: -0.10 to every actor per anchor wear event.
+
+## Literal hypotheses and evidence limits
+
+Script brace_two_crews loads spans 0 and 1 while the other riggers construct the missing pylons; it then proposes one brace at their shared anchor. Script quarry_to_rigger walks a miner to a stone deposit, extracts one unit and carries it to an adjacent rigger. The pair shares the one-tick load/build prefix. Only actor 5&#x27;s first suffix action changes from brace to wait. With two incident loads, that one support action is intended to alter both carriers&#x27; next positions, with later wear/stalling visible over four suffix ticks. This is source-derived timing only, not a measured intervention result.
+
+The paired suffixes have equal length 4 and differ in exactly one component: suffix step 0, actor 5. Prefixes and suffixes are literal JSON joint-action arrays. Both scripts and the pair have seed 0 selected without any trial. Their intention is a future counterfactual inspection, not an observed outcome.
+
+Declared invariants are source obligations: actor positions are unique under conservative movement; positions/clocks and the listed inventory, resource and progress arrays have finite bounds. No conservation claim is made across extraction, growth, expiry, meals, rain, overflow, damage or explicit resource spending. Static checks cannot establish these obligations at runtime.
+
+## Literal source evidence
+
+- candidate.py:L13-L52: reset; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+- candidate.py:L54-L55: distances; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+- candidate.py:L57-L66: cable_tiles; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+- candidate.py:L68-L70: observe; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+- candidate.py:L72-L97: legal_actions; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+- candidate.py:L99-L162: interact; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+- candidate.py:L164-L207: advance; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+- candidate.py:L209-L211: raw_step; exact source bytes are bound by SHA-256 92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d.
+
+## Actual inputs and provenance
+
+author_input_freeze.json lists all 25 actually-read current allowed inputs: two controlling authorities and 23 payloads. The four current designs and requests were read for this disjoint batch. Every byte count and SHA was checked against the current authority. The permitted PPO implementation snapshot was not read. Official README snapshots were byte-read for identity; only the recorded excerpt lines were displayed for API/design context.
+
+Reference ideas: Craftax provides context for bounded persistent exploration; JaxMARL describes per-agent dictionaries and joint done as an integration reference; Pgx separates state, legal masks and supplied randomness; PureJaxRL is algorithm implementation context, not a game library or a substitute learner. No compatibility or performance claim is transferred from these references.
+
+Only author-time stdlib AST/data/hash checks and the supplied trusted whitelist, manifest and scene validators were run. No candidate import or method, JAX/NumPy, JIT/vmap, rollout, render, training, seed search, external model, network or local model was executed. No prior source, feedback, diagnosis, selection or heldout evidence was accessed. Numerical, gameplay, animation, human-control, learning, throughput and transfer checks remain unperformed.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait and recover two energy</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Quarry adjacent stock; pick required for stone or ore</span></div><div class="action"><b>6</b><span>Make one cable from two fibre and one ore with spanner</span></div><div class="action"><b>7</b><span>Build adjacent pylon: two stone and one cable, spanner</span></div><div class="action"><b>8</b><span>Brace adjacent pylon this step with hauling yoke</span></div><div class="action"><b>9</b><span>Repair adjacent anchor by three health for one stone, spanner</span></div><div class="action"><b>10</b><span>Load span 0 carrier; ore before stone</span></div><div class="action"><b>11</b><span>Load span 1 carrier; ore before stone</span></div><div class="action"><b>12</b><span>Load span 2 carrier; ore before stone</span></div><div class="action"><b>13</b><span>Load span 3 carrier; ore before stone</span></div><div class="action"><b>14</b><span>Unload span 0 carrier</span></div><div class="action"><b>15</b><span>Unload span 1 carrier</span></div><div class="action"><b>16</b><span>Unload span 2 carrier</span></div><div class="action"><b>17</b><span>Unload span 3 carrier</span></div><div class="action"><b>18</b><span>Reverse span 0 carrier direction</span></div><div class="action"><b>19</b><span>Reverse span 1 carrier direction</span></div><div class="action"><b>20</b><span>Reverse span 2 carrier direction</span></div><div class="action"><b>21</b><span>Reverse span 3 carrier direction</span></div><div class="action"><b>22</b><span>Install one stone counterweight, hauling yoke</span></div><div class="action"><b>23</b><span>Withdraw one counterweight stone, hauling yoke</span></div><div class="action"><b>24</b><span>Deliver ore or stone to an adjacent foreign village</span></div><div class="action"><b>25</b><span>Give first carried material to lowest-ID adjacent actor with room</span></div><div class="action"><b>26</b><span>Exchange tools with lowest-ID adjacent actor</span></div><div class="action"><b>27</b><span>Rest and recover four energy</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>actor_00</b> Cairn miner</p><p><b>actor_01</b> Cairn rigger</p><p><b>actor_02</b> Cairn hauler</p><p><b>actor_03</b> Fern miner</p><p><b>actor_04</b> Fern rigger</p><p><b>actor_05</b> Fern hauler</p><p><b>actor_06</b> Ash miner</p><p><b>actor_07</b> Ash rigger</p><p><b>actor_08</b> Ash hauler</p><p><b>actor_09</b> Flint miner</p><p><b>actor_10</b> Flint rigger</p><p><b>actor_11</b> Flint hauler</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;Self actor ID 0-11; identifies which component the observer controls.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;t: Native step clock; nonterminal transitions increment once. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;done: Joint terminal flag, true only at the declared cap in this continuing world. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;terminated: Natural termination cause; always false under this continuing-world rule. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;meaning&quot;: &quot;truncated: Cap cause with natural-termination priority; preserved after done. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      362
+    ],
+    &quot;meaning&quot;: &quot;terrain: Row-major native tile map with values in the world legend. Shape [17, 21], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      362,
+      386
+    ],
+    &quot;meaning&quot;: &quot;pos: Actor coordinates in ordered actor-ID order, x then y. Shape [12, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      386,
+      398
+    ],
+    &quot;meaning&quot;: &quot;crew: Crew 0 Cairn, 1 Fern, 2 Ash, 3 Flint Shape [12], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      398,
+      410
+    ],
+    &quot;meaning&quot;: &quot;tool: Tool 1 pick, 2 spanner, 3 hauling yoke; freely exchangeable Shape [12], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      410,
+      458
+    ],
+    &quot;meaning&quot;: &quot;inventory: Inventory columns stone, fibre, ore, cable; total capacity eight Shape [12, 4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      458,
+      470
+    ],
+    &quot;meaning&quot;: &quot;energy: Energy 0-12; wait or rest replenishes it Shape [12], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      470,
+      478
+    ],
+    &quot;meaning&quot;: &quot;village_pos: Actual x,y coordinates for Village depots; index equals recipient crew in entity-index order. Shape [4, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      478,
+      482
+    ],
+    &quot;meaning&quot;: &quot;received: Cumulative stone or ore received; deliveries consume one unit Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      482,
+      498
+    ],
+    &quot;meaning&quot;: &quot;node_pos: Actual x,y coordinates for Original stone, fibre and ore deposits in entity-index order. Shape [8, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      498,
+      506
+    ],
+    &quot;meaning&quot;: &quot;node_kind: Resource 0 stone, 1 fibre, 2 ore Shape [8], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      506,
+      514
+    ],
+    &quot;meaning&quot;: &quot;stock: Remaining finite extraction stock; does not renew Shape [8], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      514,
+      522
+    ],
+    &quot;meaning&quot;: &quot;anchor_pos: Actual x,y coordinates for Shared pylon anchors in clockwise order in entity-index order. Shape [4, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      522,
+      526
+    ],
+    &quot;meaning&quot;: &quot;built: Pylon has been installed and remains installed after damage Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      526,
+      530
+    ],
+    &quot;meaning&quot;: &quot;health: Repairable anchor health 0-6; zero stops adjacent carriers Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      530,
+      534
+    ],
+    &quot;meaning&quot;: &quot;counterweight: Installed stone counterweight units 0-3 Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      534,
+      538
+    ],
+    &quot;meaning&quot;: &quot;tension: Two per incident loaded carrier plus the current gust Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      538,
+      542
+    ],
+    &quot;meaning&quot;: &quot;braced: This-step extra support at each anchor, two units per brace action. Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      542,
+      550
+    ],
+    &quot;meaning&quot;: &quot;carrier_pos: Actual x,y coordinates for Four single-unit cable carriers in entity-index order. Shape [4, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      550,
+      554
+    ],
+    &quot;meaning&quot;: &quot;load: Cargo 0 empty, 1 stone, 3 ore Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      554,
+      558
+    ],
+    &quot;meaning&quot;: &quot;cargo_crew: Loading crew -1 when empty; other crews may unload Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      558,
+      562
+    ],
+    &quot;meaning&quot;: &quot;progress: Distance along the assigned straight cable span Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      562,
+      566
+    ],
+    &quot;meaning&quot;: &quot;direction: Signed direction along the span; a parked carrier can reverse Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      566,
+      570
+    ],
+    &quot;meaning&quot;: &quot;span_from: Starting pylon index for the assigned span Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      570,
+      574
+    ],
+    &quot;meaning&quot;: &quot;span_to: Ending pylon index for the assigned span Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      574,
+      578
+    ],
+    &quot;meaning&quot;: &quot;span_length: Span length in native grid cells Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      578,
+      579
+    ],
+    &quot;meaning&quot;: &quot;wind: Binary gust level; alternates every 16 old-clock ticks. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      579,
+      591
+    ],
+    &quot;meaning&quot;: &quot;delivered: One unit per actor&#x27;s actual foreign-village delivery this step. Shape [12], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      591,
+      595
+    ],
+    &quot;meaning&quot;: &quot;constructed: First pylon constructions this step, not repairs. Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      595,
+      599
+    ],
+    &quot;meaning&quot;: &quot;damaged: Anchor wear events this step. Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      599,
+      611
+    ],
+    &quot;meaning&quot;: &quot;transferred: Successful material handoffs per actor this step. Shape [12], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      611,
+      671
+    ],
+    &quot;meaning&quot;: &quot;reward_parts: Columns: personal delivery, crew/recipient delivery, first infrastructure, effort/material cost, shared anchor damage. Shape [12, 5], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;workers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 12,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Crew 0 Cairn, 1 Fern, 2 Ash, 3 Flint&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tool 1 pick, 2 spanner, 3 hauling yoke; freely exchangeable&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;inventory&quot;
+        ],
+        &quot;meaning&quot;: &quot;Inventory columns stone, fibre, ore, cable; total capacity eight&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;energy&quot;
+        ],
+        &quot;meaning&quot;: &quot;Energy 0-12; wait or rest replenishes it&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;villages&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;village_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;village_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;village_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;received&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cumulative stone or ore received; deliveries consume one unit&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;deposits&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;node_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;node_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;node_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;node_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;Resource 0 stone, 1 fibre, 2 ore&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining finite extraction stock; does not renew&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;anchors&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;anchor_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;anchor_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;anchor_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;built&quot;
+        ],
+        &quot;meaning&quot;: &quot;Pylon has been installed and remains installed after damage&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Repairable anchor health 0-6; zero stops adjacent carriers&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;counterweight&quot;
+        ],
+        &quot;meaning&quot;: &quot;Installed stone counterweight units 0-3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tension&quot;
+        ],
+        &quot;meaning&quot;: &quot;Two per incident loaded carrier plus the current gust&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;braced&quot;
+        ],
+        &quot;meaning&quot;: &quot;Additional support from this step&#x27;s bracing actors&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;carriers&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;carrier_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;carrier_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;carrier_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cargo 0 empty, 1 stone, 3 ore&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo_crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Loading crew -1 when empty; other crews may unload&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Distance along the assigned straight cable span&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;direction&quot;
+        ],
+        &quot;meaning&quot;: &quot;Signed direction along the span; a parked carrier can reverse&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;span_from&quot;
+        ],
+        &quot;meaning&quot;: &quot;Starting pylon index for the assigned span&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;span_to&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ending pylon index for the assigned span&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;span_length&quot;
+        ],
+        &quot;meaning&quot;: &quot;Span length in native grid cells&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 218,
+  &quot;key&quot;: &quot;gi218&quot;,
+  &quot;title&quot;: &quot;索道共作谷 · Ropeway Commons&quot;,
+  &quot;summary&quot;: &quot;十二位工人采矿、建塔、配重并跨索道运货。&quot;,
+  &quot;tags&quot;: [
+    &quot;方块工程&quot;,
+    &quot;12角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 12,
+    &quot;observation_size&quot;: 671,
+    &quot;num_actions&quot;: 28,
+    &quot;max_steps&quot;: 512
+  },
+  &quot;source_sha256&quot;: &quot;92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d&quot;,
+  &quot;manifest_sha256&quot;: &quot;463d5e0ebf8b00dde19eb13acf24f75081bfb0449ac3003f2fb5df317e1f3bca&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d&quot;,
+      &quot;bytes&quot;: 15986,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00218/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;463d5e0ebf8b00dde19eb13acf24f75081bfb0449ac3003f2fb5df317e1f3bca&quot;,
+      &quot;bytes&quot;: 29158,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00218/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;1b47159422517cbbef274c4026a944b50f2db89dfd7abf574c6f68439f0cbba1&quot;,
+      &quot;bytes&quot;: 17613,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00218/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;ccff4cf2a149c8846294cdcdeb6917e21522f43ce28a4b4b20cb4d2f52165ab7&quot;,
+      &quot;bytes&quot;: 12171,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00218/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;cbdfcf5ea5ba8e5fefc351d5f675854df08d4a7c45d8fd2f3087af15c284f688&quot;,
+      &quot;bytes&quot;: 5111,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00218/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi218">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

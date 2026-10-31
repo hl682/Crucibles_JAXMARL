@@ -1,0 +1,315 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "05b69a62c906aaabddd68e35bd6c5b8877b664f2dc4595ea1637576418bb451b",
+  "manifest_sha256": "5ce1de7653e7e0ae528d8b9c9a1d3c22dbfcfa411329ae4be547f40eed969d92",
+  "title": "Orbit Salvage",
+  "rules": [
+    "Three tugs share a heavy salvage body with bounded integer inertia. Two aligned attached thrusts are needed for one unit of acceleration.",
+    "Action 6 latches or releases before force aggregation; attached offsets move rigidly with the cargo. Fuel and all geometric state are public.",
+    "The assembly resolves first against boundaries and old free-tug cells. Free tugs then avoid the settled assembly and old free-tug positions; contested free targets reject all contenders.",
+    "A two-tug brake can arrest shared momentum. Cargo docks only at an exact port with zero velocity, at least two attachments and an open window.",
+    "Dock values are private. Only each role observation reveals its preferred port; the scene does not expose peers values.",
+    "AUTHOR SOURCE ONLY: native state and scene mappings are supplied, but no replay, animation, causal effect or learning result has been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      10
+    ]
+  },
+  "entities": [
+    {
+      "id": "tugs",
+      "glyph": "robot",
+      "label": "Tugs",
+      "color": "#3879B8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "vel"
+          ],
+          "label": "Native integer velocity [vx,vy]"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Current transferable fuel"
+        },
+        {
+          "state_path": [
+            "attached"
+          ],
+          "label": "Attached to the shared load"
+        }
+      ]
+    },
+    {
+      "id": "salvage",
+      "glyph": "crate",
+      "label": "Heavy salvage",
+      "color": "#C78B36",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_vel"
+          ],
+          "label": "Shared load velocity [vx,vy]"
+        },
+        {
+          "state_path": [
+            "cargo_health"
+          ],
+          "label": "Remaining collision integrity"
+        },
+        {
+          "state_path": [
+            "cargo_delivered"
+          ],
+          "label": "Load docked"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "glyph": "gate",
+      "label": "Docking ports",
+      "color": "#2E8B68",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "dock_open"
+          ],
+          "label": "Public six-tick window is open"
+        },
+        {
+          "state_path": [
+            "dock_occupied"
+          ],
+          "label": "Load delivered here"
+        }
+      ]
+    },
+    {
+      "id": "tethers",
+      "glyph": "tool",
+      "label": "Attached tether midpoints",
+      "color": "#8271B9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tether_vector"
+          ],
+          "label": "Actual tug-to-cargo displacement; midpoint is native geometry"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "attached"
+      ],
+      "meaning": "Persistent attachment state per tug",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "dock_occupied"
+      ],
+      "meaning": "Persistent occupied dock state",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cargo_health"
+      ],
+      "meaning": "Current salvage integrity",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Coast"
+    },
+    {
+      "id": 1,
+      "label": "Thrust west; spend one fuel"
+    },
+    {
+      "id": 2,
+      "label": "Thrust east; spend one fuel"
+    },
+    {
+      "id": 3,
+      "label": "Thrust north; spend one fuel"
+    },
+    {
+      "id": 4,
+      "label": "Thrust south; spend one fuel"
+    },
+    {
+      "id": 5,
+      "label": "Brake; spend one fuel"
+    },
+    {
+      "id": 6,
+      "label": "Toggle tether at cardinal adjacency"
+    },
+    {
+      "id": 7,
+      "label": "Give one fuel to poorest old adjacent peer"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own x/12,y/10",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        4
+      ],
+      "meaning": "Own vx,vy in [-1,1]",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own fuel/54",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own attached flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        8
+      ],
+      "meaning": "Own private preferred dock one-hot; values are 4 there and 1 elsewhere",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "meaning": "Clock/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        15
+      ],
+      "meaning": "All tug positions in agent order, each x/12,y/10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        21
+      ],
+      "meaning": "All tug vx,vy pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "All tug fuel/54",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "meaning": "All attachment flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        29
+      ],
+      "meaning": "Cargo x/12,y/10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        31
+      ],
+      "meaning": "Cargo vx,vy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        32
+      ],
+      "meaning": "Cargo integrity/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        36
+      ],
+      "meaning": "Two dock positions, each x/12,y/10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        38
+      ],
+      "meaning": "Two public open-window flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        40
+      ],
+      "meaning": "Two occupied-dock flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "meaning": "Joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        44
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

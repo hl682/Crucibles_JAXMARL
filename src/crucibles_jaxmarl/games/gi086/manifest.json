@@ -1,0 +1,714 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00086",
+  "source_sha256": "f1aed63c212284b84fd930524b3b404e66b775c0db0d550431329fe36664c0c2",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 40,
+  "num_actions": 8,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -6.0,
+  "reward_high": 9.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "initial west handle carrier; may release and change jobs"
+    },
+    {
+      "id": "agent_1",
+      "role": "initial east handle carrier; may release and change jobs"
+    },
+    {
+      "id": "agent_2",
+      "role": "initial pump tender; may move, take a handle or obstruct passage"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "WAIT"
+    },
+    {
+      "id": 1,
+      "label": "NORTH intent"
+    },
+    {
+      "id": 2,
+      "label": "EAST intent"
+    },
+    {
+      "id": 3,
+      "label": "SOUTH intent"
+    },
+    {
+      "id": 4,
+      "label": "WEST intent"
+    },
+    {
+      "id": 5,
+      "label": "TOGGLE GRIP at an end handle"
+    },
+    {
+      "id": 6,
+      "label": "JOINT QUARTER TURN"
+    },
+    {
+      "id": 7,
+      "label": "PUMP at the winch"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "dtype": "int32",
+      "shape": [
+        9,
+        15
+      ]
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "grip"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "cargo_center"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "cargo_axis"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        1
+      ]
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "gate_timer"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "pump_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "pump_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "pump_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        1
+      ]
+    },
+    {
+      "path": [
+        "pressure"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        1
+      ]
+    },
+    {
+      "path": [
+        "pump_event"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "cargo_moved"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "cargo_rotated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "move_count"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "jammed"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      14,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable workshop floor",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "solid wall",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "timed gate aperture; gate_open determines clearance",
+          "color": "#F59E0B"
+        },
+        {
+          "value": 3,
+          "meaning": "horizontal delivery footprint centered at [10,4]",
+          "color": "#86EFAC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "grip"
+          ],
+          "meaning": "Handle: -1 free, 0 negative end, 1 positive end",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "beam",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_axis"
+          ],
+          "meaning": "Beam axis: 0 horizontal, 1 vertical",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Open during this recorded state",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "meaning": "Open turns remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "winch",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "pump_pos"
+      ],
+      "active": [
+        "pump_active"
+      ],
+      "visibility": [
+        "pump_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pressure"
+          ],
+          "meaning": "Shared hydraulic charge, capacity 10",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pump_event"
+      ],
+      "meaning": "Roles that pumped on the last live transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_moved"
+      ],
+      "meaning": "A jointly agreed translation was accepted",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_rotated"
+      ],
+      "meaning": "A jointly agreed quarter turn was accepted",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "move_count"
+      ],
+      "meaning": "Number of accepted cargo translations",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "jammed"
+      ],
+      "meaning": "Gate closure trapped a worker or beam and ended the episode",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Horizontal cargo reached the dock without a jam",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "All three worker [x/14,y/8] positions in identity order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "All grips encoded (grip+1)/2: free=0, negative end=0.5, positive end=1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        15
+      ],
+      "meaning": "All three actual beam-cell [x/14,y/8] positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        16
+      ],
+      "meaning": "Beam axis: horizontal 0 or vertical 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        18
+      ],
+      "meaning": "Dock center [x/14,y/8]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        20
+      ],
+      "meaning": "Winch [x/14,y/8]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        22
+      ],
+      "meaning": "Gate [x/14,y/8]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        23
+      ],
+      "meaning": "Shared pressure /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        24
+      ],
+      "meaning": "Gate remaining timer /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        25
+      ],
+      "meaning": "Gate open bit",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        34
+      ],
+      "meaning": "In order: t/80, done, success, jammed, cargo_moved, cargo_rotated, move_count/80, terminated, truncated",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Per-worker pump event bits from the last live transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Three-way observer identity one-hot",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Deliver the actual three-cell beam horizontally with center [10,4] before a jam or the 80-step bound.",
+    "natural_termination": "Success at the horizontal dock; failure if the timer closes while any worker or beam cell occupies [6,4]. Success excludes a jam.",
+    "interaction": "Two distinct gripped ends require equal motion or rotation commands; a third worker can recharge the shared pool, refresh the gate, block geometry or exchange roles.",
+    "observation_access": "Public fixed map and all dynamic gameplay state are visible to every role; observer identity is appended. There is no privileged renderer-only task information."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pressure"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "move_count"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

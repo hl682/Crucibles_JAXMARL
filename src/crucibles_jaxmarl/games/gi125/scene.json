@@ -1,0 +1,442 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "892828a25bc9e7eee939ebe10ebde9c3d16ebcfc21767839a8ad32de2b3d7847",
+  "manifest_sha256": "e0918e738fb852eafd666f2b168c0c132d514d7a8a86ea6a2ecaa72be1f1384c",
+  "title": "Common Kiln — private orders in a coupled workshop",
+  "rules": [
+    "Each worker privately requires one annealed, tempered or composite product; reset permutes one of each order among workers.",
+    "Six raw material units are conserved across active, delivered and consumed slots. Composite assembly moves two units into one slot.",
+    "Each worker carries at most one workpiece. Shared tongs are a separate single-owner resource.",
+    "Stoking consumes one of six fuel and raises kiln heat by three, capped at eight. Venting lowers it by two.",
+    "The kiln loses one heat every fourth tick. Coolant replenishes one every eighth tick, capped at four.",
+    "Raw loading requires heat at least three; at heat above four it requires tongs. Processing takes two ticks with tongs or three manually.",
+    "Outside the kiln, hot material loses one heat every third tick, or every sixth tick when carried by the tongs holder; zero heat becomes annealed.",
+    "Quenching costs one coolant. Peak heat at least six and current heat at least three make tempered output; otherwise output is annealed.",
+    "Press two annealed one-unit pieces, one carried and one nearby on the floor; processing takes two ticks with tongs or three manually.",
+    "Tongs used by kiln or press remain occupied until completion. Completed output and tongs eject at the station for anyone to collect.",
+    "Only the correct private product is accepted at dispatch. Completion gives the worker one and all workers 0.2; fuel use costs its user 0.02.",
+    "Workers arbitrate resources in rotating clock order. All three orders complete ends naturally; horizon 144."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#E4E8EC"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall; blocks movement",
+          "color": "#374151"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Workers with private orders",
+      "color": "#4F79B7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carried item (-1 means empty)"
+        },
+        {
+          "state_path": [
+            "completed"
+          ],
+          "label": "Personal order complete"
+        }
+      ]
+    },
+    {
+      "id": "workpieces",
+      "glyph": "resource",
+      "label": "Conserved material workpieces",
+      "color": "#C18643",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "item_owner"
+          ],
+          "label": "Carrier or machine owner code"
+        },
+        {
+          "state_path": [
+            "item_stage"
+          ],
+          "label": "Raw/hot/annealed/tempered/composite"
+        },
+        {
+          "state_path": [
+            "item_heat"
+          ],
+          "label": "Current item heat (0-8)"
+        },
+        {
+          "state_path": [
+            "item_peak"
+          ],
+          "label": "Peak item heat (0-8)"
+        },
+        {
+          "state_path": [
+            "item_mass"
+          ],
+          "label": "Material units (1 or 2)"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "square",
+      "label": "Kiln, cooling, press and dispatch",
+      "color": "#7B6C8E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_timer"
+          ],
+          "label": "Remaining operation/cooldown ticks"
+        },
+        {
+          "state_path": [
+            "station_item"
+          ],
+          "label": "Occupied item slot (-1 means empty)"
+        }
+      ]
+    },
+    {
+      "id": "tongs",
+      "glyph": "tool",
+      "label": "One shared pair of tongs",
+      "color": "#396E81",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_owner"
+          ],
+          "label": "Floor, worker or machine owner code"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "temperature"
+      ],
+      "meaning": "Current shared kiln heat; not a per-step event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "fuel"
+      ],
+      "meaning": "Remaining shared fuel; not a per-step event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "coolant"
+      ],
+      "meaning": "Current shared cooling reservoir; not a per-step event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "heat_event"
+      ],
+      "meaning": "Fuel was consumed or an adjacent vent was commanded this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "quench_event"
+      ],
+      "meaning": "A hot carried workpiece was quenched this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "assembly_event"
+      ],
+      "meaning": "Two annealed one-unit workpieces were committed to the shared press this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "A worker delivered the exact product required by its own order this transition",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; also permits receiving an offered item or tool"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up nearest-index floor item or drop carried item"
+    },
+    {
+      "id": 6,
+      "label": "Use adjacent station with carried item: load, quench, assemble or deliver"
+    },
+    {
+      "id": 7,
+      "label": "Spend one shared fuel to raise nearby kiln heat by three"
+    },
+    {
+      "id": 8,
+      "label": "Vent nearby kiln heat by two"
+    },
+    {
+      "id": 9,
+      "label": "Offer carried item, otherwise held tongs, to an adjacent waiting partner"
+    },
+    {
+      "id": 10,
+      "label": "Pick up or drop the shared tongs"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "All worker xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        27
+      ],
+      "meaning": "Each worker carried item one-hot: empty then six item slots",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        30
+      ],
+      "meaning": "Each worker completed-order flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        32
+      ],
+      "meaning": "Shared tongs xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        38
+      ],
+      "meaning": "Tongs owner one-hot: floor, worker 0,1,2, kiln, press",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        46
+      ],
+      "meaning": "Kiln, cooling, press and dispatch station xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        50
+      ],
+      "meaning": "Station operation/cooldown timers /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        78
+      ],
+      "meaning": "Each station item one-hot: empty then six item slots",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        78,
+        79
+      ],
+      "meaning": "Kiln temperature /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "meaning": "Shared remaining fuel /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "meaning": "Shared coolant /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        93
+      ],
+      "meaning": "All six item-slot xy /12; inactive slots retained for provenance",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        141
+      ],
+      "meaning": "Each item owner one-hot: delivered, consumed, floor, worker 0,1,2, kiln, press",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        171
+      ],
+      "meaning": "Each item stage one-hot: raw, hot, annealed, tempered, composite",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        171,
+        177
+      ],
+      "meaning": "Item heat /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        177,
+        183
+      ],
+      "meaning": "Item peak heat /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        183,
+        189
+      ],
+      "meaning": "Material units per item slot /2, including delivered units",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        189,
+        195
+      ],
+      "meaning": "Item active flags; consumed and delivered slots inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        198
+      ],
+      "meaning": "Own private order one-hot: annealed, tempered, composite",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        198,
+        201
+      ],
+      "meaning": "Own worker identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        201,
+        202
+      ],
+      "meaning": "Clock /144",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        202,
+        345
+      ],
+      "meaning": "Public 11 by 13 static tile map in yx order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        345,
+        348
+      ],
+      "meaning": "Latest fuel-or-vent, quench and assembly-start flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        348,
+        351
+      ],
+      "meaning": "Latest delivery flags per worker",
+      "visibility": "public"
+    }
+  ]
+}

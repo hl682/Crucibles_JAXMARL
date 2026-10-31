@@ -1,0 +1,897 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "19b2e4922d1730850ea0258b8fa2499e8044141fa86d86e5431f6866615a0d8d",
+  "manifest_sha256": "7f467b3ed014cc0a40b9790465c8772c21cac7facb0e7ee9c0b6f4d8126a7ddc",
+  "title": "Mycelium Valley",
+  "rules": [
+    "Eight farms each begin with watering, pruning, grafting and compost-cart tools. Tools and compatible bag resources can move between adjacent gardeners.",
+    "Each farm's two plots share finite soil water and nutrients. Healthy crops advance on staggered eight-tick phases, consuming one of each per growth increment.",
+    "Productive crops yield two fruit but can develop wet-soil disease; resistant crops yield one and block incoming fungal exposure. Grafting changes a real planted trait.",
+    "An open root bed can move one water and one nutrient from the richer neighboring soil to the poorer. Packets traverse the visible x-then-y corridor one cell per tick.",
+    "Wet infected source farms can put disease in a packet. Arrival can infect nonresistant crops at the next farm. Pruning a root destroys its packet and isolates that connection.",
+    "Water comes from two finite shared wells; rain restores it. Organic waste and periodic leaf litter must be collected, carried to bins, composted and spread back onto soil.",
+    "Compost bins have finite input, output and processing stages. Stirring helps processing, but finished compost still needs transport to a farm.",
+    "Fruit delivery consumes fruit and rewards distinct actor, home-farm and foreign-pantry contributions. Costs and crop loss remain visible native components.",
+    "The 25 by 21 valley persists inside H=640. Empty beds, resource shortages, isolated roots and disease remain playable states; the cap is truncation, not success."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      24,
+      20
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable meadow and farm paths",
+          "color": "#DAD6AC"
+        },
+        {
+          "value": 1,
+          "meaning": "Potential buried root corridor; actual connection is shown by its root-bed gate",
+          "color": "#BEAD84"
+        },
+        {
+          "value": 2,
+          "meaning": "Cultivated crop bed",
+          "color": "#9DB57A"
+        },
+        {
+          "value": 3,
+          "meaning": "Farm pantry and community delivery point",
+          "color": "#C8A36F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "gardeners",
+      "glyph": "worker",
+      "label": "Thirty-two gardeners grouped into eight farms",
+      "color": "#A87E51",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "farm"
+          ],
+          "label": "Home farm index 0-7; current tools may be exchanged"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Tool 1 watering, 2 pruning, 3 grafting, 4 compost cart"
+        },
+        {
+          "state_path": [
+            "bag"
+          ],
+          "label": "Bag columns water, seeds, compost, fruit, waste; each at most four"
+        },
+        {
+          "state_path": [
+            "seed_trait"
+          ],
+          "label": "Carried seed trait 1 hardy, 2 productive, 3 resistant"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Energy 0-20; wait or rest restores it"
+        }
+      ]
+    },
+    {
+      "id": "soil_nodes",
+      "glyph": "circle",
+      "label": "Eight shared soil pools at the first plot of each farm",
+      "color": "#A7A178",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water_soil"
+          ],
+          "label": "Shared moisture for two farm plots, bounded 0-8"
+        },
+        {
+          "state_path": [
+            "nutrient"
+          ],
+          "label": "Shared nutrient for two farm plots, bounded 0-8"
+        }
+      ]
+    },
+    {
+      "id": "pantries",
+      "glyph": "flag",
+      "label": "Community pantries; delivered fruit is consumed here",
+      "color": "#C09B63",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fruit_delivered"
+          ],
+          "label": "Cumulative fruit delivered to this pantry during the native episode"
+        }
+      ]
+    },
+    {
+      "id": "crop_beds",
+      "glyph": "plant",
+      "label": "Sixteen planted or empty beds and ground detritus",
+      "color": "#80A35E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "plot_farm"
+          ],
+          "label": "Owning soil pool and farm index"
+        },
+        {
+          "state_path": [
+            "planted"
+          ],
+          "label": "A live crop occupies this bed"
+        },
+        {
+          "state_path": [
+            "trait"
+          ],
+          "label": "Crop trait 1 hardy, 2 productive, 3 resistant"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Growth 0-8; ripe at eight; seed saving requires six"
+        },
+        {
+          "state_path": [
+            "disease"
+          ],
+          "label": "Disease severity 0-3; three destroys a live crop"
+        },
+        {
+          "state_path": [
+            "rot"
+          ],
+          "label": "Ground detritus from crop loss or seasonal leaf litter, capped at four"
+        }
+      ]
+    },
+    {
+      "id": "root_beds",
+      "glyph": "gate",
+      "label": "Eight midpoint root beds on the neighboring-farm cycle",
+      "color": "#B49B72",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "root_open"
+          ],
+          "label": "Open living connection; cutting isolates the two neighboring farms"
+        },
+        {
+          "state_path": [
+            "root_installed"
+          ],
+          "label": "This bed has ever been installed; only the first installation is rewarded"
+        },
+        {
+          "state_path": [
+            "root_length"
+          ],
+          "label": "Physical Manhattan root-corridor length, seven or eight cells"
+        }
+      ]
+    },
+    {
+      "id": "root_packets",
+      "glyph": "water",
+      "label": "Moving fungal moisture/nutrient packets; infection is a real attribute",
+      "color": "#8FAEB3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "packet_water"
+          ],
+          "label": "Water units physically in this packet, zero or one"
+        },
+        {
+          "state_path": [
+            "packet_nutrient"
+          ],
+          "label": "Nutrient units physically in this packet, zero or one"
+        },
+        {
+          "state_path": [
+            "packet_virus"
+          ],
+          "label": "Packet carries disease exposure from a wet infected source farm"
+        },
+        {
+          "state_path": [
+            "packet_progress"
+          ],
+          "label": "Distance along the explicit x-then-y root corridor"
+        },
+        {
+          "state_path": [
+            "packet_direction"
+          ],
+          "label": "Signed corridor direction, +1 clockwise or -1 counterclockwise"
+        }
+      ]
+    },
+    {
+      "id": "wells",
+      "glyph": "water",
+      "label": "Two shared renewable wells",
+      "color": "#689DB3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "well_water"
+          ],
+          "label": "Well water units 0-24; rain restores three per well"
+        }
+      ]
+    },
+    {
+      "id": "compost_bins",
+      "glyph": "resource",
+      "label": "Two shared finite compost facilities",
+      "color": "#8D704F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bin_waste"
+          ],
+          "label": "Queued organic waste, capacity eight"
+        },
+        {
+          "state_path": [
+            "bin_progress"
+          ],
+          "label": "Processing progress 0-4, helped by stirring"
+        },
+        {
+          "state_path": [
+            "bin_compost"
+          ],
+          "label": "Finished compost waiting for transport, capacity eight"
+        }
+      ]
+    },
+    {
+      "id": "nursery",
+      "glyph": "plant",
+      "label": "Central seed nursery with three finite stocks",
+      "color": "#BC944F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "seed_stock"
+          ],
+          "label": "Stocks for hardy, productive, resistant seeds; each 0-6"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "harvested"
+      ],
+      "meaning": "Actual ripe-fruit harvest units",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Fruit consumed by pantry delivery",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rotted"
+      ],
+      "meaning": "Actual crop loss from disease",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "littered"
+      ],
+      "meaning": "Seasonal leaf litter deposited on second beds",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "arrived"
+      ],
+      "meaning": "Root packets physically arriving, infected or clean",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "built_now"
+      ],
+      "meaning": "First-ever root connections",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handed"
+      ],
+      "meaning": "Compatible bag-resource handoffs",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rain"
+      ],
+      "meaning": "Rain in this native step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fruit_delivered"
+      ],
+      "meaning": "Pantry fruit receipts since reset",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; recover two energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Fill one carried water from adjacent shared well"
+    },
+    {
+      "id": 6,
+      "label": "Irrigate an adjacent plot's farm with one carried water, watering tool"
+    },
+    {
+      "id": 7,
+      "label": "Harvest a healthy ripe plot into fruit and waste"
+    },
+    {
+      "id": 8,
+      "label": "Plant an empty adjacent plot with a carried seed, grafting tool"
+    },
+    {
+      "id": 9,
+      "label": "Graft a planted adjacent plot to carried seed trait, grafting tool"
+    },
+    {
+      "id": 10,
+      "label": "Prune disease from an adjacent plot, pruning tool"
+    },
+    {
+      "id": 11,
+      "label": "Cut adjacent root-bed connection and discard its in-flight packet, pruning tool"
+    },
+    {
+      "id": 12,
+      "label": "Connect adjacent root bed for one seed and one compost, grafting tool"
+    },
+    {
+      "id": 13,
+      "label": "Take one compost from an adjacent shared bin"
+    },
+    {
+      "id": 14,
+      "label": "Put one carried waste into an adjacent shared bin"
+    },
+    {
+      "id": 15,
+      "label": "Stir adjacent compost bin, compost-cart tool"
+    },
+    {
+      "id": 16,
+      "label": "Spread one carried compost on an adjacent plot's soil, compost-cart tool"
+    },
+    {
+      "id": 17,
+      "label": "Collect one ground detritus from an adjacent plot"
+    },
+    {
+      "id": 18,
+      "label": "Deliver one fruit to an adjacent farm pantry"
+    },
+    {
+      "id": 19,
+      "label": "Take a hardy seed from the central nursery"
+    },
+    {
+      "id": 20,
+      "label": "Take a productive seed from the central nursery"
+    },
+    {
+      "id": 21,
+      "label": "Take a resistant seed from the central nursery"
+    },
+    {
+      "id": 22,
+      "label": "Give first compatible resource to lowest-ID eligible adjacent actor"
+    },
+    {
+      "id": 23,
+      "label": "Exchange tools with lowest-ID adjacent actor when both loads fit eight"
+    },
+    {
+      "id": 24,
+      "label": "Rest; recover six energy"
+    },
+    {
+      "id": 25,
+      "label": "Save a matching seed from an adjacent developed crop, grafting tool"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Self actor ID 0-31.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "t: Native step clock; nonterminal transitions increment once. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "done: Joint terminal flag, true only at the declared cap in this continuing world. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "terminated: Natural termination cause; always false under this continuing-world rule. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "truncated: Cap cause with natural-termination priority; preserved after done. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        530
+      ],
+      "meaning": "terrain: Row-major native tile map with values in the world legend. Shape [21, 25], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        530,
+        594
+      ],
+      "meaning": "pos: Actor coordinates in ordered actor-ID order, x then y. Shape [32, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        594,
+        626
+      ],
+      "meaning": "farm: Home farm index 0-7; current tools may be exchanged Shape [32], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        626,
+        658
+      ],
+      "meaning": "tool: Tool 1 watering, 2 pruning, 3 grafting, 4 compost cart Shape [32], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        658,
+        818
+      ],
+      "meaning": "bag: Bag columns water, seeds, compost, fruit, waste; each at most four Shape [32, 5], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        818,
+        850
+      ],
+      "meaning": "seed_trait: Carried seed trait 1 hardy, 2 productive, 3 resistant Shape [32], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        850,
+        882
+      ],
+      "meaning": "energy: Energy 0-20; wait or rest restores it Shape [32], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        882,
+        898
+      ],
+      "meaning": "farm_pos: Actual x,y coordinates for Eight shared soil pools at the first plot of each farm in entity-index order. Shape [8, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        898,
+        914
+      ],
+      "meaning": "pantry_pos: Actual x,y coordinates for Community pantries; delivered fruit is consumed here in entity-index order. Shape [8, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        914,
+        922
+      ],
+      "meaning": "water_soil: Shared moisture for two farm plots, bounded 0-8 Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        922,
+        930
+      ],
+      "meaning": "nutrient: Shared nutrient for two farm plots, bounded 0-8 Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        930,
+        938
+      ],
+      "meaning": "fruit_delivered: Cumulative fruit delivered to this pantry during the native episode Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        938,
+        970
+      ],
+      "meaning": "plot_pos: Actual x,y coordinates for Sixteen planted or empty beds and ground detritus in entity-index order. Shape [16, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        970,
+        986
+      ],
+      "meaning": "plot_farm: Owning soil pool and farm index Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        986,
+        1002
+      ],
+      "meaning": "planted: A live crop occupies this bed Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1002,
+        1018
+      ],
+      "meaning": "trait: Crop trait 1 hardy, 2 productive, 3 resistant Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1018,
+        1034
+      ],
+      "meaning": "growth: Growth 0-8; ripe at eight; seed saving requires six Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1034,
+        1050
+      ],
+      "meaning": "disease: Disease severity 0-3; three destroys a live crop Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1050,
+        1066
+      ],
+      "meaning": "rot: Ground detritus from crop loss or seasonal leaf litter, capped at four Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1066,
+        1082
+      ],
+      "meaning": "root_pos: Actual x,y coordinates for Eight midpoint root beds on the neighboring-farm cycle in entity-index order. Shape [8, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1082,
+        1090
+      ],
+      "meaning": "root_open: Open living connection; cutting isolates the two neighboring farms Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1090,
+        1098
+      ],
+      "meaning": "root_installed: This bed has ever been installed; only the first installation is rewarded Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1098,
+        1106
+      ],
+      "meaning": "root_length: Physical Manhattan root-corridor length, seven or eight cells Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1106,
+        1122
+      ],
+      "meaning": "packet_pos: Actual x,y coordinates for Moving fungal moisture/nutrient packets; infection is a real attribute in entity-index order. Shape [8, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1122,
+        1130
+      ],
+      "meaning": "packet_active: A real in-flight moisture/nutrient packet is present on this root link. Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1130,
+        1138
+      ],
+      "meaning": "packet_water: Water units physically in this packet, zero or one Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1138,
+        1146
+      ],
+      "meaning": "packet_nutrient: Nutrient units physically in this packet, zero or one Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1146,
+        1154
+      ],
+      "meaning": "packet_virus: Packet carries disease exposure from a wet infected source farm Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1154,
+        1162
+      ],
+      "meaning": "packet_progress: Distance along the explicit x-then-y root corridor Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1162,
+        1170
+      ],
+      "meaning": "packet_direction: Signed corridor direction, +1 clockwise or -1 counterclockwise Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1170,
+        1174
+      ],
+      "meaning": "well_pos: Actual x,y coordinates for Two shared renewable wells in entity-index order. Shape [2, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1174,
+        1176
+      ],
+      "meaning": "well_water: Well water units 0-24; rain restores three per well Shape [2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1176,
+        1180
+      ],
+      "meaning": "bin_pos: Actual x,y coordinates for Two shared finite compost facilities in entity-index order. Shape [2, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1180,
+        1182
+      ],
+      "meaning": "bin_waste: Queued organic waste, capacity eight Shape [2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1182,
+        1184
+      ],
+      "meaning": "bin_progress: Processing progress 0-4, helped by stirring Shape [2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1184,
+        1186
+      ],
+      "meaning": "bin_compost: Finished compost waiting for transport, capacity eight Shape [2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1186,
+        1188
+      ],
+      "meaning": "nursery_pos: Actual x,y coordinates for Central seed nursery with three finite stocks in entity-index order. Shape [1, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1188,
+        1191
+      ],
+      "meaning": "seed_stock: Stocks for hardy, productive, resistant seeds; each 0-6 Shape [1, 3], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1191,
+        1192
+      ],
+      "meaning": "weather_shift: Public reset-sampled weather offset 0-7; step calendar determines rain and drying. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1192,
+        1193
+      ],
+      "meaning": "rain: This-step rain flag; supplies soil water and shared wells. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1193,
+        1225
+      ],
+      "meaning": "harvested: Per-actor fruit units from actual ripe healthy harvests this step. Shape [32], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1225,
+        1257
+      ],
+      "meaning": "delivered: Per-actor fruit units consumed by pantry delivery this step. Shape [32], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1257,
+        1273
+      ],
+      "meaning": "rotted: Per-plot crops lost to disease this step. Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1273,
+        1289
+      ],
+      "meaning": "littered: Per-plot new seasonal ground detritus deposited this step. Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1289,
+        1297
+      ],
+      "meaning": "arrived: Per-link resource packets that arrived at the other farm this step, including infected packets. Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1297,
+        1305
+      ],
+      "meaning": "built_now: First-ever root connection installations, excluding reconnection of an old cut bed. Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1305,
+        1337
+      ],
+      "meaning": "handed: Per-actor physical compatible-resource handoff events. Shape [32], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1337,
+        1529
+      ],
+      "meaning": "reward_parts: Columns: personal harvest/delivery, producing farm, foreign pantry farm, public roots/arrivals, resource/effort costs, local crop rot. Shape [32, 6], row-major flattening.",
+      "visibility": "public"
+    }
+  ]
+}

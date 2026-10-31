@@ -1,0 +1,317 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f1aed63c212284b84fd930524b3b404e66b775c0db0d550431329fe36664c0c2",
+  "manifest_sha256": "90e39aa87f5752248b50576c69cf9fd61c5bcf6bf50309f90629c7572556a0e9",
+  "title": "Lockstep Gantry",
+  "rules": [
+    "Grip the two handles two cells from the beam center. Both carriers must choose the same direction or quarter turn.",
+    "The beam occupies three real cells. Translation costs one shared pressure unit; rotation costs two and needs a clear 5x5 swept square.",
+    "A free worker exactly at the winch pumps three charge units, capped at ten, and refreshes the shutter to four turns.",
+    "The shutter timer decreases before movement. Closing on a worker or beam cell causes a terminal jam.",
+    "The center aperture is narrow; an open northern route at y=1 uses more movement. Workers and cargo can obstruct each other.",
+    "Deliver a horizontal beam to center [10,4]. Every live turn costs 0.01; pumping costs its worker another 0.02.",
+    "All roles receive +8 on delivery or -5 on a jam. The public scene is the actual state; witness scripts have not been run."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      14,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable workshop floor",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "solid wall",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "timed gate aperture; gate_open determines clearance",
+          "color": "#F59E0B"
+        },
+        {
+          "value": 3,
+          "meaning": "horizontal delivery footprint centered at [10,4]",
+          "color": "#86EFAC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "color": "#2563EB",
+      "label": "Workers",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "grip"
+          ],
+          "label": "Handle: -1 free, 0 negative end, 1 positive end"
+        }
+      ]
+    },
+    {
+      "id": "beam",
+      "glyph": "crate",
+      "color": "#D97706",
+      "label": "Three physical beam cells",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_axis"
+          ],
+          "label": "Beam axis: 0 horizontal, 1 vertical"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "color": "#DC2626",
+      "label": "Timed shutter",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Open during this recorded state"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "label": "Open turns remaining"
+        }
+      ]
+    },
+    {
+      "id": "winch",
+      "glyph": "tool",
+      "color": "#7C3AED",
+      "label": "Hydraulic winch",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pressure"
+          ],
+          "label": "Shared hydraulic charge, capacity 10"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "glyph": "flag",
+      "color": "#16A34A",
+      "label": "Horizontal delivery center",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pump_event"
+      ],
+      "meaning": "Roles that pumped on the last live transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_moved"
+      ],
+      "meaning": "A jointly agreed translation was accepted",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_rotated"
+      ],
+      "meaning": "A jointly agreed quarter turn was accepted",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "move_count"
+      ],
+      "meaning": "Number of accepted cargo translations",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "jammed"
+      ],
+      "meaning": "Gate closure trapped a worker or beam and ended the episode",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Horizontal cargo reached the dock without a jam",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "WAIT"
+    },
+    {
+      "id": 1,
+      "label": "NORTH intent"
+    },
+    {
+      "id": 2,
+      "label": "EAST intent"
+    },
+    {
+      "id": 3,
+      "label": "SOUTH intent"
+    },
+    {
+      "id": 4,
+      "label": "WEST intent"
+    },
+    {
+      "id": 5,
+      "label": "TOGGLE GRIP at an end handle"
+    },
+    {
+      "id": 6,
+      "label": "JOINT QUARTER TURN"
+    },
+    {
+      "id": 7,
+      "label": "PUMP at the winch"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "All three worker [x/14,y/8] positions in identity order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "All grips encoded (grip+1)/2: free=0, negative end=0.5, positive end=1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        15
+      ],
+      "meaning": "All three actual beam-cell [x/14,y/8] positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        16
+      ],
+      "meaning": "Beam axis: horizontal 0 or vertical 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        18
+      ],
+      "meaning": "Dock center [x/14,y/8]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        20
+      ],
+      "meaning": "Winch [x/14,y/8]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        22
+      ],
+      "meaning": "Gate [x/14,y/8]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        23
+      ],
+      "meaning": "Shared pressure /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        24
+      ],
+      "meaning": "Gate remaining timer /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        25
+      ],
+      "meaning": "Gate open bit",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        34
+      ],
+      "meaning": "In order: t/80, done, success, jammed, cargo_moved, cargo_rotated, move_count/80, terminated, truncated",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Per-worker pump event bits from the last live transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Three-way observer identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

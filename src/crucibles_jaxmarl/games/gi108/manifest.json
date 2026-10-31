@@ -1,0 +1,831 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00108",
+  "source_sha256": "9733681abc63b4d46b4265092215aa9d4c9e5ac3fb049c5a28fb5ca499e8671b",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 149,
+  "num_actions": 15,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -0.01,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "grain producer"
+    },
+    {
+      "id": "agent_1",
+      "role": "tool maker"
+    },
+    {
+      "id": "agent_2",
+      "role": "medicine courier"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "escrow one owned grain"
+    },
+    {
+      "id": 6,
+      "label": "escrow one owned tool"
+    },
+    {
+      "id": 7,
+      "label": "escrow one owned medicine"
+    },
+    {
+      "id": 8,
+      "label": "request grain"
+    },
+    {
+      "id": 9,
+      "label": "request tool"
+    },
+    {
+      "id": 10,
+      "label": "request medicine"
+    },
+    {
+      "id": 11,
+      "label": "confirm reciprocal nearby trade"
+    },
+    {
+      "id": 12,
+      "label": "withdraw offer and request"
+    },
+    {
+      "id": 13,
+      "label": "pick up ground good if capacity remains"
+    },
+    {
+      "id": 14,
+      "label": "deliver required unlocked good at own address"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_good"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ask_kind"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_timer"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivery_count"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "good_pos"
+      ],
+      "shape": [
+        9,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "good_owner"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "good_kind"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "good_status"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "good_locked"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "good_destination"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "good_active"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "good_visible"
+      ],
+      "shape": [
+        3,
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "destination_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "destination_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "destination_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_kind"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_remaining"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trade_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pickup_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "expired_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable street",
+          "color": "#E7E5E4"
+        },
+        {
+          "value": 1,
+          "meaning": "Initial public surplus stall site; remaining goods are separate entities",
+          "color": "#FDE68A"
+        },
+        {
+          "value": 2,
+          "meaning": "Public delivery address",
+          "color": "#BBF7D0"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "traders",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "0 grain producer; 1 tool maker; 2 medicine courier",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_good"
+          ],
+          "meaning": "Public escrow good id, or -1",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "ask_kind"
+          ],
+          "meaning": "Public requested kind, or -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_timer"
+          ],
+          "meaning": "Remaining escrow commitment clock",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "delivery_count"
+          ],
+          "meaning": "Public number of completed deliveries",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "goods",
+      "kind": "object",
+      "count": 9,
+      "position": [
+        "good_pos"
+      ],
+      "active": [
+        "good_active"
+      ],
+      "visibility": [
+        "good_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "good_kind"
+          ],
+          "meaning": "0 grain; 1 tool; 2 medicine",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "good_owner"
+          ],
+          "meaning": "-2 delivered; -1 ground; 0..2 carrier",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "good_status"
+          ],
+          "meaning": "0 ground; 1 carried; 2 delivered",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "good_locked"
+          ],
+          "meaning": "Committed in an unexpired posted offer",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "good_destination"
+          ],
+          "meaning": "Receiving destination id, or -1",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "destination_pos"
+      ],
+      "active": [
+        "destination_active"
+      ],
+      "visibility": [
+        "destination_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "private_orders",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "order_pos"
+      ],
+      "active": [
+        "order_active"
+      ],
+      "visibility": [
+        "order_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "order_kind"
+          ],
+          "meaning": "Private required commodity type; visible only to its owner",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "order_remaining"
+          ],
+          "meaning": "Private remaining delivery quantity",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "trade_count"
+      ],
+      "meaning": "Atomic bilateral exchanges completed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pickup_count"
+      ],
+      "meaning": "Ground goods acquired this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expired_count"
+      ],
+      "meaning": "Prior offers whose countdown reached zero this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Actual deliveries by role this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_count"
+      ],
+      "meaning": "Cumulative deliveries by role",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own trader role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        6
+      ],
+      "meaning": "Own private required commodity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own outstanding quantity/2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        13
+      ],
+      "meaning": "All trader x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        31
+      ],
+      "meaning": "All individual good x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        40
+      ],
+      "meaning": "Public commodity kinds/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        49
+      ],
+      "meaning": "Public good owner shifted by two and divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        58
+      ],
+      "meaning": "Good status/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        67
+      ],
+      "meaning": "Public escrow lock flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        70
+      ],
+      "meaning": "Public posted good ids shifted by one and divided by 9",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        73
+      ],
+      "meaning": "Public requested kinds shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        76
+      ],
+      "meaning": "Escrow timers/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "Public completed deliveries/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        85
+      ],
+      "meaning": "Public delivery address x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        86
+      ],
+      "meaning": "Clock/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        149
+      ],
+      "meaning": "Public row-major market terrain/2",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Complete each trader's own private two-unit delivery order while managing finite capacity, barter commitments and competing demand for scarce surplus.",
+    "natural_termination": "All three private orders have zero remaining quantity. Otherwise the episode truncates at 96 transitions. Some private demand realizations are jointly infeasible because supply is finite; this is retained as a real boundary, not silently repaired.",
+    "interaction": "Actual owned goods are locked by posted offers. A swap requires reciprocal advertised requests, spatial proximity and simultaneous consent, transfers ownership atomically and frees no capacity. Others can refuse, compete for ground goods or broker intermediate exchanges.",
+    "observation_access": "Only own role, own required type and own remaining quantity are private-row fields. Positions, inventory objects, posted offers/requests/timers, addresses and completed-delivery counts are public. Each order entity uses an identity visibility matrix, so a role scene cannot reveal another trader's need."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "good_owner"
+      ],
+      "low": -2,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "good_kind"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "good_status"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "offer_good"
+      ],
+      "low": -1,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ask_kind"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "offer_timer"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "order_remaining"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "delivery_count"
+      ],
+      "low": 0,
+      "high": 2
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "status": "AUTHORED_NOT_EXECUTED",
+  "legal_action_semantics": "All 15 ids are legal attempts for all roles before joint termination, so the mask reveals no private order. Missing inventory, capacity, consent, proximity or matching order makes the corresponding operation a no-op. Invalid ids map to wait. Only wait remains after joint termination.",
+  "integration_scope": "Native fixed-array kernel. Public agent-keyed JaxMARL adapter is a separate trusted integration layer; no learner or policy-bank substitution."
+}

@@ -1,0 +1,457 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f092787e54b527cb26a53ecbef4b71df7cdfa7312ad9197b165294c82d94f760",
+  "manifest_sha256": "cf6341d81c81652dd5a6493268d048da174bd4a51e3394c3f905b9ac8afe7f9f",
+  "title": "Charter Frontier",
+  "rules": [
+    "Move on public floor; walls block movement. The middle corridor gate allows entry only during an active charter; upper and lower detours remain open.",
+    "Claim at most one plot from distance at most one; ties resolve by lower actor index, then lower plot index. Build there for two materials.",
+    "Buildings mature automatically to three. An adjacent owner can collect a mature harvest; each plot needs two collections for joint completion.",
+    "Donate one material voluntarily at the council. The public fund holds at most four; donations are not refunded. No agent is forced to donate.",
+    "At the council, propose when at least two fund units exist and no ballot, delay or lease is active. Lowest-index proposer wins and starts with yes.",
+    "Four subsequent ballot ticks permit remote public yes, no or abstain changes. Only at deadline do at least three yes votes spend two fund units.",
+    "A passed charter waits two further transitions, then opens gate entry for twelve ticks. Expiry blocks new entry; an occupant may leave. No automatic eviction.",
+    "No single veto rule exists: a no vote is not yes, and two non-yes votes defeat quorum. Failed ballots expire without spending fund."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable public frontier",
+          "color": "#D8C99D"
+        },
+        {
+          "value": 1,
+          "meaning": "Permanent wall",
+          "color": "#59616B"
+        },
+        {
+          "value": 2,
+          "meaning": "Charter-controlled gate cell",
+          "color": "#B8754F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "settlers",
+      "glyph": "worker",
+      "label": "Controlled settlers and voters",
+      "color": "#D2A04D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "materials"
+          ],
+          "label": "Private inventory quantity, publicly visible"
+        },
+        {
+          "state_path": [
+            "votes"
+          ],
+          "label": "Public vote: -1 no, 0 abstain, 1 yes"
+        }
+      ]
+    },
+    {
+      "id": "plots",
+      "glyph": "plant",
+      "label": "Claimable productive plots",
+      "color": "#64A479",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "Claim owner; -1 means unclaimed"
+        },
+        {
+          "state_path": [
+            "built"
+          ],
+          "label": "Production building present"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Crop maturity"
+        },
+        {
+          "state_path": [
+            "harvests"
+          ],
+          "label": "Collected harvests"
+        }
+      ]
+    },
+    {
+      "id": "council",
+      "glyph": "beacon",
+      "label": "Council and voluntary fund",
+      "color": "#9274C4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fund"
+          ],
+          "label": "Voluntary communal material fund"
+        }
+      ]
+    },
+    {
+      "id": "corridor_gate",
+      "glyph": "gate",
+      "label": "Charter-controlled corridor",
+      "color": "#B8754F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Entry permitted by active charter"
+        },
+        {
+          "state_path": [
+            "lease"
+          ],
+          "label": "Open-entry ticks remaining"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "launched"
+      ],
+      "meaning": "A new public corridor ballot launched this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ratified"
+      ],
+      "meaning": "Closing ballot met quorum and spent two fund units this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rejected"
+      ],
+      "meaning": "Closing ballot failed ratification this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "opened"
+      ],
+      "meaning": "Delayed charter became active this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expired"
+      ],
+      "meaning": "Active charter expired this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "claimed"
+      ],
+      "meaning": "Plot claimed this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "built_event"
+      ],
+      "meaning": "Plot building constructed this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "donated"
+      ],
+      "meaning": "Settler voluntarily donated one material this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "harvest_event"
+      ],
+      "meaning": "Plot harvested this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ballot_remaining"
+      ],
+      "meaning": "Remaining ballot deadline ticks",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "pending"
+      ],
+      "meaning": "Remaining activation-delay ticks",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "claim nearby plot"
+    },
+    {
+      "id": 6,
+      "label": "build owned plot"
+    },
+    {
+      "id": 7,
+      "label": "harvest owned mature plot"
+    },
+    {
+      "id": 8,
+      "label": "donate one material"
+    },
+    {
+      "id": 9,
+      "label": "propose corridor charter"
+    },
+    {
+      "id": 10,
+      "label": "vote yes"
+    },
+    {
+      "id": 11,
+      "label": "vote no"
+    },
+    {
+      "id": 12,
+      "label": "abstain"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        8
+      ],
+      "meaning": "Own private values of four plots / 3; peer values absent",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "meaning": "Clock / 96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        86
+      ],
+      "meaning": "Public row-major map / 2: floor 0, wall 0.5, charter gate 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        94
+      ],
+      "meaning": "Settler-major [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        98
+      ],
+      "meaning": "Materials per settler / 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        106
+      ],
+      "meaning": "Plot-major [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        110
+      ],
+      "meaning": "Plot owner code (owner+1)/4; 0 means unclaimed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        114
+      ],
+      "meaning": "Building flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        118
+      ],
+      "meaning": "Crop maturity / 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        118,
+        122
+      ],
+      "meaning": "Collected harvests / 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        124
+      ],
+      "meaning": "Council [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        126
+      ],
+      "meaning": "Gate [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        127
+      ],
+      "meaning": "Gate-open flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        128
+      ],
+      "meaning": "Lease timer / 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        129
+      ],
+      "meaning": "Fund / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        130
+      ],
+      "meaning": "Ballot currently active",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        131
+      ],
+      "meaning": "Proposer code (proposer+1)/4; 0 means none",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        132
+      ],
+      "meaning": "Ballot remaining / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        136
+      ],
+      "meaning": "Votes encoded (vote+1)/2: no=0, abstain=0.5, yes=1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        137
+      ],
+      "meaning": "Pending delay / 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        140
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ]
+}

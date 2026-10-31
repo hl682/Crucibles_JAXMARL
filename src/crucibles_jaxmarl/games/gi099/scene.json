@@ -1,0 +1,369 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "a355223f334d3ddcfe71534c335342c327adcf0862c3d4a35f1d249dbb4472ae",
+  "manifest_sha256": "24aa9fdb752d306a9883fca64b1a188c1c21139099f931452df778b85b0bfcdc",
+  "title": "Lantern Courtyard",
+  "rules": [
+    "Two wardens pursue two pennant-carrying couriers around a central wall.",
+    "Tagging an adjacent unprotected courier freezes them and drops their pennant.",
+    "An adjacent teammate can rescue a frozen courier, granting temporary protection.",
+    "Couriers must spend finite shelter charges for cover; wardens can seal shelters.",
+    "Couriers share radio positions. Opponents and loose pennants are sensed only nearby.",
+    "An escaped courier cannot return to rescue. The chase ends when both escape or every remaining courier is frozen."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open traversable board",
+          "color": "#E7EDF3"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable fixed wall",
+          "color": "#4A5568"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "agent",
+      "label": "Agent",
+      "color": "#BE4A58",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "frozen"
+          ],
+          "label": "Remaining immobilization timer"
+        },
+        {
+          "state_path": [
+            "grace"
+          ],
+          "label": "Rescue protection timer"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Pennant index or -1 for no pennant"
+        },
+        {
+          "state_path": [
+            "escaped"
+          ],
+          "label": "Courier already exited; only no-op remains"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "label": "Shelter cover spent for this tick"
+        }
+      ]
+    },
+    {
+      "id": "flag",
+      "glyph": "flag",
+      "label": "Flag",
+      "color": "#E8B52B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "flag_owner"
+          ],
+          "label": "-1 loose, 2 or 3 carried by that courier, -2 delivered"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "glyph": "beacon",
+      "label": "Shelter",
+      "color": "#3C9E82",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "shelter_charge"
+          ],
+          "label": "Shared cover charges, at most four"
+        },
+        {
+          "state_path": [
+            "shelter_seal"
+          ],
+          "label": "Warden closure timer"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "glyph": "gate",
+      "label": "Exit",
+      "color": "#6479CD",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tag_event"
+      ],
+      "meaning": "Couriers newly immobilized this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescue_event"
+      ],
+      "meaning": "Couriers released by their teammate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "escape_event"
+      ],
+      "meaning": "Couriers who deposited a pennant and exited this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "seal_event"
+      ],
+      "meaning": "Shelters closed by wardens this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cover_event"
+      ],
+      "meaning": "Couriers who spent a shelter charge this tick",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Warden: tag adjacent vulnerable courier; courier: rescue, otherwise exit with pennant or pick up pennant"
+    },
+    {
+      "id": 6,
+      "label": "Warden: seal adjacent shelter; courier: spend a charge while standing on an open shelter"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Observer role index; roles 0/1 wardens, 2/3 couriers",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Public clock, done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        9
+      ],
+      "meaning": "Public shelter x,y coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Public shelter charge levels",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        13
+      ],
+      "meaning": "Public shelter closure timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public exit x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        19
+      ],
+      "meaning": "Public tag announcements by tagged identity; positions are not broadcast",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        23
+      ],
+      "meaning": "Public rescue announcements by rescued identity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Public exit announcements by identity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        29
+      ],
+      "meaning": "Public shelter-seal events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        33
+      ],
+      "meaning": "Public shelter-cover expenditures by identity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        41
+      ],
+      "meaning": "Visible worker x,y; hidden coordinates zero-filled",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        41,
+        45
+      ],
+      "meaning": "Worker visibility flags: same team or Manhattan distance at most three",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        45,
+        49
+      ],
+      "meaning": "Visible immobilization timers; hidden entries zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        49,
+        53
+      ],
+      "meaning": "Visible rescue-grace timers; hidden entries zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        57
+      ],
+      "meaning": "Visible carried pennant index; -1 empty, -2 unknown",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        57,
+        61
+      ],
+      "meaning": "Visible escaped flags; hidden entries false",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        61,
+        65
+      ],
+      "meaning": "Visible cover flags; hidden entries false",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        65,
+        69
+      ],
+      "meaning": "Visible pennant x,y; hidden coordinates zero-filled",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        69,
+        71
+      ],
+      "meaning": "Pennant visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        71,
+        73
+      ],
+      "meaning": "Visible pennant owner; -1 loose, carrier index, or -3 unknown",
+      "visibility": "local"
+    }
+  ]
+}

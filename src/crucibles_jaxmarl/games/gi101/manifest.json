@@ -1,0 +1,1088 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00101",
+  "source_sha256": "a2c2ae21a48b7ed1950ed96f636e2f62b404ec99bd7c09be2ab337aba4227b28",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 141,
+  "num_actions": 13,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -3,
+  "observation_high": 256,
+  "reward_low": -4,
+  "reward_high": 16,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West-station beneficiary and shared yard worker"
+    },
+    {
+      "id": "agent_1",
+      "role": "East-station beneficiary and shared yard worker"
+    },
+    {
+      "id": "agent_2",
+      "role": "Middle-station beneficiary and shared yard worker"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Climb north one cell on a ladder only when empty-handed"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lift loose block; if carrying, install at an unfinished station or drop"
+    },
+    {
+      "id": 6,
+      "label": "Bolt carried block into an adjacent supported bridge socket"
+    },
+    {
+      "id": 7,
+      "label": "At crank: raise left lift if counterweight supports its load"
+    },
+    {
+      "id": 8,
+      "label": "At crank: raise right lift if counterweight supports its load"
+    },
+    {
+      "id": 9,
+      "label": "On ballast pad: brace; at crank: brake both lifts for two ticks"
+    },
+    {
+      "id": 10,
+      "label": "Reclaim nearest bolted block within distance two when empty-handed"
+    },
+    {
+      "id": 11,
+      "label": "At crank: safely lower left lift one cell"
+    },
+    {
+      "id": 12,
+      "label": "At crank: safely lower right lift one cell"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stun"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "braced"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "block_pos"
+      ],
+      "shape": [
+        9,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "block_active"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "block_vis"
+      ],
+      "shape": [
+        3,
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "block_weight"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "block_carrier"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "block_anchored"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lift_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lift_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lift_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lift_load"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lift_support"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ballast_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ballast_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ballast_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_count"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_required"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crank_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crank_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crank_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "brake"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lift_up_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lift_down_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lift_drop_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "block_fall_event"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "impact_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "build_event"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reclaim_event"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "brake_event"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Air or open yard",
+          "color": "#E8EEF2"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid foundation or fixed ledge",
+          "color": "#536173"
+        },
+        {
+          "value": 2,
+          "meaning": "Ladder; passable and supports workers",
+          "color": "#BC9357"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carried block identity or -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "meaning": "Immobilization after a falling load or lift jolt",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "braced"
+          ],
+          "meaning": "Supplying two units of live ballast on a pad this tick",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "block",
+      "kind": "object",
+      "count": 9,
+      "position": [
+        "block_pos"
+      ],
+      "active": [
+        "block_active"
+      ],
+      "visibility": [
+        "block_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "block_weight"
+          ],
+          "meaning": "Mass of this reusable physical block: one or two",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "block_carrier"
+          ],
+          "meaning": "Carrier role or -1 loose/bolted",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "block_anchored"
+          ],
+          "meaning": "Bolted into a load-bearing bridge cell",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "lift",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "lift_pos"
+      ],
+      "active": [
+        "lift_active"
+      ],
+      "visibility": [
+        "lift_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "lift_load"
+          ],
+          "meaning": "Current workers plus cargo mass resting on this lift",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "lift_support"
+          ],
+          "meaning": "Opposite-pad block mass plus active live ballast",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "ballast",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "ballast_pos"
+      ],
+      "active": [
+        "ballast_active"
+      ],
+      "visibility": [
+        "ballast_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "station",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_count"
+          ],
+          "meaning": "Materials installed at this work station",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "station_required"
+          ],
+          "meaning": "Materials required: one, one, two",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "crank",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "crank_pos"
+      ],
+      "active": [
+        "crank_active"
+      ],
+      "visibility": [
+        "crank_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "brake"
+          ],
+          "meaning": "Shared brake timer; stops commanded motion and automatic drops",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "lift_up_event"
+      ],
+      "meaning": "Balanced platforms raised one cell by an operator",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lift_down_event"
+      ],
+      "meaning": "Platforms safely lowered one cell by an operator",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lift_drop_event"
+      ],
+      "meaning": "Underbalanced platforms dropped one cell, jolting riders",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "block_fall_event"
+      ],
+      "meaning": "Loose blocks fell one real cell under discrete gravity",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "impact_event"
+      ],
+      "meaning": "Workers jolted or struck this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "build_event"
+      ],
+      "meaning": "Blocks converted into real bolted support cells",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "reclaim_event"
+      ],
+      "meaning": "Bolted support cells removed for reuse",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Work stations receiving material this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "braced"
+      ],
+      "meaning": "Workers currently adding live ballast",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "brake_event"
+      ],
+      "meaning": "Crank operator engaged the shared brake",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Observer builder identity; each benefits most from its matching work station",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Clock, done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        11
+      ],
+      "meaning": "Worker x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        14
+      ],
+      "meaning": "Carried block index or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        17
+      ],
+      "meaning": "Worker immobilization timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        35
+      ],
+      "meaning": "Nine real block x,y positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        44
+      ],
+      "meaning": "Block active flags; installed material inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        53
+      ],
+      "meaning": "Block masses",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        62
+      ],
+      "meaning": "Block carriers; -1 loose or bolted",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        71
+      ],
+      "meaning": "Bolted bridge flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        75
+      ],
+      "meaning": "Lift-platform x,y; rider surface is one cell above",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        77
+      ],
+      "meaning": "Actual load on each platform",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        77,
+        79
+      ],
+      "meaning": "Actual counterweight support from the opposite pad",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        83
+      ],
+      "meaning": "Counterweight-pad x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        89
+      ],
+      "meaning": "Work-station x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        92
+      ],
+      "meaning": "Installed units at each work station",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Required units at each work station",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        97
+      ],
+      "meaning": "Shared crank x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        98
+      ],
+      "meaning": "Brake time remaining",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        100
+      ],
+      "meaning": "Lifts raised one cell this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        102
+      ],
+      "meaning": "Lifts safely lowered one cell by crank this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        104
+      ],
+      "meaning": "Lifts dropping one cell due to insufficient ballast this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        113
+      ],
+      "meaning": "Loose blocks falling one cell this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "Workers hit by falling cargo or jolted by automatic lift drop",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        125
+      ],
+      "meaning": "Blocks bolted into bridge cells this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        134
+      ],
+      "meaning": "Bolted blocks reclaimed this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        137
+      ],
+      "meaning": "Work stations receiving material this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        140
+      ],
+      "meaning": "Workers currently supplying live ballast",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        141
+      ],
+      "meaning": "Shared brake applied this tick",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Install one block at each side station and two at the middle station. Cargo cannot be carried upward on ladders; raise it on shared lifts. Build a bridge to support the middle station. A station's corresponding role earns the larger installation bonus even when another worker carries the material.",
+    "natural_termination": "All station_count entries equal station_required [1,1,2]. Otherwise truncate after 160 nonterminal steps. Natural completion takes precedence at the horizon. Impact immobilization is bounded at two future calls unless another impact occurs. Terminal raw state is absorbing.",
+    "interaction": "Opposite-pad resting blocks and bracing workers support a loaded lift. Another worker removing ballast or stopping a brace can make the platform drop and stun its riders. A crank operator raises or safely lowers platforms; the shared brake also stops useful motion. Physical material can be installed privately, left as ballast, or bolted into traversable support at three bridge cells. Reclaiming bridge material removes that support and can drop another worker.",
+    "observation_access": "The side-view map, ladder and solid-cell legend, all workers, blocks, platforms, ballast pads, stations, crane state and events are public. All entity visibility masks are true. Every displayed changing attribute is returned in the flat observation. Downward screen y is gravity. Loose waist-high cargo permits worker co-location; bolted blocks and lift platforms are solid cells."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stun"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "block_weight"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lift_load"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lift_support"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "station_count"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "station_required"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "brake"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_pos"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "block_pos"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lift_pos"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "stochasticity": "Deterministic fixed initial world and deterministic transitions; supplied reset/step keys are accepted and unused. No PRNG state is stored.",
+  "invalid_action_handling": "Out-of-range or masked actions become no-op. Unavailable target intents and blocked movement have no effect; an otherwise legal intent is not a claim that its preconditions hold."
+}

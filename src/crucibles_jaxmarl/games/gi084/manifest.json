@@ -1,0 +1,631 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00084",
+  "source_sha256": "88d7919965eb62cd7750ba29240d0d417baf3405188b59d79089ff5bf1b60688",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 122,
+  "num_actions": 10,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -4,
+  "observation_high": 128,
+  "reward_low": -4,
+  "reward_high": 4,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Cutter loads raw material into press"
+    },
+    {
+      "id": "agent_1",
+      "role": "Annealer loads cut material into furnace"
+    },
+    {
+      "id": "agent_2",
+      "role": "Finisher loads hot material into quench"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index adjacent ground item if empty; otherwise drop onto an unoccupied item buffer cell"
+    },
+    {
+      "id": 6,
+      "label": "Load eligible held item into nearby role-specific machine"
+    },
+    {
+      "id": 7,
+      "label": "Ship finished item at dock or recycle scrap at generator"
+    },
+    {
+      "id": 8,
+      "label": "Crank four shared charge at generator"
+    },
+    {
+      "id": 9,
+      "label": "Mutual adjacent item handoff to empty partner"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grid"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_crank"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_load"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_complete"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_spoil"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_deliver"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_recycle"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_transfer"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "item_vis"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stage"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "owner"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "heat"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_power"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_vis"
+      ],
+      "shape": [
+        3,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "timer"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "loaded"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "charge"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spoiled"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "grid"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable workshop floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid divider; middle crossings at y=2 and y=4"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Held item index; -1 empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "workpieces",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "item_pos"
+      ],
+      "active": [
+        "item_active"
+      ],
+      "visibility": [
+        "item_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stage"
+          ],
+          "meaning": "0 raw; 1 cut; 2 hot; 3 finished; 4 shipped; 5 scrap; 6 recycled",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "owner"
+          ],
+          "meaning": "-1 ground; 0..2 carrier; -2/-3/-4 press/furnace/quench",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "heat"
+          ],
+          "meaning": "Hot lifetime remaining",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "object",
+      "count": 5,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "timer"
+          ],
+          "meaning": "Powered ticks remaining; dock and generator always zero",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "loaded"
+          ],
+          "meaning": "Loaded item index; -1 empty; dock and generator always empty",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Finished pieces shipped",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Pieces lost to heat expiry",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "charge"
+      ],
+      "meaning": "Common grid charge",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "timer"
+      ],
+      "meaning": "Machine work remaining",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "stage"
+      ],
+      "meaning": "Each physical item material stage",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Own role one-hot(3), x,y,carrying item index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        10
+      ],
+      "meaning": "Clock, shared charge, cumulative delivered and spoiled",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        19
+      ],
+      "meaning": "All workers: x,y,carrying per slot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        39
+      ],
+      "meaning": "All four pieces including retired records: x,y,stage,owner,heat",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        59
+      ],
+      "meaning": "Five stations: x,y,timer,loaded; slots press,furnace,quench,dock,generator",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        122
+      ],
+      "meaning": "Public 7-by-9 map flattened row-major yx",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Cooperatively ship three of four original pieces. Each shipment gives every role +1; each thermal spoil gives every role -1. Intermediate progress has no shaping reward.",
+    "natural_termination": "Three shipments or delivered plus still-viable pieces below three ends naturally. Otherwise horizon 128. Natural completion has priority; raw terminal calls absorb with zero reward.",
+    "interaction": "Role-exclusive loading, real carried pieces, single output buffers, two crossing lanes, common finite charge, two-channel machine power and hot-item deadlines couple partner scheduling and routing.",
+    "observation_access": "All rule-relevant gameplay state is public including retired-item records. Active item and station attributes are native flat features. Diagnostic per-step operation flags are not separate role observations or public scene events."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stage"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "heat"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "spoiled"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

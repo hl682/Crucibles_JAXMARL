@@ -1,0 +1,600 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>种风果园 · Seedwind Orchard · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI217 / SPATIAL</p><h1>种风果园 · Seedwind Orchard</h1><p class="lead">管理种篮、湿种干燥、嫁接与风障，选择各园丁的种植目标。</p><div class="stats"><span>8 agents</span><span>24 actions</span><span>1192 observation columns</span><span>512 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi217.gif" alt="Original saved demonstration gi217"></section><section><h2>Run this game</h2><pre>crucibles play --game 217</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Choose fruit-quality, seed propagation, grafting, plot renewal, shared shelter or water-support goals in a finite 24x24 eight-gardener ecological world.&quot;,
+  &quot;natural_termination&quot;: &quot;No mandatory harvest, construction or biodiversity threshold terminates this world. terminated remains false and tick 512 truncates; each harvest, dry cycle and planting leaves the world persistent.&quot;,
+  &quot;interaction&quot;: &quot;Harvesting removes a parent&#x27;s canopy and ripe seedbank, changing neighboring shade and future windborne offspring. Windbreak placement/orientation changes other plots&#x27; seed access. Four shared drying slots, a finite reservoir and complementary pruning/building/grafting/watering abilities force spatial and temporal coordination.&quot;,
+  &quot;observation_access&quot;: &quot;The static ground map, facility/drying-slot locations, clock, wind/rain/daylight, wind offset, reservoir and roof are public. Dynamic gardeners, bed/canopy/soil/seed states, basket contents/holders, windbreaks and seed particles are visible only within Manhattan radius four. Every hidden record is -1 with an explicit visibility bit; inactive seed/windbreak capacities are also hidden. Each actor additionally sees only its own trait-achievement flags and five reward components. Shared establishment reward reveals an aggregate count, without a remote crop identity, trait or location. No distant current crop is exposed through public scene events or HUD fields.&quot;
+}</pre></details><p>Declared per-step reward bounds: -4 to 8. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Eight gardeners share twenty-four plots, eight borrowable baskets, four drying slots, a finite well reservoir and persistent windbreaks.</li><li>Foragers create timber; builders turn timber into windbreaks or a rainproof shared roof; propagators graft; waterkeepers supply moisture.</li><li>Harvesting gives fruit but resets the plant to stage two, removes canopy and consumes its ripe seedbank. A basket catches the wet seeds if it has room.</li><li>Dry traits require two, four or six usable shed ticks. Wet and dry seeds together are capped at six per basket.</li><li>Wind moves real seeds every second tick. Their trait is inherited; a suitable empty moist bed can receive a seed.</li><li>Windbreak orientation blocks seed passage; mature tree canopy and windbreaks shade eastern neighbors. Shade saves moisture but prevents hardy-trait growth.</li><li>Clearing young growth opens a bed for replanting. Grafting consumes both dry base traits and produces a hybrid crop.</li><li>Rain renews water and fertility. Harvests and local goals never reset the bounded world; tick 512 is its observation window.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Seedwind Orchard
+
+AUTHORED_NOT_EXECUTED. Current initial attempt 00. Requested author gpt-6-astra / max; provider measured model, effort, tokens, elapsed time and cost are unknown.
+
+This original orchard uses twenty-four actual beds, eight physical seed baskets, four shared drying slots, eight windbreak capacities and sixteen airborne seed capacities. Reset seeds the first sixteen crop traits and soil moisture from the supplied key; the remaining beds begin empty. Eight gardeners form two spatially separated sets of four complementary abilities. Any role may harvest, plant, carry/share seed or move a windbreak, while pruning, construction, grafting and reservoir work have explicit specialist masks. Baskets can be borrowed, but one gardener can carry only one basket or windbreak at a time.
+
+Mature crops contain up to two wet seeds. Harvesting yields trait-dependent fruit, returns the parent to stage two and removes its seedbank; without a carried basket those seeds are not saved. Leaving it ripe instead permits timed autonomous seed shedding. Seeds inherit the parent&#x27;s actual trait, move with public wind, expire after eight ticks, and plant only in an empty moist bed. A windbreak&#x27;s orientation determines which wind direction it blocks within one tile. Its standing location also blocks walking. Neighboring stage-five/six canopies and windbreaks shade eastward beds. Shade slows hardy crops but retains soil moisture and leaves lush/hybrid growth possible. A gardener&#x27;s immediate harvest or shield placement therefore changes another plot&#x27;s resources and future work.
+
+Wet seed traits dry after two/four/six usable ticks at an occupied shared slot; roof level two extends usability into rain. Two dry base traits can be consumed to graft a growing crop into a hybrid with a different fruit value and drying requirement. Foragers prune to create timber or clear young plants to reopen soil; timber builds windbreaks, upgrades the common shed or restores fertility. Waterkeepers withdraw from a common twenty-unit reservoir and carry at most three units to beds. Rain replenishes water/fertility. Crop growth consumes water and nutrients, while ripe seed renewal consumes nutrients. These cycles allow several continuing goals without resetting on an achievement.
+
+## Native roles, controls and observations
+
+A/O/U/H = (8, 1192, 24, 512). U=24 combines selected-trait planting/gifting/release, holding and placing seed baskets or windbreaks, orientation, pruning/clearing, building, mulch, watering and grafting. A=8 is the assigned count for this source and is not a claimed framework maximum. Human and AI controllers use exactly the same scalar int32 joint-action interface and native state transition. The shared platform can assign any subset of roles to humans. No separate browser dynamics are provided.
+
+The static ground map, facility/drying-slot locations, clock, wind/rain/daylight, wind offset, reservoir and roof are public. Dynamic gardeners, bed/canopy/soil/seed states, basket contents/holders, windbreaks and seed particles are visible only within Manhattan radius four. Every hidden record is -1 with an explicit visibility bit; inactive seed/windbreak capacities are also hidden. Each actor additionally sees only its own trait-achievement flags and five reward components. Shared establishment reward reveals an aggregate count, without a remote crop identity, trait or location. No distant current crop is exposed through public scene events or HUD fields.
+
+0: Wait.
+1: Walk north and face north.
+2: Walk east and face east.
+3: Walk south and face south.
+4: Walk west and face west.
+5: Pick lowest-index adjacent unheld seed basket; hands must be free.
+6: Put held seed basket on current tile.
+7: Harvest adjacent ripe crop for fruit; collect wet seeds if carrying a basket with room.
+8: Plant selected dry seed into adjacent empty moist bed.
+9: Set held basket on adjacent empty shared drying slot.
+10: Fill carried water to three from shared reservoir at well; waterkeeper.
+11: Water adjacent needy bed with one carried unit; waterkeeper.
+12: Prune mature growth for two timber or clear young growth for one; forager.
+13: Build a front windbreak for two timber; builder.
+14: Rotate adjacent standing windbreak orientation.
+15: Lift adjacent windbreak with free hands.
+16: Place held windbreak on clear front cell.
+17: Graft nearby growing crop to hybrid using one dry seed of each base trait; propagator.
+18: Upgrade shared drying roof with two timber; builder.
+19: Select next seed trait: hardy, lush, hybrid.
+20: Give one selected dry seed to adjacent peer&#x27;s carried basket.
+21: Mulch adjacent depleted soil with one timber.
+22: Dismantle adjacent windbreak and recover one timber; builder.
+23: Release one selected dry seed from held basket into the current wind.
+
+## Resolution, reward and time
+
+Invalid or mask-false commands become wait. Movement rejects old-occupied or duplicate destinations and native pond/standing-windbreak cells. Interactions rotate by (t+k) mod 8; eligible objects, beds, peers and drying slots use lowest index. Construction/interactions precede weather, drying and growth. Autonomous seed emission uses bed index order when fixed capacities compete, followed by motion, blocking/expiry and landing. Hidden objects never affect a remote interaction mask; actionable targets are adjacent.
+
+Five native components are own fruit value 1.5/2.5/4 for hardy/lush/hybrid harvest; own +1.5 first harvest of each trait; shared +0.05 per newly established plant, whether hand-planted or landed; own -0.1 per timber unit consumed by building/roof/mulch; and source-owner -0.05 per lost airborne seed plus plot-owner -0.2 when another gardener harvests or prunes its plant. A single actor harvests at most once per tick, at most 24 empty beds can establish, at most 16 particles are lost and at most eight neighbor removals occur. Thus reward is conservatively within [-4,8]. All five components are explicit float32 state, and unequal private versus shared consequences are intentional.
+
+No mandatory harvest, construction or biodiversity threshold terminates this world. terminated remains false and tick 512 truncates; each harvest, dry cycle and planting leaves the world persistent. Natural causes take priority over H, and already-terminal input is absorbing: unchanged state/observation/clock, zero reward and preserved terminal causes. Raw transitions never reset. Basket wet+dry seed totals never exceed six; plant/graft/gift/release consume exact selected seeds. Original basket identities persist. Seed particles and built windbreaks have fixed capacities. Timber caps at six, carried water at three, soil and growth at six, seedbanks at two, reservoir at twenty. Explicit rain/growth/pruning/seed-regeneration rules define sources and sinks. Physical crop removal and replanting change the same finite beds. The world is neither infinite nor cross-process persistent.
+
+## Literal source evidence
+
+candidate.py:L33: variation=jax.random.randint(key,(24,),0,2,dtype=jnp.int32)
+
+candidate.py:L49: n[&#x27;canopy&#x27;]=(s[&#x27;growth&#x27;]&gt;=5)&amp;(s[&#x27;trait&#x27;]&gt;=0)
+
+candidate.py:L51: n[&#x27;shade&#x27;]=jnp.any(hedges[None,:]&amp;(dx&gt;=1)&amp;(dx&lt;=3)&amp;(dy&lt;=1),axis=1)|jnp.any(n[&#x27;canopy&#x27;][None,:]&amp;(tx&gt;=1)&amp;(tx&lt;=3)&amp;(ty==0),axis=1)
+
+candidate.py:L95: harvest=(a==7)&amp;jnp.any(ripe);room=6-jnp.sum(n[&#x27;wet&#x27;][b]+n[&#x27;dry&#x27;][b],dtype=jnp.int32);collected=jnp.where(harvest&amp;has,jnp.minimum(room,n[&#x27;seedbank&#x27;][crop]),0)
+
+candidate.py:L125: graft=(a==17)&amp;has&amp;jnp.any(growing)&amp;(n[&#x27;dry&#x27;][b,0]&gt;0)&amp;(n[&#x27;dry&#x27;][b,1]&gt;0)
+
+candidate.py:L127: roof=(a==18)&amp;(n[&#x27;wood&#x27;][i]&gt;=2)&amp;(n[&#x27;roof&#x27;]&lt;2);n[&#x27;wood&#x27;]=n[&#x27;wood&#x27;].at[i].add(-2*roof.astype(jnp.int32));n[&#x27;roof&#x27;]=jnp.minimum(2,n[&#x27;roof&#x27;]+roof.astype(jnp.int32))
+
+candidate.py:L147: ready=n[&#x27;dry_timer&#x27;][:,None]&gt;=jnp.array([2,4,6],jnp.int32)[None,:];transfer=jnp.where(ready,n[&#x27;wet&#x27;],0);n[&#x27;dry&#x27;]=n[&#x27;dry&#x27;]+transfer;n[&#x27;wet&#x27;]=n[&#x27;wet&#x27;]-transfer
+
+candidate.py:L124: growing=near&amp;(n[&#x27;trait&#x27;]&gt;=0)&amp;(n[&#x27;growth&#x27;]&lt;6);bed=jnp.argmax(growing).astype(jnp.int32)
+candidate.py:L150: growing=(n[&#x27;trait&#x27;]&gt;=0)&amp;(n[&#x27;growth&#x27;]&lt;6)&amp;n[&#x27;daylight&#x27;]&amp;(n[&#x27;t&#x27;]%2==0)&amp;(n[&#x27;moisture&#x27;]&gt;=demand)&amp;(n[&#x27;fertility&#x27;]&gt;0)&amp;(~n[&#x27;shade&#x27;]|(n[&#x27;trait&#x27;]!=0))
+
+candidate.py:L76: shed=jnp.any(jnp.sum(jnp.abs(p[:,None,:]-s[&#x27;shed_pos&#x27;][None,:,:]),axis=2)&lt;=1,axis=1)
+candidate.py:L83: n=dict(s);n[&#x27;reward_parts&#x27;]=jnp.zeros((8,5),jnp.float32);established=jnp.array(0,jnp.int32)
+candidate.py:L103: n[&#x27;dry&#x27;]=n[&#x27;dry&#x27;].at[b,selected].add(-plant.astype(jnp.int32));n[&#x27;trait&#x27;]=n[&#x27;trait&#x27;].at[bed].set(jnp.where(plant,selected,n[&#x27;trait&#x27;][bed]));n[&#x27;growth&#x27;]=n[&#x27;growth&#x27;].at[bed].set(jnp.where(plant,1,n[&#x27;growth&#x27;][bed]));established=established+plant.astype(jnp.int32)
+candidate.py:L154: free=~n[&#x27;seed_active&#x27;];seed=jnp.argmax(free).astype(jnp.int32);shed=(n[&#x27;growth&#x27;][bed]==6)&amp;(n[&#x27;seedbank&#x27;][bed]&gt;0)&amp;(n[&#x27;t&#x27;]%6==0)&amp;jnp.any(free)
+candidate.py:L166: n[&#x27;trait&#x27;]=n[&#x27;trait&#x27;].at[bed].set(jnp.where(land,n[&#x27;seed_trait&#x27;][seed],n[&#x27;trait&#x27;][bed]));n[&#x27;growth&#x27;]=n[&#x27;growth&#x27;].at[bed].set(jnp.where(land,1,n[&#x27;growth&#x27;][bed]));n[&#x27;seed_active&#x27;]=n[&#x27;seed_active&#x27;].at[seed].set(n[&#x27;seed_active&#x27;][seed]&amp;~land);established=established+land.astype(jnp.int32)
+
+candidate.py:L159: blocked=jnp.any(nearbreak&amp;(n[&#x27;break_active&#x27;]&amp;n[&#x27;deployed&#x27;]&amp;facingwind)[None,:],axis=1)
+
+candidate.py:L165: bed=jnp.argmax(possible).astype(jnp.int32);land=n[&#x27;seed_active&#x27;][seed]&amp;jnp.any(possible)
+
+candidate.py:L168: n[&#x27;reward_parts&#x27;]=n[&#x27;reward_parts&#x27;].at[:,2].set(0.05*established.astype(jnp.float32)).at[:,4].add(-0.05*losses)
+
+candidate.py:L169: n[&#x27;terminated&#x27;]=jnp.array(False);n[&#x27;truncated&#x27;]=n[&#x27;t&#x27;]&gt;=self.max_steps;n[&#x27;done&#x27;]=n[&#x27;truncated&#x27;];n=self.visibility(n)
+
+## Presentation and evidence boundary
+
+Warm orchard greens, timber baskets and shelters, gold airborne seed circles, blue well and distinct living canopy/soil attributes. Public map shows only ground; remote dynamic crop and inventory details remain masked. All scene geometry, entity attributes and visibility refer to declared native leaves. Public scene events are restricted to actually public information. Debug/full-state view must be separate from role view.
+
+Two literal scripts and a single actor/action paired hypothesis are supplied, with fixed integer seed and source-derived suffix lengths. All remain UNEXECUTED_AUTHOR_HYPOTHESIS; neither legality of the full trajectory nor any effect, solvability, strategic richness, learning or transfer is certified. Prospective variation could examine trait inheritance, shelter orientation, reservoir supply, gardening roles, drying occupancy or partner harvest/replant timing under future separately frozen source. No such variation or candidate has been run.
+
+Current author checks use stdlib AST/literal shape arithmetic, byte hashes and the supplied trusted manifest/scene/whitelist validators only. No candidate/JAX/NumPy import, native method call, numerical rollout, rendering, training, network/model call or seed search occurred. Four official README excerpts supplied API context only: JaxMARL parallel dictionaries, Pgx explicit-key and terminal interfaces, Craftax spatial game framing, PureJaxRL single-file implementation philosophy. No upstream implementation, layout or asset was copied. The supplied PPO implementation was not read. Exact current input paths, bytes, hashes and excerpt extents are recorded in author_input_freeze.json. Current diversity addendum controls A/H and the scope of open worlds.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Walk north and face north</span></div><div class="action"><b>2</b><span>Walk east and face east</span></div><div class="action"><b>3</b><span>Walk south and face south</span></div><div class="action"><b>4</b><span>Walk west and face west</span></div><div class="action"><b>5</b><span>Pick lowest-index adjacent unheld seed basket; hands must be free</span></div><div class="action"><b>6</b><span>Put held seed basket on current tile</span></div><div class="action"><b>7</b><span>Harvest adjacent ripe crop for fruit; collect wet seeds if carrying a basket with room</span></div><div class="action"><b>8</b><span>Plant selected dry seed into adjacent empty moist bed</span></div><div class="action"><b>9</b><span>Set held basket on adjacent empty shared drying slot</span></div><div class="action"><b>10</b><span>Fill carried water to three from shared reservoir at well; waterkeeper</span></div><div class="action"><b>11</b><span>Water adjacent needy bed with one carried unit; waterkeeper</span></div><div class="action"><b>12</b><span>Prune mature growth for two timber or clear young growth for one; forager</span></div><div class="action"><b>13</b><span>Build a front windbreak for two timber; builder</span></div><div class="action"><b>14</b><span>Rotate adjacent standing windbreak orientation</span></div><div class="action"><b>15</b><span>Lift adjacent windbreak with free hands</span></div><div class="action"><b>16</b><span>Place held windbreak on clear front cell</span></div><div class="action"><b>17</b><span>Graft nearby growing crop to hybrid using one dry seed of each base trait; propagator</span></div><div class="action"><b>18</b><span>Upgrade shared drying roof with two timber; builder</span></div><div class="action"><b>19</b><span>Select next seed trait: hardy, lush, hybrid</span></div><div class="action"><b>20</b><span>Give one selected dry seed to adjacent peer&#x27;s carried basket</span></div><div class="action"><b>21</b><span>Mulch adjacent depleted soil with one timber</span></div><div class="action"><b>22</b><span>Dismantle adjacent windbreak and recover one timber; builder</span></div><div class="action"><b>23</b><span>Release one selected dry seed from held basket into the current wind</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Western propagator: grafts dry seed traits</p><p><b>agent_1</b> Western forager: prunes or clears plants for timber</p><p><b>agent_2</b> Northern builder: windbreak construction and shed upgrade</p><p><b>agent_3</b> Northern waterkeeper: shared reservoir and watering</p><p><b>agent_4</b> Eastern propagator: grafts dry seed traits</p><p><b>agent_5</b> Eastern forager: prunes or clears plants for timber</p><p><b>agent_6</b> Southern builder: windbreak construction and shed upgrade</p><p><b>agent_7</b> Southern waterkeeper: shared reservoir and watering</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;t; exact native row-major state values&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;done; exact native row-major state values&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;terminated; exact native row-major state values&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;truncated; exact native row-major state values&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      580
+    ],
+    &quot;meaning&quot;: &quot;Public 24x24 connected ground with a fixed impassable southeast pond; crops and current objects are separate local records&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      580,
+      584
+    ],
+    &quot;meaning&quot;: &quot;Public well and shared drying-shed center coordinates&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      584,
+      592
+    ],
+    &quot;meaning&quot;: &quot;Public four fixed drying-slot coordinates&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      592,
+      594
+    ],
+    &quot;meaning&quot;: &quot;Actual current public x,y wind vector, cardinal and unit length&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      594,
+      595
+    ],
+    &quot;meaning&quot;: &quot;rain; exact native row-major state values&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      595,
+      596
+    ],
+    &quot;meaning&quot;: &quot;daylight; exact native row-major state values&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      596,
+      597
+    ],
+    &quot;meaning&quot;: &quot;Seeded initial wind-cycle offset; only supplied reset key used&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      597,
+      598
+    ],
+    &quot;meaning&quot;: &quot;Shared finite-capacity well reservoir, 0..20, replenished by rain&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      598,
+      599
+    ],
+    &quot;meaning&quot;: &quot;Shared roof level: one permits dry-weather work; two also permits drying in rain&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      599,
+      608
+    ],
+    &quot;meaning&quot;: &quot;Self actor id, first-harvest trait achievements[3], native reward components[5]&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      608,
+      688
+    ],
+    &quot;meaning&quot;: &quot;Eight local gardener records: visible,x,y,role,facing,wood,carried basket,carried windbreak,water,selected trait; hidden data -1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      688,
+      952
+    ],
+    &quot;meaning&quot;: &quot;24 local bed records: visible,x,y,plot owner,trait,growth,canopy,moisture,fertility,seedbank,shade; hidden data -1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      952,
+      1048
+    ],
+    &quot;meaning&quot;: &quot;Eight local basket records: visible,x,y,holder,drying slot,wet[3],dry[3],dry timer; hidden data -1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1048,
+      1096
+    ],
+    &quot;meaning&quot;: &quot;Eight local windbreak records: visible,x,y,holder,axis,deployed; hidden data -1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1096,
+      1192
+    ],
+    &quot;meaning&quot;: &quot;16 local seed records: visible,x,y,trait,source owner,air age; hidden/inactive data -1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;gardeners&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;role&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 propagator, 1 forager, 2 builder, 3 waterkeeper&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;facing&quot;
+        ],
+        &quot;meaning&quot;: &quot;1 north, 2 east, 3 south, 4 west&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried timber, 0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carrying&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried basket index, -1 none&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carry_break&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried windbreak index, -1 none&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried watering units, 0..3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;selected&quot;
+        ],
+        &quot;meaning&quot;: &quot;Selected trait 0 hardy, 1 lush, 2 hybrid&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;plots&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;bed_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;bed_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;bed_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;bed_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Neighbor owning the plot, 0..7&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;trait&quot;
+        ],
+        &quot;meaning&quot;: &quot;-1 empty, 0 hardy, 1 lush, 2 hybrid&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Crop stage, 0..6; six ripe&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;canopy&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stage-five/six canopy casts eastern shade&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;moisture&quot;
+        ],
+        &quot;meaning&quot;: &quot;Soil moisture, 0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fertility&quot;
+        ],
+        &quot;meaning&quot;: &quot;Available growth nutrients, 0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;seedbank&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ripe wet seeds available, 0..2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;shade&quot;
+        ],
+        &quot;meaning&quot;: &quot;Hedge or neighboring canopy currently shades bed&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;baskets&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;basket_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;basket_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;basket_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;basket_holder&quot;
+        ],
+        &quot;meaning&quot;: &quot;-1 unattended, 0..7 gardener&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;basket_slot&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shared drying slot, -1 none&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wet&quot;
+        ],
+        &quot;meaning&quot;: &quot;Wet seed counts by three traits&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;dry&quot;
+        ],
+        &quot;meaning&quot;: &quot;Dry seed counts by three traits&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;dry_timer&quot;
+        ],
+        &quot;meaning&quot;: &quot;Accumulated usable drying ticks, 0..6&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;windbreaks&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;break_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;break_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;break_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;break_holder&quot;
+        ],
+        &quot;meaning&quot;: &quot;-1 standing/unheld, 0..7 carrier&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;break_axis&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 blocks vertical wind; 1 blocks horizontal wind&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;deployed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Standing and able to block movement/wind&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;drifting_seeds&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;seed_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;seed_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;seed_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;seed_trait&quot;
+        ],
+        &quot;meaning&quot;: &quot;Inherited seed trait 0..2&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;seed_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Source gardener bearing dispersal loss&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;seed_age&quot;
+        ],
+        &quot;meaning&quot;: &quot;Airborne age, max eight ticks&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;facilities&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;facility_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;facility_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;facility_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;drying_slots&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;shed_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;shed_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;shed_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 217,
+  &quot;key&quot;: &quot;gi217&quot;,
+  &quot;title&quot;: &quot;种风果园 · Seedwind Orchard&quot;,
+  &quot;summary&quot;: &quot;管理种篮、湿种干燥、嫁接与风障，选择各园丁的种植目标。&quot;,
+  &quot;tags&quot;: [
+    &quot;田园生态&quot;,
+    &quot;8角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 8,
+    &quot;observation_size&quot;: 1192,
+    &quot;num_actions&quot;: 24,
+    &quot;max_steps&quot;: 512
+  },
+  &quot;source_sha256&quot;: &quot;78a651a4ff09f8353eddeb74fcd42a854cfc1f95df4cd61cbab49e1920161c66&quot;,
+  &quot;manifest_sha256&quot;: &quot;3f1bd16d71032802a017a53d88349aadcc60da37c3852345a8079258c59026f3&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;78a651a4ff09f8353eddeb74fcd42a854cfc1f95df4cd61cbab49e1920161c66&quot;,
+      &quot;bytes&quot;: 21328,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00217/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;3f1bd16d71032802a017a53d88349aadcc60da37c3852345a8079258c59026f3&quot;,
+      &quot;bytes&quot;: 24952,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00217/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;68f3bac8316d39b911198d42adbf62487b490424fbcca13b5029989217937c91&quot;,
+      &quot;bytes&quot;: 13329,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00217/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;9ff6c0fd86810a92d48a0221d0ac5d435503f82acaac49c302a189087e82936d&quot;,
+      &quot;bytes&quot;: 11371,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00217/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;bfd7e265cee05635c26b0e79b67b4e90d686523267b2c8621c9e528cfc19b345&quot;,
+      &quot;bytes&quot;: 5164,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00217/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi217">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

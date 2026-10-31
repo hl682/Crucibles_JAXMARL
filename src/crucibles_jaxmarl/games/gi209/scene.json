@@ -1,0 +1,705 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "9d10940702b222a77c0a3e3906b7b025e6ea4950acfe266e51176f23f8cef68e",
+  "manifest_sha256": "9c11e8e2f3f62c9fbb469e352448ea897851f6f3b43009087a8d2265769f6111",
+  "title": "Compost Commons",
+  "rules": [
+    "One gardener can tow the real compost cart. A worker can instead carry a screen, a compost portion or one produce batch; water uses a separate flask.",
+    "The finite pile matures at moisture two through four. Turning adds two progress and emits odor; mature quality begins at six.",
+    "Adding raw material at the sorting station resets the entire pile's age. Scooped portions retain their immature or mature quality while carried.",
+    "Immature compost adds two crop growth and two stress. Mature compost adds three growth and one moisture. Scoop tools must be cleaned before another scoop.",
+    "An active odor point attracts pests. Wind moves the point on even ticks and sets pest tie order; deployed screens repel entry and protect crops within one cell.",
+    "Pests move actual cardinal cells and respect irrigation channels and bridges. Crop contact removes water and adds stress; stress four kills.",
+    "Harvest a ripe patch once for two produce. Store privately at your stall or donate at the common barn; only donated produce counts toward six.",
+    "Everything shown is native state. Human/policy actions are identical and all author scripts remain unexecuted."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Garden soil and walkable paths",
+          "color": "#D8C298"
+        },
+        {
+          "value": 1,
+          "meaning": "Irrigation channel; workers and pests cannot cross",
+          "color": "#78A3A9"
+        },
+        {
+          "value": 2,
+          "meaning": "Bridge across the channel",
+          "color": "#A78E69"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Household gardeners",
+      "color": "#C48C62",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "held"
+          ],
+          "label": "-1 empty; 1 immature, 2 mature compost; 3 cart; 4-5 screen"
+        },
+        {
+          "state_path": [
+            "flask"
+          ],
+          "label": "Carried water units, zero through two"
+        },
+        {
+          "state_path": [
+            "tool_dirty"
+          ],
+          "label": "Dirty scoop tool blocks further scooping until cleaned"
+        },
+        {
+          "state_path": [
+            "produce"
+          ],
+          "label": "Carried produce units, zero or two"
+        },
+        {
+          "state_path": [
+            "origin"
+          ],
+          "label": "Carried produce origin owner, or -1"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "label": "Accepted non-wait action count"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "label": "Invalid request or lost walking contention"
+        }
+      ]
+    },
+    {
+      "id": "cart",
+      "glyph": "crate",
+      "label": "Shared mobile compost cart",
+      "color": "#9A7751",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cart_holder"
+          ],
+          "label": "Worker with handle, or -1 parked"
+        },
+        {
+          "state_path": [
+            "cart_units"
+          ],
+          "label": "Organic portions remaining, zero through three"
+        },
+        {
+          "state_path": [
+            "cart_age"
+          ],
+          "label": "Maturation progress; six is mature"
+        },
+        {
+          "state_path": [
+            "cart_moisture"
+          ],
+          "label": "Pile moisture, zero through six"
+        }
+      ]
+    },
+    {
+      "id": "screen",
+      "glyph": "square",
+      "label": "Two pest-protection screens",
+      "color": "#8B9D71",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "screen_holder"
+          ],
+          "label": "Carrier ID or -1 deployed"
+        }
+      ]
+    },
+    {
+      "id": "crop",
+      "glyph": "plant",
+      "label": "Six household crop rows",
+      "color": "#82A15F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crop_owner"
+          ],
+          "label": "Fixed household origin of harvest"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "0 growing, 1 ripe, 2 harvested, 3 dead"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Growth progress; six ripens"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Plant moisture, zero through four"
+        },
+        {
+          "state_path": [
+            "stress"
+          ],
+          "label": "Plant stress; four kills a live crop"
+        }
+      ]
+    },
+    {
+      "id": "pest",
+      "glyph": "circle",
+      "label": "Three physical pests",
+      "color": "#8A7158",
+      "attribute_labels": []
+    },
+    {
+      "id": "cloud",
+      "glyph": "circle",
+      "label": "Wind-shifted odor source",
+      "color": "#B5A35F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cloud_strength"
+          ],
+          "label": "Scent lifetime/strength, zero through five"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "glyph": "resource",
+      "label": "Sorter, well, three stalls, common barn",
+      "color": "#A98062",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "turned"
+      ],
+      "meaning": "Pile turned this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pest_hits"
+      ],
+      "meaning": "Actual pest contacts after protection this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "community"
+      ],
+      "meaning": "Cumulative community produce",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "private_stock"
+      ],
+      "meaning": "Cumulative private produce",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "donated_now"
+      ],
+      "meaning": "Produce donated this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "stored_now"
+      ],
+      "meaning": "Produce stored privately this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "wind"
+      ],
+      "meaning": "Current horizontal wind direction",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Take nearby compost-cart handle with free hands"
+    },
+    {
+      "id": 6,
+      "label": "Release cart handle or put carried screen down"
+    },
+    {
+      "id": 7,
+      "label": "Pick up nearby deployed screen"
+    },
+    {
+      "id": 8,
+      "label": "Water nearby compost pile with one flask unit"
+    },
+    {
+      "id": 9,
+      "label": "Water nearby live crop with one flask unit"
+    },
+    {
+      "id": 10,
+      "label": "Add one raw organic unit at sorting station"
+    },
+    {
+      "id": 11,
+      "label": "Refill one flask unit at well"
+    },
+    {
+      "id": 12,
+      "label": "Scoop one compost unit with clean tool and free hands"
+    },
+    {
+      "id": 13,
+      "label": "Apply carried compost to nearby growing crop"
+    },
+    {
+      "id": 14,
+      "label": "Clean personal tool at well with one flask unit"
+    },
+    {
+      "id": 15,
+      "label": "Harvest nearby ripe crop into empty bag"
+    },
+    {
+      "id": 16,
+      "label": "Store carried produce at own household stall"
+    },
+    {
+      "id": 17,
+      "label": "Donate carried produce at common barn"
+    },
+    {
+      "id": 18,
+      "label": "Turn nearby compost pile"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public elapsed nonterminal transitions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Natural completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Cap completion flag with natural priority",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Natural task success flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Natural task failure flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        105
+      ],
+      "meaning": "Actual public tile map flattened y then x",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        111
+      ],
+      "meaning": "Actual Household gardeners positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        114
+      ],
+      "meaning": "-1 empty; 1 immature, 2 mature compost; 3 cart; 4-5 screen",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        117
+      ],
+      "meaning": "Carried water units, zero through two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        120
+      ],
+      "meaning": "Dirty scoop tool blocks further scooping until cleaned",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        123
+      ],
+      "meaning": "Carried produce units, zero or two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        126
+      ],
+      "meaning": "Carried produce origin owner, or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        129
+      ],
+      "meaning": "Accepted non-wait action count",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        132
+      ],
+      "meaning": "Invalid request or lost walking contention",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        134
+      ],
+      "meaning": "Actual Shared mobile compost cart positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        135
+      ],
+      "meaning": "Worker with handle, or -1 parked",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        136
+      ],
+      "meaning": "Organic portions remaining, zero through three",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        137
+      ],
+      "meaning": "Maturation progress; six is mature",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        138
+      ],
+      "meaning": "Pile moisture, zero through six",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        142
+      ],
+      "meaning": "Actual Two pest-protection screens positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        144
+      ],
+      "meaning": "Carrier ID or -1 deployed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        156
+      ],
+      "meaning": "Actual Six household crop rows positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        162
+      ],
+      "meaning": "Fixed household origin of harvest",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        168
+      ],
+      "meaning": "0 growing, 1 ripe, 2 harvested, 3 dead",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        174
+      ],
+      "meaning": "Growth progress; six ripens",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        174,
+        180
+      ],
+      "meaning": "Plant moisture, zero through four",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        180,
+        186
+      ],
+      "meaning": "Plant stress; four kills a live crop",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        186,
+        192
+      ],
+      "meaning": "Actual Three physical pests positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        192,
+        194
+      ],
+      "meaning": "Actual Wind-shifted odor source positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        194,
+        195
+      ],
+      "meaning": "Scent lifetime/strength, zero through five",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        196
+      ],
+      "meaning": "Odor source active if its strength is positive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        196,
+        197
+      ],
+      "meaning": "Current horizontal wind: +1 east or -1 west, changes every eight ticks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        197,
+        209
+      ],
+      "meaning": "Actual Sorter, well, three stalls, common barn positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        209,
+        210
+      ],
+      "meaning": "Raw organic portions still at sorting station",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        210,
+        211
+      ],
+      "meaning": "Finite remaining well water units",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        211,
+        212
+      ],
+      "meaning": "Cumulative compost portions applied to crops",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        212,
+        215
+      ],
+      "meaning": "Total produce harvested by crop origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        215,
+        218
+      ],
+      "meaning": "Community produce delivered by origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        218,
+        221
+      ],
+      "meaning": "Private produce stored by origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        221,
+        222
+      ],
+      "meaning": "At least one worker turned the pile this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        222,
+        228
+      ],
+      "meaning": "Physical pest contacts per crop on this step after screen protection",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        228,
+        231
+      ],
+      "meaning": "Community produce delivered per worker this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        231,
+        234
+      ],
+      "meaning": "Private produce stored per worker this step",
+      "visibility": "public"
+    }
+  ]
+}

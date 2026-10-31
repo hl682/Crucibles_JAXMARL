@@ -1,0 +1,440 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>群岛议会 · Archipelago Councils · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI224 / SPATIAL</p><h1>群岛议会 · Archipelago Councils</h1><p class="lead">采集与交付粮木，合建桥梁、使用渡口，维护有时效的公共水情。</p><div class="stats"><span>48 agents</span><span>18 actions</span><span>681 observation columns</span><span>640 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi224.gif" alt="Original saved demonstration gi224"></section><section><h2>Run this game</h2><pre>crucibles play --game 224</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Develop all eight towns through two timber and two grain deliveries each while negotiating shared transport and drainage.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion when all eight towns have both delivery counters equal to 2; otherwise truncate at 640.&quot;,
+  &quot;interaction&quot;: &quot;A two-investment bridge opens a water cell to everyone but reduces downstream water without a canal. Ferries share finite fuel and cooldown; port stewards decide foreign access. Messengers broadcast local reef/tide readings with explicit age. A longer southern coast road bypasses these local dependencies.&quot;,
+  &quot;observation_access&quot;: &quot;Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 5. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>48 settlers in eight towns. Every actor moves and carries materials; tools change at the actor&#x27;s own town.</li><li>Two timber investments make a bridge walkable. A canal prevents its surge damage and downstream water diversion; each investment uses one carried timber.</li><li>A ferry moves an actor across its two-cell channel. One shared fuel unit and cooldown are consumed; town owners can close their port to outsiders.</li><li>At high tide a reef crossing requires a navigator; a failed crossing attempt stays in place. Any actor can refuel a ferry.</li><li>A messenger spends a fuel pack to broadcast its town&#x27;s reef/tide chart for 16 ticks. Charts are public and can become stale.</li><li>A complete bridge is protected from collapse while occupied. Uncanalized construction can reduce the next town&#x27;s seasonal farm renewal.</li><li>Deliver two timber and two grain to each town for development. Aid rewards the beneficiary town and the delivering actor.</li><li>Grove/farm renewal is bounded to eight cycles. Finite town fuel and the longer southern coastal road make local investment and reciprocal transport distinct choices.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Archipelago Councils
+
+Status: AUTHORED_NOT_EXECUTED. Initial proposal, attempt 00, feedback_used=0. All scripts are unexecuted source-derived hypotheses.
+
+Native interface: A=48, O=681, U=18, H=640. Every counted actor has a scalar int32 action and its own float32 observation/reward and bool done row. The family is civilization_strategy.
+
+Develop all eight towns through two timber and two grain deliveries each while negotiating shared transport and drainage.
+
+Reset samples seven binary reef flags from the supplied key; all other initial geometry/resources are deterministic. Signal publication reveals a deliberately chosen local reading, while arbitrary remote state remains hidden. Ferry entities are actual service-crossing locations with capacity/cooldown, not independently animated vessels. Town 7&#x27;s chart reports crossing 6. Bridge safety checks preserve passability under occupants.
+
+Rules and physical meanings:
+
+- 48 settlers in eight towns. Every actor moves and carries materials; tools change at the actor&#x27;s own town.
+- Two timber investments make a bridge walkable. A canal prevents its surge damage and downstream water diversion; each investment uses one carried timber.
+- A ferry moves an actor across its two-cell channel. One shared fuel unit and cooldown are consumed; town owners can close their port to outsiders.
+- At high tide a reef crossing requires a navigator; a failed crossing attempt stays in place. Any actor can refuel a ferry.
+- A messenger spends a fuel pack to broadcast its town&#x27;s reef/tide chart for 16 ticks. Charts are public and can become stale.
+- A complete bridge is protected from collapse while occupied. Uncanalized construction can reduce the next town&#x27;s seasonal farm renewal.
+- Deliver two timber and two grain to each town for development. Aid rewards the beneficiary town and the delivering actor.
+- Grove/farm renewal is bounded to eight cycles. Finite town fuel and the longer southern coastal road make local investment and reciprocal transport distinct choices.
+
+Transition order and controls:
+
+The native joint vector is processed in rotating actor order (k+t) modulo A. An actor checks its action against current state at its turn; a resource lost to an earlier actor converts the action to wait. Out-of-range input becomes wait. Nonterminal movement codes always allow facing even when walking is blocked; occupancy and terrain control actual movement. Ties for nearby targets choose minimum Manhattan distance, then lowest index. No direction action teleports through a blocked walking cell.
+All spatial updates, resources and tool effects are in candidate.py:L150-L196 (actor). Movement/collision is in candidate.py:L54-L65 (move_actor) and candidate.py:L125-L128 (passable). Exact contextual masks are in candidate.py:L130-L148 (choices); mask assembly is in candidate.py:L23-L25 (mask_row) and candidate.py:L27-L29 (legal_actions).
+The world updates production/ecology/hazards after actor actions. These delayed effects and reward components are in candidate.py:L198-L220 (raw_step).
+
+Rewards and finite bounds:
+
+Each capped timber/grain delivery gives beneficiary-town actors 0.8 and the delivering actor 0.3. First use of each ferry gives every actor 0.1. Bridge/canal investment, refueling or chart broadcast costs the acting actor 0.04. An uncanalized surge-exposed bridge costs downstream-town actors 0.2 even when occupancy temporarily protects the span. Four deliveries per town, seven first uses and one personal action bound reward within [-1,5]. No reward clipping.
+Observation entries are float32 in [-2,65536]. This loose finite envelope includes coordinates, codes, quantities and cumulative counters; at most A*H &lt;= 49152 actor actions can contribute to a counter in one episode. It is a representational bound, never a performance threshold.
+
+Exact observation layout:
+
+- Columns [0,8): Self x,y,town,tool,wood,grain,fuel packs,face. Access: self.
+- Columns [8,28): t,tide phase,developed towns,used crossings; 8 chart codes; 8 chart ages. Chart code=3*reef+tide, -1 absent. Access: public.
+- Columns [28,412): 48 actor slots width 8: visible,x,y,town,tool,wood,grain,fuel packs. Access: local.
+- Columns [412,468): 8 town slots width 7: visible,x,y,timber delivered,grain delivered,fuel store,port access. Access: local.
+- Columns [468,503): 7 bridge slots width 5: visible,x,y,bridge level,canal. Access: local.
+- Columns [503,552): 7 ferry slots width 7: visible,x,y,fuel,cooldown,reef,ever used. Access: local.
+- Columns [552,592): 8 grove slots width 5: visible,x,y,timber stock,remaining renewals. Access: local.
+- Columns [592,632): 8 farm slots width 5: visible,x,y,grain stock,water. Access: local.
+- Columns [632,681): 7x7 base terrain patch y-major, outside=-1. Bridge entities override water passability at their cell when level 2. Access: local.
+
+Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.
+The observer construction is candidate.py:L222-L231 (observe). Entity/map masks are regenerated in candidate.py:L31-L40 (refresh). Masked entity flattening and patch boundaries are candidate.py:L42-L44 (visible_rows) and candidate.py:L46-L52 (patch). No role-view animation may expose hidden state or use full-state event arrays as public announcements. Only the declared public counters are scene events.
+
+Declared persistent state and invariants:
+
+Initial arrays, positions, resource stocks and integer/bool representations are defined in candidate.py:L79-L112 (reset). The manifest declares every reset key exactly once. Every state leaf keeps a fixed shape; positions are [x,y], maps are indexed [y,x], and all actors remain active through termination. Native actor positions are unique; non-agent objects may share a cell with an actor when the mechanic permits it.
+Analytical ranges used during author review: wood in [0,4]; grain in [0,4]; fuel_pack in [0,3]; bridge in [0,2]; ferry_fuel in [0,8]; cooldown in [0,4]; signal in [-1,5]; signal_age in [0,17]; water in [0,3]; timber_delivered in [0,2]; grain_delivered in [0,2]. These are source assertions awaiting independent native checking.
+
+Termination:
+
+Natural completion when all eight towns have both delivery counters equal to 2; otherwise truncate at 640.
+The terminal helper candidate.py:L67-L77 (end_step) increments t once for nonterminal input, gives natural completion priority over horizon truncation, and preserves all leaves and causes on already-terminal input with zero rewards. Joint dones agree with done_all. No reset occurs inside raw_step.
+
+Source-derived partner intervention:
+
+Build (10) versus wait (0), at the first branch step. Both branches then use the same build and westward movement actions.
+The branch-A bridge is intended to reach level 2 while branch B reaches level 1; the same actor 6 west action can then have different movement feasibility. No native transition was evaluated.
+The two full literal diagnostic scripts and both paired suffixes are in playthrough.json. They are dimension/range-checked as JSON only. Prefix and branch actions were chosen from rules, not searched, simulated or replayed. They are not a solvability, success-rate or causal-effect receipt.
+
+Presentation and provenance:
+
+The scene binds the exact source and manifest hashes, actual position/active/visibility leaves, tile map, actions and observed attributes. Crew index, actor identity, current tool and object state support later camera/actor selection. Scene metadata is delivered; native animation, RGB rendering and a human-play UI have not been executed or accepted. Any human control must call the same native transition as a policy.
+The sanitized authority and scope files govern these initial ordinals and current counts. Historical count examples are not applied. All input files are enumerated with bytes/SHA256 and truthful semantic-read scope in author_input_freeze.json. Five allowed official reference snapshots were hashed for integrity only; their contents were not used as design/code inputs. No upstream code or commercial art was copied.
+All small integer quantities use int32; no uint32 PRNG key is duplicated in state. Requested model configuration is gpt-6-astra/max; this author self-report does not establish provider model identity or token/cost telemetry.
+
+Evidence boundary:
+
+Only source AST screening, data-schema checking, symbolic observation-width accounting, reset-key coverage and literal-script structure checking were performed. No candidate was imported or executed; no JAX/numpy simulation, native reset/step, R0, eager/JIT/vmap comparison, benchmark, training, heldout evaluation, browser or downstream feedback was used. Intra-author static corrections to whitelist-rejected constructs occurred before this initial freeze and are recorded in generation_record.json. Native compatibility, replay legality, strategic richness, solvability, learning, UI quality and transfer remain unestablished.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Face or move north</span></div><div class="action"><b>2</b><span>Face or move east</span></div><div class="action"><b>3</b><span>Face or move south</span></div><div class="action"><b>4</b><span>Face or move west</span></div><div class="action"><b>5</b><span>Cut grove timber with builder</span></div><div class="action"><b>6</b><span>Harvest farm grain with farmer</span></div><div class="action"><b>7</b><span>Pass wood, grain or fuel to nearest actor</span></div><div class="action"><b>8</b><span>Deliver timber to town</span></div><div class="action"><b>9</b><span>Deliver grain to town</span></div><div class="action"><b>10</b><span>Build or repair adjacent bridge with builder</span></div><div class="action"><b>11</b><span>Build adjacent drainage canal with builder</span></div><div class="action"><b>12</b><span>Use adjacent ferry crossing</span></div><div class="action"><b>13</b><span>Refuel adjacent ferry</span></div><div class="action"><b>14</b><span>Broadcast chart with messenger</span></div><div class="action"><b>15</b><span>Collect town fuel pack</span></div><div class="action"><b>16</b><span>Cycle tool at home town</span></div><div class="action"><b>17</b><span>Toggle home port access with steward</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> crew 0 / initial builder / actor 0</p><p><b>agent_1</b> crew 0 / initial farmer / actor 1</p><p><b>agent_2</b> crew 0 / initial navigator / actor 2</p><p><b>agent_3</b> crew 0 / initial messenger / actor 3</p><p><b>agent_4</b> crew 0 / initial steward / actor 4</p><p><b>agent_5</b> crew 0 / initial trader / actor 5</p><p><b>agent_6</b> crew 1 / initial builder / actor 6</p><p><b>agent_7</b> crew 1 / initial farmer / actor 7</p><p><b>agent_8</b> crew 1 / initial navigator / actor 8</p><p><b>agent_9</b> crew 1 / initial messenger / actor 9</p><p><b>agent_10</b> crew 1 / initial steward / actor 10</p><p><b>agent_11</b> crew 1 / initial trader / actor 11</p><p><b>agent_12</b> crew 2 / initial builder / actor 12</p><p><b>agent_13</b> crew 2 / initial farmer / actor 13</p><p><b>agent_14</b> crew 2 / initial navigator / actor 14</p><p><b>agent_15</b> crew 2 / initial messenger / actor 15</p><p><b>agent_16</b> crew 2 / initial steward / actor 16</p><p><b>agent_17</b> crew 2 / initial trader / actor 17</p><p><b>agent_18</b> crew 3 / initial builder / actor 18</p><p><b>agent_19</b> crew 3 / initial farmer / actor 19</p><p><b>agent_20</b> crew 3 / initial navigator / actor 20</p><p><b>agent_21</b> crew 3 / initial messenger / actor 21</p><p><b>agent_22</b> crew 3 / initial steward / actor 22</p><p><b>agent_23</b> crew 3 / initial trader / actor 23</p><p><b>agent_24</b> crew 4 / initial builder / actor 24</p><p><b>agent_25</b> crew 4 / initial farmer / actor 25</p><p><b>agent_26</b> crew 4 / initial navigator / actor 26</p><p><b>agent_27</b> crew 4 / initial messenger / actor 27</p><p><b>agent_28</b> crew 4 / initial steward / actor 28</p><p><b>agent_29</b> crew 4 / initial trader / actor 29</p><p><b>agent_30</b> crew 5 / initial builder / actor 30</p><p><b>agent_31</b> crew 5 / initial farmer / actor 31</p><p><b>agent_32</b> crew 5 / initial navigator / actor 32</p><p><b>agent_33</b> crew 5 / initial messenger / actor 33</p><p><b>agent_34</b> crew 5 / initial steward / actor 34</p><p><b>agent_35</b> crew 5 / initial trader / actor 35</p><p><b>agent_36</b> crew 6 / initial builder / actor 36</p><p><b>agent_37</b> crew 6 / initial farmer / actor 37</p><p><b>agent_38</b> crew 6 / initial navigator / actor 38</p><p><b>agent_39</b> crew 6 / initial messenger / actor 39</p><p><b>agent_40</b> crew 6 / initial steward / actor 40</p><p><b>agent_41</b> crew 6 / initial trader / actor 41</p><p><b>agent_42</b> crew 7 / initial builder / actor 42</p><p><b>agent_43</b> crew 7 / initial farmer / actor 43</p><p><b>agent_44</b> crew 7 / initial navigator / actor 44</p><p><b>agent_45</b> crew 7 / initial messenger / actor 45</p><p><b>agent_46</b> crew 7 / initial steward / actor 46</p><p><b>agent_47</b> crew 7 / initial trader / actor 47</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      8
+    ],
+    &quot;meaning&quot;: &quot;Self x,y,town,tool,wood,grain,fuel packs,face.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      28
+    ],
+    &quot;meaning&quot;: &quot;t,tide phase,developed towns,used crossings; 8 chart codes; 8 chart ages. Chart code=3*reef+tide, -1 absent.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      28,
+      412
+    ],
+    &quot;meaning&quot;: &quot;48 actor slots width 8: visible,x,y,town,tool,wood,grain,fuel packs.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      412,
+      468
+    ],
+    &quot;meaning&quot;: &quot;8 town slots width 7: visible,x,y,timber delivered,grain delivered,fuel store,port access.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      468,
+      503
+    ],
+    &quot;meaning&quot;: &quot;7 bridge slots width 5: visible,x,y,bridge level,canal.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      503,
+      552
+    ],
+    &quot;meaning&quot;: &quot;7 ferry slots width 7: visible,x,y,fuel,cooldown,reef,ever used.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      552,
+      592
+    ],
+    &quot;meaning&quot;: &quot;8 grove slots width 5: visible,x,y,timber stock,remaining renewals.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      592,
+      632
+    ],
+    &quot;meaning&quot;: &quot;8 farm slots width 5: visible,x,y,grain stock,water.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      632,
+      681
+    ],
+    &quot;meaning&quot;: &quot;7x7 base terrain patch y-major, outside=-1. Bridge entities override water passability at their cell when level 2.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agent&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Native crew index&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried timber units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;grain&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried grain units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fuel_pack&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried fuel packs&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;town&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;town_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;town_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;town_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;timber_delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;Development timber delivered, capped at two&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;grain_delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;Development grain delivered, capped at two&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fuel_store&quot;
+        ],
+        &quot;meaning&quot;: &quot;Finite town fuel stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;open_port&quot;
+        ],
+        &quot;meaning&quot;: &quot;Foreign actors permitted at owned ferry&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;crossing&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 7,
+    &quot;position&quot;: [
+      &quot;crossing_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;crossing_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;crossing_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;bridge&quot;
+        ],
+        &quot;meaning&quot;: &quot;Bridge construction level; two is walkable&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;canal&quot;
+        ],
+        &quot;meaning&quot;: &quot;Drainage canal installed&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;ferry&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 7,
+    &quot;position&quot;: [
+      &quot;ferry_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;ferry_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;ferry_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;ferry_fuel&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ferry fuel available&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cooldown&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ferry service cooldown ticks&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;reef&quot;
+        ],
+        &quot;meaning&quot;: &quot;Local binary reef hazard&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;used_crossing&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ferry has been used&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;grove&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;grove_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;grove_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;grove_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;timber_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Harvestable timber units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;renewals&quot;
+        ],
+        &quot;meaning&quot;: &quot;Resource renewal cycles remaining&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;farm&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;farm_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;farm_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;farm_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;grain_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Harvestable grain units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Farm seasonal water allowance&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 224,
+  &quot;key&quot;: &quot;gi224&quot;,
+  &quot;title&quot;: &quot;群岛议会 · Archipelago Councils&quot;,
+  &quot;summary&quot;: &quot;采集与交付粮木，合建桥梁、使用渡口，维护有时效的公共水情。&quot;,
+  &quot;tags&quot;: [
+    &quot;领土策略&quot;,
+    &quot;48角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 48,
+    &quot;observation_size&quot;: 681,
+    &quot;num_actions&quot;: 18,
+    &quot;max_steps&quot;: 640
+  },
+  &quot;source_sha256&quot;: &quot;197db96ab84b89e440a2d4e381d2eb42dcfc37140913d3b7374a84f46694bd4b&quot;,
+  &quot;manifest_sha256&quot;: &quot;f0afae6b42dcf98a1c05d8ddd711fab0648650dad78681d8a2fe7ce97c5971ec&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;197db96ab84b89e440a2d4e381d2eb42dcfc37140913d3b7374a84f46694bd4b&quot;,
+      &quot;bytes&quot;: 15371,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00224/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;f0afae6b42dcf98a1c05d8ddd711fab0648650dad78681d8a2fe7ce97c5971ec&quot;,
+      &quot;bytes&quot;: 22560,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00224/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;51166c8cc54131d77d36db33ae40b0dbef08cd1a9f13344929f301aa9f14a41e&quot;,
+      &quot;bytes&quot;: 8936,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00224/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;2024a9a37accd4edf5e70b63984d301582cc4eb0b0588468b12e069c51992fc2&quot;,
+      &quot;bytes&quot;: 9397,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00224/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;1af9f91ba5904c0c1f5cae776079ec63f201294da9396faae46d39e2930bfd2d&quot;,
+      &quot;bytes&quot;: 18713,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00224/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi224">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

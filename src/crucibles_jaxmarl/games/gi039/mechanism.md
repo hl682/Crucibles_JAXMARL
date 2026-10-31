@@ -1,0 +1,17 @@
+# astra-d2-00039: Revocable consensus with aging private evidence
+
+This parentless proposal is related to generic decentralized inference, costly sensing and delayed consensus. It does not claim program nonisomorphism or established novelty. No benchmark, other candidate or evaluation result was consulted.
+
+A shared binary latent mode is not directly observable. Each agent initially gets its own clue that matches the mode with probability 0.6. Actions are 0 recharge, 1 propose label 0, 2 propose label 1, 3 inspect, and 4 authorize one's current proposal. A proposal is a persistent public record. Proposing, including repeating the same label, resets its age and revokes that agent's authorization. Authorization costs 0.1 charge and remains in force until a new proposal or a joint resolution.
+
+A joint resolution uses old-state records: both proposals must exist and match, both authorizations must already exist and both proposal ages must be at least one. Any current proposal action vetoes resolution for that step. Otherwise resolution occurs automatically when these conditions hold, whether the current actions are wait, inspection or attempted authorization. The old agreed label is scored against the old latent mode. Both proposals and authorizations then clear, a new latent mode is sampled, and each agent obtains a new noisy clue. The latest public resolved label and correctness result persist.
+
+Outside resolution the latent mode independently flips with probability 0.06 per step. A feasible inspection spends 0.35 charge and returns an exact clue about the next latent mode in that transition, including a replacement mode if resolution occurs. This information arrives too late to change an already resolving old decision. A wait action replenishes 0.16 charge, capped at one. An agent's stored clue persists without inspection or resolution, so its acquisition precision is not its current correctness probability after drift.
+
+Observation columns 0..15 are time/32; own clue; own clue age/8; precision at acquisition; own charge; own encoded proposal; own proposal age/8; own authorization; counterpart encoded proposal; counterpart proposal age/8; counterpart authorization; last encoded resolved label; last correctness result; resolution count/8; own and counterpart previous actions/4. Labels are encoded as (label+1)/2, with unset label -1. Age counters saturate at eight. The latent mode, counterpart clue, counterpart acquisition precision and counterpart charge are hidden.
+
+Each resolution pays both agents +0.8 if correct and -0.7 otherwise. Inspection costs 0.035 reward, and a first feasible authorization costs 0.01. Explicit clipping enforces [-1,1]; exclusive actions give an unclipped lower bound of -0.735 and upper bound of 0.8. Both agents influence the other's payoff by their public records and consent, and a resolution jointly resets the information opportunity. Sensing, waiting, fast agreement and revising stale evidence have different delayed consequences.
+
+All five actions are legal, with insufficient charge producing an ineffective inspection or authorization. Random draws use only supplied keys and explicit splits. The 32-step clock returns both terminal dones and preserves the final state. Resolution count normalization is a scale only, not a claimed upper bound.
+
+Status: authored source only. No execution, validation receipt, compiler success, pool eligibility, nonisomorphism proof or learning effectiveness is asserted.

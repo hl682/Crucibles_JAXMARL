@@ -1,0 +1,2563 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Canal Seal Commonwealth · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI250 / SPATIAL</p><h1>Canal Seal Commonwealth</h1><p class="lead"></p><div class="stats"><span>160 agents</span><span>20 actions</span><span>242 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 250</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Move each guild cargo barge to its downstream destination, using two-bank towing, safe locks, investment or physically posted reciprocal seals. Mill production and granary protection create competing interests.&quot;,
+  &quot;natural_termination&quot;: &quot;Joint natural completion once every initial barge is delivered or destroyed. Delivered and destroyed barges are no longer active; all 160 citizens remain individually controllable until joint completion.&quot;,
+  &quot;interaction&quot;: &quot;A gatekeeper needs a separate inspector at a downstream-safety stand. Opening releases headwater to the next guild, affecting mills and floods. Two ropes tow a barge; crossing another guild lock transfers coins unless both reciprocal seals remain posted with time and uses left.&quot;,
+  &quot;observation_access&quot;: &quot;The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 2. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>160 independent citizens belong to ten guilds in one connected rectangular canal basin. Citizen roles are tool assignments that consenting neighbors can exchange.</li><li>A shovel user at a lock requests opening while an inspector at the exact separate stand checks that the next lock was closed. Closing wins simultaneous conflicts.</li><li>Open locks release water every fourth step. Downstream granaries can flood; closed locks with usable headwater feed mills every sixteenth step.</li><li>A rope user on each bank, aligned with the barge x coordinate, must choose the same towing direction. Step alongside the barge before towing again.</li><li>Carried seals posted at two reciprocal gates waive a limited number of tolls. They expire after 24 steps or uses are exhausted; otherwise toll coins have explicit payer and payee guilds.</li><li>Three timber contributions build a persistent bypass. Timber also repairs locks or active barge hulls; these alternatives compete with immediate transport.</li><li>The scene uses original parchment land, blue canals and guild insignia. All runtime, learning, transfer and human play claims remain unknown.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Canal Seal Commonwealth
+
+Status: AUTHORED_NOT_EXECUTED. Initial parentless train candidate; feedback_used=0; source_attempt=0; final_test_used=false.
+
+Native A/O/U/H = 160/242/20/896. Source SHA-256: `1e668db05956eb61817501a670bf4a4c126d378ad8dfb879c6d4a0dac5361472`.
+
+## Physical world and roles
+
+Ten adjoining eight-column guild territories share an 80 by 16 canal basin. All 160 citizens have independent observation/action/reward/done rows. Barges travel on the actual horizontal canal y=7. Citizen movement uses maintenance walkways represented by every bounded grid square, including canal-edge grating. Gate k is at (8*k+4,7); its separate inspection stand is (8*k+4,9). Relative council=(1,2), timber yard=(1,11), granary frontage=(1,5). Barge k starts at (8*k+1,7), carries three grain, and targets x=min(8*k+9,78). Citizens can share squares; an active barge cannot enter another active barge position, and conflicting target cells favor lower barge ID.
+
+## Actions and timing
+
+- 0 waits; 1..4 move within bounds.
+- 5 gathers timber near a yard up to three. 6 requests opening near a healthy lock with tool 0; the request needs same-tick separate inspection. 7 requires tool 3 exactly on the stand and checks the next lock pre-state was closed. The final outlet counts as safely closed. 8 closes a nearby lock and wins a simultaneous open request.
+- 9 issues the actor own guild seal at a council if not already carrying one. 10 posts a carried foreign seal at an empty adjacent gate. 11 withdraws a seal with an empty hand if the actor guild owns that gate or that seal. Seals are actual carried or posted permissions.
+- 12/13 tows east/west with tool 2. One operator must align at barge x on y=6 and another on y=8. Complete opposite-direction coalitions cancel. Carriers stay at their actual positions and must walk alongside before pulling again.
+- 14 delivers adjacent cargo only after its barge reaches the destination. 15 spends timber to repair a nearby damaged lock, otherwise a nearby active damaged hull. The helper receives a small reward; the owner gets the material benefit.
+- 16 offers a reciprocal adjacent tool exchange. 17 reads the local council forecast. 18 spends timber to construct a three-unit permanent bypass near a gate. 19 broadcasts cached forecast knowledge locally.
+
+Pre-state masks precede inspection and gate decisions. Every fourth step, open wet gates release one headwater unit to the next guild; the final outlet leaves the basin. Every thirty-second step stored forecast inflows arrive. Posting sets 24 lifetime ticks and two reciprocal uses. Both signatories must have live reciprocal seals physically posted to obtain exemption. Withdrawals, expiry or exhausted uses remove that permission. Repairs and bypass building precede two-bank towing. Entering a foreign gate cell charges one coin unless a bypass or reciprocal rights apply. Coin debit and receipt name actual guilds; free reciprocal entry consumes a use at each signatory gate. Closed gates at water 2..3 feed mills every sixteenth tick. Water four causes granary and structural/hull loss every eighth tick. Delivery has priority over simultaneous hull destruction. Gate health zero prevents a new opening request; an already open gate stays latched until closed. The next local weather forecast comes only from the supplied key.
+
+## Rewards and completion
+
+Each citizen pays -0.003 per accepted non-wait action. Its guild pays/receives per member: +0.25 for its barge delivery, -0.2 for barge destruction, +0.02 for mill production, -0.1 per lost granary unit, and +0.01*(toll receipts minus toll expenditures). Each legal repair helper receives +0.02. Each new completed bypass pays all 160 citizens +0.001. Toll treasury transfers explicitly debit the barge-owner guild and credit the gate-owner guild; their reward terms use those same affiliations. Simultaneous repairs/builds may spend redundant timber at the cap. Conservative per-step bounds are [-2,2].
+
+Joint natural completion occurs when every initial barge is delivered or destroyed. Those barges become inactive; all citizens remain controllable until joint completion. Otherwise H=896 ends the episode.
+
+## Dependence and strategies
+
+A keeper can retain mill headwater, release it for passage, or export flood pressure to a downstream guild. Couriers can exchange short-lived reciprocal seals; another coalition may pay tolls or invest in bypasses. Towing needs continual two-person spatial alignment, and a third inspector enables a gatekeeper. Locally learned forecasts can improve timing while remaining stale and asymmetric. No optimal coalition, solvability or learning result has been measured.
+
+## Interface, boundaries and completion
+
+The native boundary is reset(key), raw_step(key,state,actions), observe(state), and legal_actions(state). State is a fixed-key dictionary of fixed-shape int32/bool arrays. Observation and reward are float32. Every role has an action, observation, reward and done row. All out-of-range or masked actions deterministically become wait. A legal intention may still lose a simultaneous contest. Entity caps are fixed; no hidden controllers, callbacks, file access or global cache exists.
+
+A nonterminal raw call advances t exactly once. Natural completion has priority when it coincides with H. `truncated=(t&gt;=H)&amp;~terminated`, `done_all=terminated|truncated`, and every individual done equals joint done. Already-terminal input is absorbing: preserve state, observation, clock and cause; return zero rewards and all dones true. Raw auto-reset never occurs. Event flags describe the last actual transition and remain unchanged under absorbing calls; a renderer must not replay them as new events.
+
+## Exact observation and presentation contract
+
+The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.
+
+Every non-padding column has its own exact slice and meaning in `manifest.json:observation_fields`. Entity slots encode `[visible, entity_id, absolute_x, absolute_y, declared attributes...]`; a hidden slot is entirely -1. Sorting is ascending Manhattan distance, then entity ID. No value is normalized. Observations are float32 and conservatively bounded [-1,2048]. Explicit padding is zero. Each group visibility mask equals the selected local slots; actor masks additionally include the selected self, whose full attributes are in its self block.
+
+- self: [0, 14] end-exclusive; id, guild, tool, x, y, wood, seal, knowledge, message, event, recipient, own_coins, own_grain, own_delivered.
+- citizens: [14, 102] end-exclusive; visible, entity_id, x, y, guild, tool, wood, seal, message, event, recipient.
+- locks: [102, 170] end-exclusive; visible, entity_id, x, y, water, health, open, verified, bypass, guest, ttl, uses, coins, grain, mill, loss, toll.
+- barges: [170, 214] end-exclusive; visible, entity_id, x, y, owner, cargo, hull, destination, arrived, moved, barge_toll.
+- map_patch: [214, 239] end-exclusive; 5x5 row-major dy=-2..2, dx=-2..2.
+
+The scene is safe declarative data with exact source and manifest hashes. Actual state coordinates, active masks, local visibility, resource levels, carried items and events determine drawing. Private forecasts are not exposed by a global scene HUD. Event vectors inherit their owning entity mask; full-state debugging is a separate labeled view. Static map layout is public. No narrative text substitutes for a transition. Every individual ID and affiliation is listed in the manifest.
+
+## Human control and unexecuted scripts
+
+A presentation layer should distinguish Enter game from Watch replay, offer native legal actions and pause/step, focus any actor/affiliation, and stage an arbitrary joint-action vector. A human can control one or many native rows; human participant count is not the role count. Human and policy decisions must call the same raw kernel. These files are interface metadata, not a claim that a browser UI, native animation or human session has been run.
+
+- `inspect_open_two_bank_tow`: 17 literal joint vectors. Inspector and keeper open lock 0; two rope workers alternate towing and walking alongside, then deliver their barge at x=9.
+- `timber_bypass_investment`: 13 literal joint vectors. Citizen 4 gathers three timber, walks to lock 0 and makes three persistent bypass contributions.
+- Paired `inspector_enables_gatekeeper`: 0 shared prefix vectors; 6 per suffix; exactly one scalar action differs. Only the inspector differs; the same keeper request and two-bank towing should encounter open versus closed lock when entering x=4. Compare actual histories; unexecuted.
+
+The scripts are source-reasoned hypotheses, not runtime legality receipts, success trajectories, solvability certificates or effect estimates. Identical reset and step keys are required for paired replay.
+
+## Literal source evidence
+
+- `candidate.py:30`: `def reset(self, key):`; definition ends at line 67.
+- `candidate.py:76`: `def legal_actions(self, s):`; definition ends at line 95.
+- `candidate.py:97`: `def advance(self, key, s, actions):`; definition ends at line 195.
+- `candidate.py:197`: `def raw_step(self, key, state, actions):`; definition ends at line 200.
+- `candidate.py:208`: `def observe(self, s):`; definition ends at line 218.
+- `candidate.py:102`: `# Inspection is a separate person at a separate downstream-safety stand.`.
+- `candidate.py:113`: `# Seals exist in hands or on a gate, and reciprocal rights expire or are consumed.`.
+- `candidate.py:132`: `# Two ropes, one on each bank, must agree on direction; opposite proposals cancel.`.
+- `candidate.py:157`: `# Flooding and mill production are delayed material effects of upstream releases.`.
+- `candidate.py:151`: `receipts = jnp.sum(jax.nn.one_hot(lock, 10, dtype=jnp.int32) * paid[:, None], axis=0)`.
+- `candidate.py:185`: `reward = -0.003 * (a != 0) + 0.25 * delivery[s[&#x27;guild&#x27;]] - 0.2 * destroyed[s[&#x27;guild&#x27;]] + 0.02 * mill[s[&#x27;guild&#x27;]] - 0.1 * loss[s[&#x27;guild&#x27;]] + 0.01 * (receipts - expenditure)[s[&#x27;guild&#x27;]]`.
+
+## Provenance, adaptations and limits
+
+`author_input_freeze.json` records all 25 actual allowed input files with absolute path, relative name, byte length, SHA-256 and use. Tool output could be excerpted; the freeze does not claim unseen content was semantically read. Only current 248-251 request/design and population/family251 control. Removed historical194 was not searched. No earlier candidate, result, heldout, memory or other coordination input was used. The batch contains only four already reserved IDs within the user cumulative 300-game ceiling.
+
+The supplied JaxMARL README informed parallel per-agent adapter expectations, including observation/action/reward/done dictionaries and `__all__`. This author supplies the native flat kernel; an external adapter is neither fabricated nor a change to the frozen learner. Pgx informed explicit masks and functional game-state presentation. Craftax informed the broad material/world-modification category. PureJaxRL and the supplied Craftax_Baselines PPO-RNN source were read only as integration/training context, not new game libraries, replacement learners or evidence of these games performance. No upstream code or commercial assets were copied. The four visual families remain independent.
+
+Representation adaptations: small integers are losslessly int32; refresh explicitly normalizes integer leaves even if a later process enables JAX x64; bool leaves remain bool; observations/rewards explicitly cast float32; the supplied uint32 key is not duplicated in state. Static Python loops only traverse fixed field-name tuples. Intended JIT/vmap/scan compatibility requires later sealed execution.
+
+No candidate/JAX/NumPy/PRNG, policy, training, throughput, browser or human-play execution occurred. Native/R0 acceptance, parity, resource use, deterministic replay, paired causal outcomes, rendered animation, solvability, strategic richness, learning and transfer remain UNKNOWN. Human-playability score is unmeasured. Negative, zero, failed and inconclusive outcomes must be preserved. This author produces no runtime/resource/release/native/PID/human receipt. After the final seven SHA-256 hashes are reported, this attempt is frozen; repairs require a separate dispatch.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>North</span></div><div class="action"><b>2</b><span>East</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>West</span></div><div class="action"><b>5</b><span>Collect timber</span></div><div class="action"><b>6</b><span>Request lock opening</span></div><div class="action"><b>7</b><span>Inspect downstream closure</span></div><div class="action"><b>8</b><span>Close lock</span></div><div class="action"><b>9</b><span>Issue own guild seal</span></div><div class="action"><b>10</b><span>Post carried seal</span></div><div class="action"><b>11</b><span>Withdraw posted seal</span></div><div class="action"><b>12</b><span>Tow east</span></div><div class="action"><b>13</b><span>Tow west</span></div><div class="action"><b>14</b><span>Deliver barge cargo</span></div><div class="action"><b>15</b><span>Repair lock or hull</span></div><div class="action"><b>16</b><span>Offer tool exchange</span></div><div class="action"><b>17</b><span>Read water forecast</span></div><div class="action"><b>18</b><span>Build bypass</span></div><div class="action"><b>19</b><span>Share water forecast</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> guild 0: gatekeeper/builder; independently controllable</p><p><b>agent_1</b> guild 0: inspector; independently controllable</p><p><b>agent_2</b> guild 0: rope carrier; independently controllable</p><p><b>agent_3</b> guild 0: rope carrier; independently controllable</p><p><b>agent_4</b> guild 0: gatekeeper/builder; independently controllable</p><p><b>agent_5</b> guild 0: seal courier; independently controllable</p><p><b>agent_6</b> guild 0: rope carrier; independently controllable</p><p><b>agent_7</b> guild 0: inspector; independently controllable</p><p><b>agent_8</b> guild 0: gatekeeper/builder; independently controllable</p><p><b>agent_9</b> guild 0: seal courier; independently controllable</p><p><b>agent_10</b> guild 0: rope carrier; independently controllable</p><p><b>agent_11</b> guild 0: inspector; independently controllable</p><p><b>agent_12</b> guild 0: gatekeeper/builder; independently controllable</p><p><b>agent_13</b> guild 0: seal courier; independently controllable</p><p><b>agent_14</b> guild 0: rope carrier; independently controllable</p><p><b>agent_15</b> guild 0: inspector; independently controllable</p><p><b>agent_16</b> guild 1: gatekeeper/builder; independently controllable</p><p><b>agent_17</b> guild 1: inspector; independently controllable</p><p><b>agent_18</b> guild 1: rope carrier; independently controllable</p><p><b>agent_19</b> guild 1: rope carrier; independently controllable</p><p><b>agent_20</b> guild 1: gatekeeper/builder; independently controllable</p><p><b>agent_21</b> guild 1: seal courier; independently controllable</p><p><b>agent_22</b> guild 1: rope carrier; independently controllable</p><p><b>agent_23</b> guild 1: inspector; independently controllable</p><p><b>agent_24</b> guild 1: gatekeeper/builder; independently controllable</p><p><b>agent_25</b> guild 1: seal courier; independently controllable</p><p><b>agent_26</b> guild 1: rope carrier; independently controllable</p><p><b>agent_27</b> guild 1: inspector; independently controllable</p><p><b>agent_28</b> guild 1: gatekeeper/builder; independently controllable</p><p><b>agent_29</b> guild 1: seal courier; independently controllable</p><p><b>agent_30</b> guild 1: rope carrier; independently controllable</p><p><b>agent_31</b> guild 1: inspector; independently controllable</p><p><b>agent_32</b> guild 2: gatekeeper/builder; independently controllable</p><p><b>agent_33</b> guild 2: inspector; independently controllable</p><p><b>agent_34</b> guild 2: rope carrier; independently controllable</p><p><b>agent_35</b> guild 2: rope carrier; independently controllable</p><p><b>agent_36</b> guild 2: gatekeeper/builder; independently controllable</p><p><b>agent_37</b> guild 2: seal courier; independently controllable</p><p><b>agent_38</b> guild 2: rope carrier; independently controllable</p><p><b>agent_39</b> guild 2: inspector; independently controllable</p><p><b>agent_40</b> guild 2: gatekeeper/builder; independently controllable</p><p><b>agent_41</b> guild 2: seal courier; independently controllable</p><p><b>agent_42</b> guild 2: rope carrier; independently controllable</p><p><b>agent_43</b> guild 2: inspector; independently controllable</p><p><b>agent_44</b> guild 2: gatekeeper/builder; independently controllable</p><p><b>agent_45</b> guild 2: seal courier; independently controllable</p><p><b>agent_46</b> guild 2: rope carrier; independently controllable</p><p><b>agent_47</b> guild 2: inspector; independently controllable</p><p><b>agent_48</b> guild 3: gatekeeper/builder; independently controllable</p><p><b>agent_49</b> guild 3: inspector; independently controllable</p><p><b>agent_50</b> guild 3: rope carrier; independently controllable</p><p><b>agent_51</b> guild 3: rope carrier; independently controllable</p><p><b>agent_52</b> guild 3: gatekeeper/builder; independently controllable</p><p><b>agent_53</b> guild 3: seal courier; independently controllable</p><p><b>agent_54</b> guild 3: rope carrier; independently controllable</p><p><b>agent_55</b> guild 3: inspector; independently controllable</p><p><b>agent_56</b> guild 3: gatekeeper/builder; independently controllable</p><p><b>agent_57</b> guild 3: seal courier; independently controllable</p><p><b>agent_58</b> guild 3: rope carrier; independently controllable</p><p><b>agent_59</b> guild 3: inspector; independently controllable</p><p><b>agent_60</b> guild 3: gatekeeper/builder; independently controllable</p><p><b>agent_61</b> guild 3: seal courier; independently controllable</p><p><b>agent_62</b> guild 3: rope carrier; independently controllable</p><p><b>agent_63</b> guild 3: inspector; independently controllable</p><p><b>agent_64</b> guild 4: gatekeeper/builder; independently controllable</p><p><b>agent_65</b> guild 4: inspector; independently controllable</p><p><b>agent_66</b> guild 4: rope carrier; independently controllable</p><p><b>agent_67</b> guild 4: rope carrier; independently controllable</p><p><b>agent_68</b> guild 4: gatekeeper/builder; independently controllable</p><p><b>agent_69</b> guild 4: seal courier; independently controllable</p><p><b>agent_70</b> guild 4: rope carrier; independently controllable</p><p><b>agent_71</b> guild 4: inspector; independently controllable</p><p><b>agent_72</b> guild 4: gatekeeper/builder; independently controllable</p><p><b>agent_73</b> guild 4: seal courier; independently controllable</p><p><b>agent_74</b> guild 4: rope carrier; independently controllable</p><p><b>agent_75</b> guild 4: inspector; independently controllable</p><p><b>agent_76</b> guild 4: gatekeeper/builder; independently controllable</p><p><b>agent_77</b> guild 4: seal courier; independently controllable</p><p><b>agent_78</b> guild 4: rope carrier; independently controllable</p><p><b>agent_79</b> guild 4: inspector; independently controllable</p><p><b>agent_80</b> guild 5: gatekeeper/builder; independently controllable</p><p><b>agent_81</b> guild 5: inspector; independently controllable</p><p><b>agent_82</b> guild 5: rope carrier; independently controllable</p><p><b>agent_83</b> guild 5: rope carrier; independently controllable</p><p><b>agent_84</b> guild 5: gatekeeper/builder; independently controllable</p><p><b>agent_85</b> guild 5: seal courier; independently controllable</p><p><b>agent_86</b> guild 5: rope carrier; independently controllable</p><p><b>agent_87</b> guild 5: inspector; independently controllable</p><p><b>agent_88</b> guild 5: gatekeeper/builder; independently controllable</p><p><b>agent_89</b> guild 5: seal courier; independently controllable</p><p><b>agent_90</b> guild 5: rope carrier; independently controllable</p><p><b>agent_91</b> guild 5: inspector; independently controllable</p><p><b>agent_92</b> guild 5: gatekeeper/builder; independently controllable</p><p><b>agent_93</b> guild 5: seal courier; independently controllable</p><p><b>agent_94</b> guild 5: rope carrier; independently controllable</p><p><b>agent_95</b> guild 5: inspector; independently controllable</p><p><b>agent_96</b> guild 6: gatekeeper/builder; independently controllable</p><p><b>agent_97</b> guild 6: inspector; independently controllable</p><p><b>agent_98</b> guild 6: rope carrier; independently controllable</p><p><b>agent_99</b> guild 6: rope carrier; independently controllable</p><p><b>agent_100</b> guild 6: gatekeeper/builder; independently controllable</p><p><b>agent_101</b> guild 6: seal courier; independently controllable</p><p><b>agent_102</b> guild 6: rope carrier; independently controllable</p><p><b>agent_103</b> guild 6: inspector; independently controllable</p><p><b>agent_104</b> guild 6: gatekeeper/builder; independently controllable</p><p><b>agent_105</b> guild 6: seal courier; independently controllable</p><p><b>agent_106</b> guild 6: rope carrier; independently controllable</p><p><b>agent_107</b> guild 6: inspector; independently controllable</p><p><b>agent_108</b> guild 6: gatekeeper/builder; independently controllable</p><p><b>agent_109</b> guild 6: seal courier; independently controllable</p><p><b>agent_110</b> guild 6: rope carrier; independently controllable</p><p><b>agent_111</b> guild 6: inspector; independently controllable</p><p><b>agent_112</b> guild 7: gatekeeper/builder; independently controllable</p><p><b>agent_113</b> guild 7: inspector; independently controllable</p><p><b>agent_114</b> guild 7: rope carrier; independently controllable</p><p><b>agent_115</b> guild 7: rope carrier; independently controllable</p><p><b>agent_116</b> guild 7: gatekeeper/builder; independently controllable</p><p><b>agent_117</b> guild 7: seal courier; independently controllable</p><p><b>agent_118</b> guild 7: rope carrier; independently controllable</p><p><b>agent_119</b> guild 7: inspector; independently controllable</p><p><b>agent_120</b> guild 7: gatekeeper/builder; independently controllable</p><p><b>agent_121</b> guild 7: seal courier; independently controllable</p><p><b>agent_122</b> guild 7: rope carrier; independently controllable</p><p><b>agent_123</b> guild 7: inspector; independently controllable</p><p><b>agent_124</b> guild 7: gatekeeper/builder; independently controllable</p><p><b>agent_125</b> guild 7: seal courier; independently controllable</p><p><b>agent_126</b> guild 7: rope carrier; independently controllable</p><p><b>agent_127</b> guild 7: inspector; independently controllable</p><p><b>agent_128</b> guild 8: gatekeeper/builder; independently controllable</p><p><b>agent_129</b> guild 8: inspector; independently controllable</p><p><b>agent_130</b> guild 8: rope carrier; independently controllable</p><p><b>agent_131</b> guild 8: rope carrier; independently controllable</p><p><b>agent_132</b> guild 8: gatekeeper/builder; independently controllable</p><p><b>agent_133</b> guild 8: seal courier; independently controllable</p><p><b>agent_134</b> guild 8: rope carrier; independently controllable</p><p><b>agent_135</b> guild 8: inspector; independently controllable</p><p><b>agent_136</b> guild 8: gatekeeper/builder; independently controllable</p><p><b>agent_137</b> guild 8: seal courier; independently controllable</p><p><b>agent_138</b> guild 8: rope carrier; independently controllable</p><p><b>agent_139</b> guild 8: inspector; independently controllable</p><p><b>agent_140</b> guild 8: gatekeeper/builder; independently controllable</p><p><b>agent_141</b> guild 8: seal courier; independently controllable</p><p><b>agent_142</b> guild 8: rope carrier; independently controllable</p><p><b>agent_143</b> guild 8: inspector; independently controllable</p><p><b>agent_144</b> guild 9: gatekeeper/builder; independently controllable</p><p><b>agent_145</b> guild 9: inspector; independently controllable</p><p><b>agent_146</b> guild 9: rope carrier; independently controllable</p><p><b>agent_147</b> guild 9: rope carrier; independently controllable</p><p><b>agent_148</b> guild 9: gatekeeper/builder; independently controllable</p><p><b>agent_149</b> guild 9: seal courier; independently controllable</p><p><b>agent_150</b> guild 9: rope carrier; independently controllable</p><p><b>agent_151</b> guild 9: inspector; independently controllable</p><p><b>agent_152</b> guild 9: gatekeeper/builder; independently controllable</p><p><b>agent_153</b> guild 9: seal courier; independently controllable</p><p><b>agent_154</b> guild 9: rope carrier; independently controllable</p><p><b>agent_155</b> guild 9: inspector; independently controllable</p><p><b>agent_156</b> guild 9: gatekeeper/builder; independently controllable</p><p><b>agent_157</b> guild 9: seal courier; independently controllable</p><p><b>agent_158</b> guild 9: rope carrier; independently controllable</p><p><b>agent_159</b> guild 9: inspector; independently controllable</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;name&quot;: &quot;self.id&quot;,
+    &quot;meaning&quot;: &quot;native zero-based actor ID&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;name&quot;: &quot;self.guild&quot;,
+    &quot;meaning&quot;: &quot;guild index 0..9&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;name&quot;: &quot;self.tool&quot;,
+    &quot;meaning&quot;: &quot;Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;name&quot;: &quot;self.x&quot;,
+    &quot;meaning&quot;: &quot;absolute grid x coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;name&quot;: &quot;self.y&quot;,
+    &quot;meaning&quot;: &quot;absolute grid y coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;name&quot;: &quot;self.wood&quot;,
+    &quot;meaning&quot;: &quot;carried timber 0..3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;name&quot;: &quot;self.seal&quot;,
+    &quot;meaning&quot;: &quot;carried guild seal ID or -1&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;name&quot;: &quot;self.knowledge&quot;,
+    &quot;meaning&quot;: &quot;private cached forecast/recipe; may be stale&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      9
+    ],
+    &quot;name&quot;: &quot;self.message&quot;,
+    &quot;meaning&quot;: &quot;current local message, zero means silence&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      10
+    ],
+    &quot;name&quot;: &quot;self.event&quot;,
+    &quot;meaning&quot;: &quot;accepted action code for the last actual transition; not a success flag&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      11
+    ],
+    &quot;name&quot;: &quot;self.recipient&quot;,
+    &quot;meaning&quot;: &quot;consenting handoff/tool-exchange counterpart ID or -1&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      12
+    ],
+    &quot;name&quot;: &quot;self.own_coins&quot;,
+    &quot;meaning&quot;: &quot;own guild treasury (shared guild ledger)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      13
+    ],
+    &quot;name&quot;: &quot;self.own_grain&quot;,
+    &quot;meaning&quot;: &quot;own guild granary (shared guild ledger)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      14
+    ],
+    &quot;name&quot;: &quot;self.own_delivered&quot;,
+    &quot;meaning&quot;: &quot;own guild delivered grain ledger&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      15
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      16
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      16,
+      17
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      17,
+      18
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      19
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      19,
+      20
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      20,
+      21
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      21,
+      22
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      22,
+      23
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      23,
+      24
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      24,
+      25
+    ],
+    &quot;name&quot;: &quot;citizens.slot0.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 0: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      25,
+      26
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      26,
+      27
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      27,
+      28
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      28,
+      29
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      29,
+      30
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      30,
+      31
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      31,
+      32
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      32,
+      33
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      33,
+      34
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      34,
+      35
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      35,
+      36
+    ],
+    &quot;name&quot;: &quot;citizens.slot1.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 1: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      36,
+      37
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      37,
+      38
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      38,
+      39
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      39,
+      40
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      40,
+      41
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      41,
+      42
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      42,
+      43
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      43,
+      44
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      44,
+      45
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      45,
+      46
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      46,
+      47
+    ],
+    &quot;name&quot;: &quot;citizens.slot2.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 2: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      47,
+      48
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      48,
+      49
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      49,
+      50
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      50,
+      51
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      51,
+      52
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      52,
+      53
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      54
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      54,
+      55
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      55,
+      56
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      56,
+      57
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      57,
+      58
+    ],
+    &quot;name&quot;: &quot;citizens.slot3.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 3: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      58,
+      59
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      59,
+      60
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      60,
+      61
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      61,
+      62
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      62,
+      63
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      63,
+      64
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      64,
+      65
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      65,
+      66
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      66,
+      67
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      67,
+      68
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      68,
+      69
+    ],
+    &quot;name&quot;: &quot;citizens.slot4.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 4: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      69,
+      70
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      70,
+      71
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      71,
+      72
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      72,
+      73
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      73,
+      74
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      75
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      75,
+      76
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      76,
+      77
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      77,
+      78
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      78,
+      79
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      79,
+      80
+    ],
+    &quot;name&quot;: &quot;citizens.slot5.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 5: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      80,
+      81
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      81,
+      82
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      82,
+      83
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      83,
+      84
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      84,
+      85
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      85,
+      86
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      86,
+      87
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      87,
+      88
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      88,
+      89
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      89,
+      90
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      90,
+      91
+    ],
+    &quot;name&quot;: &quot;citizens.slot6.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 6: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      91,
+      92
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.visible&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      92,
+      93
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.entity_id&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      93,
+      94
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.x&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      94,
+      95
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.y&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      95,
+      96
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.guild&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: guild index 0..9. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      96,
+      97
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.tool&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      97,
+      98
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.wood&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      98,
+      99
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.seal&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: carried guild seal ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      99,
+      100
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.message&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      100,
+      101
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.event&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      101,
+      102
+    ],
+    &quot;name&quot;: &quot;citizens.slot7.recipient&quot;,
+    &quot;meaning&quot;: &quot;citizens, nearest slot 7: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      102,
+      103
+    ],
+    &quot;name&quot;: &quot;locks.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      103,
+      104
+    ],
+    &quot;name&quot;: &quot;locks.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: zero-based entity ID within this group. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      104,
+      105
+    ],
+    &quot;name&quot;: &quot;locks.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: absolute grid x. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      105,
+      106
+    ],
+    &quot;name&quot;: &quot;locks.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: absolute grid y. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      106,
+      107
+    ],
+    &quot;name&quot;: &quot;locks.slot0.water&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: local water level 0..4. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      107,
+      108
+    ],
+    &quot;name&quot;: &quot;locks.slot0.health&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: tree or lock structural health 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      108,
+      109
+    ],
+    &quot;name&quot;: &quot;locks.slot0.open&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: lock gate open. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      109,
+      110
+    ],
+    &quot;name&quot;: &quot;locks.slot0.verified&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: separate inspector verified downstream closure this step. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      110,
+      111
+    ],
+    &quot;name&quot;: &quot;locks.slot0.bypass&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: persistent bypass contributions 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      111,
+      112
+    ],
+    &quot;name&quot;: &quot;locks.slot0.guest&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: posted foreign guild seal or -1. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      112,
+      113
+    ],
+    &quot;name&quot;: &quot;locks.slot0.ttl&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: remaining seal lifetime 0..24. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      113,
+      114
+    ],
+    &quot;name&quot;: &quot;locks.slot0.uses&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: remaining reciprocal gate uses 0..2. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      114,
+      115
+    ],
+    &quot;name&quot;: &quot;locks.slot0.coins&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: guild treasury 0..100. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      115,
+      116
+    ],
+    &quot;name&quot;: &quot;locks.slot0.grain&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: guild granary units 0..32. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      116,
+      117
+    ],
+    &quot;name&quot;: &quot;locks.slot0.mill&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: mill produced in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      117,
+      118
+    ],
+    &quot;name&quot;: &quot;locks.slot0.loss&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: granary flood loss in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      118,
+      119
+    ],
+    &quot;name&quot;: &quot;locks.slot0.toll&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 0: coin receipts at this gate in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      119,
+      120
+    ],
+    &quot;name&quot;: &quot;locks.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      120,
+      121
+    ],
+    &quot;name&quot;: &quot;locks.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: zero-based entity ID within this group. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      121,
+      122
+    ],
+    &quot;name&quot;: &quot;locks.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: absolute grid x. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      122,
+      123
+    ],
+    &quot;name&quot;: &quot;locks.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: absolute grid y. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      123,
+      124
+    ],
+    &quot;name&quot;: &quot;locks.slot1.water&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: local water level 0..4. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      124,
+      125
+    ],
+    &quot;name&quot;: &quot;locks.slot1.health&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: tree or lock structural health 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      125,
+      126
+    ],
+    &quot;name&quot;: &quot;locks.slot1.open&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: lock gate open. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      126,
+      127
+    ],
+    &quot;name&quot;: &quot;locks.slot1.verified&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: separate inspector verified downstream closure this step. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      127,
+      128
+    ],
+    &quot;name&quot;: &quot;locks.slot1.bypass&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: persistent bypass contributions 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      128,
+      129
+    ],
+    &quot;name&quot;: &quot;locks.slot1.guest&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: posted foreign guild seal or -1. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      129,
+      130
+    ],
+    &quot;name&quot;: &quot;locks.slot1.ttl&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: remaining seal lifetime 0..24. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      130,
+      131
+    ],
+    &quot;name&quot;: &quot;locks.slot1.uses&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: remaining reciprocal gate uses 0..2. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      131,
+      132
+    ],
+    &quot;name&quot;: &quot;locks.slot1.coins&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: guild treasury 0..100. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      132,
+      133
+    ],
+    &quot;name&quot;: &quot;locks.slot1.grain&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: guild granary units 0..32. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      133,
+      134
+    ],
+    &quot;name&quot;: &quot;locks.slot1.mill&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: mill produced in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      134,
+      135
+    ],
+    &quot;name&quot;: &quot;locks.slot1.loss&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: granary flood loss in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      135,
+      136
+    ],
+    &quot;name&quot;: &quot;locks.slot1.toll&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 1: coin receipts at this gate in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      136,
+      137
+    ],
+    &quot;name&quot;: &quot;locks.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      137,
+      138
+    ],
+    &quot;name&quot;: &quot;locks.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: zero-based entity ID within this group. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      138,
+      139
+    ],
+    &quot;name&quot;: &quot;locks.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: absolute grid x. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      139,
+      140
+    ],
+    &quot;name&quot;: &quot;locks.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: absolute grid y. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      140,
+      141
+    ],
+    &quot;name&quot;: &quot;locks.slot2.water&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: local water level 0..4. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      141,
+      142
+    ],
+    &quot;name&quot;: &quot;locks.slot2.health&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: tree or lock structural health 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      142,
+      143
+    ],
+    &quot;name&quot;: &quot;locks.slot2.open&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: lock gate open. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      143,
+      144
+    ],
+    &quot;name&quot;: &quot;locks.slot2.verified&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: separate inspector verified downstream closure this step. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      144,
+      145
+    ],
+    &quot;name&quot;: &quot;locks.slot2.bypass&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: persistent bypass contributions 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      145,
+      146
+    ],
+    &quot;name&quot;: &quot;locks.slot2.guest&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: posted foreign guild seal or -1. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      146,
+      147
+    ],
+    &quot;name&quot;: &quot;locks.slot2.ttl&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: remaining seal lifetime 0..24. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      147,
+      148
+    ],
+    &quot;name&quot;: &quot;locks.slot2.uses&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: remaining reciprocal gate uses 0..2. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      148,
+      149
+    ],
+    &quot;name&quot;: &quot;locks.slot2.coins&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: guild treasury 0..100. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      149,
+      150
+    ],
+    &quot;name&quot;: &quot;locks.slot2.grain&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: guild granary units 0..32. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      150,
+      151
+    ],
+    &quot;name&quot;: &quot;locks.slot2.mill&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: mill produced in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      151,
+      152
+    ],
+    &quot;name&quot;: &quot;locks.slot2.loss&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: granary flood loss in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      152,
+      153
+    ],
+    &quot;name&quot;: &quot;locks.slot2.toll&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 2: coin receipts at this gate in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      153,
+      154
+    ],
+    &quot;name&quot;: &quot;locks.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      154,
+      155
+    ],
+    &quot;name&quot;: &quot;locks.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: zero-based entity ID within this group. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      155,
+      156
+    ],
+    &quot;name&quot;: &quot;locks.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: absolute grid x. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      156,
+      157
+    ],
+    &quot;name&quot;: &quot;locks.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: absolute grid y. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      157,
+      158
+    ],
+    &quot;name&quot;: &quot;locks.slot3.water&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: local water level 0..4. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      158,
+      159
+    ],
+    &quot;name&quot;: &quot;locks.slot3.health&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: tree or lock structural health 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      159,
+      160
+    ],
+    &quot;name&quot;: &quot;locks.slot3.open&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: lock gate open. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      160,
+      161
+    ],
+    &quot;name&quot;: &quot;locks.slot3.verified&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: separate inspector verified downstream closure this step. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      161,
+      162
+    ],
+    &quot;name&quot;: &quot;locks.slot3.bypass&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: persistent bypass contributions 0..3. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      162,
+      163
+    ],
+    &quot;name&quot;: &quot;locks.slot3.guest&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: posted foreign guild seal or -1. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      163,
+      164
+    ],
+    &quot;name&quot;: &quot;locks.slot3.ttl&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: remaining seal lifetime 0..24. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      164,
+      165
+    ],
+    &quot;name&quot;: &quot;locks.slot3.uses&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: remaining reciprocal gate uses 0..2. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      165,
+      166
+    ],
+    &quot;name&quot;: &quot;locks.slot3.coins&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: guild treasury 0..100. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      166,
+      167
+    ],
+    &quot;name&quot;: &quot;locks.slot3.grain&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: guild granary units 0..32. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      167,
+      168
+    ],
+    &quot;name&quot;: &quot;locks.slot3.mill&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: mill produced in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      168,
+      169
+    ],
+    &quot;name&quot;: &quot;locks.slot3.loss&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: granary flood loss in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      169,
+      170
+    ],
+    &quot;name&quot;: &quot;locks.slot3.toll&quot;,
+    &quot;meaning&quot;: &quot;locks, nearest slot 3: coin receipts at this gate in last transition. Manhattan radius 9; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      170,
+      171
+    ],
+    &quot;name&quot;: &quot;barges.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      171,
+      172
+    ],
+    &quot;name&quot;: &quot;barges.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      172,
+      173
+    ],
+    &quot;name&quot;: &quot;barges.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      173,
+      174
+    ],
+    &quot;name&quot;: &quot;barges.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      174,
+      175
+    ],
+    &quot;name&quot;: &quot;barges.slot0.owner&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: current cargo or barge owner group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      175,
+      176
+    ],
+    &quot;name&quot;: &quot;barges.slot0.cargo&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: barge grain units 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      176,
+      177
+    ],
+    &quot;name&quot;: &quot;barges.slot0.hull&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: barge hull health 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      177,
+      178
+    ],
+    &quot;name&quot;: &quot;barges.slot0.destination&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: required downstream destination x coordinate. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      178,
+      179
+    ],
+    &quot;name&quot;: &quot;barges.slot0.arrived&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: barge delivered flag. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      179,
+      180
+    ],
+    &quot;name&quot;: &quot;barges.slot0.moved&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: barge moved in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      180,
+      181
+    ],
+    &quot;name&quot;: &quot;barges.slot0.barge_toll&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 0: coin charged to this barge in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      181,
+      182
+    ],
+    &quot;name&quot;: &quot;barges.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      182,
+      183
+    ],
+    &quot;name&quot;: &quot;barges.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      183,
+      184
+    ],
+    &quot;name&quot;: &quot;barges.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      184,
+      185
+    ],
+    &quot;name&quot;: &quot;barges.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      185,
+      186
+    ],
+    &quot;name&quot;: &quot;barges.slot1.owner&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: current cargo or barge owner group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      186,
+      187
+    ],
+    &quot;name&quot;: &quot;barges.slot1.cargo&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: barge grain units 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      187,
+      188
+    ],
+    &quot;name&quot;: &quot;barges.slot1.hull&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: barge hull health 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      188,
+      189
+    ],
+    &quot;name&quot;: &quot;barges.slot1.destination&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: required downstream destination x coordinate. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      189,
+      190
+    ],
+    &quot;name&quot;: &quot;barges.slot1.arrived&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: barge delivered flag. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      190,
+      191
+    ],
+    &quot;name&quot;: &quot;barges.slot1.moved&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: barge moved in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      191,
+      192
+    ],
+    &quot;name&quot;: &quot;barges.slot1.barge_toll&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 1: coin charged to this barge in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      192,
+      193
+    ],
+    &quot;name&quot;: &quot;barges.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      193,
+      194
+    ],
+    &quot;name&quot;: &quot;barges.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      194,
+      195
+    ],
+    &quot;name&quot;: &quot;barges.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      195,
+      196
+    ],
+    &quot;name&quot;: &quot;barges.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      196,
+      197
+    ],
+    &quot;name&quot;: &quot;barges.slot2.owner&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: current cargo or barge owner group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      197,
+      198
+    ],
+    &quot;name&quot;: &quot;barges.slot2.cargo&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: barge grain units 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      198,
+      199
+    ],
+    &quot;name&quot;: &quot;barges.slot2.hull&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: barge hull health 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      199,
+      200
+    ],
+    &quot;name&quot;: &quot;barges.slot2.destination&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: required downstream destination x coordinate. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      200,
+      201
+    ],
+    &quot;name&quot;: &quot;barges.slot2.arrived&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: barge delivered flag. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      201,
+      202
+    ],
+    &quot;name&quot;: &quot;barges.slot2.moved&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: barge moved in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      202,
+      203
+    ],
+    &quot;name&quot;: &quot;barges.slot2.barge_toll&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 2: coin charged to this barge in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      203,
+      204
+    ],
+    &quot;name&quot;: &quot;barges.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      204,
+      205
+    ],
+    &quot;name&quot;: &quot;barges.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      205,
+      206
+    ],
+    &quot;name&quot;: &quot;barges.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      206,
+      207
+    ],
+    &quot;name&quot;: &quot;barges.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      207,
+      208
+    ],
+    &quot;name&quot;: &quot;barges.slot3.owner&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: current cargo or barge owner group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      208,
+      209
+    ],
+    &quot;name&quot;: &quot;barges.slot3.cargo&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: barge grain units 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      209,
+      210
+    ],
+    &quot;name&quot;: &quot;barges.slot3.hull&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: barge hull health 0..3. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      210,
+      211
+    ],
+    &quot;name&quot;: &quot;barges.slot3.destination&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: required downstream destination x coordinate. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      211,
+      212
+    ],
+    &quot;name&quot;: &quot;barges.slot3.arrived&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: barge delivered flag. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      212,
+      213
+    ],
+    &quot;name&quot;: &quot;barges.slot3.moved&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: barge moved in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      213,
+      214
+    ],
+    &quot;name&quot;: &quot;barges.slot3.barge_toll&quot;,
+    &quot;meaning&quot;: &quot;barges, nearest slot 3: coin charged to this barge in last transition. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      214,
+      215
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      215,
+      216
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      216,
+      217
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      217,
+      218
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      218,
+      219
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      219,
+      220
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      220,
+      221
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      221,
+      222
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      222,
+      223
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      223,
+      224
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      224,
+      225
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      225,
+      226
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      226,
+      227
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      227,
+      228
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      228,
+      229
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      229,
+      230
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      230,
+      231
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      231,
+      232
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      232,
+      233
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      233,
+      234
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      234,
+      235
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      235,
+      236
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      236,
+      237
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      237,
+      238
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      238,
+      239
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      239,
+      240
+    ],
+    &quot;name&quot;: &quot;public.t&quot;,
+    &quot;meaning&quot;: &quot;completed native transition count&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      240,
+      241
+    ],
+    &quot;name&quot;: &quot;public.done&quot;,
+    &quot;meaning&quot;: &quot;joint episode completion&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      241,
+      242
+    ],
+    &quot;name&quot;: &quot;public.terminated&quot;,
+    &quot;meaning&quot;: &quot;natural completion cause&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;citizens&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 160,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;actor_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;guild&quot;
+        ],
+        &quot;meaning&quot;: &quot;guild index 0..9&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tool: 0 gate shovel,1 seal press,2 towing rope,3 inspection kit&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried timber 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;seal&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried guild seal ID or -1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;current local message, zero means silence&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;event&quot;
+        ],
+        &quot;meaning&quot;: &quot;accepted action code for the last actual transition; not a success flag&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;recipient&quot;
+        ],
+        &quot;meaning&quot;: &quot;consenting handoff/tool-exchange counterpart ID or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;locks&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 10,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gate_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;local water level 0..4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;tree or lock structural health 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;open&quot;
+        ],
+        &quot;meaning&quot;: &quot;lock gate open&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;verified&quot;
+        ],
+        &quot;meaning&quot;: &quot;separate inspector verified downstream closure this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;bypass&quot;
+        ],
+        &quot;meaning&quot;: &quot;persistent bypass contributions 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;guest&quot;
+        ],
+        &quot;meaning&quot;: &quot;posted foreign guild seal or -1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;ttl&quot;
+        ],
+        &quot;meaning&quot;: &quot;remaining seal lifetime 0..24&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;uses&quot;
+        ],
+        &quot;meaning&quot;: &quot;remaining reciprocal gate uses 0..2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;coins&quot;
+        ],
+        &quot;meaning&quot;: &quot;guild treasury 0..100&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;grain&quot;
+        ],
+        &quot;meaning&quot;: &quot;guild granary units 0..32&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;mill&quot;
+        ],
+        &quot;meaning&quot;: &quot;mill produced in last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;loss&quot;
+        ],
+        &quot;meaning&quot;: &quot;granary flood loss in last transition&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;toll&quot;
+        ],
+        &quot;meaning&quot;: &quot;coin receipts at this gate in last transition&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;barges&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 10,
+    &quot;position&quot;: [
+      &quot;barge_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;barge_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;barge_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;current cargo or barge owner group&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;barge grain units 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;hull&quot;
+        ],
+        &quot;meaning&quot;: &quot;barge hull health 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;destination&quot;
+        ],
+        &quot;meaning&quot;: &quot;required downstream destination x coordinate&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;arrived&quot;
+        ],
+        &quot;meaning&quot;: &quot;barge delivered flag&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;moved&quot;
+        ],
+        &quot;meaning&quot;: &quot;barge moved in last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;barge_toll&quot;
+        ],
+        &quot;meaning&quot;: &quot;coin charged to this barge in last transition&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 250,
+  &quot;key&quot;: &quot;gi250&quot;,
+  &quot;title&quot;: &quot;Canal Seal Commonwealth&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 160,
+    &quot;observation_size&quot;: 242,
+    &quot;num_actions&quot;: 20,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;1e668db05956eb61817501a670bf4a4c126d378ad8dfb879c6d4a0dac5361472&quot;,
+  &quot;manifest_sha256&quot;: &quot;544e68cebeee760b2e27b05102199c2def642655b81757aa13cb79e4750ebece&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;1e668db05956eb61817501a670bf4a4c126d378ad8dfb879c6d4a0dac5361472&quot;,
+      &quot;bytes&quot;: 16665,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00250/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;544e68cebeee760b2e27b05102199c2def642655b81757aa13cb79e4750ebece&quot;,
+      &quot;bytes&quot;: 106955,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00250/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;6b472bad0ecbb0da4d5e1d9d4ff1ea5d77f3eafeb33b2ee8099d133df0372975&quot;,
+      &quot;bytes&quot;: 73290,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00250/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;293e670b5e2b4430dd6ef37b0d76b112a66bf01940fc533ccca2e81f26fde499&quot;,
+      &quot;bytes&quot;: 12770,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00250/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;b8b7d79d9ce1f78f53c3f505886a2472fb59ad4de32ff0f140150a55f9dda024&quot;,
+      &quot;bytes&quot;: 90686,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00250/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi250">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

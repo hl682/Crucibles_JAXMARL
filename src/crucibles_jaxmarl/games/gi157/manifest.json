@@ -1,0 +1,651 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00157",
+  "source_sha256": "a48d44379f9cdc85b5ee2bcda19d1c06a5e98b0e6ea29cd601f5b11d918674bd",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 171,
+  "num_actions": 14,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 256,
+  "reward_low": -2,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Amber teammate 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "Amber teammate 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "Indigo teammate 2"
+    },
+    {
+      "id": "agent_3",
+      "role": "Indigo teammate 3"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Rest and recover two stamina; only action while captured or stunned"
+    },
+    {
+      "id": 1,
+      "label": "Move north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Attempt to tag one adjacent opponent; spend two stamina"
+    },
+    {
+      "id": 6,
+      "label": "Channel nearest adjacent beacon to charge own claim or drain enemy claim"
+    },
+    {
+      "id": 7,
+      "label": "Deploy own team decoy one cell along facing; spend two on success"
+    },
+    {
+      "id": 8,
+      "label": "Steer own team decoy north; spend one on success"
+    },
+    {
+      "id": 9,
+      "label": "Steer own team decoy east; spend one on success"
+    },
+    {
+      "id": 10,
+      "label": "Steer own team decoy south; spend one on success"
+    },
+    {
+      "id": 11,
+      "label": "Steer own team decoy west; spend one on success"
+    },
+    {
+      "id": 12,
+      "label": "Rescue adjacent previously captured teammate; spend two stamina"
+    },
+    {
+      "id": 13,
+      "label": "Cover an adjacent teammate from tags this tick; spend one stamina"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "winner"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stamina"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stun"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_charge"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "captured_count"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "captured"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "capture_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "rescue_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable pursuit arena",
+          "color": "#D7D8CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall, with two narrow cross-wall passages",
+          "color": "#394751"
+        },
+        {
+          "value": 2,
+          "meaning": "Chargeable public beacon location",
+          "color": "#6E9FAC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "0 amber, 1 indigo",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "meaning": "Current stamina, capacity six",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "meaning": "Remaining forced-rest ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "captured"
+          ],
+          "meaning": "Temporarily captured; can be rescued by teammate",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "Last requested movement direction: 1 N,2 E,3 S,4 W",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_owner"
+          ],
+          "meaning": "Claiming team; -1 means neutral",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "beacon_charge"
+          ],
+          "meaning": "Radar/ward charge, zero to four",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "decoys",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "decoy_pos"
+      ],
+      "active": [
+        "decoy_active"
+      ],
+      "visibility": [
+        "decoy_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "decoy_team"
+          ],
+          "meaning": "Owning team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "decoy_ttl"
+          ],
+          "meaning": "Remaining real jammer lifetime",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "capture_event"
+      ],
+      "meaning": "Public capture notices by player this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescue_event"
+      ],
+      "meaning": "Public rescue notices by player this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative captures credited to each team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "captured_count"
+      ],
+      "meaning": "Currently captured players per team",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "visibility": "self",
+      "meaning": "Own id,team,x,y,stamina,stun,captured,clock."
+    },
+    {
+      "slice": [
+        8,
+        14
+      ],
+      "visibility": "public",
+      "meaning": "Capture scores[2],currently captured counts[2],winner (-1 ongoing/draw),joint done."
+    },
+    {
+      "slice": [
+        14,
+        46
+      ],
+      "visibility": "local",
+      "meaning": "Four player records: x,y,team,stamina,stun,captured,facing,visible. Teammates share telemetry; opponents use range/radar/jamming rules. Hidden fields -1."
+    },
+    {
+      "slice": [
+        46,
+        54
+      ],
+      "visibility": "public",
+      "meaning": "Two beacon records: x,y,owner,charge."
+    },
+    {
+      "slice": [
+        54,
+        64
+      ],
+      "visibility": "local",
+      "meaning": "Two decoy records: x,y,team,ttl,visible. Own decoy is known globally; enemy decoy requires radius 2."
+    },
+    {
+      "slice": [
+        64,
+        72
+      ],
+      "visibility": "public",
+      "meaning": "Capture notices[4],rescue notices[4]; notices reveal identities, not hidden positions."
+    },
+    {
+      "slice": [
+        72,
+        171
+      ],
+      "visibility": "public",
+      "meaning": "Static 9 by 11 public terrain map, yx row-major."
+    }
+  ],
+  "task": {
+    "objective": "Coordinate beacon control, cover, pursuit, decoy placement and rescues to capture both opposing players simultaneously.",
+    "natural_termination": "The game terminates when either team has both players captured after the simultaneous capture/rescue phase. If both teams are fully captured on that step, winner remains -1 for a draw. A horizon of 128 otherwise truncates without assigning a winner.",
+    "interaction": "Teammates share information, cover and rescues. Beacons give radar and consumable protection; enemy decoys suppress detection and wards and can consume a pursuer move by stunning it at a real cell. Conflicting capture intentions resolve simultaneously.",
+    "observation_access": "Own-team telemetry, beacon state and capture/rescue identity notices are public to the relevant observation channels. Opponents require direct range or friendly beacon radar and may be hidden by enemy jammers. Adjacent opponents are always visible. Decoys are explicitly labeled when seen; no false indistinguishability claim is made."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stamina"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stun"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "beacon_charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "decoy_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "captured_count"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

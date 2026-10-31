@@ -1,0 +1,861 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00085",
+  "source_sha256": "600fbe762c0281fb92813bee6baabf6f3219ad1be84c1abd4346bd1b0de72ca1",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 154,
+  "num_actions": 10,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 96,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Courier: radius-two sensor, two-cell opening"
+    },
+    {
+      "id": "agent_1",
+      "role": "Route engineer: radius-three sensor, one-cell opening"
+    },
+    {
+      "id": "agent_2",
+      "role": "North warden: radius-three sensor and tagging"
+    },
+    {
+      "id": "agent_3",
+      "role": "South warden: radius-three sensor and tagging"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Runner picks adjacent cipher; warden tags adjacent unrestrained runner"
+    },
+    {
+      "id": 6,
+      "label": "Runner opens nearest adjacent gate for five ticks; warden locks it"
+    },
+    {
+      "id": 7,
+      "label": "Emit three-tick public live flare and share radius-three agent sensing with teammates"
+    },
+    {
+      "id": 8,
+      "label": "Spend shared cell to deploy four-tick cloak buoy for runner or scanner for warden"
+    },
+    {
+      "id": 9,
+      "label": "Runner frees adjacent captured teammate first; otherwise recover adjacent battery cache"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grid"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flare_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "captured"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "device_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flare_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_capture"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_free"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_device"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "device_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flare_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_type"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flare_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cipher_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "exit_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cipher_carrier"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cipher_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cipher_vis"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_vis"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "extracted"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_pickup"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_extract"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cache_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cache_value"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cache_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_gate"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_cache"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cache_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "grid"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable chamber floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid divider"
+        },
+        {
+          "value": 2,
+          "meaning": "Controlled gate tile; dynamic status comes only from locally visible gate entity"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "roles",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "captured"
+          ],
+          "meaning": "Restrained runner has no-op only until freed",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "One means carries the cipher",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "flare_ttl"
+          ],
+          "meaning": "Remaining public live-location ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "cipher",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "cipher_pos"
+      ],
+      "active": [
+        "cipher_active"
+      ],
+      "visibility": [
+        "cipher_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cipher_carrier"
+          ],
+          "meaning": "-1 ground; 0 courier; 1 engineer",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "causeway_gates",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Actual openness including occupancy safety hold",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "meaning": "Powered opening ticks remaining",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "field_devices",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "device_pos"
+      ],
+      "active": [
+        "device_active"
+      ],
+      "visibility": [
+        "device_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "device_ttl"
+          ],
+          "meaning": "Device operation ticks remaining",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "device_type"
+          ],
+          "meaning": "0 cloak buoy; 1 scanner",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "tracking_flares",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "flare_pos"
+      ],
+      "active": [
+        "flare_active"
+      ],
+      "visibility": [
+        "flare_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "flare_ttl"
+          ],
+          "meaning": "Public live tracking and friendly relay ticks remaining",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "battery_caches",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "cache_pos"
+      ],
+      "active": [
+        "cache_active"
+      ],
+      "visibility": [
+        "cache_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cache_value"
+          ],
+          "meaning": "Cells added to recovering role team",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "extraction_exit",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "exit_pos"
+      ],
+      "active": [
+        "exit_active"
+      ],
+      "visibility": [
+        "exit_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_extract"
+      ],
+      "meaning": "Cipher extracted on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "device_ttl"
+      ],
+      "meaning": "Public device lifetimes",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "flare_ttl"
+      ],
+      "meaning": "Public live tracking lifetimes",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Own role one-hot(4), x,y,captured,carrying,own-team energy",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Clock, extracted flag, joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        36
+      ],
+      "meaning": "Visible roles: x,y,captured,carrying,flare TTL each (20), then four visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        36,
+        41
+      ],
+      "meaning": "Visible cipher x,y,carrier,active (4), then visibility flag; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        41,
+        51
+      ],
+      "meaning": "Visible gates x,y,open,timer each (8), then two visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        51,
+        67
+      ],
+      "meaning": "Public devices x,y,TTL,type per slot; inactive features -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        79
+      ],
+      "meaning": "Public live flares x,y,TTL per slot; inactive features -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        89
+      ],
+      "meaning": "Visible caches x,y,value,active each (8), then two visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        89,
+        91
+      ],
+      "meaning": "Public extraction exit x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        154
+      ],
+      "meaning": "Public 7-by-9 map flattened row-major yx",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Runners recover cipher and carry it to exact exit tile; wardens seek both runners restrained first. Extraction pays each runner +1 and each warden -1; both-captured reverses rewards. Unresolved horizon pays zero.",
+    "natural_termination": "Extraction or both runners captured after rescue resolution ends naturally. Otherwise horizon 96, with natural priority. Terminal calls absorb preserving state and returning zero reward.",
+    "interaction": "Opposed gate control, shared batteries, cipher dropping on tag, adjacent partner rescue, disclosed sensing relays, cloaks and scanners alter route feasibility, information and future interception.",
+    "observation_access": "Public static map, exit, active devices/flares, clock and extraction status. Manhattan sensors through walls: courier radius 2, others 3. Friendly flares relay radius-three agent sensing and expose emitter to opponents. Cloaks hide nearby runners beyond adjacency; live flare or scanner overrides. Wardens share scanner radius 4. Carried cipher follows carrier visibility; grounded cipher, gates and caches use direct local range. Own-team energy only. Scene events exclude private capture and remote gate changes."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "energy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "device_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "flare_ttl"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

@@ -1,0 +1,304 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "a9e23750216fa0e669c68ed604257fe7fdfd19471f184f14724da6ba2d4de6c6",
+  "manifest_sha256": "76b0dfc14f67921382eba5666316e8a132f64335f0135a1d874aa2aa3d9381ed",
+  "title": "Crosswake Ice Doubles",
+  "rules": [
+    "Two neutral stones start at (3,3) and (7,3). Right goal cells score team 0; left goal cells score team 1.",
+    "Players move one cell. Other players old cells, current active stones and contested destinations block movement; swaps are rejected.",
+    "A push costs two energy and targets the lowest-index adjacent active stone. Brake costs one energy. Wait recovers one energy, capped at four.",
+    "Push vectors are summed. The strictly stronger absolute axis determines direction; an axis tie cancels motion. Same-axis opposite forces can cancel.",
+    "Any brake on a stone overrides all pushes. Otherwise a push sets up to three one-cell movements including the current call.",
+    "Stones move at most one cell per call. Boundaries, player endpoints, another active stone old cell or duplicate stone endpoints stop them.",
+    "Contact costs the hit player one energy. A stone never passes through a player or another current stone cell.",
+    "Friction removes one movement count per call. Direction becomes zero at rest. Goal entry removes that stone and emits a real score event.",
+    "Each teammate receives own team goals minus other team goals; control actions also cost 0.01 per energy spent. Play ends after both stones score or at 72 calls."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Ice",
+          "color": "#DFEDF6"
+        },
+        {
+          "value": 1,
+          "meaning": "Left goal cells score for team 1",
+          "color": "#D9A453"
+        },
+        {
+          "value": 2,
+          "meaning": "Right goal cells score for team 0",
+          "color": "#6791D6"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "glyph": "agent",
+      "label": "Players",
+      "color": "#395E98",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team identity: 0 or 1"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Available control energy, 0 to 4"
+        },
+        {
+          "state_path": [
+            "hit"
+          ],
+          "label": "Stone contacted this player on the last transition"
+        }
+      ]
+    },
+    {
+      "id": "stones",
+      "glyph": "circle",
+      "label": "Sliding stones",
+      "color": "#786C91",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "velocity"
+          ],
+          "label": "Next-motion direction [dx,dy], zero when stopped"
+        },
+        {
+          "state_path": [
+            "momentum"
+          ],
+          "label": "Future one-cell motion calls remaining, 0 to 2 after a step"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "glyph": "beacon",
+      "label": "Goal centers; tiles show full mouths",
+      "color": "#C69C4F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goal_team"
+          ],
+          "label": "Team credited by this goal"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pushed"
+      ],
+      "meaning": "A stone received one or more push commands, even if the forces cancel",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "braked"
+      ],
+      "meaning": "A stone received a brake command",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collided"
+      ],
+      "meaning": "Attempted stone motion was stopped by a boundary, player or stone",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "scored_stone"
+      ],
+      "meaning": "Stone entered a goal and became inactive",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "hit"
+      ],
+      "meaning": "Player contacted by an attempted moving-stone endpoint",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative goals scored by each team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "momentum"
+      ],
+      "meaning": "Remaining bounded motion duration",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait and recover one energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Push adjacent stone north"
+    },
+    {
+      "id": 6,
+      "label": "Push adjacent stone east"
+    },
+    {
+      "id": 7,
+      "label": "Push adjacent stone south"
+    },
+    {
+      "id": 8,
+      "label": "Push adjacent stone west"
+    },
+    {
+      "id": 9,
+      "label": "Brake adjacent stone"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        20
+      ],
+      "meaning": "Player-major 4 x [x/10,y/6,energy/4,team,last-step hit], player order 0..3.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        32
+      ],
+      "meaning": "Stone-major 2 x [x/10,y/6,dx,dy,momentum/3,active]. Direction components lie in -1..1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        34
+      ],
+      "meaning": "Team 0 and 1 cumulative goal counts divided by two.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        38
+      ],
+      "meaning": "One-hot observing player identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        38,
+        39
+      ],
+      "meaning": "Elapsed calls t/72.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        40
+      ],
+      "meaning": "Joint episode_done.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        117
+      ],
+      "meaning": "Public 7x11 terrain in y-major order, values divided by two: ice 0, left goal 0.5, right goal 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        119
+      ],
+      "meaning": "Latest stone push-command flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        121
+      ],
+      "meaning": "Latest stone brake-command flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        123
+      ],
+      "meaning": "Latest newly scored-stone flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        125
+      ],
+      "meaning": "Latest attempted-motion collision flags.",
+      "visibility": "public"
+    }
+  ]
+}

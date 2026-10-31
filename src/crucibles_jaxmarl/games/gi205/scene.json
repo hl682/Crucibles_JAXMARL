@@ -1,0 +1,548 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "aff9f5e57ae25aaefd800603ee7566dc12d3c7ee1137374a0c848bee2ccd7b1f",
+  "manifest_sha256": "c10cde9387ba09834fba0fc0be96b081005a0eb71fa5cba2ee7f5834ae11b94c",
+  "title": "Pollinator Paths",
+  "rules": [
+    "Workers walk actual soil and open gates. Each can carry one shelter or one produce batch, plus up to two water units. All roles can tend neighboring patches.",
+    "Open a healthy gate from within one cell. Open gates wear every fourth tick; one wood repairs to three. Closing never traps a worker or bee occupying the gate cell.",
+    "Each shelter has two bees. Carrying it makes those bees return toward its real moving position; deploying it changes their foraging neighborhood.",
+    "Bees walk one legal cell per tick. They choose reachable nectar within distance six of their shelter, using bounded path distances and a six-tick foraging budget before returning.",
+    "Two visits and three watered growth ticks ripen a bloom. Harvesting bloom early gives one produce; ripe harvest gives two. Either removes that patch's nectar.",
+    "Water crops or strips from carried supply; wells replenish every fourth tick. Bloom ages out at eighteen, drought stress three kills, and strips expire at twelve.",
+    "Plant a flowering strip at clear current soil or reseed a spent patch with one finite seed. Strips can attract bees away from crops as well as change their travel.",
+    "Store produce privately at your stall or donate at the barn. Local visibility and native action masks apply equally to human and policy roles."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Orchard soil and paths; free walking terrain",
+          "color": "#D5C39A"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable hedge",
+          "color": "#60865B"
+        },
+        {
+          "value": 2,
+          "meaning": "Fixed gate site; dynamic open state is locally observed",
+          "color": "#A98F5F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Orchard neighbors",
+      "color": "#C58F66",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "held_shelter"
+          ],
+          "label": "Carried shelter ID; -1 no shelter"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried water units, at most two"
+        },
+        {
+          "state_path": [
+            "produce"
+          ],
+          "label": "Carried produce units, zero to two"
+        },
+        {
+          "state_path": [
+            "produce_origin"
+          ],
+          "label": "Produce owner origin; -1 empty bag"
+        },
+        {
+          "state_path": [
+            "seeds"
+          ],
+          "label": "Remaining finite planting seeds"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Remaining finite gate-repair wood"
+        }
+      ]
+    },
+    {
+      "id": "crop",
+      "glyph": "plant",
+      "label": "Six owned crop patches",
+      "color": "#7BA45B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crop_owner"
+          ],
+          "label": "Patch owner receiving private-origin bonus"
+        },
+        {
+          "state_path": [
+            "crop_stage"
+          ],
+          "label": "0 young, 1 bloom, 2 ripe, 3 harvested, 4 dead"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Soil moisture, zero to four"
+        },
+        {
+          "state_path": [
+            "visits"
+          ],
+          "label": "Bee visits, capped at three"
+        },
+        {
+          "state_path": [
+            "nectar"
+          ],
+          "label": "Remaining nectar, zero to three"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Current growth progress, zero to three"
+        },
+        {
+          "state_path": [
+            "bloom_age"
+          ],
+          "label": "Bloom age, capped at eighteen"
+        },
+        {
+          "state_path": [
+            "stress"
+          ],
+          "label": "Consecutive drought stress, capped at three"
+        },
+        {
+          "state_path": [
+            "visited_now"
+          ],
+          "label": "At least one actual bee visit this step"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "Two shared hedge passages",
+      "color": "#9C7954",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Open passage for workers and bees"
+        },
+        {
+          "state_path": [
+            "gate_health"
+          ],
+          "label": "Remaining gate health, zero to three"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "glyph": "resource",
+      "label": "Two shared movable bee shelters",
+      "color": "#B1834E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "shelter_holder"
+          ],
+          "label": "Carrier ID; -1 deployed"
+        }
+      ]
+    },
+    {
+      "id": "bee",
+      "glyph": "circle",
+      "label": "Four physical pollinators",
+      "color": "#D1AC3F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bee_home"
+          ],
+          "label": "Assigned shelter ID"
+        },
+        {
+          "state_path": [
+            "bee_budget"
+          ],
+          "label": "Foraging ticks before mandatory return"
+        },
+        {
+          "state_path": [
+            "bee_return"
+          ],
+          "label": "Returning to current shelter position"
+        }
+      ]
+    },
+    {
+      "id": "strip",
+      "glyph": "plant",
+      "label": "Three worker-indexed flowering-strip slots",
+      "color": "#AE8CB7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "strip_nectar"
+          ],
+          "label": "Remaining nectar, zero to four"
+        },
+        {
+          "state_path": [
+            "strip_age"
+          ],
+          "label": "Age until expiry at twelve"
+        }
+      ]
+    },
+    {
+      "id": "well",
+      "glyph": "water",
+      "label": "Three replenishing village wells",
+      "color": "#77A7AF",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "well_water"
+          ],
+          "label": "Available water, zero to six"
+        }
+      ]
+    },
+    {
+      "id": "stall",
+      "glyph": "food",
+      "label": "Three private stalls, then community barn",
+      "color": "#BB8A65",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "community"
+      ],
+      "meaning": "Cumulative community produce by patch origin",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "private_stock"
+      ],
+      "meaning": "Announced private produce by patch origin",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "donated_now"
+      ],
+      "meaning": "Community produce delivered per worker this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "stored_now"
+      ],
+      "meaning": "Private produce stored per worker this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "daylight"
+      ],
+      "meaning": "Current light phase; eighteen light ticks per twenty-four",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up nearby unheld bee shelter with empty hands"
+    },
+    {
+      "id": 6,
+      "label": "Put carried shelter at current floor cell"
+    },
+    {
+      "id": 7,
+      "label": "Toggle nearby healthy hedge gate"
+    },
+    {
+      "id": 8,
+      "label": "Repair nearby damaged gate with one wood"
+    },
+    {
+      "id": 9,
+      "label": "Plant own flowering-strip slot at current clear soil"
+    },
+    {
+      "id": 10,
+      "label": "Water nearby crop, otherwise flowering strip"
+    },
+    {
+      "id": 11,
+      "label": "Fill one carried water unit at nearby well"
+    },
+    {
+      "id": 12,
+      "label": "Harvest nearby bloom early or ripe crop"
+    },
+    {
+      "id": 13,
+      "label": "Reseed nearby harvested or dead crop with one seed"
+    },
+    {
+      "id": 14,
+      "label": "Store carried produce at own village stall"
+    },
+    {
+      "id": 15,
+      "label": "Donate carried produce at community barn"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        7
+      ],
+      "meaning": "Public t, done, terminated, truncated, success, failure, daylight",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        124
+      ],
+      "meaning": "Public nine-by-thirteen static soil/hedge/gate-site map; no distant open-state leakage",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        127
+      ],
+      "meaning": "Community produce totals by crop origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        130
+      ],
+      "meaning": "Announced private produce totals by crop origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        133
+      ],
+      "meaning": "Per-worker donations this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        136
+      ],
+      "meaning": "Per-worker private storage this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        144
+      ],
+      "meaning": "Three private stalls and community barn positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        149
+      ],
+      "meaning": "Self role ID, cumulative work, blocked, seeds used, repairs performed",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        149,
+        152
+      ],
+      "meaning": "Local worker visibility flags within Manhattan radius four",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        152,
+        176
+      ],
+      "meaning": "Each visible worker: x,y,held_shelter,water,produce,produce_origin,seeds,wood; all eight values -1 if unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        176,
+        182
+      ],
+      "meaning": "Crop visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        182,
+        248
+      ],
+      "meaning": "Each visible crop: x,y,owner,stage,moisture,visits,nectar,growth,bloom_age,stress,visited_now; eleven values -1 if unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        248,
+        250
+      ],
+      "meaning": "Gate visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        250,
+        258
+      ],
+      "meaning": "Each visible gate: x,y,open,health; four values -1 if unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        258,
+        260
+      ],
+      "meaning": "Shelter visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        260,
+        266
+      ],
+      "meaning": "Each visible shelter: x,y,holder; three values -1 if unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        266,
+        270
+      ],
+      "meaning": "Bee visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        270,
+        290
+      ],
+      "meaning": "Each visible bee: x,y,home_shelter,budget,returning; five values -1 if unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        290,
+        293
+      ],
+      "meaning": "Active local flowering-strip visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        293,
+        305
+      ],
+      "meaning": "Each visible strip: x,y,nectar,age; four values -1 if unseen or inactive",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        305,
+        308
+      ],
+      "meaning": "Well visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        308,
+        317
+      ],
+      "meaning": "Each visible well: x,y,water; three values -1 if unseen",
+      "visibility": "local"
+    }
+  ]
+}

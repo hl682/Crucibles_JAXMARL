@@ -1,0 +1,372 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "856975d66e3c07c06c8e3daf2be1c678affa83099a26696f7ebfff4b38868ec4",
+  "manifest_sha256": "d56b0540fa1d4071b467b4cbdc41a421312230a8066f32e0847714a8dde9f1f0",
+  "title": "Glacier Foundry Settlements",
+  "rules": [
+    "Every settler has an action row and a miner, fuelwright, mason or scout tool. Co-occupancy is allowed.",
+    "Attach carried stone at the hoist while another settler holds its separate brake. Release while suspended drops the actual load and blocks its cell.",
+    "Delivery creates a supported path. Eight heated ticks at the commissioned hoist turn its foundation into workshop shelter.",
+    "Heat cells warm their cell and melt ice. Water flows south, erodes supports and harms exposed settlers. Shelter rest restores health.",
+    "Build and heat at your feet. Scouts carry, place and recover physical markers; inventory handoffs require an adjacent waiting recipient.",
+    "Use only the selected role radius-three view. Hidden map cells/entities/events stay hidden; full-state debug is separate."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      47,
+      31
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable glacier floor",
+          "color": "#CBDDE5"
+        },
+        {
+          "value": 1,
+          "meaning": "Finite stone seam; blocks movement",
+          "color": "#697689"
+        },
+        {
+          "value": 2,
+          "meaning": "Finite fuel cache",
+          "color": "#B67B45"
+        },
+        {
+          "value": 3,
+          "meaning": "Meltable ice",
+          "color": "#96DFED"
+        },
+        {
+          "value": 4,
+          "meaning": "Supported block path",
+          "color": "#ADBCC0"
+        },
+        {
+          "value": 5,
+          "meaning": "Dropped-load rubble; blocks movement",
+          "color": "#535F6C"
+        },
+        {
+          "value": 6,
+          "meaning": "Shelter; rest heals",
+          "color": "#DDBD7E"
+        },
+        {
+          "value": 7,
+          "meaning": "Deep water without support",
+          "color": "#357DAD"
+        },
+        {
+          "value": 8,
+          "meaning": "Physical warning marker overlay; inspect water/support and legal moves",
+          "color": "#FFB94A"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "settlers",
+      "glyph": "worker",
+      "color": "#DDEAF2",
+      "label": "Individually controlled glacier settlers",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Settlement 0..23"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 miner;1 fuelwright;2 mason;3 scout"
+        },
+        {
+          "state_path": [
+            "stone"
+          ],
+          "label": "Carried stone blocks, capacity three"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Carried heat cells, capacity three"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Health 0..100"
+        },
+        {
+          "state_path": [
+            "marker"
+          ],
+          "label": "Carried physical warning marker"
+        }
+      ]
+    },
+    {
+      "id": "cranes",
+      "glyph": "tool",
+      "color": "#F2AD48",
+      "label": "Load hoists and workshop foundations",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "phase"
+          ],
+          "label": "0 parked;1 suspended;2 delivered;3 dropped"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "label": "Brake-held lift increments 0..3"
+        },
+        {
+          "state_path": [
+            "brake"
+          ],
+          "label": "Brake held on latest step"
+        },
+        {
+          "state_path": [
+            "workshop"
+          ],
+          "label": "Warm commissioned-workshop ticks 0..8"
+        }
+      ]
+    },
+    {
+      "id": "brakes",
+      "glyph": "tool",
+      "color": "#638DA8",
+      "label": "Separate brake pedals",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "brake"
+          ],
+          "label": "Brake physically held on latest step"
+        }
+      ]
+    },
+    {
+      "id": "loads",
+      "glyph": "crate",
+      "color": "#9FADBF",
+      "label": "Moving stone loads over shared routes",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "phase"
+          ],
+          "label": "0 parked;1 suspended;2 delivered;3 dropped"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "label": "Lift travel increment"
+        },
+        {
+          "state_path": [
+            "drop"
+          ],
+          "label": "Dropped this step"
+        },
+        {
+          "state_path": [
+            "delivery"
+          ],
+          "label": "Delivered this step"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "built"
+      ],
+      "meaning": "Per-settler construction",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "heated"
+      ],
+      "meaning": "Per-settler heat-cell expenditure",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "injury"
+      ],
+      "meaning": "Per-settler cold/flood injury",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "drop"
+      ],
+      "meaning": "Per-hoist dropped load",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery"
+      ],
+      "meaning": "Per-hoist new landing",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "workshop"
+      ],
+      "meaning": "Warm commissioning ticks",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive adjacent handoff"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Rest; heals only on shelter"
+    },
+    {
+      "id": 6,
+      "label": "Miner: quarry self/cardinal-neighbor stone"
+    },
+    {
+      "id": 7,
+      "label": "Fuelwright: salvage self/cardinal-neighbor fuel"
+    },
+    {
+      "id": 8,
+      "label": "Mason: spend stone on support at feet"
+    },
+    {
+      "id": 9,
+      "label": "Hold separate brake while standing on pedal"
+    },
+    {
+      "id": 10,
+      "label": "Mason: attach carried stone at hoist"
+    },
+    {
+      "id": 11,
+      "label": "Fuelwright: consume carried heat cell at feet"
+    },
+    {
+      "id": 12,
+      "label": "Mason: spend stone to build shelter at feet"
+    },
+    {
+      "id": 13,
+      "label": "Scout: place carried marker or pick placed marker up"
+    },
+    {
+      "id": 14,
+      "label": "Miner: clear self/cardinal-neighbor rubble"
+    },
+    {
+      "id": 15,
+      "label": "Offer one stone, else fuel, to adjacent waiting settler"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        11
+      ],
+      "visibility": "self",
+      "meaning": "Time/896,ID/383,settlement/23,tool/3,x/47,y/31,stone/3,fuel/3,health/100,marker,alive."
+    },
+    {
+      "slice": [
+        11,
+        3467
+      ],
+      "visibility": "local",
+      "meaning": "384 actor slots, nine fields each: x/47,y/31,team/23,tool/3,stone/3,fuel/3,health/100,marker,alive/presence. Invisible slots zero."
+    },
+    {
+      "slice": [
+        3467,
+        3635
+      ],
+      "visibility": "local",
+      "meaning": "24 crane slots: x/47,y/31,phase/3,progress/3,brake,workshop/8,presence."
+    },
+    {
+      "slice": [
+        3635,
+        3731
+      ],
+      "visibility": "local",
+      "meaning": "24 brake slots: x/47,y/31,held,presence."
+    },
+    {
+      "slice": [
+        3731,
+        3899
+      ],
+      "visibility": "local",
+      "meaning": "24 moving-load slots: x/47,y/31,phase/3,progress/3,drop,delivery,presence."
+    },
+    {
+      "slice": [
+        3899,
+        4144
+      ],
+      "visibility": "local",
+      "meaning": "7x7 dy-major patch (-3..3): each cell tiles/8,water/6,heat/8,support/24,in-bounds-and-alive. Other cells zero."
+    }
+  ]
+}

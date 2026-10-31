@@ -1,0 +1,332 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "16b5a1d02462dbf6471bbe34bce76685651f739c7a89c9cb32bb41183f662d93",
+  "manifest_sha256": "be7f9abc8ae458ac871df34ef2c905bb39aa8b36549f5ccaa9fd90043916237b",
+  "title": "Mosaic Courtyard",
+  "rules": [
+    "Carry one of nine conserved tiles. The courtyard void becomes traversable only where real tiles are installed.",
+    "Place into the faced empty courtyard cell only when every existing neighbor has an equal facing edge bit.",
+    "Movement uses open outgoing and incoming ports. Matching closed edges allow adjacency but block crossing.",
+    "Placements are permanent. Each clockwise rotation spends a pin; placed tiles cannot rotate under an occupant or violate neighbors.",
+    "A builder can turn, pass a tile to a waiting empty peer, or return it to the depot with its orientation preserved.",
+    "Cyclic actor priority rechecks simultaneous construction against the newly updated board.",
+    "Commission a socket only while physically standing there. Private socket preference remains role-only.",
+    "Tile identity, orientation, N/E/S/W ports and ownership are actual state attributes. Recorded replay and animation remain unexecuted."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      6,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "public": true,
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#DCE5E5"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "Courtyard void: requires a placed tile and matching open traversal ports",
+          "color": "#475569"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "builders",
+      "glyph": "worker",
+      "label": "builders",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "Builder facing"
+        },
+        {
+          "state_path": [
+            "pins"
+          ],
+          "label": "Remaining rotation pins"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Completed delivery/claim count"
+        }
+      ]
+    },
+    {
+      "id": "tiles",
+      "glyph": "square",
+      "label": "tiles",
+      "color": "#D97706",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tile_status"
+          ],
+          "label": "Stock / carried / installed"
+        },
+        {
+          "state_path": [
+            "tile_holder"
+          ],
+          "label": "Tile carrier identity"
+        },
+        {
+          "state_path": [
+            "tile_kind"
+          ],
+          "label": "Actual tile pattern"
+        },
+        {
+          "state_path": [
+            "tile_orientation"
+          ],
+          "label": "Clockwise quarter-turns"
+        },
+        {
+          "state_path": [
+            "tile_ports"
+          ],
+          "label": "Actual north/east/south/west connection bits"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "glyph": "resource",
+      "label": "depot",
+      "color": "#64748B",
+      "attribute_labels": []
+    },
+    {
+      "id": "sockets",
+      "glyph": "flag",
+      "label": "sockets",
+      "color": "#059669",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goal_id"
+          ],
+          "label": "Socket identity"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "place_event"
+      ],
+      "meaning": "Tile was irreversibly installed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rotate_event"
+      ],
+      "meaning": "Tile orientation changed with one pin spent this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "claim_event"
+      ],
+      "meaning": "Builder commissioned its first socket this transition",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive tile"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Turn builder facing clockwise"
+    },
+    {
+      "id": 6,
+      "label": "Take lowest-index stock tile at depot"
+    },
+    {
+      "id": 7,
+      "label": "Place held tile into faced empty courtyard cell"
+    },
+    {
+      "id": 8,
+      "label": "Spend one pin to rotate held tile or unoccupied faced tile clockwise"
+    },
+    {
+      "id": 9,
+      "label": "Pass tile to adjacent waiting empty builder"
+    },
+    {
+      "id": 10,
+      "label": "Commission a destination socket once"
+    },
+    {
+      "id": 11,
+      "label": "Return held tile to depot underfoot"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        49
+      ],
+      "meaning": "Public 7 by 7 courtyard map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        55
+      ],
+      "meaning": "Builder xy coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        55,
+        58
+      ],
+      "meaning": "Builder facing N E S W codes",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        76
+      ],
+      "meaning": "All nine tile xy coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        85
+      ],
+      "meaning": "Tile stock/carried/placed statuses",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        94
+      ],
+      "meaning": "Tile holders, -1 means no carrier",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        103
+      ],
+      "meaning": "Tile pattern identities",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        112
+      ],
+      "meaning": "Tile orientations",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        112,
+        148
+      ],
+      "meaning": "Actual tile N E S W port bits in tile order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        151
+      ],
+      "meaning": "Builder rotation pins",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        154
+      ],
+      "meaning": "Public commissioning flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "meaning": "Transition clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        156
+      ],
+      "meaning": "Own preferred socket",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        156,
+        157
+      ],
+      "meaning": "Own actor index",
+      "visibility": "self"
+    }
+  ]
+}

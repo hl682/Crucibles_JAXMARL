@@ -1,0 +1,700 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00112",
+  "source_sha256": "14b58f26d52d8cb617abefcb9824e0a4f3fa63399eb7f8f670e17a9e05ca236a",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 112,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "forge specialist: stage 0 to 1 at forge"
+    },
+    {
+      "id": "agent_1",
+      "role": "tempering specialist: stage 1 to 2 at quench"
+    },
+    {
+      "id": "agent_2",
+      "role": "assembly specialist: stage 2 to 3 at press"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "move north"
+    },
+    {
+      "id": 2,
+      "label": "move east"
+    },
+    {
+      "id": 3,
+      "label": "move south"
+    },
+    {
+      "id": 4,
+      "label": "move west"
+    },
+    {
+      "id": 5,
+      "label": "pick up lowest-index nearby floor piece or drop carried piece"
+    },
+    {
+      "id": 6,
+      "label": "process carried piece at own specialist station"
+    },
+    {
+      "id": 7,
+      "label": "open shared cooling valve at tank"
+    },
+    {
+      "id": 8,
+      "label": "offer carried piece to adjacent receiver"
+    },
+    {
+      "id": 9,
+      "label": "accept offered piece with empty hands"
+    },
+    {
+      "id": 10,
+      "label": "dispatch assembled piece beside shipping dock"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carry"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "piece_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "piece_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "piece_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "piece_carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "piece_stage"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "piece_delivered"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_heat"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "heat_vented"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tank_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tank_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tank_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "coolant"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "coolant_spent"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ship_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ship_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ship_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shipped"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shipped_step"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable workshop floor",
+          "color": "#E8DDC8"
+        },
+        {
+          "value": 1,
+          "meaning": "wall or partition",
+          "color": "#565B65"
+        },
+        {
+          "value": 2,
+          "meaning": "forge station; work from an adjacent square",
+          "color": "#CF7256"
+        },
+        {
+          "value": 3,
+          "meaning": "quench station; work from an adjacent square",
+          "color": "#6BA3C1"
+        },
+        {
+          "value": 4,
+          "meaning": "assembly press; work from an adjacent square",
+          "color": "#9975BA"
+        },
+        {
+          "value": 5,
+          "meaning": "shared coolant valve; use from an adjacent square",
+          "color": "#68B7B2"
+        },
+        {
+          "value": 6,
+          "meaning": "walkable shipping dock",
+          "color": "#78A56B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "specialists",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Fixed specialist stage index",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carry"
+          ],
+          "meaning": "Carried piece index; -1 means empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "workpieces",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "piece_pos"
+      ],
+      "active": [
+        "piece_active"
+      ],
+      "visibility": [
+        "piece_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "piece_carrier"
+          ],
+          "meaning": "Carrier index; -1 means ground",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "piece_stage"
+          ],
+          "meaning": "Stage 0 raw, 1 forged, 2 tempered, 3 assembled",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_role"
+          ],
+          "meaning": "Station specialist stage index",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "station_heat"
+          ],
+          "meaning": "Actual equipment temperature from 0 to 12",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "coolant_tank",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "tank_pos"
+      ],
+      "active": [
+        "tank_active"
+      ],
+      "visibility": [
+        "tank_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "coolant"
+          ],
+          "meaning": "Remaining shared cooling units",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "shipping",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "ship_pos"
+      ],
+      "active": [
+        "ship_active"
+      ],
+      "visibility": [
+        "ship_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "shipped"
+          ],
+          "meaning": "Total fully shipped pieces",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "shipped_step"
+      ],
+      "meaning": "Number of newly shipped finished pieces this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shipped"
+      ],
+      "meaning": "Public cumulative shipped-piece count",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self specialist identity one-hot; role equals ID",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Public [t/128,shipped count/2]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        17
+      ],
+      "meaning": "Three agent blocks [visible,x/16,y/16,(carry+1)/4]; local L1 radius 3; hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        17,
+        27
+      ],
+      "meaning": "Two piece blocks [visible,x/16,y/16,(carrier+1)/4,stage/4]; local L1 radius 3 and active; hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        27,
+        33
+      ],
+      "meaning": "Three station blocks [visible,heat/16]; local L1 radius 3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "meaning": "Tank [visible,coolant/8]; local L1 radius 3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        35,
+        112
+      ],
+      "meaning": "Public 7x11 workshop map flattened y-major, tile value/8",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Forge, temper, assemble and physically ship both workpieces. A new fully shipped piece pays every specialist +1; any non-wait legal action costs its actor 1/128. Intermediate stages do not pay delivery reward.",
+    "natural_termination": "Both piece identities have been dispatched at shipping after stage 3; otherwise truncate at 96.",
+    "interaction": "Different specialists are required for successive stages. Carriage is capacity one; consent-based adjacent handoff or floor exchange conserves each piece. Work heats all stations, one shared valve consumes coolant, and narrow partitions constrain transport and passing.",
+    "observation_access": "Public layout, fixed role identity, clock and shipped count. Other agents, active workpieces, station heat and tank quantity are visible only within Manhattan radius 3. Dynamic scene attributes use the same masks; private work events and heat-vent records are not global event channels."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "station_heat"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "coolant"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "coolant_spent"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "piece_stage"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

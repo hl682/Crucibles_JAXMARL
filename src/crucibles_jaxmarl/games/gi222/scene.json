@@ -1,0 +1,306 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "79c337638b54d537f4bbf30ac2e2a38c0a1dd3718e22d14e98d9035079f7ee51",
+  "manifest_sha256": "ff0436b0862f21d7db018eba35cf882b7b51bb68da7c287f2e7eff2caeceb0fe",
+  "title": "Cavern Rescue Guilds",
+  "rules": [
+    "20 miners in five crews share a connected cavern. Move or face, mine, build and carry people through the actual map.",
+    "Tools 0 pick, 1 builder, 2 ventilator, 3 medic can be cycled at a depot. Build actions use one wood.",
+    "Dig only the facing rock cell. Dust spreads through open cardinal neighbors; high dust injures workers and can collapse unsupported empty floor every 24 ticks.",
+    "Stand on a duct to pump. Support beams, rails and winches replace ordinary floor and persist. Rail haul needs two clear rail/winch cells ahead.",
+    "A medic lifts a nearby casualty only after its rock cell is cleared; a winch extends lift reach to three cells. Arrival near any depot evacuates the passenger.",
+    "Adjacent transfers choose the nearest actor, then lowest index. Foreign depots accept at most two rewarded wood donations.",
+    "All actors remain actionable. Health 1-2 slows movement; treatment restores health to 5. All five rescues finish the episode."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      26,
+      14
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "visibility": [
+        "map_visible"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open cavern floor",
+          "color": "#625848"
+        },
+        {
+          "value": 1,
+          "meaning": "Excavatable rock",
+          "color": "#504B49"
+        },
+        {
+          "value": 2,
+          "meaning": "Boundary rock",
+          "color": "#29282B"
+        },
+        {
+          "value": 3,
+          "meaning": "Support beam",
+          "color": "#A77B46"
+        },
+        {
+          "value": 4,
+          "meaning": "Ventilation duct",
+          "color": "#70A1A0"
+        },
+        {
+          "value": 5,
+          "meaning": "Transport rail",
+          "color": "#A8A5A0"
+        },
+        {
+          "value": 6,
+          "meaning": "Rescue winch",
+          "color": "#D5AF53"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Agent",
+      "color": "#DDB45C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "Native crew index"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Current tool code"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Carried timber units"
+        },
+        {
+          "state_path": [
+            "med"
+          ],
+          "label": "Carried medicine units"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Worker health"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Actor carries a casualty"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "glyph": "crate",
+      "label": "Depot",
+      "color": "#A87641",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "depot_wood"
+          ],
+          "label": "Depot timber stock"
+        },
+        {
+          "state_path": [
+            "depot_med"
+          ],
+          "label": "Depot medicine stock"
+        },
+        {
+          "state_path": [
+            "depot_aid"
+          ],
+          "label": "Foreign wood donations received, capped at two"
+        }
+      ]
+    },
+    {
+      "id": "casualty",
+      "glyph": "worker",
+      "label": "Casualty",
+      "color": "#E87871",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bearer"
+          ],
+          "label": "Carrier actor index; -1 awaiting rescue"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Total casualties evacuated to any depot",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Face or move north"
+    },
+    {
+      "id": 2,
+      "label": "Face or move east"
+    },
+    {
+      "id": 3,
+      "label": "Face or move south"
+    },
+    {
+      "id": 4,
+      "label": "Face or move west"
+    },
+    {
+      "id": 5,
+      "label": "Excavate facing rock with pick"
+    },
+    {
+      "id": 6,
+      "label": "Build duct here with ventilator"
+    },
+    {
+      "id": 7,
+      "label": "Shore floor here with builder"
+    },
+    {
+      "id": 8,
+      "label": "Lay rail here with builder"
+    },
+    {
+      "id": 9,
+      "label": "Install winch here with builder"
+    },
+    {
+      "id": 10,
+      "label": "Pump standing duct"
+    },
+    {
+      "id": 11,
+      "label": "Haul two rail cells forward"
+    },
+    {
+      "id": 12,
+      "label": "Lift cleared casualty with medic"
+    },
+    {
+      "id": 13,
+      "label": "Pass wood, otherwise medicine, to nearest actor"
+    },
+    {
+      "id": 14,
+      "label": "Treat nearest actor with medic"
+    },
+    {
+      "id": 15,
+      "label": "Draw wood and medicine at depot"
+    },
+    {
+      "id": 16,
+      "label": "Cycle tool at depot"
+    },
+    {
+      "id": 17,
+      "label": "Donate wood to foreign depot"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Self x,y,crew,tool,wood,medicine,health,carrying,face.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Clock t; total rescued.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        191
+      ],
+      "meaning": "20 actor slots, width 9: visible,x,y,crew,tool,wood,medicine,health,carrying.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        191,
+        221
+      ],
+      "meaning": "5 depot slots, width 6: visible,x,y,wood,medicine,foreign-aid receipts.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        221,
+        246
+      ],
+      "meaning": "5 casualty slots, width 5: visible,x,y,bearer,active.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        246,
+        295
+      ],
+      "meaning": "7x7 terrain patch in y-major order, dx/dy -3..3; outside=-1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        295,
+        344
+      ],
+      "meaning": "7x7 dust patch, same ordering; outside=-1.",
+      "visibility": "local"
+    }
+  ]
+}

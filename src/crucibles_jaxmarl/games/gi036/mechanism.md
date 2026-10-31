@@ -1,0 +1,15 @@
+# astra-d2-00036: Perishable reciprocal catalyst scheduling
+
+This parentless proposal concerns a two-stage production process in which an agent cannot manufacture its own catalyst. It is related to generic reciprocal resource exchange and perishable-inventory scheduling. No benchmark source or other proposal was consulted. Distinctness, eligibility, compilation and learning effectiveness have not been established.
+
+Both agents hold their own raw stock, energy and two-stage job. Completing a job flips that agent's required catalyst color. Actions are 0 recuperate, 1 harvest raw stock, 2 send color 0, 3 process, and 4 send color 1. Sending consumes energy and puts one unit in the other agent's next-state catalyst reservoir. Processing uses only catalyst already present before the transition, so a simultaneous shipment cannot satisfy a current process action. One raw unit, sufficient energy and one matching catalyst unit advance a stage. Two advances complete the current job. Unused catalyst decays by a factor of 0.65 each step, and reservoirs hold at most two units per color.
+
+The dependency is reciprocal and delayed: each agent must sacrifice a potential local work action to create a partner's future processing opportunity. Replenishing energy, collecting stock, timing shipments and switching colors after a completion compete for the same action slot. Wrong-color shipments remain physically persistent until decay but cannot process the current order.
+
+Raw stock is private. Both orders, stages, energy levels, catalyst reservoirs, latest process successes and completion totals are visible. Observation columns 0..15 are time/32; own stock/4; own energy/1.5; own stage; own target; own catalysts 0 and 1 divided by 2; partner stage; partner target; partner energy/1.5; partner catalysts 0 and 1 divided by 2; own and partner latest success; own and partner completion totals/16.
+
+Reward is 0.12 per stage advance, an additional 0.60 for own completion, 0.20 for partner completion, minus 0.025 for a shipment and 0.03 for an unsuccessful processing attempt. The explicit clipping bounds each reward in [-1,1]; the unclipped listed terms are already bounded between -0.03 and 0.92 because action alternatives are exclusive. Sharing completion reward creates an incentive to supply the partner, while local production remains valuable. No terminal bonus exists.
+
+All five actions are legal, with unmet resource conditions producing the specified ineffective action rather than an invalid mask. Reset randomness uses only its supplied key. Later transitions are deterministic, and the step key is unused. The clock advances once per raw step and both agents terminate at step 32; the terminal physical state and observation are returned intact.
+
+Status: authored source only. No execution, isolated validation, training, scoring, mechanism qualification or nonisomorphism claim is supplied.

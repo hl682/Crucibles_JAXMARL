@@ -1,0 +1,329 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "d4be54af328065660b722ca32aaa60d2e62e4378d803bece02858f14e18c3acf",
+  "manifest_sha256": "5874647be084667c957622a02ccae4b1a91bf5a0759864bc6b9b1dcf05a89f54",
+  "title": "Filter Couriers",
+  "rules": [
+    "Three couriers share three narrow crossings in a public partition. Pollution is sensed within Manhattan radius two; outside the mask it is unknown.",
+    "Movement costs one stamina, or two when the target old dust is at least two. Old occupied cells block movement; lower agent id wins a common empty destination.",
+    "Moving finite dusty loads and carried burden deposits dust at departure. Deposits cap at three; overflow is counted as vented, then filters sweep, then final-position contact occurs.",
+    "A filter neutralizes one contacted unit. Unfiltered contact damages carried quality; available body capacity takes one dust unit. Waiting recovers stamina but still contacts dust.",
+    "Deliveries credit the original private-priority issuer, the actual carrier and a small shared receipt bonus. A waiting empty neighbor may accept a handoff.",
+    "AUTHOR SOURCE ONLY: no local visibility replay, animation, causality run, successful delivery or learning result has been observed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Floor or corridor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid partition"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "glyph": "worker",
+      "label": "Couriers",
+      "color": "#327D9B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "label": "Travel stamina"
+        },
+        {
+          "state_path": [
+            "filters"
+          ],
+          "label": "Unused portable filters"
+        },
+        {
+          "state_path": [
+            "burden"
+          ],
+          "label": "Carried fictional dust"
+        }
+      ]
+    },
+    {
+      "id": "loads",
+      "glyph": "crate",
+      "label": "Carried or grounded loads",
+      "color": "#B38A39",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "Owner -1 on ground; 0..2 carrier; -2 delivered"
+        },
+        {
+          "state_path": [
+            "destination"
+          ],
+          "label": "Processing station id"
+        },
+        {
+          "state_path": [
+            "quality"
+          ],
+          "label": "Remaining delivery quality"
+        },
+        {
+          "state_path": [
+            "load_dust"
+          ],
+          "label": "Finite releasable load dust"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Processing and filter stations",
+      "color": "#438C55",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_stock"
+          ],
+          "label": "Remaining shared filter stock"
+        }
+      ]
+    },
+    {
+      "id": "dust_cells",
+      "glyph": "hazard",
+      "label": "Fictional dust cells",
+      "color": "#A66C75",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "dust_amount"
+          ],
+          "label": "Actual cell dust level 1..3"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent public delivery receipt per original load",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "station_stock"
+      ],
+      "meaning": "Current public finite filter stock",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait and recover one stamina"
+    },
+    {
+      "id": 1,
+      "label": "Move west"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move north"
+    },
+    {
+      "id": 4,
+      "label": "Move south"
+    },
+    {
+      "id": 5,
+      "label": "Spend one filter on cross-shaped sweep"
+    },
+    {
+      "id": 6,
+      "label": "Deliver carried load at its station"
+    },
+    {
+      "id": 7,
+      "label": "Drop carried load or pick lowest ground load"
+    },
+    {
+      "id": 8,
+      "label": "Offer load to a waiting empty adjacent courier"
+    },
+    {
+      "id": 9,
+      "label": "Spill carried dust and body burden"
+    },
+    {
+      "id": 10,
+      "label": "Take one finite station filter"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own x/8,y/6",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own stamina/20",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own filters/4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own carried dust burden/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        9
+      ],
+      "meaning": "Own carried load id 0,1,2 or none=3 one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Private priority of own issued load/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Clock/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        74
+      ],
+      "meaning": "Public 7x9 wall map flattened y-major",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        78
+      ],
+      "meaning": "Station x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        78,
+        80
+      ],
+      "meaning": "Finite station filter stocks/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        83
+      ],
+      "meaning": "Public delivered receipts by original load id",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        101
+      ],
+      "meaning": "Three local courier rows [visible,x/8,y/6,stamina/20,filters/4,burden/3]; invisible numeric fields zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        101,
+        122
+      ],
+      "meaning": "Three local load rows [visible,x/8,y/6,(owner+2)/4,destination,quality/6,load_dust/4]; invisible numeric fields zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        122,
+        185
+      ],
+      "meaning": "Cell dust/3 for visible cells, else zero; y-major",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        185,
+        248
+      ],
+      "meaning": "Matching radius-two cell visibility masks; zero dust outside these masks is unknown",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        248,
+        251
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

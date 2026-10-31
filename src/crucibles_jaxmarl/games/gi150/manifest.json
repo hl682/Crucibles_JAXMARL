@@ -1,0 +1,658 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00150",
+  "source_sha256": "c9dedefd7cfb5f8f316d9ffabf6862034fdc8f50c90aa8a10ad10d75a1de71a9",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 153,
+  "num_actions": 13,
+  "max_steps": 192,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 192,
+  "reward_low": -0.01,
+  "reward_high": 1.5,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Cutter: uniquely advances raw parts to stage 1"
+    },
+    {
+      "id": "agent_1",
+      "role": "Welder: uniquely advances stage 1 to stage 2 using shared clamp and assistant"
+    },
+    {
+      "id": "agent_2",
+      "role": "Calibrator: uniquely advances stage 2 to stage 3 using shared clamp and assistant"
+    },
+    {
+      "id": "agent_3",
+      "role": "Runner and assistant: transports, powers linked stations and ships queue orders"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up or drop a part on this cell"
+    },
+    {
+      "id": 6,
+      "label": "Operate matching station or ship current FIFO head"
+    },
+    {
+      "id": 7,
+      "label": "Assist an adjacent powered station"
+    },
+    {
+      "id": 8,
+      "label": "Take or release the shared clamp on this cell"
+    },
+    {
+      "id": 9,
+      "label": "Pass held part and clamp to adjacent agent 0"
+    },
+    {
+      "id": 10,
+      "label": "Pass held part and clamp to adjacent agent 1"
+    },
+    {
+      "id": 11,
+      "label": "Pass held part and clamp to adjacent agent 2"
+    },
+    {
+      "id": 12,
+      "label": "Pass held part and clamp to adjacent agent 3"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "queue_head"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stage_events"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "transfer_events"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_carrier"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_stage"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_type"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_carrier"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_heat"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "has_clamp"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_visible"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Floor",
+          "color": "#D6D4CB"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall",
+          "color": "#394652"
+        },
+        {
+          "value": 2,
+          "meaning": "Cutting station",
+          "color": "#BA8A45"
+        },
+        {
+          "value": 3,
+          "meaning": "Welding station",
+          "color": "#6D95A6"
+        },
+        {
+          "value": 4,
+          "meaning": "Calibration station",
+          "color": "#79945B"
+        },
+        {
+          "value": 5,
+          "meaning": "FIFO shipping station",
+          "color": "#B66E57"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Unique complementary capability, indexed 0 to 3",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carried part id; -1 is empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "has_clamp"
+          ],
+          "meaning": "Currently holds the only clamp",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "orders",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "part_pos"
+      ],
+      "active": [
+        "part_active"
+      ],
+      "visibility": [
+        "part_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "part_stage"
+          ],
+          "meaning": "0 raw, 1 cut, 2 welded, 3 calibrated, 4 shipped",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "part_carrier"
+          ],
+          "meaning": "Carrier id; -1 means on ground or shipped",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "clamp",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "tool_pos"
+      ],
+      "active": [
+        "tool_active"
+      ],
+      "visibility": [
+        "tool_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool_carrier"
+          ],
+          "meaning": "Clamp holder; -1 is on ground",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tool_heat"
+          ],
+          "meaning": "Remaining cooling ticks after powered use",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_type"
+          ],
+          "meaning": "0 cutter, 1 welder, 2 calibrator, 3 shipping",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "stage_events"
+      ],
+      "meaning": "Public workshop audit: number of irreversible stage advances this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transfer_events"
+      ],
+      "meaning": "Public workshop audit: number of part/clamp transfers this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public shipping bell: one FIFO order shipped this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "queue_head"
+      ],
+      "meaning": "Number of shipped orders and next required serial id",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "visibility": "self",
+      "meaning": "Own role, x, y, carried part id (-1 empty), clamp-held flag, clock."
+    },
+    {
+      "slice": [
+        6,
+        11
+      ],
+      "visibility": "public",
+      "meaning": "FIFO head, stage-advance count this tick, transfer count this tick, shipping bell, joint episode done."
+    },
+    {
+      "slice": [
+        11,
+        35
+      ],
+      "visibility": "local",
+      "meaning": "Four agent records in id order: x,y,role,carried part id,clamp flag,visible. Hidden fields -1; final flag 0."
+    },
+    {
+      "slice": [
+        35,
+        55
+      ],
+      "visibility": "local",
+      "meaning": "Four part records in serial order: x,y,assembly stage,carrier id,visible. Only active parts within Manhattan radius 3."
+    },
+    {
+      "slice": [
+        55,
+        60
+      ],
+      "visibility": "local",
+      "meaning": "Clamp record: x,y,carrier id,heat,visible; hidden values -1."
+    },
+    {
+      "slice": [
+        60,
+        76
+      ],
+      "visibility": "local",
+      "meaning": "Four station records in station order: x,y,type,visible; radius 3."
+    },
+    {
+      "slice": [
+        76,
+        153
+      ],
+      "visibility": "public",
+      "meaning": "Static 7 by 11 public tile map flattened row-major yx; codes match world legend."
+    }
+  ],
+  "task": {
+    "objective": "Complete four finite serial orders in FIFO order by relaying parts through three complementary manufacturing capabilities and one shared portable clamp.",
+    "natural_termination": "Terminate when queue_head equals 4, meaning all four physical parts are shipped. Otherwise truncate at 192 nonterminal steps.",
+    "interaction": "Part and clamp ownership, the one-cell west/east corridor, same-tick assistance at powered stations, clamp heat and serial shipping order jointly constrain teammates feasible progress.",
+    "observation_access": "Map and audit counts are public. Entity records are current Manhattan-radius-3 observations without wall occlusion. Own attributes are explicit; hidden entity fields use -1 plus a zero visibility bit. The renderer must use the same entity visibility, and public events are present in flat observations."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "part_stage"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tool_heat"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "queue_head"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

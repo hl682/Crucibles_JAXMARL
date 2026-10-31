@@ -1,0 +1,780 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00082",
+  "source_sha256": "ad66babf039e1ebd3643e035f8cd685e5641ebd2a67714c4e683c5a91ac5af2e",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 121,
+  "num_actions": 9,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 96,
+  "reward_low": -2,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Scout: radius-four sensor"
+    },
+    {
+      "id": "agent_1",
+      "role": "Rigger: permanent sluice opening"
+    },
+    {
+      "id": "agent_2",
+      "role": "Medic: casualty stabilization"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Recover: pick adjacent casualty if empty; otherwise collect adjacent supply pack"
+    },
+    {
+      "id": 6,
+      "label": "Specialist work: rigger opens sluice; medic stabilizes casualty; scout has no effect"
+    },
+    {
+      "id": 7,
+      "label": "Mutual adjacent casualty handoff"
+    },
+    {
+      "id": 8,
+      "label": "Place or renew six-tick shared sensor beacon"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grid"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "supply"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "rescued"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lost"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ev_gate"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pack_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stable"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pack_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_rescue"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_loss"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_handoff"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_stabilize"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ev_pack"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "victim_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pack_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "life"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_status"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pack_value"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "grid"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid flood barrier"
+        },
+        {
+          "value": 2,
+          "meaning": "Sluice tile; passable exactly when gate_open is true"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "rescuers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Held casualty index; -1 empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "casualties",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "victim_pos"
+      ],
+      "active": [
+        "victim_active"
+      ],
+      "visibility": [
+        "victim_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "life"
+          ],
+          "meaning": "Unsupported lifetime remaining",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "stable"
+          ],
+          "meaning": "Stabilization stops lifetime loss",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "meaning": "Carrier role index; -1 ground",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "victim_status"
+          ],
+          "meaning": "0 unresolved; 1 rescued; 2 lost",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "supply_packs",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "pack_pos"
+      ],
+      "active": [
+        "pack_active"
+      ],
+      "visibility": [
+        "pack_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pack_value"
+          ],
+          "meaning": "Units added to shared supplies",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "sluice",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Permanently opened crossing",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "rescue_depot",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "sensor_beacons",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "meaning": "Remaining shared sensor ticks",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Casualties delivered to depot proximity",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost"
+      ],
+      "meaning": "Casualties expired",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Sluice passage open",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "supply"
+      ],
+      "meaning": "Common opening and treatment supplies",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Own role one-hot(3), x,y,carrying index (-1 empty)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        11
+      ],
+      "meaning": "Clock, shared supply, gate-open flag, cumulative rescued and lost",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        23
+      ],
+      "meaning": "Visible rescuers: x,y,carrying per slot (9), then 3 visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        23,
+        37
+      ],
+      "meaning": "Visible casualties: x,y,life,stable,carrier,status per slot (12), then 2 visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        37,
+        45
+      ],
+      "meaning": "Visible packs: x,y,value per slot (6), then 2 visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        45,
+        54
+      ],
+      "meaning": "Public beacons: x,y,TTL per slot; inactive features -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        117
+      ],
+      "meaning": "Public 7-by-9 map flattened row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        121
+      ],
+      "meaning": "Public gate x,y followed by depot x,y",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Carry two casualties to Manhattan distance at most one from the depot. Each delivery gives all roles +1 and each expiry gives all roles -1.",
+    "natural_termination": "Both casualty statuses resolved (rescued or lost), otherwise horizon 96. Natural completion has priority. Raw terminal calls absorb with zero reward.",
+    "interaction": "Physical carry and mutual handoff, specialist treatment and route opening, scarce common supply, temporary shared sensing and finite unsupported lifetimes couple the three roles.",
+    "observation_access": "Public map, gate, depot, supplies and aggregate outcomes. Scout Manhattan sensor radius 4, other roles 2, through walls. A live beacon shares radius-2 sensing around its fixed position with everyone. Entity attributes use actual visibility. Private diagnostic flags do not become public scene events."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "supply"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "life"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "beacon_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "rescued"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lost"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

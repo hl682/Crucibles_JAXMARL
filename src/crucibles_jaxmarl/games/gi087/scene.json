@@ -1,0 +1,273 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "6f14228953eee9e5140b00fdd3f8fd2cba536ead7a7b6fa2d324534a786fab31",
+  "manifest_sha256": "07b5e89e2bcff53e196c90f8ebe122266c5056c8d749b88ac4a02b0da7bf95e6",
+  "title": "Spillway Orchard",
+  "rules": [
+    "Four beds share one west-to-east stream. Agents can move between them; a bed is worked from distance at most one.",
+    "Harvest gives one fruit, consumes one local water and adds two silt. A carried bag holds at most four.",
+    "Each bed sends one water downstream when it has at least two; up to one silt travels with that water, one reach per turn.",
+    "Every fourth turn silt settles by one and a watered, clean living or seeded bed can regrow one fruit.",
+    "Spend one carried fruit to clean two silt, plant a seed, release two headwater units, or claim a bed for six turns.",
+    "A claim excludes other harvesters. Conflicting local work has one winner per bed with rotating priority.",
+    "Bank fruit near [5,1]. All four must bank four to complete; losing every living stock, seed and carried fruit causes collapse.",
+    "Local radius-three views hide distant bags and bed conditions. Bank announcements and release bells are public."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable bank",
+          "color": "#E7E5D4"
+        },
+        {
+          "value": 1,
+          "meaning": "solid boundary",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "walkable shallow east-flowing channel; beds exchange water in x order",
+          "color": "#7DD3FC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "foragers",
+      "glyph": "worker",
+      "color": "#2563EB",
+      "label": "Foragers",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bag"
+          ],
+          "label": "Carried fruit, capacity 4"
+        }
+      ]
+    },
+    {
+      "id": "beds",
+      "glyph": "plant",
+      "color": "#16A34A",
+      "label": "Ordered downstream orchard beds",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Living fruit stock, capacity 5"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Available water, capacity 3"
+        },
+        {
+          "state_path": [
+            "pollution"
+          ],
+          "label": "Silt load, capacity 6"
+        },
+        {
+          "state_path": [
+            "seedlings"
+          ],
+          "label": "Invested seedlings, capacity 2"
+        },
+        {
+          "state_path": [
+            "claim_ttl"
+          ],
+          "label": "Exclusion turns remaining"
+        },
+        {
+          "state_path": [
+            "claim_owner"
+          ],
+          "label": "Claim owner; -1 means none"
+        }
+      ]
+    },
+    {
+      "id": "headwater",
+      "glyph": "water",
+      "color": "#0284C7",
+      "label": "Release lever at [1,4]",
+      "attribute_labels": []
+    },
+    {
+      "id": "market",
+      "glyph": "flag",
+      "color": "#A16207",
+      "label": "Common market at [5,1]",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pulse_event"
+      ],
+      "meaning": "Public bell: at least one paid headwater release this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "bank_event"
+      ],
+      "meaning": "Public per-role quantities banked this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "total_banked"
+      ],
+      "meaning": "Public total fruit banked so far",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "All four roles banked at least four fruit",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "collapse"
+      ],
+      "meaning": "No living stock, planted seed or carried fruit remains",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "WAIT"
+    },
+    {
+      "id": 1,
+      "label": "NORTH intent"
+    },
+    {
+      "id": 2,
+      "label": "EAST intent"
+    },
+    {
+      "id": 3,
+      "label": "SOUTH intent"
+    },
+    {
+      "id": 4,
+      "label": "WEST intent"
+    },
+    {
+      "id": 5,
+      "label": "HARVEST nearest adjacent bed"
+    },
+    {
+      "id": 6,
+      "label": "CLEAN nearest adjacent bed using one fruit"
+    },
+    {
+      "id": 7,
+      "label": "SOW nearest adjacent bed using one fruit"
+    },
+    {
+      "id": 8,
+      "label": "RELEASE headwater using one fruit"
+    },
+    {
+      "id": 9,
+      "label": "STAKE nearest adjacent bed for six turns using one fruit"
+    },
+    {
+      "id": 10,
+      "label": "BANK carried fruit at market"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        9
+      ],
+      "meaning": "Public t/96, done, success, collapse, release bell",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        13
+      ],
+      "meaning": "Public last-transition bank quantities per role /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        17
+      ],
+      "meaning": "Public cumulative bank quantities per role /8; their sum gives total_banked",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        21
+      ],
+      "meaning": "Headwater and market [x/10,y/8] coordinates in that order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        37
+      ],
+      "meaning": "Four role slots of [x/10,y/8,bag/4,visible]; all data zero outside Manhattan radius 3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        37,
+        73
+      ],
+      "meaning": "Four bed slots of [x/10,y/8,stock/5,water/3,pollution/6,seedlings/2,claim_ttl/6,(owner+1)/4,visible]; data zero outside radius 3",
+      "visibility": "local"
+    }
+  ]
+}

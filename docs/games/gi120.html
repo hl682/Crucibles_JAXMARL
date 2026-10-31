@@ -1,0 +1,571 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>领地巡逻与移动诱饵 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI120 / SPATIAL</p><h1>领地巡逻与移动诱饵</h1><p class="lead">两队在狭道争夺目标，搬运、交接、巡守与诱饵改变捕获和交付机会。</p><div class="stats"><span>4 agents</span><span>14 actions</span><span>239 observation columns</span><span>96 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi120.gif" alt="Original saved demonstration gi120"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi120.gif" alt="Actual verification episode gi120"></section><section><h2>Run this game</h2><pre>crucibles play --game 120</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Two teams contest four physical objectives and transport them to their own homes. Team rewards oppose each other for deliveries and actual captures; teammates share their team payoff.&quot;,
+  &quot;natural_termination&quot;: &quot;All four objectives have been banked, possibly by either team. Otherwise time ends at 96 transitions. Recovery from capture is temporary, not an individual episode end.&quot;,
+  &quot;interaction&quot;: &quot;Bodies block contested passages; a guard tags adjacent opponents and forces them to drop cargo. A hostile mobile decoy within distance two consumes the guard action and is destroyed, allowing an otherwise capturable opponent to escape. Decoys also reduce nearby opposing sight radius from three to one unless a scout pulse restores five. Physical cargo handoffs, local patrol information, public scores and private decoy telemetry create team coordination choices.&quot;,
+  &quot;observation_access&quot;: &quot;Terrain, home locations, score totals and clock are public. Patrol/objective/decoy state is visible within Manhattan radius three, or one when a hostile active decoy is within distance two; a scout pulse raises it to five. Self is always visible. The owner additionally sees its active decoy remotely. Friendly scout signals broadcast only sender position/team globally; hostile signals are visible within distance five. A signal does not reveal the sender inventory or other hidden attributes. Every invisible record has an explicit visibility bit and zero data fields.&quot;
+}</pre></details><p>Declared per-step reward bounds: -3.0 to 3.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Teams west and east contest four objectives in two passages through the central wall.</li><li>Move, collect, bank, hand off, guard or scout using simultaneous action intents.</li><li>A guard captures all adjacent awake opponents outside refuges, unless a hostile decoy within two cells distracts it.</li><li>Capture drops cargo at the encounter cell, returns the patrol to its refuge berth and forces two hold transitions.</li><li>A distracted guard destroys its nearest hostile decoy and captures nobody that tick.</li><li>Each patrol has one mobile decoy slot, two charges and a three-tick launch cooldown. A launch can replace an existing own decoy.</li><li>Decoys move one cell per tick, reverse heading and hold when a wall blocks them, and expire after six active ticks.</li><li>Nearby hostile decoys reduce sight radius from three to one. A scout pulse gives radius five and signals its position.</li><li>Teammates receive friendly scout positions globally. Other agent state remains local, and owners alone get remote decoy telemetry.</li><li>Each banked objective gives the team +1 and opponents -1; each enemy capture gives +0.1 and an own capture -0.1.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Territorial patrol and mobile decoys
+
+AUTHORED_NOT_EXECUTED. This document describes source rules and author hypotheses; it is not a validation, animation, successful play, learning or transfer receipt.
+
+## Task and state transition order
+
+The 13 by 9 map has a central wall at x=6 with passages at y=2 and y=6. West and east refuges are x&lt;=2 and x&gt;=10; opponents cannot enter them. Four initially ground objectives lie beside the passages. Teams may take any objective and bank it within distance one of their own home. Every patrol can carry one objective, and handoff to an adjacent empty teammate changes its physical carrier and subsequent position.
+
+A guard is a one-tick stationary action, not an automatic role label. After motion and decoy updates, a hostile decoy within distance two takes precedence: the guard destroys the nearest such decoy, using decoy id to break ties, and cannot capture. An undisrupted guard captures all adjacent awake opponents outside refuges. Guards act simultaneously, so mutually adjacent guards can capture one another. A captured carrier drops its object at the encounter position, teleports to its fixed berth and receives stun=2. Its next two transitions accept only hold. Home berth co-location after a teleport is allowed; normal movement still blocks occupied targets.
+
+Each decoy moves one cell along its heading, ignores physical bodies, and reflects by reversing its heading while holding position at a wall. Launching places it one step ahead if that cell is floor, otherwise on the launcher cell. One fixed slot per role is replaced on re-launch; launch consumes one charge, starts cooldown=3, and sets ttl=6. Holding awake within one cell of home restores one charge up to two. Separate from guard distraction, an active hostile decoy within distance two reduces the observer radius to one. A scout pulse takes the whole action and overrides this to radius five, broadcasting only its position/team to allies.
+
+The west team reward is delivery_delta_west-delivery_delta_east+0.1*(east_captures-west_captures), with the opposite payoff for east. Both teammates receive their team value. Objects and captures, not visual signals, generate payoffs.
+
+## Actions and inactive-role semantics
+
+- 0: Hold; recharge one decoy charge near own home while awake.
+- 1: Move east.
+- 2: Move west.
+- 3: Move south.
+- 4: Move north.
+- 5: Collect an adjacent ground objective when empty, or bank carried objective near own home.
+- 6: Hand carried objective to adjacent empty teammate.
+- 7: Guard this tick; capture adjacent awake enemies unless distracted by a hostile decoy.
+- 8: Scout pulse this tick; observation radius five and position signal.
+- 9: Deploy or replace own mobile decoy heading east.
+- 10: Deploy or replace own mobile decoy heading west.
+- 11: Deploy or replace own mobile decoy heading south.
+- 12: Deploy or replace own mobile decoy heading north.
+- 13: Drop carried objective at current cell.
+
+All fourteen intents are legal for an awake role; inapplicable interactions are deterministic no-ops. A stunned role and a terminal state allow only 0. Out-of-range or masked actions map to 0. Movement resolves simultaneously against walls, previous occupied cells, duplicate targets and enemy refuge admission; swaps are blocked. Existing decoys move before new launches. Guards resolve simultaneously after movement and decoy updates: each distracted guard destroys its nearest hostile decoy and captures nobody; other guards tag every adjacent awake enemy outside its refuge. Mutual captures are allowed. Captured cargo drops before teleport. Pickup, banking, handoff and voluntary drop then resolve in cyclic role order starting at t mod 4. Capture returns to a fixed refuge berth, where temporary friendly co-location is permitted; no global unique-agent-position invariant is asserted.
+
+## Information and rendering
+
+Terrain, home locations, score totals and clock are public. Patrol/objective/decoy state is visible within Manhattan radius three, or one when a hostile active decoy is within distance two; a scout pulse raises it to five. Self is always visible. The owner additionally sees its active decoy remotely. Friendly scout signals broadcast only sender position/team globally; hostile signals are visible within distance five. A signal does not reveal the sender inventory or other hidden attributes. Every invisible record has an explicit visibility bit and zero data fields.
+
+Per-step event arrays bind agent_visible. Role views must hide events attributed to invisible patrols, even though public scores reveal delivery totals. Full capture/deployment/handoff event identity belongs only to the labelled debug view when its participant is hidden. A scout signal must not be treated as full agent visibility.
+
+Agent positions, stuns, guard/scout flags, charges and actual carried ids are source-bound. Decoys are visible known physical jammers, not falsely labelled anonymous agents; their effect is real range reduction and guard diversion. Decoy headings and TTL drive movement. Objective ground/carried/banked state governs actual positions and visibility. Signal markers have their own visibility masks and must not unmask patrol attributes. Captures show actual refuge return and cargo drop from recorded states; no interpolated invented battle outcome is authorized.
+
+## Native observation columns
+
+- [0, 2): Own xy position divided by 12 (self).
+- [2, 3): Own team id (self).
+- [3, 4): Own recovery ticks divided by 2 (self).
+- [4, 5): Own carried objective id divided by 3; negative means none (self).
+- [5, 6): Own decoy charges divided by 2 (self).
+- [6, 7): Own launch cooldown divided by 3 (self).
+- [7, 11): Own patrol one-hot id (self).
+- [11, 47): Four ordered patrol records, stride 9: visible, x/12, y/12, team, stun/2, guard, scout, objective id/3, charges/2. Invisible data values are zero. (local).
+- [47, 75): Four decoy records, stride 7: visible, x/12, y/12, heading dx, heading dy, owner/3, ttl/6. Invisible data are zero; an owner has active-decoy telemetry. (local).
+- [75, 99): Four objective records, stride 6: visible, x/12, y/12, mode/2, carrier/3, bank team. Invisible data are zero; banked objectives are inactive. (local).
+- [99, 115): Four scout-signal records, stride 4: visible active pulse, x/12, y/12, sender team. Friendly pulses are audible globally; enemy pulses only within distance five. No other sender fields are broadcast. (local).
+- [115, 232): Public 9 by 13 wall map in yx row-major order (public).
+- [232, 236): Two public home xy positions divided by 12, ordered by team (public).
+- [236, 238): Public team banked-objective totals divided by 4 (public).
+- [238, 239): Clock divided by 96 (public).
+
+## Invariants and conservation
+
+There are always four objective identities, each in exactly one mode: ground, carried or banked. Pickup, drop, capture, handoff and banking change mode/carrier without creating objects, and carriers are admitted only when empty. Banked objects never reactivate; sum(score) equals the number of mode-2 objectives and is at most four. Each role has at most one active decoy because its fixed slot is overwritten; charges stay 0..2, cooldown 0..3, TTL 0..6 and stun 0..2. Movement and launch checks keep all positions within map floor cells; teleport locations are fixed valid refuges. Team rewards sum to zero across the four agents. Per-role entity visibility is constructed from the same radii used by observe; signal and owner-telemetry exceptions are explicit. Source reasoning is not a runtime invariant receipt.
+
+## Partner-dependent strategies and bounded variation
+
+Teams may send a guarded carrier through one passage while a partner launches a moving screen, use a scout to see through jamming, or switch to the other route to avoid a blocking patrol. Guarding denies adjacent transport but sacrifices movement and is vulnerable to a decoy; scouting gains information but provides no capture that tick. A carrier can hand cargo to an adjacent partner before an interception, while defenders can wait for a decoy to expire or force charge expenditure. Public scores support timing decisions without exposing cargo locations. Prospective changes to passage layout, TTL, guard radius, charge regeneration or objective placement would alter coordination requirements; none have been evaluated.
+
+## Terminal, RNG and numeric representation contract
+
+A nonterminal call advances scalar int32 t once. Natural termination takes priority at H: truncated=(t&gt;=H)&amp;~terminated; done=terminated|truncated. An already-done input returns the same entire state and observation, zero float32[A] rewards, all dones true and the preserved causes. No raw reset occurs. All roles continue to receive the joint done flag; an arrived or stunned role is not independently terminated.
+Reset and all transitions are deterministic and ignore the supplied keys. The exact declared seed/fold-in schedule remains replay provenance. No local model, hidden RNG or process state is consulted.
+The author declares seed 120 with reset_key=jax.random.PRNGKey(seed) and raw_step_key=jax.random.fold_in(reset_key, step_index+1), step_index starting at zero. The same keys are required for both intervention branches, including suffix steps. This schedule has not been executed.
+All signed integer state uses int32, boolean state uses bool, and the observation/reward boundary is float32. No smaller signed integer design field or stored reset key is required. Probability draws use only the supplied explicit key. Token counts, compute cost and elapsed model-compute cost are unknown.
+
+## Literal source evidence
+
+- Decoys change role information: candidate.py:20; literal source: `radius = jnp.where(s[&#x27;scout&#x27;], 5, jnp.where(jammed, 1, 3))`.
+- Decoy telemetry visibility: candidate.py:22; literal source: `s[&#x27;decoy_visible&#x27;] = ((decoy_distance &lt;= radius[:, None]) | jnp.eye(4, dtype=jnp.bool_)) &amp; active_decoy[None, :]`.
+- Scouts broadcast position without full agent visibility: candidate.py:32; literal source: `s[&#x27;signal_visible&#x27;] = ((s[&#x27;team&#x27;][:, None] == s[&#x27;team&#x27;][None, :]) | (distance &lt;= 5)) &amp; s[&#x27;scout&#x27;][None, :]`.
+- Guard diversion is a transition: candidate.py:140; literal source: `distraction = guard &amp; jnp.any(decoy_targets, axis=1)`.
+- Simultaneous physical capture: candidate.py:147; literal source: `captured = jnp.any(tagged, axis=0) &amp; awake &amp; ~refuge`.
+- Captured cargo drops before teleport: candidate.py:151; literal source: `dropped = carried &amp; captured[old_carrier]`.
+- Actual teammate handoff: candidate.py:183; literal source: `handoff = (a[i] == 6) &amp; usable &amp; has_object &amp; jnp.any(neighbor)`.
+- Competitive shared team payoff: candidate.py:193; literal source: `left_reward = (delta_score[0] - delta_score[1]).astype(jnp.float32) + 0.1 * (captured_right - captured_left)`.
+
+## Method line map
+
+- decorate: candidate.py:12-34.
+- reset: candidate.py:36-73.
+- observe: candidate.py:75-96.
+- legal_actions: candidate.py:98-99.
+- advance: candidate.py:101-204.
+- absorb: candidate.py:206-208.
+- raw_step: candidate.py:210-212.
+
+## Reference attribution
+
+- JaxMARL_README.md: Reviewed the copied parallel agent-keyed API description and reset/step call sites. The native author kernel remains a distinct interface requiring a trusted adapter. Supplied SHA-256 6649d04f5ed05d620e78e8416a00d4db841cf2633ae60fdb3c9729e037a71c15; origin https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md.
+- Pgx_README.md: Reviewed the copied legal-action-mask and explicit-key board-game API discussion. No board rule, implementation, layout or evaluation was copied. Supplied SHA-256 153f44999e55d5df3e51e13dee6ef418cc9704ddfa26206f1dc5789b9cbbf8df; origin https://github.com/sotetsuk/pgx/blob/main/README.md.
+- PureJaxRL_README.md: Reviewed the copied description of a JAX-native PPO training pipeline. This is algorithm integration background, not a game library and not a learner replacement. Supplied SHA-256 d5f40182c924a42cec820931e61a7d5070e48c4c8413c7d16455abc6ea0ef6b0; origin https://github.com/luchris429/purejaxrl/blob/main/README.md.
+- Craftax_Baselines_ppo_rnn.py: Read-only search of reset/step/scan call sites in the supplied recurrent PPO integration code. No upstream source was copied or executed. Supplied SHA-256 5f93e6a7c3a1e0c551831d75be311735ba495dfdecae51787a1c03a27b1cd011; origin https://github.com/MichaelTMatthews/Craftax_Baselines/blob/main/ppo_rnn.py.
+- Craftax_README.md: Reviewed copied JAX spatial game, gymnax-interface and optional auto-reset descriptions. Original mechanics are authored here; raw terminal handling follows the assigned contract. Supplied SHA-256 7f9757a2047143cf183f7e2e84851a740f386af80dbee050c89b316d66a3d3ff; origin https://github.com/MichaelTMatthews/Craftax/blob/main/README.md.
+
+No upstream game code is copied. JaxMARL API ideas, Pgx board APIs, Craftax game/environment ideas and PureJaxRL/Craftax PPO algorithm integration are distinct sources of conceptual context. No literature claim is treated as evidence that this game works.
+
+## Acceptance limits
+
+Only the supplied stdlib AST whitelist and data-only manifest/scene validators are used. Static checks do not test runtime array shapes, eager/JIT/vmap parity, terminal behavior, conservation over rollouts, paired causal outcomes, solvability, rich strategy, trainability, animation, optimality, non-isomorphism or meta-learning. Source authoring alone is not community delivery. The coordinator must retain independent dispatch provenance and perform any later numeric work only under its separately authorized, hash-bound execution boundary.
+All scripts and paired branches are UNEXECUTED_AUTHOR_HYPOTHESIS. Negative, failed and indeterminate later outcomes must remain visible; no performance threshold or scientific acceptance is introduced.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Hold; recharge one decoy charge near own home while awake</span></div><div class="action"><b>1</b><span>Move east</span></div><div class="action"><b>2</b><span>Move west</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move north</span></div><div class="action"><b>5</b><span>Collect an adjacent ground objective when empty, or bank carried objective near own home</span></div><div class="action"><b>6</b><span>Hand carried objective to adjacent empty teammate</span></div><div class="action"><b>7</b><span>Guard this tick; capture adjacent awake enemies unless distracted by a hostile decoy</span></div><div class="action"><b>8</b><span>Scout pulse this tick; observation radius five and position signal</span></div><div class="action"><b>9</b><span>Deploy or replace own mobile decoy heading east</span></div><div class="action"><b>10</b><span>Deploy or replace own mobile decoy heading west</span></div><div class="action"><b>11</b><span>Deploy or replace own mobile decoy heading south</span></div><div class="action"><b>12</b><span>Deploy or replace own mobile decoy heading north</span></div><div class="action"><b>13</b><span>Drop carried objective at current cell</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Team west upper patrol, cargo carrier or scout</p><p><b>agent_1</b> Team west lower patrol, cargo carrier or guard</p><p><b>agent_2</b> Team east upper patrol, cargo carrier or scout</p><p><b>agent_3</b> Team east lower patrol, cargo carrier or guard</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      2
+    ],
+    &quot;meaning&quot;: &quot;Own xy position divided by 12&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;Own team id&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;Own recovery ticks divided by 2&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;meaning&quot;: &quot;Own carried objective id divided by 3; negative means none&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;meaning&quot;: &quot;Own decoy charges divided by 2&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;meaning&quot;: &quot;Own launch cooldown divided by 3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      11
+    ],
+    &quot;meaning&quot;: &quot;Own patrol one-hot id&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      47
+    ],
+    &quot;meaning&quot;: &quot;Four ordered patrol records, stride 9: visible, x/12, y/12, team, stun/2, guard, scout, objective id/3, charges/2. Invisible data values are zero.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      47,
+      75
+    ],
+    &quot;meaning&quot;: &quot;Four decoy records, stride 7: visible, x/12, y/12, heading dx, heading dy, owner/3, ttl/6. Invisible data are zero; an owner has active-decoy telemetry.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      75,
+      99
+    ],
+    &quot;meaning&quot;: &quot;Four objective records, stride 6: visible, x/12, y/12, mode/2, carrier/3, bank team. Invisible data are zero; banked objectives are inactive.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      99,
+      115
+    ],
+    &quot;meaning&quot;: &quot;Four scout-signal records, stride 4: visible active pulse, x/12, y/12, sender team. Friendly pulses are audible globally; enemy pulses only within distance five. No other sender fields are broadcast.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      115,
+      232
+    ],
+    &quot;meaning&quot;: &quot;Public 9 by 13 wall map in yx row-major order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      232,
+      236
+    ],
+    &quot;meaning&quot;: &quot;Two public home xy positions divided by 12, ordered by team&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      236,
+      238
+    ],
+    &quot;meaning&quot;: &quot;Public team banked-objective totals divided by 4&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      238,
+      239
+    ],
+    &quot;meaning&quot;: &quot;Clock divided by 96&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;patrols&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Team: 0 west, 1 east&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stun&quot;
+        ],
+        &quot;meaning&quot;: &quot;Forced-hold recovery ticks&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;guard&quot;
+        ],
+        &quot;meaning&quot;: &quot;Uncaptured guard stance from this transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;scout&quot;
+        ],
+        &quot;meaning&quot;: &quot;Active scout pulse&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carrying&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried objective id; -1 means none&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;charges&quot;
+        ],
+        &quot;meaning&quot;: &quot;Available decoy charges&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;decoys&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;decoy_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;decoy_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;decoy_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;decoy_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Owning patrol id&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;decoy_heading&quot;
+        ],
+        &quot;meaning&quot;: &quot;Actual decoy travel heading&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;decoy_ttl&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining active ticks&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;objectives&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;objective_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;objective_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;objective_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;objective_mode&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 ground; 1 carried; 2 banked and inactive&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;objective_carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carrier patrol id; -1 if none&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;objective_bank&quot;
+        ],
+        &quot;meaning&quot;: &quot;Banked team; -1 until banked&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;homes&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;home_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;home_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;home_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;home_team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Home team&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;score&quot;
+        ],
+        &quot;meaning&quot;: &quot;Public banked-objective count&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;signals&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;signal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;signal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;signal_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Signaling patrol team&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi120&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;caca2a24be3b3391f4a341640bc129934ec74e897cdcf06f544db7f384aa2fdf&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 4,
+    &quot;observation_size&quot;: 239,
+    &quot;num_actions&quot;: 14,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.7671706676483154
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.4663360118865967
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.7767829895019531
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.18035149574279785
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.0140011310577393
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0009987354278564453
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.15114283561706543
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.612220048904419
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.0987701416015625
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8387141227722168
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 15.677504539489746,
+  &quot;float_parity_max_abs&quot;: 5.960464477539063e-08,
+  &quot;numerical_parity&quot;: &quot;UNDETERMINED_NONZERO_FLOAT_DIFFERENCE&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 96,
+  &quot;scripted_random_returns&quot;: [
+    -0.10000000149011612,
+    -0.10000000149011612,
+    0.10000000149011612,
+    0.10000000149011612
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 4
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi120&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 4.943190336227417
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 120,
+  &quot;key&quot;: &quot;gi120&quot;,
+  &quot;title&quot;: &quot;领地巡逻与移动诱饵&quot;,
+  &quot;summary&quot;: &quot;两队在狭道争夺目标，搬运、交接、巡守与诱饵改变捕获和交付机会。&quot;,
+  &quot;tags&quot;: [
+    &quot;团队对抗&quot;,
+    &quot;诱饵&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 4,
+    &quot;observation_size&quot;: 239,
+    &quot;num_actions&quot;: 14,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;source_sha256&quot;: &quot;caca2a24be3b3391f4a341640bc129934ec74e897cdcf06f544db7f384aa2fdf&quot;,
+  &quot;manifest_sha256&quot;: &quot;ad9b48c96db47233554e83ce4f4638a17a8ec09b59dfa25f1ce61fd7659c58a3&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;caca2a24be3b3391f4a341640bc129934ec74e897cdcf06f544db7f384aa2fdf&quot;,
+      &quot;bytes&quot;: 14773,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00120/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;ad9b48c96db47233554e83ce4f4638a17a8ec09b59dfa25f1ce61fd7659c58a3&quot;,
+      &quot;bytes&quot;: 21429,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00120/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;d8aba5ec01097e4c87fe3e961a79872400684a110a990c34d661021e2f1c6061&quot;,
+      &quot;bytes&quot;: 10048,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00120/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;ef3ad8bcd018e9dc895016c25874733fe2164ac58df8b6b5633bf1216eb82257&quot;,
+      &quot;bytes&quot;: 13799,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00120/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;fa9582f33968f5b81a94c5b8dff4f1d94903df96a4be6bbbb4ba9b8de947af3a&quot;,
+      &quot;bytes&quot;: 5368,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00120/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi120">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

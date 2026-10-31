@@ -1,0 +1,365 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f11f7fd57667a5c2c1e4c72e4567bf5cc1e7ba2b269fa347a2c89b2926c4eeb3",
+  "manifest_sha256": "e28d19763f43fef951c1798b1461cb7a7b6ab7191664e4dde163ec17505575d8",
+  "title": "Prism Commons",
+  "rules": [
+    "Three workers share seven mirrors, one emitter and one rechargeable energy pool.",
+    "Move to a mirror to rotate it, or lock its current direction while a pulse is travelling.",
+    "The emitter launches one eastward pulse at a time. It travels one real cell each tick, for at most forty ticks.",
+    "Transparent mirrors pass straight; slash and backslash mirrors reflect using the displayed direction.",
+    "Every turn or clamp costs one shared energy; a launch costs three. The pump restores up to two.",
+    "Each receiver needs three pulses. Private receiver rewards, launch credit and joint completion reward coexist."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open traversable board",
+          "color": "#E7EDF3"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Agent",
+      "color": "#2D74C4",
+      "attribute_labels": []
+    },
+    {
+      "id": "mirror",
+      "glyph": "tool",
+      "label": "Mirror",
+      "color": "#7666AC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "mirror_dir"
+          ],
+          "label": "0 straight-through; 1 slash; 2 backslash"
+        },
+        {
+          "state_path": [
+            "mirror_lock"
+          ],
+          "label": "Subsequent ticks during which reorientation or clamping is refused"
+        }
+      ]
+    },
+    {
+      "id": "receiver",
+      "glyph": "beacon",
+      "label": "Receiver",
+      "color": "#D89B25",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "receiver_charge"
+          ],
+          "label": "Stored pulse deliveries; each receiver needs three"
+        }
+      ]
+    },
+    {
+      "id": "emitter",
+      "glyph": "battery",
+      "label": "Emitter",
+      "color": "#DC663B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Shared energy available for turns, clamps and pulse launches"
+        }
+      ]
+    },
+    {
+      "id": "battery",
+      "glyph": "battery",
+      "label": "Battery",
+      "color": "#3DAB82",
+      "attribute_labels": []
+    },
+    {
+      "id": "beam",
+      "glyph": "circle",
+      "label": "Beam",
+      "color": "#F5CB42",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beam_dir"
+          ],
+          "label": "0 east, 1 south, 2 west, 3 north"
+        },
+        {
+          "state_path": [
+            "beam_ttl"
+          ],
+          "label": "Remaining one-cell propagation budget"
+        },
+        {
+          "state_path": [
+            "beam_owner"
+          ],
+          "label": "Launching role index; minus one before the first pulse"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "turn_event"
+      ],
+      "meaning": "Mirrors actually rotated this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Previously unfilled receiver slots charged this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fire_event"
+      ],
+      "meaning": "A pulse launched this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pump_event"
+      ],
+      "meaning": "Roles that added shared energy this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "mirror_lock"
+      ],
+      "meaning": "Remaining mirror commitment timers",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Turn nearest adjacent mirror: straight to slash to backslash"
+    },
+    {
+      "id": 6,
+      "label": "Clamp nearest adjacent unlocked mirror for five ticks"
+    },
+    {
+      "id": 7,
+      "label": "Launch an eastward pulse near the emitter; costs three shared energy"
+    },
+    {
+      "id": 8,
+      "label": "Pump up to two shared energy near the battery"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Observer role index: 0 north receiver, 1 east receiver, 2 south receiver",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        6
+      ],
+      "meaning": "Clock, shared energy, joint done, natural termination, time truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        12
+      ],
+      "meaning": "All three workers' x,y positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        26
+      ],
+      "meaning": "Seven mirror x,y positions in manifest order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        33
+      ],
+      "meaning": "Mirror orientation: 0 transparent, 1 slash, 2 backslash",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        40
+      ],
+      "meaning": "Mirror commitment timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        46
+      ],
+      "meaning": "Receiver x,y positions, ordered north/east/south",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        49
+      ],
+      "meaning": "Receiver charges in [0,3]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        51
+      ],
+      "meaning": "Emitter x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        51,
+        53
+      ],
+      "meaning": "Pump x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        55
+      ],
+      "meaning": "Current or last pulse x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        55,
+        56
+      ],
+      "meaning": "Pulse active flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "meaning": "Pulse direction index",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        58
+      ],
+      "meaning": "Pulse propagation ticks remaining",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        59
+      ],
+      "meaning": "Pulse launcher index; -1 before first launch",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        66
+      ],
+      "meaning": "This tick's mirror reorientation flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        69
+      ],
+      "meaning": "This tick's newly credited receiver deliveries",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        69,
+        70
+      ],
+      "meaning": "This tick's pulse-launch flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        73
+      ],
+      "meaning": "This tick's successful pump actions by role",
+      "visibility": "public"
+    }
+  ]
+}

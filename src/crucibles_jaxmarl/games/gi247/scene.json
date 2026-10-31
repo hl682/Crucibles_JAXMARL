@@ -1,0 +1,565 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "23350458ec5a024149ae28cbdc3a06c4157f92bd0cbed2d47ce2bfa8a391ece7",
+  "manifest_sha256": "fd4c4290761cb21cfe28da70b86daa17d0367fc4572a9eaf07e8076b34f9d111",
+  "title": "Reedbank Market Gardens",
+  "rules": [
+    "Four actors per household have independent actions. Tool exchanges change who can plant, harvest, open gates and use boats.",
+    "Opening a gate lowers local water retention and sends water downstream. Flood pulses provide fish/nutrients but can destroy ripe crops.",
+    "Reed cutting opens boat passages, removes filtering plants and raises pollution.",
+    "Empty-handed actors on opposite rack banks must both hold. This creates a real crossing and advances drying.",
+    "Water/boat-tool holders can net opposite banks; one left-bank holder receives the catch.",
+    "Neighboring seed diversity improves growth. Bird shelters protect their own and adjacent plots; carried reeds repair shelters.",
+    "Fresh goods spoil after24 carried ticks; dried goods after64. Compost goods or sell them before the market preference changes each96 ticks.",
+    "Role-local native state drives both policy and scene. Metadata does not prove a working human interface or animated replay."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      39,
+      31
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Raised path or work bank",
+          "color": "#E4CEA1"
+        },
+        {
+          "value": 1,
+          "meaning": "Dense reed channel blocks passage",
+          "color": "#758F5E"
+        },
+        {
+          "value": 2,
+          "meaning": "Clear channel; boat tool can cross",
+          "color": "#80B5B3"
+        },
+        {
+          "value": 3,
+          "meaning": "Temporary two-bank held-rack crossing",
+          "color": "#BEA471"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "gardeners",
+      "glyph": "worker",
+      "color": "#D49A6A",
+      "label": "Eighty household gardeners",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Household 0..19"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 hoe;1 sickle;2 water tool;3 boat/net tool; exchangeable"
+        },
+        {
+          "state_path": [
+            "item"
+          ],
+          "label": "0 empty;2 reed;3 fresh veg;4 fresh fish;5 dry veg;6 dry fish;7 spoiled;8 compost"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "Carried goods age"
+        },
+        {
+          "state_path": [
+            "quality"
+          ],
+          "label": "Goods quality 0..1"
+        },
+        {
+          "state_path": [
+            "produce_kind"
+          ],
+          "label": "Vegetable variety:0 none;1 or2"
+        },
+        {
+          "state_path": [
+            "seed_kind"
+          ],
+          "label": "Seed variety1 or2"
+        },
+        {
+          "state_path": [
+            "seeds"
+          ],
+          "label": "Seed count0..3"
+        },
+        {
+          "state_path": [
+            "harvested"
+          ],
+          "label": "Harvest this step"
+        },
+        {
+          "state_path": [
+            "sold"
+          ],
+          "label": "Sale this step"
+        },
+        {
+          "state_path": [
+            "spoiled"
+          ],
+          "label": "Spoilage this step"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "glyph": "flag",
+      "color": "#E8BB74",
+      "label": "Village market stalls",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "preference"
+          ],
+          "label": "Market vegetable preference1 or2"
+        },
+        {
+          "state_path": [
+            "household"
+          ],
+          "label": "Market household index"
+        }
+      ]
+    },
+    {
+      "id": "plot",
+      "glyph": "plant",
+      "color": "#94BE68",
+      "label": "Wetland crop plots",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crop"
+          ],
+          "label": "Growth0..12"
+        },
+        {
+          "state_path": [
+            "crop_kind"
+          ],
+          "label": "Variety0 none;1 or2"
+        },
+        {
+          "state_path": [
+            "nutrient"
+          ],
+          "label": "Root nutrient0..6"
+        },
+        {
+          "state_path": [
+            "flood_loss"
+          ],
+          "label": "Ripe crop lost this step"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "color": "#AA8A64",
+      "label": "Bank-side water gates",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Sends water downstream when open"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Local water0..6"
+        },
+        {
+          "state_path": [
+            "gate_changed"
+          ],
+          "label": "Changed this step"
+        }
+      ]
+    },
+    {
+      "id": "reed",
+      "glyph": "plant",
+      "color": "#879B5F",
+      "label": "Reed filters and boat passages",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "reeds"
+          ],
+          "label": "Density0..6; dense reeds block boats"
+        },
+        {
+          "state_path": [
+            "pollution"
+          ],
+          "label": "Local pollution0..6"
+        },
+        {
+          "state_path": [
+            "cut"
+          ],
+          "label": "Cut this step"
+        }
+      ]
+    },
+    {
+      "id": "rack",
+      "glyph": "tool",
+      "color": "#C9A271",
+      "label": "Two-bank drying racks",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "rack_item"
+          ],
+          "label": "Raw item0 none;3 veg;4 fish"
+        },
+        {
+          "state_path": [
+            "rack_progress"
+          ],
+          "label": "Drying0..4; at4 pick dried goods"
+        },
+        {
+          "state_path": [
+            "rack_quality"
+          ],
+          "label": "Loaded goods quality"
+        },
+        {
+          "state_path": [
+            "rack_kind"
+          ],
+          "label": "Loaded vegetable variety"
+        },
+        {
+          "state_path": [
+            "held"
+          ],
+          "label": "Both banks held; crossing available"
+        }
+      ]
+    },
+    {
+      "id": "compost",
+      "glyph": "resource",
+      "color": "#956F50",
+      "label": "Shared compost heaps",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "compost"
+          ],
+          "label": "Compost portions0..16"
+        }
+      ]
+    },
+    {
+      "id": "bird",
+      "glyph": "beacon",
+      "color": "#D4BD8D",
+      "label": "Shared bird shelters",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bird_health"
+          ],
+          "label": "Condition0..16; benefits neighboring plots"
+        }
+      ]
+    },
+    {
+      "id": "fish",
+      "glyph": "water",
+      "color": "#6DADA5",
+      "label": "Wetland fish channels",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fish_stock"
+          ],
+          "label": "Fish0..8"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Channel water0..6"
+        },
+        {
+          "state_path": [
+            "pollution"
+          ],
+          "label": "Channel pollution0..6"
+        },
+        {
+          "state_path": [
+            "netted"
+          ],
+          "label": "Two-bank catch this step"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "flood_loss"
+      ],
+      "meaning": "Per-plot ripe flood loss",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "netted"
+      ],
+      "meaning": "Per-channel two-bank catch",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "harvested"
+      ],
+      "meaning": "Per-actor harvest",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sold"
+      ],
+      "meaning": "Per-actor sale",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Per-actor spoilage",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gate_changed"
+      ],
+      "meaning": "Per-gate toggle",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cut"
+      ],
+      "meaning": "Per-bed reed cut",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sales"
+      ],
+      "meaning": "Accumulated household sales",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive goods, seed or tool exchange"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick finished dried rack goods or compost portion"
+    },
+    {
+      "id": 6,
+      "label": "Hoe holder: plant carried seed in empty plot"
+    },
+    {
+      "id": 7,
+      "label": "Sickle holder: harvest ripe plot with empty hands"
+    },
+    {
+      "id": 8,
+      "label": "Hold rack from bank with empty hands"
+    },
+    {
+      "id": 9,
+      "label": "Place fresh food on empty rack"
+    },
+    {
+      "id": 10,
+      "label": "Opposite-bank netting with water/boat tools and empty hands"
+    },
+    {
+      "id": 11,
+      "label": "Water-tool holder: toggle local gate"
+    },
+    {
+      "id": 12,
+      "label": "Sickle holder: cut reeds with empty hands"
+    },
+    {
+      "id": 13,
+      "label": "Compost reed/fresh/spoiled goods or apply compost to plot"
+    },
+    {
+      "id": 14,
+      "label": "Offer empty-handed tool exchange to adjacent waiting actor"
+    },
+    {
+      "id": 15,
+      "label": "Offer goods, else one compatible seed, to adjacent waiting actor"
+    },
+    {
+      "id": 16,
+      "label": "Sell fresh/dried food at local market"
+    },
+    {
+      "id": 17,
+      "label": "Spend carried reed to repair bird shelter"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        15
+      ],
+      "visibility": "self",
+      "meaning": "Time/768,ID/79,household/19,tool/3,x/39,y/31,item/8,age/64,quality,produce variety/2,seed variety/2,seeds/3,capped household sales/768,capped household revenue/1728,spoil."
+    },
+    {
+      "slice": [
+        15,
+        1135
+      ],
+      "visibility": "local",
+      "meaning": "80 actor slots,14 fields: x/39,y/31,household/19,tool/3,item/8,age/64,quality,produce variety/2,seed variety/2,seeds/3,harvest,sale,spoil,presence."
+    },
+    {
+      "slice": [
+        1135,
+        1235
+      ],
+      "visibility": "local",
+      "meaning": "20 markets: x/39,y/31,preference/2,household/19,presence."
+    },
+    {
+      "slice": [
+        1235,
+        1375
+      ],
+      "visibility": "local",
+      "meaning": "20 plots: x/39,y/31,crop/12,variety/2,nutrient/6,flood-loss,presence."
+    },
+    {
+      "slice": [
+        1375,
+        1495
+      ],
+      "visibility": "local",
+      "meaning": "20 gates: x/39,y/31,open,water/6,changed,presence."
+    },
+    {
+      "slice": [
+        1495,
+        1615
+      ],
+      "visibility": "local",
+      "meaning": "20 reed beds: x/39,y/31,density/6,pollution/6,cut,presence."
+    },
+    {
+      "slice": [
+        1615,
+        1775
+      ],
+      "visibility": "local",
+      "meaning": "20 racks: x/39,y/31,raw item/4,work/4,quality,variety/2,held,presence."
+    },
+    {
+      "slice": [
+        1775,
+        1855
+      ],
+      "visibility": "local",
+      "meaning": "20 compost heaps: x/39,y/31,portions/16,presence."
+    },
+    {
+      "slice": [
+        1855,
+        1935
+      ],
+      "visibility": "local",
+      "meaning": "20 bird shelters: x/39,y/31,health/16,presence."
+    },
+    {
+      "slice": [
+        1935,
+        2075
+      ],
+      "visibility": "local",
+      "meaning": "20 fish channels: x/39,y/31,stock/8,water/6,pollution/6,netted,presence."
+    },
+    {
+      "slice": [
+        2075,
+        2173
+      ],
+      "visibility": "local",
+      "meaning": "7x7 dy-major patch: tile/3,in-bounds; unavailable cells zero."
+    }
+  ]
+}

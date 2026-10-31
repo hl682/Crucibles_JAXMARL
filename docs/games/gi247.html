@@ -1,0 +1,629 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reedbank Market Gardens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI247 / SPATIAL</p><h1>Reedbank Market Gardens</h1><p class="lead"></p><div class="stats"><span>80 agents</span><span>18 actions</span><span>2173 observation columns</span><span>768 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 247</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Bring shared wetland crop/fish goods to markets while coordinating flood pulses, filtering reeds, crop diversity, shelters and tools. Every household seeks at least one sale after the first seasonal interval.&quot;,
+  &quot;natural_termination&quot;: &quot;At t&gt;=96 all twenty households have at least one sale; otherwise H=768. Failed, spoiled and flood-lost harvests remain actual outcomes.&quot;,
+  &quot;interaction&quot;: &quot;Opening a gate drains its own pool and sends water downstream. Flood pulses bring fish/nutrients but destroy ripe crops; reed cutting opens boat routes while weakening filtering. Opposite-bank rack holders create a real crossing and dry cargo; complementary net holders catch fish. Neighbor seed diversity and bird shelters change future crop growth. Local exchange moves tools, seeds and perishables.&quot;,
+  &quot;observation_access&quot;: &quot;Self fields plus Chebyshev radius-three local map/entity fields; no within-square occlusion. Hidden rows and outside-map patch cells zero with presence. Dynamic remote state is not observed. Event rendering must suppress hidden entity events; debug/full-state view is separate. The explicitly listed own team score summaries are self information.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 2.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Four actors per household have independent actions. Tool exchanges change who can plant, harvest, open gates and use boats.</li><li>Opening a gate lowers local water retention and sends water downstream. Flood pulses provide fish/nutrients but can destroy ripe crops.</li><li>Reed cutting opens boat passages, removes filtering plants and raises pollution.</li><li>Empty-handed actors on opposite rack banks must both hold. This creates a real crossing and advances drying.</li><li>Water/boat-tool holders can net opposite banks; one left-bank holder receives the catch.</li><li>Neighboring seed diversity improves growth. Bird shelters protect their own and adjacent plots; carried reeds repair shelters.</li><li>Fresh goods spoil after24 carried ticks; dried goods after64. Compost goods or sell them before the market preference changes each96 ticks.</li><li>Role-local native state drives both policy and scene. Metadata does not prove a working human interface or animated replay.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Reedbank Market Gardens
+
+AUTHORED_NOT_EXECUTED. Candidate game-v3-00247, attempt00, train-only, feedback0, parentless blind authoring. Source SHA256 23350458ec5a024149ae28cbdc3a06c4157f92bd0cbed2d47ce2bfa8a391ece7. Native dimensions A=80, O=2173, U=18, H=768. Every actor has an independently supplied scalar action, observation/reward/done row, actual position and persistent spatial consequences. There are 20 groups of 4; grouping identifies affiliation, not a single controller for that group.
+
+## Task and interaction
+
+Bring shared wetland crop/fish goods to markets while coordinating flood pulses, filtering reeds, crop diversity, shelters and tools. Every household seeks at least one sale after the first seasonal interval.
+
+Opening a gate drains its own pool and sends water downstream. Flood pulses bring fish/nutrients but destroy ripe crops; reed cutting opens boat routes while weakening filtering. Opposite-bank rack holders create a real crossing and dry cargo; complementary net holders catch fish. Neighbor seed diversity and bird shelters change future crop growth. Local exchange moves tools, seeds and perishables.
+
+Time gates with downstream harvest or retain local water at the cost of downstream fish. Cut reeds for boat access or keep filtration. Pair holders can maintain a shortcut and dry goods; boat routes free their labor. Exchange compatible seeds or change next planting diversity. Carry fresh products quickly or invest two workers in drying for longer routes.
+
+The 40x32 grid uses integer [x,y] cell centers, y down. Positions govern movement, object work and transfer. Scene colors/glyphs are original declarative cues for the independent rural_community family. The shared platform can select arbitrary one/multiple actors and fill their unchanged native action rows. This package does not claim a working UI, animation or human acceptance.
+
+## Action meanings
+
+- 0: Wait / receive goods, seed or tool exchange.
+- 1: Move north.
+- 2: Move east.
+- 3: Move south.
+- 4: Move west.
+- 5: Pick finished dried rack goods or compost portion.
+- 6: Hoe holder: plant carried seed in empty plot.
+- 7: Sickle holder: harvest ripe plot with empty hands.
+- 8: Hold rack from bank with empty hands.
+- 9: Place fresh food on empty rack.
+- 10: Opposite-bank netting with water/boat tools and empty hands.
+- 11: Water-tool holder: toggle local gate.
+- 12: Sickle holder: cut reeds with empty hands.
+- 13: Compost reed/fresh/spoiled goods or apply compost to plot.
+- 14: Offer empty-handed tool exchange to adjacent waiting actor.
+- 15: Offer goods, else one compatible seed, to adjacent waiting actor.
+- 16: Sell fresh/dried food at local market.
+- 17: Spend carried reed to repair bird shelter.
+
+Invalid or out-of-range action IDs deterministically become action0. Wait remains legal for every actor, including disabled actors and terminal input. Individual masks expose local physical/tool conditions; partner cooperation is resolved by the joint transition. Finite-resource contention uses clock-rotating actor priority. The same masks and native actions apply to human and AI ownership.
+
+## Transition order, rewards and termination
+
+Old-state masks; co-occupancy-permitted movement; rotating facility work; gate/reed changes and hydrology; pollution/nutrients/crop ecology; paired rack/net processes; inventories/seeds; tool/goods/seed exchange; spoilage/market revenue; termination and visibility.
+
+Clipped to [-2,2]. Own sale value times0.35; each household member gets household sale value times0.1; harvest+0.02; work-0.003; spoilage-0.06; own-household ripe flood loss-0.04; cut-0.002. Opening incurs another-0.04 only if newly sent runoff is sufficient to cross the downstream ripe-loss threshold on this step. Sale value=quality times(1+dried+0.25 matching variety). Ecology and labor consequences persist beyond reward.
+
+Natural termination: At t&gt;=96 all twenty households have at least one sale; otherwise H=768. Failed, spoiled and flood-lost harvests remain actual outcomes. Natural completion or failure takes priority if it coincides with H. truncated=(next t&gt;=H) AND NOT terminated; done_all is their disjunction and equals episode_done. A nonterminal input advances t once. Already-terminal input is preserved by the final tree selection: clock, state, observation and terminal causes remain; reward is zero and all dones true. There is no internal reset.
+
+The reset key is external trajectory provenance; only the supplied key drives reset stochasticity. Authored steps are deterministic and do not consume their key. Small signed values are int32, booleans bool, persistent reals float32. The uint32 key is not duplicated in world state. Exact eager/JIT/vmap behavior and numerical parity are untested.
+
+## Exact observations and role rendering
+
+Local entity blocks use fixed ID order and explicit presence. Hidden payloads are zero. Map patches enumerate dy=-3..3, then dx=-3..3. The local square is not occlusion-limited. Debug/full-state views must be labeled and cannot become policy observations. Actual event flags/counters must be filtered by the related visible entity; their declaration does not authorize off-screen event disclosure.
+
+- Columns [0, 15): Time/768,ID/79,household/19,tool/3,x/39,y/31,item/8,age/64,quality,produce variety/2,seed variety/2,seeds/3,capped household sales/768,capped household revenue/1728,spoil.
+- Columns [15, 1135): 80 actor slots,14 fields: x/39,y/31,household/19,tool/3,item/8,age/64,quality,produce variety/2,seed variety/2,seeds/3,harvest,sale,spoil,presence.
+- Columns [1135, 1235): 20 markets: x/39,y/31,preference/2,household/19,presence.
+- Columns [1235, 1375): 20 plots: x/39,y/31,crop/12,variety/2,nutrient/6,flood-loss,presence.
+- Columns [1375, 1495): 20 gates: x/39,y/31,open,water/6,changed,presence.
+- Columns [1495, 1615): 20 reed beds: x/39,y/31,density/6,pollution/6,cut,presence.
+- Columns [1615, 1775): 20 racks: x/39,y/31,raw item/4,work/4,quality,variety/2,held,presence.
+- Columns [1775, 1855): 20 compost heaps: x/39,y/31,portions/16,presence.
+- Columns [1855, 1935): 20 bird shelters: x/39,y/31,health/16,presence.
+- Columns [1935, 2075): 20 fish channels: x/39,y/31,stock/8,water/6,pollution/6,netted,presence.
+- Columns [2075, 2173): 7x7 dy-major patch: tile/3,in-bounds; unavailable cells zero.
+
+All fixed-shape state leaves are listed in manifest.json. Entity attributes are represented by the corresponding native local block. The explicitly described own team score summaries are self information. Declared invariants include finite observations/rewards, coordinate bounds, resource nonnegativity under legal transitions, fixed state-tree shapes and absorbing terminal semantics. They remain source declarations, not passed runtime receipts.
+
+## Literal diagnostic proposals
+
+playthrough.json supplies two full-width literal scripts and one paired hypothesis. Every frame contains all 80 actions, including zeros. There is no adaptive policy, search or substitute dynamics. The branches have the same prefix and subsequent actions, and differ at exactly one actor/action/step. Intended differences come from source reasoning only. No script was imported, run, simulated, scored or accepted. Initial random details, multi-step legality, exact effects and rewards remain unverified; no solvability or learning result is claimed.
+
+## Literal source evidence
+
+- candidate.py:66: `def legal_actions(self, s):`
+- candidate.py:123: `gates = s[&#x27;gate_open&#x27;] ^ changed`
+- candidate.py:126: `runoff = s[&#x27;water&#x27;] * gates.astype(jnp.float32) * 0.4`
+- candidate.py:130: `pollution = jnp.clip(s[&#x27;pollution&#x27;] * 0.65 + poisonflow + cutcount * 0.5 + totals(fertilize) * 0.2 - reeds * 0.04, 0, 6)`
+- candidate.py:139: `diversity = ((c % 5 &gt; 0) &amp; (cropkind[left] &gt; 0) &amp; (cropkind[left] != cropkind)) | ((c % 5 &lt; 4) &amp; (cropkind[right] &gt; 0) &amp; (cropkind[right] != cropkind))`
+- candidate.py:140: `sheltered = (bh &gt; 0) | ((c % 5 &gt; 0) &amp; (bh[left] &gt; 0)) | ((c % 5 &lt; 4) &amp; (bh[right] &gt; 0))`
+- candidate.py:150: `held = jnp.any(atleft &amp; (act[:, None] == 8), axis=0) &amp; jnp.any(atright &amp; (act[:, None] == 8), axis=0)`
+- candidate.py:153: `netted = nets &amp; (stock &gt; 0) &amp; (water &gt; 0.5)`
+- candidate.py:159: `rack_progress = jnp.where(rack_changed, 0, s[&#x27;rack_progress&#x27;])`
+- candidate.py:184: `swap = send &amp; (act == 14)`
+- candidate.py:190: `seedgive = send &amp; (act == 15) &amp; ~give`
+- candidate.py:218: `attributable = toggle.astype(jnp.float32) * gates[h] * flood_loss[lower] * (h &lt; 15) * (water[lower] - runoff[h] &lt;= 4)`
+- candidate.py:219: `reward = 0.35 * value + 0.1 * earnings[s[&#x27;team&#x27;]] + 0.02 * harvest - 0.003 * (act &gt; 4) - 0.06 * spoiled - 0.04 * flood_loss[s[&#x27;team&#x27;]] - 0.04 * attributable - 0.002 * cut`
+- candidate.py:221: `terminated = (t &gt;= 96) &amp; jnp.all(sales &gt; 0)`
+- candidate.py:232: `def raw_step(self, key, state, actions):`
+- candidate.py:239: `def observe(self, s):`
+
+## Provenance and remaining evidence
+
+The supplied JaxMARL README informed parallel actor-interface expectations; Pgx informed legal masks, external keys and terminal states; Craftax README informed local materials/observation and no-autoreset boundaries. PureJaxRL README and Craftax_Baselines_ppo_rnn.py informed only learner/wrapper integration boundaries. No upstream code, assets, board layouts or game recipes were copied. No supplied external score was used as evidence for these authored games. Exact supplied reference bytes and uses are in author_input_freeze.json.
+
+Authority and scope hashes were verified. ROOT_INPUT_REFERENCE_CLARIFICATION247.json explicitly supersedes the missing inherited194 reference; that absent file was not searched or read. Current247 population/family and current design/request bytes control. Actual allowed paths, byte counts, SHA256 and uses are frozen in author_input_freeze.json. No MEMORY, prior candidate/results, other coordination, training/IR, selection, heldout or final-test evidence entered authoring.
+
+Author checks are AST parsing/whitelist-oriented text inspection, manifest/scene data inspection, literal script dimensions and single-action-difference counting, and byte/hash verification. Candidate code was never imported or executed. No NumPy/JAX/PRNG/runtime tests occurred. Runtime shape/parity/throughput, physical paired replay, native renderer/animation, arbitrary human play, learning and meta-learning transfer are UNKNOWN or UNEXECUTED. Independent immutable-source integration release is required.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait / receive goods, seed or tool exchange</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Pick finished dried rack goods or compost portion</span></div><div class="action"><b>6</b><span>Hoe holder: plant carried seed in empty plot</span></div><div class="action"><b>7</b><span>Sickle holder: harvest ripe plot with empty hands</span></div><div class="action"><b>8</b><span>Hold rack from bank with empty hands</span></div><div class="action"><b>9</b><span>Place fresh food on empty rack</span></div><div class="action"><b>10</b><span>Opposite-bank netting with water/boat tools and empty hands</span></div><div class="action"><b>11</b><span>Water-tool holder: toggle local gate</span></div><div class="action"><b>12</b><span>Sickle holder: cut reeds with empty hands</span></div><div class="action"><b>13</b><span>Compost reed/fresh/spoiled goods or apply compost to plot</span></div><div class="action"><b>14</b><span>Offer empty-handed tool exchange to adjacent waiting actor</span></div><div class="action"><b>15</b><span>Offer goods, else one compatible seed, to adjacent waiting actor</span></div><div class="action"><b>16</b><span>Sell fresh/dried food at local market</span></div><div class="action"><b>17</b><span>Spend carried reed to repair bird shelter</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> gardener initially holding hoe; group0, member0</p><p><b>agent_1</b> gardener initially holding sickle; group0, member1</p><p><b>agent_2</b> gardener initially holding water tool; group0, member2</p><p><b>agent_3</b> gardener initially holding boat/net tool; group0, member3</p><p><b>agent_4</b> gardener initially holding hoe; group1, member0</p><p><b>agent_5</b> gardener initially holding sickle; group1, member1</p><p><b>agent_6</b> gardener initially holding water tool; group1, member2</p><p><b>agent_7</b> gardener initially holding boat/net tool; group1, member3</p><p><b>agent_8</b> gardener initially holding hoe; group2, member0</p><p><b>agent_9</b> gardener initially holding sickle; group2, member1</p><p><b>agent_10</b> gardener initially holding water tool; group2, member2</p><p><b>agent_11</b> gardener initially holding boat/net tool; group2, member3</p><p><b>agent_12</b> gardener initially holding hoe; group3, member0</p><p><b>agent_13</b> gardener initially holding sickle; group3, member1</p><p><b>agent_14</b> gardener initially holding water tool; group3, member2</p><p><b>agent_15</b> gardener initially holding boat/net tool; group3, member3</p><p><b>agent_16</b> gardener initially holding hoe; group4, member0</p><p><b>agent_17</b> gardener initially holding sickle; group4, member1</p><p><b>agent_18</b> gardener initially holding water tool; group4, member2</p><p><b>agent_19</b> gardener initially holding boat/net tool; group4, member3</p><p><b>agent_20</b> gardener initially holding hoe; group5, member0</p><p><b>agent_21</b> gardener initially holding sickle; group5, member1</p><p><b>agent_22</b> gardener initially holding water tool; group5, member2</p><p><b>agent_23</b> gardener initially holding boat/net tool; group5, member3</p><p><b>agent_24</b> gardener initially holding hoe; group6, member0</p><p><b>agent_25</b> gardener initially holding sickle; group6, member1</p><p><b>agent_26</b> gardener initially holding water tool; group6, member2</p><p><b>agent_27</b> gardener initially holding boat/net tool; group6, member3</p><p><b>agent_28</b> gardener initially holding hoe; group7, member0</p><p><b>agent_29</b> gardener initially holding sickle; group7, member1</p><p><b>agent_30</b> gardener initially holding water tool; group7, member2</p><p><b>agent_31</b> gardener initially holding boat/net tool; group7, member3</p><p><b>agent_32</b> gardener initially holding hoe; group8, member0</p><p><b>agent_33</b> gardener initially holding sickle; group8, member1</p><p><b>agent_34</b> gardener initially holding water tool; group8, member2</p><p><b>agent_35</b> gardener initially holding boat/net tool; group8, member3</p><p><b>agent_36</b> gardener initially holding hoe; group9, member0</p><p><b>agent_37</b> gardener initially holding sickle; group9, member1</p><p><b>agent_38</b> gardener initially holding water tool; group9, member2</p><p><b>agent_39</b> gardener initially holding boat/net tool; group9, member3</p><p><b>agent_40</b> gardener initially holding hoe; group10, member0</p><p><b>agent_41</b> gardener initially holding sickle; group10, member1</p><p><b>agent_42</b> gardener initially holding water tool; group10, member2</p><p><b>agent_43</b> gardener initially holding boat/net tool; group10, member3</p><p><b>agent_44</b> gardener initially holding hoe; group11, member0</p><p><b>agent_45</b> gardener initially holding sickle; group11, member1</p><p><b>agent_46</b> gardener initially holding water tool; group11, member2</p><p><b>agent_47</b> gardener initially holding boat/net tool; group11, member3</p><p><b>agent_48</b> gardener initially holding hoe; group12, member0</p><p><b>agent_49</b> gardener initially holding sickle; group12, member1</p><p><b>agent_50</b> gardener initially holding water tool; group12, member2</p><p><b>agent_51</b> gardener initially holding boat/net tool; group12, member3</p><p><b>agent_52</b> gardener initially holding hoe; group13, member0</p><p><b>agent_53</b> gardener initially holding sickle; group13, member1</p><p><b>agent_54</b> gardener initially holding water tool; group13, member2</p><p><b>agent_55</b> gardener initially holding boat/net tool; group13, member3</p><p><b>agent_56</b> gardener initially holding hoe; group14, member0</p><p><b>agent_57</b> gardener initially holding sickle; group14, member1</p><p><b>agent_58</b> gardener initially holding water tool; group14, member2</p><p><b>agent_59</b> gardener initially holding boat/net tool; group14, member3</p><p><b>agent_60</b> gardener initially holding hoe; group15, member0</p><p><b>agent_61</b> gardener initially holding sickle; group15, member1</p><p><b>agent_62</b> gardener initially holding water tool; group15, member2</p><p><b>agent_63</b> gardener initially holding boat/net tool; group15, member3</p><p><b>agent_64</b> gardener initially holding hoe; group16, member0</p><p><b>agent_65</b> gardener initially holding sickle; group16, member1</p><p><b>agent_66</b> gardener initially holding water tool; group16, member2</p><p><b>agent_67</b> gardener initially holding boat/net tool; group16, member3</p><p><b>agent_68</b> gardener initially holding hoe; group17, member0</p><p><b>agent_69</b> gardener initially holding sickle; group17, member1</p><p><b>agent_70</b> gardener initially holding water tool; group17, member2</p><p><b>agent_71</b> gardener initially holding boat/net tool; group17, member3</p><p><b>agent_72</b> gardener initially holding hoe; group18, member0</p><p><b>agent_73</b> gardener initially holding sickle; group18, member1</p><p><b>agent_74</b> gardener initially holding water tool; group18, member2</p><p><b>agent_75</b> gardener initially holding boat/net tool; group18, member3</p><p><b>agent_76</b> gardener initially holding hoe; group19, member0</p><p><b>agent_77</b> gardener initially holding sickle; group19, member1</p><p><b>agent_78</b> gardener initially holding water tool; group19, member2</p><p><b>agent_79</b> gardener initially holding boat/net tool; group19, member3</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      15
+    ],
+    &quot;visibility&quot;: &quot;self&quot;,
+    &quot;meaning&quot;: &quot;Time/768,ID/79,household/19,tool/3,x/39,y/31,item/8,age/64,quality,produce variety/2,seed variety/2,seeds/3,capped household sales/768,capped household revenue/1728,spoil.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      1135
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;80 actor slots,14 fields: x/39,y/31,household/19,tool/3,item/8,age/64,quality,produce variety/2,seed variety/2,seeds/3,harvest,sale,spoil,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1135,
+      1235
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 markets: x/39,y/31,preference/2,household/19,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1235,
+      1375
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 plots: x/39,y/31,crop/12,variety/2,nutrient/6,flood-loss,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1375,
+      1495
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 gates: x/39,y/31,open,water/6,changed,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1495,
+      1615
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 reed beds: x/39,y/31,density/6,pollution/6,cut,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1615,
+      1775
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 racks: x/39,y/31,raw item/4,work/4,quality,variety/2,held,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1775,
+      1855
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 compost heaps: x/39,y/31,portions/16,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1855,
+      1935
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 bird shelters: x/39,y/31,health/16,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1935,
+      2075
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;20 fish channels: x/39,y/31,stock/8,water/6,pollution/6,netted,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2075,
+      2173
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;7x7 dy-major patch: tile/3,in-bounds; unavailable cells zero.&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;gardeners&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 80,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Household 0..19&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 hoe;1 sickle;2 water tool;3 boat/net tool; exchangeable&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;item&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty;2 reed;3 fresh veg;4 fresh fish;5 dry veg;6 dry fish;7 spoiled;8 compost&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;age&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried goods age&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;quality&quot;
+        ],
+        &quot;meaning&quot;: &quot;Goods quality 0..1&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;produce_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;Vegetable variety:0 none;1 or2&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;seed_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;Seed variety1 or2&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;seeds&quot;
+        ],
+        &quot;meaning&quot;: &quot;Seed count0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;harvested&quot;
+        ],
+        &quot;meaning&quot;: &quot;Harvest this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sold&quot;
+        ],
+        &quot;meaning&quot;: &quot;Sale this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;spoiled&quot;
+        ],
+        &quot;meaning&quot;: &quot;Spoilage this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;market&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;market_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;market_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;preference&quot;
+        ],
+        &quot;meaning&quot;: &quot;Market vegetable preference1 or2&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;household&quot;
+        ],
+        &quot;meaning&quot;: &quot;Market household index&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;plot&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;plot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;plot_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crop&quot;
+        ],
+        &quot;meaning&quot;: &quot;Growth0..12&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;crop_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;Variety0 none;1 or2&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;nutrient&quot;
+        ],
+        &quot;meaning&quot;: &quot;Root nutrient0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;flood_loss&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ripe crop lost this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gate&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_open&quot;
+        ],
+        &quot;meaning&quot;: &quot;Sends water downstream when open&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Local water0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_changed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Changed this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;reed&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;reed_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;reed_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;reeds&quot;
+        ],
+        &quot;meaning&quot;: &quot;Density0..6; dense reeds block boats&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pollution&quot;
+        ],
+        &quot;meaning&quot;: &quot;Local pollution0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cut&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cut this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;rack&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;rack_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;rack_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;rack_item&quot;
+        ],
+        &quot;meaning&quot;: &quot;Raw item0 none;3 veg;4 fish&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rack_progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Drying0..4; at4 pick dried goods&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rack_quality&quot;
+        ],
+        &quot;meaning&quot;: &quot;Loaded goods quality&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rack_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;Loaded vegetable variety&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;held&quot;
+        ],
+        &quot;meaning&quot;: &quot;Both banks held; crossing available&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;compost&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;compost_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;compost_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;compost&quot;
+        ],
+        &quot;meaning&quot;: &quot;Compost portions0..16&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;bird&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;bird_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;bird_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;bird_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Condition0..16; benefits neighboring plots&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;fish&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;fish_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;fish_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;fish_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fish0..8&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Channel water0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pollution&quot;
+        ],
+        &quot;meaning&quot;: &quot;Channel pollution0..6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;netted&quot;
+        ],
+        &quot;meaning&quot;: &quot;Two-bank catch this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 247,
+  &quot;key&quot;: &quot;gi247&quot;,
+  &quot;title&quot;: &quot;Reedbank Market Gardens&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 80,
+    &quot;observation_size&quot;: 2173,
+    &quot;num_actions&quot;: 18,
+    &quot;max_steps&quot;: 768
+  },
+  &quot;source_sha256&quot;: &quot;23350458ec5a024149ae28cbdc3a06c4157f92bd0cbed2d47ce2bfa8a391ece7&quot;,
+  &quot;manifest_sha256&quot;: &quot;fd4c4290761cb21cfe28da70b86daa17d0367fc4572a9eaf07e8076b34f9d111&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;23350458ec5a024149ae28cbdc3a06c4157f92bd0cbed2d47ce2bfa8a391ece7&quot;,
+      &quot;bytes&quot;: 18625,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00247/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;fd4c4290761cb21cfe28da70b86daa17d0367fc4572a9eaf07e8076b34f9d111&quot;,
+      &quot;bytes&quot;: 35989,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00247/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;81d2d8acc3d0c4aefae16e69992a48aa197dfb49efe5cf4130f9208d7bfe3925&quot;,
+      &quot;bytes&quot;: 12836,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00247/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;2427d353ce781f5317d21be4d52f3f5e39441acf40ef8726cf43bfb6b4ccd557&quot;,
+      &quot;bytes&quot;: 10436,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00247/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;8f9caee4967f7a5dd4119c4709452439f4b63b0c7d8422d66270438b65fa8ff7&quot;,
+      &quot;bytes&quot;: 36372,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00247/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi247">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

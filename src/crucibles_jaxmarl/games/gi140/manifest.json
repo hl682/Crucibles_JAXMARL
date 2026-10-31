@@ -1,0 +1,764 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00140",
+  "source_sha256": "31f01f76be6f5741e75f16e0f04cc65c6fae797175ed3894cc56cd5dd5f41f47",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 128,
+  "num_actions": 11,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "carpenter: carry/place/recover beams"
+    },
+    {
+      "id": "agent_1",
+      "role": "rigger: move two reusable anchor clamps"
+    },
+    {
+      "id": "agent_2",
+      "role": "hauler: lift/drop/deliver heavy cargo"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lift nearby stock beam (carpenter) or cargo (hauler); rigger no-op"
+    },
+    {
+      "id": 6,
+      "label": "Tool north: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 7,
+      "label": "Tool east: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 8,
+      "label": "Tool south: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 9,
+      "label": "Tool west: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 10,
+      "label": "Deliver heavy cargo within one cell of the east depot; other roles no-op"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fallen"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beam_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beam_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beam_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beam_status"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beam_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beam_support"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "anchor_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "anchor_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "clamp_on"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchor_visibility"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "clamp_stock"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_lost"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_owner"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "collapse_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fall_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "blocked_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Solid bank",
+          "color": "#D8CAA6"
+        },
+        {
+          "value": 1,
+          "meaning": "River without a supported deck",
+          "color": "#528EB5"
+        },
+        {
+          "value": 2,
+          "meaning": "Deck connected to one bank: light workers only",
+          "color": "#BB9F69"
+        },
+        {
+          "value": 3,
+          "meaning": "Deck connected to both clamped banks: heavy cargo allowed",
+          "color": "#6AA78B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool_role"
+          ],
+          "meaning": "0 carpenter, 1 rigger, 2 hauler",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "fallen"
+          ],
+          "meaning": "Crew member failed the current support/load check",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "beams",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "beam_pos"
+      ],
+      "active": [
+        "beam_active"
+      ],
+      "visibility": [
+        "beam_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beam_status"
+          ],
+          "meaning": "0 stock, 1 carried, 2 installed, 3 lost",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "beam_owner"
+          ],
+          "meaning": "0 carpenter when carried; otherwise -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "beam_support"
+          ],
+          "meaning": "0 unsupported/not installed, 1 one-bank connected, 2 both-bank connected",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "anchors",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "anchor_pos"
+      ],
+      "active": [
+        "anchor_active"
+      ],
+      "visibility": [
+        "anchor_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "clamp_on"
+          ],
+          "meaning": "A reusable clamp is engaged here",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "meaning": "2 when carried by hauler; otherwise -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Cargo reached the goal",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "cargo_lost"
+          ],
+          "meaning": "Cargo lacked heavy-load support",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Delivery completion state",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tool_event"
+      ],
+      "meaning": "Successful carpenter/rigger/hauler tool use this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collapse_event"
+      ],
+      "meaning": "Installed beams that lost all clamped-bank connectivity this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fall_event"
+      ],
+      "meaning": "Workers failing their actual post-edit support/load requirement this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "blocked_event"
+      ],
+      "meaning": "Movement intents blocked by terrain/load/occupancy/shared targets",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Actual delivered cargo state",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cargo_lost"
+      ],
+      "meaning": "Actual cargo-loss state",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Clock t/128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Observer id/4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        14
+      ],
+      "meaning": "Three crew records, stride 4: x/16,y/16,tool_role/4,fallen",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        29
+      ],
+      "meaning": "Three beam records, stride 5: x/16,y/16,status/4,(owner+1)/2,support/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        41
+      ],
+      "meaning": "Four anchor records, stride 3: x/16,y/16,clamp_on; available clamp stock equals 2 minus sum(clamp_on)",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        46
+      ],
+      "meaning": "Cargo: x/16,y/16,(owner+1)/4,delivered,lost",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        48
+      ],
+      "meaning": "Goal x/16,y/16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        60
+      ],
+      "meaning": "Per-transition flags tool[3],collapse[3],fall[3],blocked[3]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        123
+      ],
+      "meaning": "Actual 7x9 terrain/support map in y-major order, tile value/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        128
+      ],
+      "meaning": "Five constant zeros",
+      "visibility": "padding"
+    }
+  ],
+  "task": {
+    "objective": "Use three beams and two reusable clamps to carry the single heavy crate from the west bank to within one cell of (8,3). Successful delivery rewards every role +1.",
+    "natural_termination": "Delivery or any unsupported worker/cargo loss terminates. A simultaneous failure takes reward priority (-1 each). Otherwise 128 steps truncate.",
+    "interaction": "Only the carpenter can reposition beams and only the rigger can engage clamps. A path to one clamped bank carries workers; paths to both banks carry cargo. A support edit therefore changes another role's movement opportunities and can cause immediate load failure.",
+    "observation_access": "All positions, tool roles, inventories implied by ownership, structural support, clamps, cargo and event flags are public. Every entity is visible to every role; the live map is a public rendering of the exact support rule."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "beam_status"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "beam_support"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "clamp_stock"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "source_status": "AUTHORED_NOT_EXECUTED"
+}

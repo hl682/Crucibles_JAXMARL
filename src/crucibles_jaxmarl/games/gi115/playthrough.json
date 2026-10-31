@@ -1,0 +1,243 @@
+{
+  "schema": "cr01-spatial-game-playthrough-v3",
+  "candidate_id": "game-v3-00115",
+  "source_sha256": "dd21f93f71a3b24167e86e3dc1098b05bc286ee88e0cb5c489b32f83427dd360",
+  "status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "seed": 11501,
+  "seed_convention": "reset key = jax.random.PRNGKey(seed); raw key at step i = jax.random.fold_in(reset_key, i+1); prospective only.",
+  "scripts": [
+    {
+      "id": "upper_lane_convoy_and_return",
+      "seed": 11501,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "Prospective finite replay of actual reset/raw_step states",
+      "intended_objective": "Attempt an eastbound shared fill for boats 0 and 1, yield the high approach with boat 2, then drain for boat 2 westbound return. All-three delivery is an untested intention.",
+      "actions": [
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          4
+        ],
+        [
+          2,
+          1,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          7,
+          2,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          7
+        ],
+        [
+          0,
+          0,
+          9
+        ],
+        [
+          0,
+          0,
+          9
+        ],
+        [
+          0,
+          0,
+          5
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ],
+      "stop_on_done": true,
+      "legality_claim": "All integers are declared command attempts for active roles. Stop at joint completion and replace no remaining actions; dynamic legality and outcomes have not been executed or certified.",
+      "expected_terminal": null
+    }
+  ],
+  "paired_intervention_hypotheses": [
+    {
+      "id": "upper_commitment_changes_lower_water_access",
+      "seed": 11501,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "Paired raw trajectories from the identical reset key and literal shared prefix; replay both suffixes without policy learning.",
+      "prefix": [
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          7,
+          7,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          0,
+          8,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          8,
+          0
+        ]
+      ],
+      "intended_difference": "Branch A commits both service-water units to the upper chamber before the same lower-boat fill attempt. Intended effect: the lower level remains zero in A but rises in B. Boat 1 actions and seed are unchanged; inspect actual water conservation in both traces.",
+      "zero_or_negative_outcomes": [
+        "Both branches can have no deliveries and equal delivery reward.",
+        "Extra upper pump-attempt costs may make branch A worse for boat 0 over the measured suffix.",
+        "If a gate or control-position prerequisite failed, the predicted level contrast can be absent.",
+        "A short resource contrast does not establish which convoy order yields better eventual returns."
+      ],
+      "stop_on_done": true,
+      "comparison_rule": "Record actual state/observation/action identities and both trajectories. Report intended effects as absent, negative, mixed, failed or indeterminate if that is what execution shows; do not replace the action script after observing a result."
+    }
+  ],
+  "source_only": true,
+  "numeric_execution_performed": false,
+  "success_claim": false
+}

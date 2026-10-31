@@ -1,0 +1,2193 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00133",
+  "source_sha256": "16b890167ace04226b713bed25922fbf9cb4a3f0e4582535da5074ef52b6c209",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 303,
+  "num_actions": 13,
+  "max_steps": 144,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 160,
+  "reward_low": -2,
+  "reward_high": 5,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Material handler with public part information"
+    },
+    {
+      "id": "agent_1",
+      "role": "Quality specialist with all initial defect bits"
+    },
+    {
+      "id": "agent_2",
+      "role": "Recipe planner with all initial order colors"
+    },
+    {
+      "id": "agent_3",
+      "role": "Dispatch specialist and owner of order 2 deadline"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Cycle nearby junction: straight, upper, lower"
+    },
+    {
+      "id": 6,
+      "label": "Pick up or put down one part"
+    },
+    {
+      "id": 7,
+      "label": "Start nearby machine rework: three turns and two power"
+    },
+    {
+      "id": 8,
+      "label": "Start nearby machine color flip: two turns and one power"
+    },
+    {
+      "id": 9,
+      "label": "Publish nearby board recipes or inspect a nearby part"
+    },
+    {
+      "id": 10,
+      "label": "Assemble first pending order at bench"
+    },
+    {
+      "id": 11,
+      "label": "Pick up one ready product; carry to dock"
+    },
+    {
+      "id": 12,
+      "label": "Toggle conveyor brake at nearby control"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile"
+      ],
+      "shape": [
+        8,
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_part"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_product"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_pos"
+      ],
+      "shape": [
+        16,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_next"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "control_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "junction"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_kind"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_color"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_defect"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_mode"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_carrier"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_order"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_part"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_job"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "power"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spent_power"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_color"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_deadline"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bench_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "product_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "product_status"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "product_carrier"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "belt_active"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "control_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "belt_on"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_inspected"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_public"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bench_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "product_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_belt"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_started"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_finished"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_inspected"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_assembled"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_rejected"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_shipped"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "defect_vis"
+      ],
+      "shape": [
+        4,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "recipe_vis"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_vis"
+      ],
+      "shape": [
+        4,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_vis"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "product_vis"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "belt_vis"
+      ],
+      "shape": [
+        4,
+        16
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "control_vis"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bench_vis"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_vis"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      11,
+      7
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable workshop floor",
+          "color": "#D7D2C5"
+        },
+        {
+          "value": 1,
+          "meaning": "One-cell conveyor buffer",
+          "color": "#8BA4B1"
+        },
+        {
+          "value": 2,
+          "meaning": "Single-part machine buffer",
+          "color": "#89957B"
+        },
+        {
+          "value": 3,
+          "meaning": "Assembly bench buffer",
+          "color": "#B7A267"
+        },
+        {
+          "value": 4,
+          "meaning": "Dispatch dock",
+          "color": "#75968A"
+        },
+        {
+          "value": 5,
+          "meaning": "Recipe display boards",
+          "color": "#B0A1BE"
+        },
+        {
+          "value": 6,
+          "meaning": "Junction and belt control",
+          "color": "#BD9E6B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_part"
+          ],
+          "meaning": "Carried part id, or minus one",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_product"
+          ],
+          "meaning": "Carried product id, or minus one",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "parts",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "part_pos"
+      ],
+      "active": [
+        "part_active"
+      ],
+      "visibility": [
+        "part_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "part_kind"
+          ],
+          "meaning": "Zero chassis; one coil",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "part_color"
+          ],
+          "meaning": "Public two-valued component color",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "part_mode"
+          ],
+          "meaning": "0 floor/belt; 1 carried; 2 machine; 3 assembled; 4 shipped; 5 scrap",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "part_carrier"
+          ],
+          "meaning": "Carrying role or minus one",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "part_inspected"
+          ],
+          "meaning": "Quality bit has been publicly revealed",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "quality_records",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "part_pos"
+      ],
+      "active": [
+        "part_active"
+      ],
+      "visibility": [
+        "defect_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "part_defect"
+          ],
+          "meaning": "Actual private or inspected defect bit",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "machines",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_part"
+          ],
+          "meaning": "Occupied part slot or minus one",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "station_timer"
+          ],
+          "meaning": "Remaining processing turns",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "station_job"
+          ],
+          "meaning": "Zero idle; one rework; two color flip",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "orders",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "order_pos"
+      ],
+      "active": [
+        "order_active"
+      ],
+      "visibility": [
+        "order_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "order_deadline"
+          ],
+          "meaning": "Timely dispatch deadline",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "order_public"
+          ],
+          "meaning": "Recipe has been publicly announced",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "product_status"
+          ],
+          "meaning": "Zero pending; one ready; two shipped; three rejected",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "recipe_records",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "order_pos"
+      ],
+      "active": [
+        "order_active"
+      ],
+      "visibility": [
+        "recipe_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "order_color"
+          ],
+          "meaning": "Actual requested coil color",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "products",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "product_pos"
+      ],
+      "active": [
+        "product_active"
+      ],
+      "visibility": [
+        "product_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "product_status"
+          ],
+          "meaning": "One ready; two dispatched",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "product_carrier"
+          ],
+          "meaning": "Carrying role or minus one",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "conveyor",
+      "kind": "landmark",
+      "count": 16,
+      "position": [
+        "belt_pos"
+      ],
+      "active": [
+        "belt_active"
+      ],
+      "visibility": [
+        "belt_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "belt_next"
+          ],
+          "meaning": "Native next buffer index; self means stop",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "control",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "control_pos"
+      ],
+      "active": [
+        "control_active"
+      ],
+      "visibility": [
+        "control_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "junction"
+          ],
+          "meaning": "Zero straight; one upper; two lower",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "belt_on"
+          ],
+          "meaning": "Conveyor enabled",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "bench",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "bench_pos"
+      ],
+      "active": [
+        "bench_active"
+      ],
+      "visibility": [
+        "bench_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "dock",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "last_belt"
+      ],
+      "meaning": "Part moved by the conveyor this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_started"
+      ],
+      "meaning": "Station accepted a new job this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_finished"
+      ],
+      "meaning": "Existing station job completed this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_inspected"
+      ],
+      "meaning": "Part quality explicitly inspected this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_assembled"
+      ],
+      "meaning": "Order received a valid assembly this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_rejected"
+      ],
+      "meaning": "Order consumed mismatching or defective parts this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_shipped"
+      ],
+      "meaning": "Product reached the dock this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spent_power"
+      ],
+      "meaning": "Power paid for machine jobs",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self role identity, one-hot in declared agent index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Live transition clock, starting at zero",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "t"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "done"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Natural terminal cause",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "terminated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Horizon cause only when natural termination is false",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "truncated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        8,
+        104
+      ],
+      "meaning": "Native tile map flattened in y-major order; see the public world legend",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "tile"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        104,
+        112
+      ],
+      "meaning": "agent pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "agent_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        112,
+        116
+      ],
+      "meaning": "Carried part id, or minus one",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "agent_part"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        116,
+        120
+      ],
+      "meaning": "Carried product id, or minus one",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "agent_product"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        120,
+        152
+      ],
+      "meaning": "belt pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "belt_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        152,
+        168
+      ],
+      "meaning": "Native next buffer index; self means stop",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "belt_next"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        168,
+        170
+      ],
+      "meaning": "control pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "control_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        170,
+        171
+      ],
+      "meaning": "Zero straight; one upper; two lower",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "junction"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        171,
+        172
+      ],
+      "meaning": "Conveyor enabled",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "belt_on"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        172,
+        184
+      ],
+      "meaning": "part pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "part_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        184,
+        190
+      ],
+      "meaning": "Zero chassis; one coil",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "part_kind"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        190,
+        196
+      ],
+      "meaning": "Public two-valued component color",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "part_color"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        196,
+        202
+      ],
+      "meaning": "Quality bit has been publicly revealed",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "part_inspected"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        202,
+        208
+      ],
+      "meaning": "0 floor/belt; 1 carried; 2 machine; 3 assembled; 4 shipped; 5 scrap",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "part_mode"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        208,
+        214
+      ],
+      "meaning": "Carrying role or minus one",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "part_carrier"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        214,
+        220
+      ],
+      "meaning": "part order in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "part_order"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        220,
+        224
+      ],
+      "meaning": "station pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "station_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        224,
+        226
+      ],
+      "meaning": "Occupied part slot or minus one",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "station_part"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        226,
+        228
+      ],
+      "meaning": "Remaining processing turns",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "station_timer"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        228,
+        230
+      ],
+      "meaning": "Zero idle; one rework; two color flip",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "station_job"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        230,
+        231
+      ],
+      "meaning": "Remaining shared machine power",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "power"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        231,
+        232
+      ],
+      "meaning": "Cumulative paid machine power",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "spent_power"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        232,
+        238
+      ],
+      "meaning": "order pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "order_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        238,
+        241
+      ],
+      "meaning": "Recipe has been publicly announced",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "order_public"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        241,
+        244
+      ],
+      "meaning": "Timely dispatch deadline",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "order_deadline"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        244,
+        246
+      ],
+      "meaning": "bench pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "bench_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        246,
+        248
+      ],
+      "meaning": "dock pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "dock_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        248,
+        254
+      ],
+      "meaning": "product pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "product_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        254,
+        257
+      ],
+      "meaning": "Zero pending; one ready; two shipped; three rejected",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "product_status"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        257,
+        260
+      ],
+      "meaning": "Carrying role or minus one",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "product_carrier"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        260,
+        266
+      ],
+      "meaning": "Part moved by the conveyor this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_belt"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        266,
+        268
+      ],
+      "meaning": "Station accepted a new job this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_started"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        268,
+        270
+      ],
+      "meaning": "Existing station job completed this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_finished"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        270,
+        276
+      ],
+      "meaning": "Part quality explicitly inspected this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_inspected"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        276,
+        279
+      ],
+      "meaning": "Order received a valid assembly this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_assembled"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        279,
+        282
+      ],
+      "meaning": "Order consumed mismatching or defective parts this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_rejected"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        282,
+        285
+      ],
+      "meaning": "Product reached the dock this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_shipped"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        285,
+        291
+      ],
+      "meaning": "defect_vis row: role 1 or public inspection for each part",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        291,
+        297
+      ],
+      "meaning": "Actual part defect bits where visible, otherwise -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        297,
+        300
+      ],
+      "meaning": "recipe_vis row: role 2 or public board for each order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        300,
+        303
+      ],
+      "meaning": "Actual requested coil colors where visible, otherwise -1",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Use six finite parts to satisfy three chassis-plus-coil orders, reworking defects and matching requested coil colors, then physically carry valid products to the dock before their role-linked deadlines when possible.",
+    "natural_termination": "All three product statuses are resolved as shipped (2) or rejected (3). Rejected orders are permanent negative outcomes. Ready but undelivered products do not count as completion. Otherwise truncate at 144 live transitions.",
+    "interaction": "Routing, braking and occupied conveyor/machine buffers change partners available parts and delays. Inspection or recipe publication changes partner information. Shared power spent on one rework may prevent a different repair. Assembly permanently consumes two finite parts, and poor hidden-quality decisions impose shared losses.",
+    "observation_access": "Partial native information with public geometry, positions, buffers, custody, processing, order deadlines, visible colors, status and events. The six actual defect bits are visible to role 1 or to everyone after part inspection/rework; requested coil colors are visible to role 2 or after a board publication. Explicit per-record mask rows accompany -1 for unknown bits. Separate quality/recipe entity groups use exactly those masks; the public part/order groups never expose the private attributes."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 144
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "power"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "spent_power"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "part_mode"
+      ],
+      "low": 0,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "part_carrier"
+      ],
+      "low": -1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "part_order"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_timer"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_part"
+      ],
+      "low": -1,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_job"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "product_status"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "product_carrier"
+      ],
+      "low": -1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "part_defect"
+      ],
+      "low": 0,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "order_color"
+      ],
+      "low": 0,
+      "high": 1
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "state_visibility_mapping": [
+    {
+      "state_path": [
+        "t"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "tile"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "agent_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "agent_part"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "agent_product"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "belt_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "belt_next"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "control_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "junction"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_kind"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_color"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_defect"
+      ],
+      "access_rule": "Only role 1 or publicly inspected/reworked records reveal this bit. Native defect_vis masks observations and quality_records rendering."
+    },
+    {
+      "state_path": [
+        "part_mode"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_carrier"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_order"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "station_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "station_part"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "station_timer"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "station_job"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "power"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "spent_power"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "order_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "order_color"
+      ],
+      "access_rule": "Only role 2 or publicly announced recipes reveal this value. Native recipe_vis masks observations and recipe_records rendering."
+    },
+    {
+      "state_path": [
+        "order_deadline"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "bench_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "dock_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "product_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "product_status"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "product_carrier"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "terminated"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "truncated"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "agent_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "belt_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "control_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "belt_on"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_inspected"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "part_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "station_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "order_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "order_public"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "bench_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "dock_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "product_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "last_belt"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_started"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_finished"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_inspected"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_assembled"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_rejected"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_shipped"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "defect_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "recipe_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "agent_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "part_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "station_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "order_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "product_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "belt_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "control_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "bench_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "dock_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    }
+  ],
+  "action_semantics": "Every indexed intent is legal for a live capable role, even when its spatial/resource precondition fails; failed intents become deterministic no-ops. Out-of-range actions become wait. Terminal roles, and temporarily/incapacitated roles where specified, retain wait only. Masks do not leak private feasibility.",
+  "joint_movement_semantics": "Targets outside the map, duplicate requested destinations, or another role current cell are rejected. No swaps or following into a just-vacated occupied cell occur in that transition.",
+  "randomness": "reset first calls keys = jax.random.split(key, 2), then draws part_defect with randint(keys[0], (6,), 0, 2, dtype=int32) and order_color with randint(keys[1], (3,), 0, 2, dtype=int32). raw_step is deterministic and does not use its supplied key."
+}

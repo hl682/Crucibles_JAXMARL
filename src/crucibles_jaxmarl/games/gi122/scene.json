@@ -1,0 +1,274 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "31bc46089b1cd28acd11e0749f7a2d9f2f2460bf9d7fb1023255ce684d3af220",
+  "manifest_sha256": "94fd003f4f792f3119178c36b0976b3a0e69e352b78812d801eb3b1b65085f04",
+  "title": "Tether Turn — three ports and a shared bulky load",
+  "rules": [
+    "Three haulers attach only to their own oriented ports within Manhattan distance two.",
+    "Two matching attached directional commands create one-cell load motion; attached commands also attempt body movement.",
+    "Any attached brace stops collective translation and turning. Two simultaneous bracers remove one wear.",
+    "Two matching turn votes propose a quarter-turn; load footprint, bodies, walls and all attached ropes must fit.",
+    "Agent destinations occupied at the start of a step and contested destinations are blocked. Swaps are blocked.",
+    "The north wall opening fits a horizontal load; the wider south route permits other orientations.",
+    "Conflicting pulls and rejected collective moves increase wear. Wear six ends the task.",
+    "Deliver the load center to the flag in a horizontal orientation. The horizon is 96 live transitions."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#E4E8EC"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall; blocks movement",
+          "color": "#374151"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "haulers",
+      "glyph": "worker",
+      "label": "Port-assigned haulers",
+      "color": "#3366CC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "attached"
+          ],
+          "label": "Tether attached"
+        },
+        {
+          "state_path": [
+            "tension"
+          ],
+          "label": "Tether length (0-2)"
+        }
+      ]
+    },
+    {
+      "id": "load",
+      "glyph": "crate",
+      "label": "Load center",
+      "color": "#C47F30",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "load_orientation"
+          ],
+          "label": "Orientation (E,S,W,N)"
+        },
+        {
+          "state_path": [
+            "wear"
+          ],
+          "label": "Accumulated wear (0-6)"
+        }
+      ]
+    },
+    {
+      "id": "footprint",
+      "glyph": "square",
+      "label": "Three occupied load cells",
+      "color": "#A36120",
+      "attribute_labels": []
+    },
+    {
+      "id": "tethers",
+      "glyph": "circle",
+      "label": "Assigned physical tether anchors",
+      "color": "#965AC5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tension"
+          ],
+          "label": "Attached Manhattan rope length"
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "glyph": "flag",
+      "label": "Horizontal delivery center",
+      "color": "#2B9A66",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "move_event"
+      ],
+      "meaning": "Shared load translated this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "turn_event"
+      ],
+      "meaning": "Shared load changed orientation this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "jam_event"
+      ],
+      "meaning": "Conflicting pulls or rejected collective motion added wear this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Pull or move north"
+    },
+    {
+      "id": 2,
+      "label": "Pull or move east"
+    },
+    {
+      "id": 3,
+      "label": "Pull or move south"
+    },
+    {
+      "id": 4,
+      "label": "Pull or move west"
+    },
+    {
+      "id": 5,
+      "label": "Toggle own tether when within reach"
+    },
+    {
+      "id": 6,
+      "label": "Brace; two bracers repair one wear"
+    },
+    {
+      "id": 7,
+      "label": "Vote clockwise quarter-turn"
+    },
+    {
+      "id": 8,
+      "label": "Vote counterclockwise quarter-turn"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "All agent xy coordinates, agent order then xy; divided by 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "Per-agent tether attachment flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Per-agent Manhattan tether length, divided by 2; zero when detached",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        14
+      ],
+      "meaning": "Shared load center xy divided by 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        18
+      ],
+      "meaning": "Load orientation one-hot: east, south, west, north",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        19
+      ],
+      "meaning": "Load wear divided by 6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        21
+      ],
+      "meaning": "Goal center xy divided by 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        24,
+        167
+      ],
+      "meaning": "Public 11 by 13 static tile map flattened in yx order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        167,
+        168
+      ],
+      "meaning": "Clock divided by 96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        171
+      ],
+      "meaning": "Latest accepted load translation, accepted turn, and jam flags",
+      "visibility": "public"
+    }
+  ]
+}

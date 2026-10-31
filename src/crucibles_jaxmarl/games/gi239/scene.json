@@ -1,0 +1,392 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "88c80f02733cafd84a9a6ec94b88c35b218f754b8acd8a799af10423a545881b",
+  "manifest_sha256": "edac80da0f8520d8a68b461b7fa593208180f198d80c7534718422c4d01711dd",
+  "title": "Floodplain Seed Cooperative",
+  "rules": [
+    "Twenty-four households share a serpentine watershed. All 96 people have native actions; livestock and trays are separate objects.",
+    "Sow a seed, then apply hoe and watering care. Wet and dry crops have distinct moisture/salt limits; orchards grow half as often.",
+    "Harvest needs a sickle and nearby Assist. Private food, seed donation and levee repair compete for each harvest bundle.",
+    "A sluice sends up to two water and one salt units downstream after three subsequent transitions. The final household drains outside the world.",
+    "Boat users launch trays. Wet open source gates move trays through three increments to the next nursery; neighbors can collect the real seed.",
+    "Herd livestock to barns before floods. Safe livestock and fallow fields restore soil. Food consumption and flood damage are native state. Season ends at 896."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      47,
+      23
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Fields, orchard paths and village ground",
+          "color": "#A8BA70"
+        },
+        {
+          "value": 1,
+          "meaning": "Drainage strip; boat tool permits crossing",
+          "color": "#6BA5A7"
+        },
+        {
+          "value": 2,
+          "meaning": "Levee crossing; positive integrity needed without boat tool",
+          "color": "#B59266"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "worker",
+      "label": "Actors",
+      "color": "#D88F64",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Household"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 hoe,1 watering,2 sickle,3 boat"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "0 empty,1 wet seed,2 dry seed,3 harvest bundle"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "Decaying field-water relay"
+        }
+      ]
+    },
+    {
+      "id": "fields",
+      "glyph": "plant",
+      "label": "Fields",
+      "color": "#7A9C48",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "field_kind"
+          ],
+          "label": "0 floodplain plot,1 orchard"
+        },
+        {
+          "state_path": [
+            "variety"
+          ],
+          "label": "0 wet-tolerant,1 low-salt dry crop"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Crop maturity"
+        },
+        {
+          "state_path": [
+            "planted"
+          ],
+          "label": "Planting present"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Local moisture"
+        },
+        {
+          "state_path": [
+            "salt"
+          ],
+          "label": "Local salinity"
+        },
+        {
+          "state_path": [
+            "soil"
+          ],
+          "label": "Fertility reserve"
+        },
+        {
+          "state_path": [
+            "care"
+          ],
+          "label": "Bit 1 hoe, bit 2 watering care"
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "glyph": "resource",
+      "label": "Facilities",
+      "color": "#BEA369",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "facility_kind"
+          ],
+          "label": "0 nursery,1 granary,2 sluice/levee,3 raised barn"
+        },
+        {
+          "state_path": [
+            "facility_stock"
+          ],
+          "label": "Seeds, pantry food, levee integrity or animal health"
+        },
+        {
+          "state_path": [
+            "facility_gate"
+          ],
+          "label": "Open sluice"
+        }
+      ]
+    },
+    {
+      "id": "livestock",
+      "glyph": "circle",
+      "label": "Livestock",
+      "color": "#D9C7A0",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "animal_health"
+          ],
+          "label": "Livestock health"
+        },
+        {
+          "state_path": [
+            "animal_safe"
+          ],
+          "label": "At raised barn"
+        }
+      ]
+    },
+    {
+      "id": "seed_trays",
+      "glyph": "crate",
+      "label": "Seed Trays",
+      "color": "#79BFC1",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tray_variety"
+          ],
+          "label": "Seed variety in tray"
+        },
+        {
+          "state_path": [
+            "tray_progress"
+          ],
+          "label": "Progress to next nursery in three drift increments"
+        },
+        {
+          "state_path": [
+            "tray_dest"
+          ],
+          "label": "Downstream household"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event"
+      ],
+      "meaning": "Actor:0 none,1 sow,2 care,3 harvest,4 sluice/levee,5 seed/tray,6 private store,7 donate,8 herd,9 handoff/tools/relay",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "field_event"
+      ],
+      "meaning": "0 none,1 sow,2 care,3 harvest,4 flood/salt stress",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "animal_event"
+      ],
+      "meaning": "0 none,1 herd,2 flood injury",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tray_event"
+      ],
+      "meaning": "0 none,1 launched,2 arrived,3 collected",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Sow carried seed in nearby empty field or orchard"
+    },
+    {
+      "id": 6,
+      "label": "Hoe or water crop using current tool"
+    },
+    {
+      "id": 7,
+      "label": "Harvest mature crop with sickle and nearby assisting partner"
+    },
+    {
+      "id": 8,
+      "label": "Toggle nearby sluice"
+    },
+    {
+      "id": 9,
+      "label": "Repair levee using a harvest bundle"
+    },
+    {
+      "id": 10,
+      "label": "Collect floating tray, otherwise withdraw nursery seed"
+    },
+    {
+      "id": 11,
+      "label": "Launch seed in downstream tray with boat tool"
+    },
+    {
+      "id": 12,
+      "label": "Store harvest bundle in household granary"
+    },
+    {
+      "id": 13,
+      "label": "Donate seed or harvest bundle to communal nursery"
+    },
+    {
+      "id": 14,
+      "label": "Herd adjacent livestock one step toward raised barn"
+    },
+    {
+      "id": 15,
+      "label": "Hand cargo to adjacent waiting empty actor"
+    },
+    {
+      "id": 16,
+      "label": "Exchange tools with adjacent waiting actor"
+    },
+    {
+      "id": 17,
+      "label": "Relay nearby field water level locally"
+    },
+    {
+      "id": 18,
+      "label": "Assist nearby harvest"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        10
+      ],
+      "meaning": "Self x/47,y/23,household/23,tool/3,cargo/3,message/8,event/9,id/95,t/896,flood phase/63",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        74
+      ],
+      "meaning": "8 nearest agents within Manhattan 4: x/47,y/23,household/23,tool/3,cargo/3,message/8,id/95,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        74,
+        122
+      ],
+      "meaning": "4 nearest fields within Manhattan 5: x/47,y/23,kind,variety,growth/8,planted,water/8,salt/4,soil/4,care/3,household/23,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        122,
+        164
+      ],
+      "meaning": "6 nearest facilities within Manhattan 5: x/47,y/23,kind/3,stock/24,gate,household/23,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        164,
+        176
+      ],
+      "meaning": "2 nearest living animals within Manhattan 4: x/47,y/23,health/6,safe,household/23,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        176,
+        188
+      ],
+      "meaning": "2 nearest active trays within Manhattan 4: x/47,y/23,variety,progress/3,destination/23,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        188,
+        207
+      ],
+      "meaning": "Legal intent mask actions 0..18",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        207,
+        238
+      ],
+      "meaning": "Explicit zero padding",
+      "visibility": "padding"
+    }
+  ]
+}

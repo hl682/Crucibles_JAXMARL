@@ -1,0 +1,324 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "8c9beba61f017e424ca0bbb3ddf9226c0fc799abb104a754d725dbbae29b913e",
+  "manifest_sha256": "3702b548838c74045fae73cafeb14ca6e583936190e04c85af5895a82018031e",
+  "title": "Rhythm Foundry",
+  "rules": [
+    "Carry one physical lot. Ore and flux are finite; the north and south furnaces hold one of each.",
+    "Fire requires ore. A new charge waits two later transitions before reaching cooling or slag.",
+    "A flux-complete hot lot has a two-transition quench window. Quenching spends furnace water; expiry makes slag.",
+    "Take bins only underfoot and completed furnace lots within one cell. Pass to an adjacent empty waiting worker.",
+    "Ship goods near the shipping dock; discard unwanted lots near waste. No stock is replenished.",
+    "Worker actions and conflicting destinations use cyclic clock-based priority. Old occupied cells block movement.",
+    "Every shipment gives a shared bonus and a private order-dependent value. Private orders are visible only in that role's observation.",
+    "Scene state is a binding specification only. Actual recorded replay and animation have not been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      6,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "public": true,
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#DCE5E5"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#334155"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "workers",
+      "color": "#1D4ED8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "Carried physical lot"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Completed delivery/claim count"
+        }
+      ]
+    },
+    {
+      "id": "bins",
+      "glyph": "resource",
+      "label": "bins",
+      "color": "#B45309",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Remaining ingredient units"
+        }
+      ]
+    },
+    {
+      "id": "furnaces",
+      "glyph": "tool",
+      "label": "furnaces",
+      "color": "#DC2626",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ore"
+          ],
+          "label": "Ore atom in furnace"
+        },
+        {
+          "state_path": [
+            "flux"
+          ],
+          "label": "Flux atom in furnace"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "Actual processing stage"
+        },
+        {
+          "state_path": [
+            "timer"
+          ],
+          "label": "Remaining transitions"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Quench water"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "glyph": "gate",
+      "label": "docks",
+      "color": "#059669",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "dock_kind"
+          ],
+          "label": "Shipping or waste"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "sale_event"
+      ],
+      "meaning": "A worker shipped a physical good this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "stage_event"
+      ],
+      "meaning": "A furnace stage changed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Cumulative discarded ore and flux atoms",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive handoff"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Take from bin underfoot or adjacent finished furnace"
+    },
+    {
+      "id": 6,
+      "label": "Deposit carried ore or flux into adjacent idle furnace"
+    },
+    {
+      "id": 7,
+      "label": "Fire an adjacent furnace containing ore"
+    },
+    {
+      "id": 8,
+      "label": "Quench adjacent cooling furnace using its water"
+    },
+    {
+      "id": 9,
+      "label": "Hand carried lot to an adjacent waiting empty worker"
+    },
+    {
+      "id": 10,
+      "label": "Sell good by shipping dock or discard lot by waste dock"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        49
+      ],
+      "meaning": "Public 7 by 7 floor map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        55
+      ],
+      "meaning": "All worker xy coordinates in actor order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        55,
+        58
+      ],
+      "meaning": "Public carried-lot codes",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        60
+      ],
+      "meaning": "Furnace ore atoms",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        62
+      ],
+      "meaning": "Furnace flux atoms",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        64
+      ],
+      "meaning": "Furnace stages",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        66
+      ],
+      "meaning": "Furnace timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        68
+      ],
+      "meaning": "Furnace water",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        68,
+        70
+      ],
+      "meaning": "Ore/flux bin stocks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        73
+      ],
+      "meaning": "Worker shipment counters",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        75
+      ],
+      "meaning": "Discarded ore/flux atoms",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        76
+      ],
+      "meaning": "Raw transition clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        77
+      ],
+      "meaning": "Own preferred furnace: 0 north, 1 south",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        77,
+        78
+      ],
+      "meaning": "Own actor index",
+      "visibility": "self"
+    }
+  ]
+}

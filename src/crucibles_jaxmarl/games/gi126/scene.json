@@ -1,0 +1,550 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "d08254385748360daaaca50e0a71fcb7a081663193b4da06d2835f53e5fc5269",
+  "manifest_sha256": "33c5f1091b07d2f3b60309ec5ad940939b84727225bb18fd876202472efcfd71",
+  "title": "Bridgewrights: Hold the Span",
+  "rules": [
+    "Each role carries personal cargo to its opposite-bank flag. Cargo delivery is automatic at that exact cell.",
+    "Pick and place one beam per worker. Horizontal and vertical orientation changes the actual three-cell coverage and endpoint positions.",
+    "Both beam ends need installed pins or workers choosing Hold/Brace at the exact endpoint. A temporary bridge supports one river occupant; two pins support two.",
+    "New unsupported river entries are blocked. Releasing an occupied bridge or overloading it breaks the beam and returns exposed workers, with carried materials, home.",
+    "Bank cells allow co-location. Resources resolve in rotating role order. Installed pins stay attached even after a beam breaks.",
+    "All state used in the scene is public. Only an independent real replay can establish whether a proposed construction script works."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Dry bank",
+          "color": "#DFD3AA"
+        },
+        {
+          "value": 1,
+          "meaning": "River: safe only on supported beam coverage",
+          "color": "#3C89C9"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "workers",
+      "color": "#C46436",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_done"
+          ],
+          "label": "Own cargo delivered"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "cargo",
+      "color": "#D8AC42",
+      "attribute_labels": []
+    },
+    {
+      "id": "goals",
+      "glyph": "flag",
+      "label": "goals",
+      "color": "#42A85A",
+      "attribute_labels": []
+    },
+    {
+      "id": "beams",
+      "glyph": "tool",
+      "label": "beams",
+      "color": "#9B693D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beam_status"
+          ],
+          "label": "0 loose; 1 carried; 2 placed; 3 broken"
+        },
+        {
+          "state_path": [
+            "beam_carrier"
+          ],
+          "label": "Carrier role; -1 none"
+        },
+        {
+          "state_path": [
+            "beam_axis"
+          ],
+          "label": "0 east-west; 1 north-south"
+        },
+        {
+          "state_path": [
+            "beam_supported"
+          ],
+          "label": "Both ends currently supported"
+        },
+        {
+          "state_path": [
+            "beam_capacity"
+          ],
+          "label": "Safe river load on this step"
+        },
+        {
+          "state_path": [
+            "beam_load"
+          ],
+          "label": "Current river occupants on this beam"
+        }
+      ]
+    },
+    {
+      "id": "beam_cells",
+      "glyph": "square",
+      "label": "beam cells",
+      "color": "#B4824A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "span_supported"
+          ],
+          "label": "Beam segment currently supported"
+        }
+      ]
+    },
+    {
+      "id": "beam_ends",
+      "glyph": "circle",
+      "label": "beam ends",
+      "color": "#C6AB76",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "end_held"
+          ],
+          "label": "Currently held by endpoint worker"
+        },
+        {
+          "state_path": [
+            "end_pinned"
+          ],
+          "label": "Permanent support installed"
+        }
+      ]
+    },
+    {
+      "id": "support_pins",
+      "glyph": "tool",
+      "label": "support pins",
+      "color": "#7A8290",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pin_status"
+          ],
+          "label": "0 loose; 1 carried; 2 installed"
+        },
+        {
+          "state_path": [
+            "pin_carrier"
+          ],
+          "label": "Carrier role; -1 none"
+        },
+        {
+          "state_path": [
+            "pin_beam"
+          ],
+          "label": "Attached beam; -1 unattached"
+        },
+        {
+          "state_path": [
+            "pin_side"
+          ],
+          "label": "0 negative-axis end; 1 positive-axis end"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "fall_event"
+      ],
+      "meaning": "Workers returned to their own home this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Own cargo arrived at its exact goal this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collapse_event"
+      ],
+      "meaning": "Beam failed under unsupported or excessive river load this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "place_event"
+      ],
+      "meaning": "Beam newly placed this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "install_event"
+      ],
+      "meaning": "Pin newly installed this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick nearest free beam"
+    },
+    {
+      "id": 6,
+      "label": "Place carried beam"
+    },
+    {
+      "id": 7,
+      "label": "Rotate carried beam"
+    },
+    {
+      "id": 8,
+      "label": "Brace endpoint"
+    },
+    {
+      "id": 9,
+      "label": "Hold endpoint"
+    },
+    {
+      "id": 10,
+      "label": "Take nearest loose support pin"
+    },
+    {
+      "id": 11,
+      "label": "Install carried pin at a dry endpoint"
+    },
+    {
+      "id": 12,
+      "label": "Wait with cargo"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Role one-hot in role index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "state_path": [
+        "agent_pos"
+      ],
+      "meaning": "workers positions in entity index order, each [x,y]; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        15
+      ],
+      "state_path": [
+        "goal_pos"
+      ],
+      "meaning": "Exact personal delivery goal [x,y] in role order; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "state_path": [
+        "cargo_done"
+      ],
+      "meaning": "Personal cargo delivery flags in role order; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        24
+      ],
+      "state_path": [
+        "beam_pos"
+      ],
+      "meaning": "beams positions in entity index order, each [x,y]; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "state_path": [
+        "beam_status"
+      ],
+      "meaning": "0 loose; 1 carried; 2 placed; 3 broken; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        30
+      ],
+      "state_path": [
+        "beam_carrier"
+      ],
+      "meaning": "Carrier role; -1 none; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        33
+      ],
+      "state_path": [
+        "beam_axis"
+      ],
+      "meaning": "0 east-west; 1 north-south; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        39
+      ],
+      "state_path": [
+        "beam_pinned"
+      ],
+      "meaning": "Permanent support flags, beam-major then negative/positive endpoint; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        45
+      ],
+      "state_path": [
+        "held_ends"
+      ],
+      "meaning": "Latest step hold requests at placed endpoints, beam-major then negative/positive endpoint; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "state_path": [
+        "beam_supported"
+      ],
+      "meaning": "Latest step support computation, excluding beams that collapsed; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        51
+      ],
+      "state_path": [
+        "beam_capacity"
+      ],
+      "meaning": "Safe river load on this step; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        51,
+        54
+      ],
+      "state_path": [
+        "beam_load"
+      ],
+      "meaning": "Current river occupants on this beam; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        62
+      ],
+      "state_path": [
+        "pin_pos"
+      ],
+      "meaning": "support pins positions in entity index order, each [x,y]; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        66
+      ],
+      "state_path": [
+        "pin_status"
+      ],
+      "meaning": "0 loose; 1 carried; 2 installed; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        70
+      ],
+      "state_path": [
+        "pin_carrier"
+      ],
+      "meaning": "Carrier role; -1 none; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        74
+      ],
+      "state_path": [
+        "pin_beam"
+      ],
+      "meaning": "Attached beam; -1 unattached; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        78
+      ],
+      "state_path": [
+        "pin_side"
+      ],
+      "meaning": "0 negative-axis end; 1 positive-axis end; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        78,
+        81
+      ],
+      "state_path": [
+        "fall_event"
+      ],
+      "meaning": "Workers returned to their own home this step; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        84
+      ],
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Own cargo arrived at its exact goal this step; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        87
+      ],
+      "state_path": [
+        "collapse_event"
+      ],
+      "meaning": "Beam failed under unsupported or excessive river load this step; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        87,
+        90
+      ],
+      "state_path": [
+        "place_event"
+      ],
+      "meaning": "Beam newly placed this step; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        94
+      ],
+      "state_path": [
+        "install_event"
+      ],
+      "meaning": "Pin newly installed this step; row-major flattening divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        95
+      ],
+      "meaning": "Clock t divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        96
+      ],
+      "meaning": "Joint episode completion flag, unscaled",
+      "visibility": "public"
+    }
+  ]
+}

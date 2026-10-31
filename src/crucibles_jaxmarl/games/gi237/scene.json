@@ -1,0 +1,342 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "313eebca823ab1d005942f0a52a625798ed17296f0302fa0b0091198ecbc8f00",
+  "manifest_sha256": "196297dc37b2492dfc8cf086456ac03288ed383385df0c4ab25bb24d177faf08",
+  "title": "Canal Nightmarket Kitchens",
+  "rules": [
+    "Select one of 48 workers. Knife, pot, navigator and wash tools can be exchanged; carried items and warmth transfer through native handoffs.",
+    "Unload one ingredient from a finite-stock barge only while an adjacent worker assists. Knife/navigator tools take root; others take grain.",
+    "Cut roots at boards. Two cut roots and one grain make broth; one cut root and two grain make a rice plate. A clean stove cooks for four ticks.",
+    "Wash uses local water and restores a clean stove use. Open locks send water downstream through two FIFO slots; fresh water enters only at the west.",
+    "Footbridges require water at most three; barges require water at least two and open locks. Barges and customer docks travel along the canal.",
+    "Serve the requested dish while warm. Requests are local; relay them before committing ingredients. Nightmarket closes at 768."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      47,
+      11
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Kitchen and quay floor",
+          "color": "#D6B681"
+        },
+        {
+          "value": 1,
+          "meaning": "Working canal",
+          "color": "#2B6F86"
+        },
+        {
+          "value": 2,
+          "meaning": "Lock footbridge; passes at water at most three",
+          "color": "#BD8A50"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "worker",
+      "label": "Actors",
+      "color": "#E66B4E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Kitchen crew"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 knife,1 pot,2 navigator,3 wash apron"
+        },
+        {
+          "state_path": [
+            "item"
+          ],
+          "label": "0 empty,1 root,2 grain,3 cut root,4 broth,5 rice plate"
+        },
+        {
+          "state_path": [
+            "heat"
+          ],
+          "label": "Carried meal warmth"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "Last relayed dish request"
+        },
+        {
+          "state_path": [
+            "message_ttl"
+          ],
+          "label": "Relay ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Stations",
+      "color": "#E5BE75",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_kind"
+          ],
+          "label": "0 platform,1 board,2 stove,3 wash,4 lock"
+        },
+        {
+          "state_path": [
+            "station_level"
+          ],
+          "label": "Stove roots or wash/lock water; zero for board/platform"
+        },
+        {
+          "state_path": [
+            "station_aux"
+          ],
+          "label": "Stove grain, wash clean uses, otherwise lock flag"
+        },
+        {
+          "state_path": [
+            "station_state"
+          ],
+          "label": "Stove meal code times ten plus timer; zero elsewhere"
+        }
+      ]
+    },
+    {
+      "id": "barges",
+      "glyph": "crate",
+      "label": "Barges",
+      "color": "#4D87A8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "roots"
+          ],
+          "label": "Finite shared barge roots"
+        },
+        {
+          "state_path": [
+            "rice"
+          ],
+          "label": "Finite shared barge grain"
+        }
+      ]
+    },
+    {
+      "id": "customers",
+      "glyph": "food",
+      "label": "Customers",
+      "color": "#8FC97C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "request"
+          ],
+          "label": "4 broth or 5 rice plate requested"
+        },
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "label": "Ticks until request changes"
+        },
+        {
+          "state_path": [
+            "served"
+          ],
+          "label": "Matching plates received"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event"
+      ],
+      "meaning": "Actor:0 none,1 unload,2 cut,3 stove load,4 collect,5 wash,6 serve,7 lock,8 handoff/relay/tools",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "barge_event"
+      ],
+      "meaning": "0 none,1 unloading,2 moved; movement supersedes unloading code",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "customer_event"
+      ],
+      "meaning": "0 none,1 served,2 request deadline expired",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Customer matching-service count",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Assist adjacent basket unloader"
+    },
+    {
+      "id": 6,
+      "label": "Unload barge ingredient with a nearby assisting partner"
+    },
+    {
+      "id": 7,
+      "label": "Cut root at board with knife"
+    },
+    {
+      "id": 8,
+      "label": "Add cut root or grain to nearby stove"
+    },
+    {
+      "id": 9,
+      "label": "Collect finished plate from nearby stove"
+    },
+    {
+      "id": 10,
+      "label": "Wash stove equipment at channel wash station"
+    },
+    {
+      "id": 11,
+      "label": "Serve matching nearby customer request"
+    },
+    {
+      "id": 12,
+      "label": "Toggle nearby lock with navigator tool"
+    },
+    {
+      "id": 13,
+      "label": "Hand item and heat to adjacent waiting empty actor"
+    },
+    {
+      "id": 14,
+      "label": "Relay nearby customer request to local listeners"
+    },
+    {
+      "id": 15,
+      "label": "Exchange tools with adjacent waiting actor"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        12
+      ],
+      "meaning": "Self x/47,y/11,crew/11,tool/3,item/5,heat/24,message/5,TTL/16,event/8,id/47,t/768,traffic phase/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        72
+      ],
+      "meaning": "6 nearest agents within Manhattan 4: x/47,y/11,tool/3,item/5,heat/24,message/5,TTL/16,crew/11,id/47,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        72,
+        136
+      ],
+      "meaning": "8 nearest stations within Manhattan 4: x/47,y/11,kind/4,level/6,aux/3,state/54,crew/11,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        148
+      ],
+      "meaning": "2 nearest barges within Manhattan 3: x/47,y/11,roots/8,grain/8,id/5,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        148,
+        169
+      ],
+      "meaning": "3 nearest customers within Manhattan 3: x/47,y/11,request/5,deadline/48,served/768,id/11,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        169,
+        185
+      ],
+      "meaning": "Legal intent mask actions 0..15",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        185,
+        190
+      ],
+      "meaning": "Current four-cell sector gauge: water/6,gate,two inbound slots/2,stove plate heat/24; telemetry throughout current sector",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        190,
+        212
+      ],
+      "meaning": "Explicit zero padding",
+      "visibility": "padding"
+    }
+  ]
+}

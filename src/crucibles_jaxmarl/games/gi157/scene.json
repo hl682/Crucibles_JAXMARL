@@ -1,0 +1,285 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "a48d44379f9cdc85b5ee2bcda19d1c06a5e98b0e6ea29cd601f5b11d918674bd",
+  "manifest_sha256": "867af05edc71d88a55a5c9f1010c940ad9cdc8001d86911985f05ffab0e0facc",
+  "title": "Ghostlight Tag",
+  "rules": [
+    "Teams are 0/1 versus 2/3. Teammates share telemetry; ordinary opponent sight has radius two.",
+    "A beacon with at least two charge grants owner-team radar within four cells of the beacon.",
+    "A nearby enemy decoy jams ordinary/radar detection, but adjacent opponents always remain visible.",
+    "The real decoy also jams enemy wards within two cells; it has six ticks of life and can be steered.",
+    "Trying to enter an enemy decoy consumes it, costs extra stamina and stuns the pursuer without movement.",
+    "Tagging chooses one adjacent opponent. An adjacent covering teammate or unjammed charged friendly beacon can prevent capture.",
+    "Tag decisions are simultaneous. A newly captured rescuer cannot rescue, while a valid rescue frees an already captured teammate.",
+    "Captured or stunned players retain action zero and stay physically on the map. Captured teammates can return through rescue.",
+    "Both opponents captured ends naturally; simultaneous full capture is a draw, and horizon truncation does not invent a winner."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable pursuit arena",
+          "color": "#D7D8CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall, with two narrow cross-wall passages",
+          "color": "#394751"
+        },
+        {
+          "value": 2,
+          "meaning": "Chargeable public beacon location",
+          "color": "#6E9FAC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "glyph": "agent",
+      "label": "Players",
+      "color": "#8B82B3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "0 amber, 1 indigo"
+        },
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "label": "Current stamina, capacity six"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "label": "Remaining forced-rest ticks"
+        },
+        {
+          "state_path": [
+            "captured"
+          ],
+          "label": "Temporarily captured; can be rescued by teammate"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "Last requested movement direction: 1 N,2 E,3 S,4 W"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "glyph": "beacon",
+      "label": "Chargeable radar and ward beacons",
+      "color": "#CCA45A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_owner"
+          ],
+          "label": "Claiming team; -1 means neutral"
+        },
+        {
+          "state_path": [
+            "beacon_charge"
+          ],
+          "label": "Radar/ward charge, zero to four"
+        }
+      ]
+    },
+    {
+      "id": "decoys",
+      "glyph": "robot",
+      "label": "Movable decoy jammers",
+      "color": "#7C9B8D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "decoy_team"
+          ],
+          "label": "Owning team"
+        },
+        {
+          "state_path": [
+            "decoy_ttl"
+          ],
+          "label": "Remaining real jammer lifetime"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "capture_event"
+      ],
+      "meaning": "Public capture notices by player this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescue_event"
+      ],
+      "meaning": "Public rescue notices by player this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative captures credited to each team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "captured_count"
+      ],
+      "meaning": "Currently captured players per team",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest and recover two stamina; only action while captured or stunned"
+    },
+    {
+      "id": 1,
+      "label": "Move north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Attempt to tag one adjacent opponent; spend two stamina"
+    },
+    {
+      "id": 6,
+      "label": "Channel nearest adjacent beacon to charge own claim or drain enemy claim"
+    },
+    {
+      "id": 7,
+      "label": "Deploy own team decoy one cell along facing; spend two on success"
+    },
+    {
+      "id": 8,
+      "label": "Steer own team decoy north; spend one on success"
+    },
+    {
+      "id": 9,
+      "label": "Steer own team decoy east; spend one on success"
+    },
+    {
+      "id": 10,
+      "label": "Steer own team decoy south; spend one on success"
+    },
+    {
+      "id": 11,
+      "label": "Steer own team decoy west; spend one on success"
+    },
+    {
+      "id": 12,
+      "label": "Rescue adjacent previously captured teammate; spend two stamina"
+    },
+    {
+      "id": 13,
+      "label": "Cover an adjacent teammate from tags this tick; spend one stamina"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "visibility": "self",
+      "meaning": "Own id,team,x,y,stamina,stun,captured,clock."
+    },
+    {
+      "slice": [
+        8,
+        14
+      ],
+      "visibility": "public",
+      "meaning": "Capture scores[2],currently captured counts[2],winner (-1 ongoing/draw),joint done."
+    },
+    {
+      "slice": [
+        14,
+        46
+      ],
+      "visibility": "local",
+      "meaning": "Four player records: x,y,team,stamina,stun,captured,facing,visible. Teammates share telemetry; opponents use range/radar/jamming rules. Hidden fields -1."
+    },
+    {
+      "slice": [
+        46,
+        54
+      ],
+      "visibility": "public",
+      "meaning": "Two beacon records: x,y,owner,charge."
+    },
+    {
+      "slice": [
+        54,
+        64
+      ],
+      "visibility": "local",
+      "meaning": "Two decoy records: x,y,team,ttl,visible. Own decoy is known globally; enemy decoy requires radius 2."
+    },
+    {
+      "slice": [
+        64,
+        72
+      ],
+      "visibility": "public",
+      "meaning": "Capture notices[4],rescue notices[4]; notices reveal identities, not hidden positions."
+    },
+    {
+      "slice": [
+        72,
+        171
+      ],
+      "visibility": "public",
+      "meaning": "Static 9 by 11 public terrain map, yx row-major."
+    }
+  ]
+}

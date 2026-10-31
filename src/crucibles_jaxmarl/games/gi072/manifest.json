@@ -1,0 +1,751 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00072",
+  "source_sha256": "338682ead446d6010c428c97ad959472aef964a88c505928d2a51bb3067efed8",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 1876,
+  "num_actions": 9,
+  "max_steps": 192,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -0.005,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Interchangeable worker: walk, jointly haul, or hold a pressure plate."
+    },
+    {
+      "id": "agent_1",
+      "role": "Interchangeable worker: walk, jointly haul, or hold a pressure plate."
+    },
+    {
+      "id": "agent_2",
+      "role": "Interchangeable worker: walk, jointly haul, or hold a pressure plate."
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "WAIT — Remain in place."
+    },
+    {
+      "id": 1,
+      "label": "MOVE_N — Propose [0,-1] ordinary movement."
+    },
+    {
+      "id": 2,
+      "label": "MOVE_E — Propose [1,0] ordinary movement."
+    },
+    {
+      "id": 3,
+      "label": "MOVE_S — Propose [0,1] ordinary movement."
+    },
+    {
+      "id": 4,
+      "label": "MOVE_W — Propose [-1,0] ordinary movement."
+    },
+    {
+      "id": 5,
+      "label": "HAUL_N — Request a joint pallet translation [0,-1]."
+    },
+    {
+      "id": 6,
+      "label": "HAUL_E — Request a joint pallet translation [1,0]."
+    },
+    {
+      "id": 7,
+      "label": "HAUL_S — Request a joint pallet translation [0,1]."
+    },
+    {
+      "id": 8,
+      "label": "HAUL_W — Request a joint pallet translation [-1,0]."
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool",
+      "meaning": "All true throughout an episode."
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Current cell of each distinguishable worker."
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool",
+      "meaning": "Full public active-agent visibility."
+    },
+    {
+      "path": [
+        "berth_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool",
+      "meaning": "The one goal berth exists."
+    },
+    {
+      "path": [
+        "berth_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Fixed pallet goal [14,5]."
+    },
+    {
+      "path": [
+        "berth_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool",
+      "meaning": "Full public berth visibility."
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "Joint episode completion; absorbing raw-state flag."
+    },
+    {
+      "path": [
+        "event_agent_outcome"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32",
+      "meaning": "0=wait/no motion, 1=ordinary step accepted, 2=joint haul accepted, 3=ordinary step rejected, 4=haul rejected."
+    },
+    {
+      "path": [
+        "event_gate_delta"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "-1=closed this transition, 0=unchanged, +1=opened this transition."
+    },
+    {
+      "path": [
+        "event_haul_agents"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool",
+      "meaning": "Exactly two true values for an accepted haul, otherwise all false."
+    },
+    {
+      "path": [
+        "event_haul_direction"
+      ],
+      "shape": [],
+      "dtype": "int32",
+      "meaning": "-1 if no haul, otherwise 0=north, 1=east, 2=south, 3=west."
+    },
+    {
+      "path": [
+        "event_invalid_action"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool",
+      "meaning": "True when an input outside 0..8 was replaced with WAIT."
+    },
+    {
+      "path": [
+        "event_success"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "True only on the transition first satisfying natural success."
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool",
+      "meaning": "Both gates exist."
+    },
+    {
+      "path": [
+        "gate_id"
+      ],
+      "shape": [
+        11,
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "-1 on non-aperture cells, otherwise gate 0 or 1."
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool",
+      "meaning": "True when requested open or when a worker/pallet currently occupies any cell of that gate aperture."
+    },
+    {
+      "path": [
+        "gate_plate_count"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Actual occupied plate count per gate."
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Centres of actual three-cell gate apertures."
+    },
+    {
+      "path": [
+        "gate_requested_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool",
+      "meaning": "OR of the two associated plate_occupied values."
+    },
+    {
+      "path": [
+        "gate_visibility"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool",
+      "meaning": "Full public gate visibility."
+    },
+    {
+      "path": [
+        "pallet_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool",
+      "meaning": "Always true throughout an episode."
+    },
+    {
+      "path": [
+        "pallet_on_berth"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool",
+      "meaning": "Actual equality between pallet and berth position."
+    },
+    {
+      "path": [
+        "pallet_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Current pallet cell."
+    },
+    {
+      "path": [
+        "pallet_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool",
+      "meaning": "Full public pallet visibility."
+    },
+    {
+      "path": [
+        "plate_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "All four pressure plates exist."
+    },
+    {
+      "path": [
+        "plate_gate"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32",
+      "meaning": "Fixed mapping [0,0,1,1]."
+    },
+    {
+      "path": [
+        "plate_occupied"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "True exactly when an active worker stands on that plate."
+    },
+    {
+      "path": [
+        "plate_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Fixed positions [[4,2],[8,2],[9,8],[13,8]]."
+    },
+    {
+      "path": [
+        "plate_visibility"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "Full public plate visibility."
+    },
+    {
+      "path": [
+        "prev_agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Agent positions at the start of the most recent accepted transition."
+    },
+    {
+      "path": [
+        "prev_pallet_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Pallet position at the start of the most recent accepted transition."
+    },
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32",
+      "meaning": "Number of completed transitions; starts at 0 and is bounded by 192."
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "True only after the post-transition pallet and all workers satisfy the goal."
+    },
+    {
+      "path": [
+        "tile_map"
+      ],
+      "shape": [
+        11,
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "Actual dynamic grid: floor/wall/closed gate/open gate/plate A/plate B/berth."
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "True at t=192 only if natural success has not occurred."
+    },
+    {
+      "path": [
+        "wall"
+      ],
+      "shape": [
+        11,
+        17
+      ],
+      "dtype": "bool",
+      "meaning": "Static wall grid, indexed [y,x]; gate apertures are not static walls."
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      16.5,
+      10.5
+    ],
+    "map": {
+      "state_path": [
+        "tile_map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#D9D4C7"
+        },
+        {
+          "value": 1,
+          "meaning": "Static wall",
+          "color": "#303844"
+        },
+        {
+          "value": 2,
+          "meaning": "Closed physical gate aperture",
+          "color": "#B44B4B"
+        },
+        {
+          "value": 3,
+          "meaning": "Open physical gate aperture",
+          "color": "#80C8AD"
+        },
+        {
+          "value": 4,
+          "meaning": "Gate 0 pressure plate",
+          "color": "#E9B44C"
+        },
+        {
+          "value": 5,
+          "meaning": "Gate 1 pressure plate",
+          "color": "#8E7CC3"
+        },
+        {
+          "value": 6,
+          "meaning": "Pallet berth",
+          "color": "#62B6CB"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "event_agent_outcome"
+          ],
+          "meaning": "Latest actual wait/step/haul/rejection outcome code.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "event_haul_agents"
+          ],
+          "meaning": "Worker participated in the latest accepted joint haul.",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "pallet",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "pallet_pos"
+      ],
+      "active": [
+        "pallet_active"
+      ],
+      "visibility": [
+        "pallet_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pallet_on_berth"
+          ],
+          "meaning": "Pallet currently occupies its actual berth.",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "plates",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "plate_pos"
+      ],
+      "active": [
+        "plate_active"
+      ],
+      "visibility": [
+        "plate_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "plate_gate"
+          ],
+          "meaning": "Associated gate index.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "plate_occupied"
+          ],
+          "meaning": "A worker currently stands on this plate.",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Actual next-step passability for all three aperture cells.",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "gate_requested_open"
+          ],
+          "meaning": "At least one associated plate is occupied.",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "gate_plate_count"
+          ],
+          "meaning": "Number of occupied associated plates.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "berth",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "berth_pos"
+      ],
+      "active": [
+        "berth_active"
+      ],
+      "visibility": [
+        "berth_visibility"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_agent_outcome"
+      ],
+      "meaning": "0=wait/no motion, 1=ordinary step accepted, 2=joint haul accepted, 3=ordinary step rejected, 4=haul rejected.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_invalid_action"
+      ],
+      "meaning": "True when an input outside 0..8 was replaced with WAIT.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_haul_agents"
+      ],
+      "meaning": "Exactly two true values for an accepted haul, otherwise all false.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_haul_direction"
+      ],
+      "meaning": "-1 if no haul, otherwise 0=north, 1=east, 2=south, 3=west.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_gate_delta"
+      ],
+      "meaning": "-1=closed this transition, 0=unchanged, +1=opened this transition.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_success"
+      ],
+      "meaning": "True only on the transition first satisfying natural success.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1870
+      ],
+      "meaning": "Row-major [11,17,10] public grid. Channels: static wall; open gate; closed gate; gate-0 plate; gate-1 plate; pallet; berth; agent 0; agent 1; agent 2.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1870,
+        1873
+      ],
+      "meaning": "Observer's one-hot identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1873,
+        1874
+      ],
+      "meaning": "Public completed-step clock t/192.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1874,
+        1876
+      ],
+      "meaning": "Actual occupied plate counts for gates 0 and 1, each divided by two.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Bring the shared pallet to [14,5] and all three workers into x>=12.",
+    "natural_termination": "Success requires actual pallet berth occupancy and all workers east of gate 1; no early natural failure. Natural completion precedes the 192-step limit.",
+    "interaction": "Two opposite-flank workers must request the same cardinal haul. Actual plate occupancy controls gate passability; occupied apertures prevent crushing. Movement and handover require real positions.",
+    "observation_access": "Every active entity and the complete map are public. Flattened observations contain only the declared current grid, own identity, time, and plate counts; no pending actions or diagnostic events."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_plate_count"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

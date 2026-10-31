@@ -1,0 +1,423 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "9f565752dd7ac1a41501c7c13853d168a668acc5d657f214a13be961c5f32f53",
+  "manifest_sha256": "87df6cbeee45253cee2ff609d7bc8be9a74c10edc69f05a19bcbd7b744cf444d",
+  "title": "Canal Charters | A board of water, rights and consequences",
+  "rules": [
+    "Players act in order 0,1,2. Other players supply no-op. Pawns cannot overlap, and actions affect their actual current tile.",
+    "A conduit costs one of six finite kits plus one coin. Its direction, owner and shutter persist on the board.",
+    "Every third turn, the spring adds two water. An open conduit sends up to two stored water one edge into a connected conduit, farm or drain.",
+    "Flows are simultaneous and conserve units until farm consumption, bailing, drainage or overflow. Every tile stores at most six water.",
+    "Each two water reaching a farm produces one harvest and two coins for its owner. Initial public trunk supplies the middle farm; branches and rotation change this allocation.",
+    "Entering someone else's conduit or rotating it pays them one coin. Without a coin that access is unavailable.",
+    "Only the owner or any player on a public conduit can toggle its shutter. Any affordable foreign conduit can be rotated with a permit payment.",
+    "Chartering your conduit makes it permanently public: later players can use and rotate it without tolls, while the water benefits still depend on route direction.",
+    "Own harvest provides the main private reward; every harvest adds a small public benefit. Spilled water harms all players and eighteen cumulative spill closes the season.",
+    "Every farm reaching three harvests grants collective completion. A 120-turn horizon otherwise ends the episode."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "buildable ground",
+          "color": "#D8D0AF"
+        },
+        {
+          "value": 1,
+          "meaning": "solid boundary",
+          "color": "#556168"
+        },
+        {
+          "value": 2,
+          "meaning": "farm sink; two water make one harvest",
+          "color": "#8AB16E"
+        },
+        {
+          "value": 3,
+          "meaning": "public spring supplies two water per hydraulic pulse",
+          "color": "#69B8D1"
+        },
+        {
+          "value": 4,
+          "meaning": "drain removes arriving water",
+          "color": "#487F9D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Charter-holder pawns",
+      "color": "#D99A50",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_coins"
+          ],
+          "label": "Construction, bailing and toll currency; maximum 30"
+        },
+        {
+          "state_path": [
+            "agent_kits"
+          ],
+          "label": "Remaining finite conduit construction kits"
+        },
+        {
+          "state_path": [
+            "agent_harvest"
+          ],
+          "label": "Cumulative harvest at this player-owned farm"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "label": "Last movement orientation: 0 north, 1 east, 2 south, 3 west"
+        }
+      ]
+    },
+    {
+      "id": "tile",
+      "glyph": "water",
+      "label": "Actual directed conduits",
+      "color": "#5A9AC6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tile_direction"
+          ],
+          "label": "Outgoing conduit direction: 0 north, 1 east, 2 south, 3 west"
+        },
+        {
+          "state_path": [
+            "tile_owner"
+          ],
+          "label": "-1 public charter; 0-2 private owner who receives access tolls"
+        },
+        {
+          "state_path": [
+            "tile_open"
+          ],
+          "label": "Shutter open permits outgoing water"
+        },
+        {
+          "state_path": [
+            "tile_water"
+          ],
+          "label": "Actual stored water after the last transition"
+        },
+        {
+          "state_path": [
+            "tile_flow"
+          ],
+          "label": "Actual units sent from this tile on the last hydraulic pulse; zero between pulses"
+        }
+      ]
+    },
+    {
+      "id": "farm",
+      "glyph": "plant",
+      "label": "Player-owned farms",
+      "color": "#81AB62",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "farm_owner"
+          ],
+          "label": "Player owning this farm"
+        },
+        {
+          "state_path": [
+            "farm_water"
+          ],
+          "label": "Actual farm water remaining after automatic harvest"
+        },
+        {
+          "state_path": [
+            "agent_harvest"
+          ],
+          "label": "Cumulative harvest of the corresponding farm owner"
+        }
+      ]
+    },
+    {
+      "id": "drain",
+      "glyph": "water",
+      "label": "Flood drain",
+      "color": "#355D7A",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_build"
+      ],
+      "meaning": "A finite kit and one coin became a real owned conduit this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_rotate"
+      ],
+      "meaning": "Actual outgoing flow direction changed this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_shutter"
+      ],
+      "meaning": "Actual hydraulic shutter was toggled this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_charter"
+      ],
+      "meaning": "Owned conduit permanently changed to public access this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_harvest"
+      ],
+      "meaning": "Farm consumed two real water to make one harvest this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_toll"
+      ],
+      "meaning": "Number of coins actually received by each owner through passage or rotation permits this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_bail"
+      ],
+      "meaning": "Water units physically removed by each player this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill_step"
+      ],
+      "meaning": "Water exceeding local capacity and lost as floodwater on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "total_spill"
+      ],
+      "meaning": "Cumulative spilled water, triggering closure at eighteen",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Every farm has at least three harvests and flood closure has not occurred",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Pass turn"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lay north-facing conduit under pawn"
+    },
+    {
+      "id": 6,
+      "label": "Lay east-facing conduit under pawn"
+    },
+    {
+      "id": 7,
+      "label": "Lay south-facing conduit under pawn"
+    },
+    {
+      "id": 8,
+      "label": "Lay west-facing conduit under pawn"
+    },
+    {
+      "id": 9,
+      "label": "Rotate current conduit clockwise; pay foreign owner permit"
+    },
+    {
+      "id": 10,
+      "label": "Toggle current public or own shutter"
+    },
+    {
+      "id": 11,
+      "label": "Charter current own conduit as permanently public"
+    },
+    {
+      "id": 12,
+      "label": "Bail up to two water here for one coin"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Elapsed turn /120",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        4
+      ],
+      "meaning": "Player-to-move one-hot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        6
+      ],
+      "meaning": "Total spill /100 and joint-done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        87
+      ],
+      "meaning": "Public 9 by 9 terrain row-major, tile code /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        87,
+        93
+      ],
+      "meaning": "Three pawn x,y positions /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        96
+      ],
+      "meaning": "Player coins /30",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        96,
+        99
+      ],
+      "meaning": "Remaining construction kits /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        99,
+        102
+      ],
+      "meaning": "Last movement orientation /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        105
+      ],
+      "meaning": "Cumulative owned-farm harvests /40",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        186
+      ],
+      "meaning": "81 conduit directions encoded (direction+1)/4; zero means absent",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        186,
+        267
+      ],
+      "meaning": "81 owners encoded (owner+1)/3; zero is public or absent",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        267,
+        348
+      ],
+      "meaning": "81 open-shutter flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        348,
+        429
+      ],
+      "meaning": "81 actual water volumes /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        429,
+        432
+      ],
+      "meaning": "Three actual farm water volumes /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        432,
+        435
+      ],
+      "meaning": "Observer player identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

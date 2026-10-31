@@ -1,0 +1,574 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fb02a8398d479cab6bb8e88e8bba649a6634f2f3b466610071de49e078e2ecc3",
+  "manifest_sha256": "485c9ed939368b70885fda3efbf114b61c9ad2cbcf3bc29a8fb4d9813c8abbaa",
+  "title": "Shepherd Circles: Two Gates, One Flock",
+  "rules": [
+    "Moving gives strength-one pressure within one Manhattan cell. Press costs one energy and gives strength-two pressure within three cells.",
+    "A call costs one energy and attracts within three cells toward a fixed beacon two cells away. It lasts two frames and is replaced by a later call from the same role.",
+    "Sheep use the combined pressure/call vector plus bounded local cohesion when that vector is nonzero. Dominant-axis ties alternate by tick and sheep index.",
+    "Sheep and shepherds cannot enter another live member's old cell. Same-target conflicts use rotating priorities; flock cannot enter shepherd cells.",
+    "Pulling within one cell of a gate costs one energy and sets its timer to three. Fresh pulls affect this tick's flock motion; shepherd movement uses the previously visible gate state.",
+    "Entering any pen resolves a sheep. Matching admissions pay the team; wrong admissions stay recorded and penalize the team.",
+    "The field arrows, call beacons, gate flags and flock positions are native transition state. A future real replay is required for animation and behavior acceptance."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Pasture or pen approach",
+          "color": "#B7D192"
+        },
+        {
+          "value": 1,
+          "meaning": "Fixed fence",
+          "color": "#687257"
+        },
+        {
+          "value": 2,
+          "meaning": "Timed gate, passable only while open",
+          "color": "#C09B5E"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "shepherds",
+      "glyph": "worker",
+      "label": "shepherds",
+      "color": "#D8763C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_energy"
+          ],
+          "label": "Energy, maximum 4"
+        },
+        {
+          "state_path": [
+            "agent_pressure"
+          ],
+          "label": "0 quiet; 1 close moving pressure; 2 pressing"
+        }
+      ]
+    },
+    {
+      "id": "flock",
+      "glyph": "circle",
+      "label": "flock",
+      "color": "#ECE2CD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "flock_target"
+          ],
+          "label": "0 upper pen; 1 lower pen"
+        },
+        {
+          "state_path": [
+            "flock_pen"
+          ],
+          "label": "Recorded pen; -1 unresolved"
+        },
+        {
+          "state_path": [
+            "flock_correct"
+          ],
+          "label": "Resolved in matching pen"
+        },
+        {
+          "state_path": [
+            "flock_drive"
+          ],
+          "label": "Selected native one-cell intent this step"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "gates",
+      "color": "#BB8D4F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "label": "Open timer, maximum 3"
+        },
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Current entry permission"
+        }
+      ]
+    },
+    {
+      "id": "pens",
+      "glyph": "flag",
+      "label": "pens",
+      "color": "#589B64",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pen_count"
+          ],
+          "label": "Sheep admitted to this pen so far"
+        }
+      ]
+    },
+    {
+      "id": "calls",
+      "glyph": "beacon",
+      "label": "calls",
+      "color": "#4FAFB5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "call_ttl"
+          ],
+          "label": "Remaining active call frames"
+        },
+        {
+          "state_path": [
+            "call_owner"
+          ],
+          "label": "Calling role"
+        }
+      ]
+    },
+    {
+      "id": "pressure_field",
+      "glyph": "circle",
+      "label": "pressure field",
+      "color": "#8CA7BC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "field_direction"
+          ],
+          "label": "Actual summed pressure and call vector used at this cell"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "call_event"
+      ],
+      "meaning": "Each role emitted or replaced a call this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gate_event"
+      ],
+      "meaning": "Gate timer refreshed by an adjacent pull this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "arrival_event"
+      ],
+      "meaning": "Sheep newly admitted to either pen this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "wrong_event"
+      ],
+      "meaning": "Sheep newly admitted to a nonmatching pen this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "blocked_event"
+      ],
+      "meaning": "Shepherd movement request blocked this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "flock_block_event"
+      ],
+      "meaning": "Sheep's nonzero movement intent blocked this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest and recover one energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north with close pressure"
+    },
+    {
+      "id": 2,
+      "label": "Move east with close pressure"
+    },
+    {
+      "id": 3,
+      "label": "Move south with close pressure"
+    },
+    {
+      "id": 4,
+      "label": "Move west with close pressure"
+    },
+    {
+      "id": 5,
+      "label": "Call two cells north"
+    },
+    {
+      "id": 6,
+      "label": "Call two cells east"
+    },
+    {
+      "id": 7,
+      "label": "Call two cells south"
+    },
+    {
+      "id": 8,
+      "label": "Call two cells west"
+    },
+    {
+      "id": 9,
+      "label": "Press nearby flock"
+    },
+    {
+      "id": 10,
+      "label": "Pull adjacent gate"
+    },
+    {
+      "id": 11,
+      "label": "Stay quiet"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Role one-hot in role index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "state_path": [
+        "agent_pos"
+      ],
+      "meaning": "shepherds positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "state_path": [
+        "agent_energy"
+      ],
+      "meaning": "Energy, maximum 4; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "state_path": [
+        "agent_pressure"
+      ],
+      "meaning": "0 quiet; 1 close moving pressure; 2 pressing; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        27
+      ],
+      "state_path": [
+        "flock_pos"
+      ],
+      "meaning": "flock positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        33
+      ],
+      "state_path": [
+        "flock_target"
+      ],
+      "meaning": "0 upper pen; 1 lower pen; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        39
+      ],
+      "state_path": [
+        "flock_pen"
+      ],
+      "meaning": "Recorded pen; -1 unresolved; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        45
+      ],
+      "state_path": [
+        "flock_correct"
+      ],
+      "meaning": "Resolved in matching pen; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        57
+      ],
+      "state_path": [
+        "flock_drive"
+      ],
+      "meaning": "Selected native one-cell intent this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        63
+      ],
+      "state_path": [
+        "flock_active"
+      ],
+      "meaning": "Sheep has not entered a pen; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        63,
+        67
+      ],
+      "state_path": [
+        "gate_pos"
+      ],
+      "meaning": "gates positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        69
+      ],
+      "state_path": [
+        "gate_timer"
+      ],
+      "meaning": "Open timer, maximum 3; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        69,
+        71
+      ],
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Current entry permission; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        75
+      ],
+      "state_path": [
+        "pen_pos"
+      ],
+      "meaning": "pens positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        77
+      ],
+      "state_path": [
+        "pen_count"
+      ],
+      "meaning": "Sheep admitted to this pen so far; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        77,
+        83
+      ],
+      "state_path": [
+        "call_pos"
+      ],
+      "meaning": "calls positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        86
+      ],
+      "state_path": [
+        "call_ttl"
+      ],
+      "meaning": "Remaining active call frames; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        89
+      ],
+      "state_path": [
+        "call_active"
+      ],
+      "meaning": "Call beacon has positive lifetime; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        287
+      ],
+      "state_path": [
+        "field_direction"
+      ],
+      "meaning": "Actual summed pressure and call vector used at this cell; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        287,
+        386
+      ],
+      "state_path": [
+        "field_active"
+      ],
+      "meaning": "Cell has a nonzero net pressure/call vector; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        386,
+        389
+      ],
+      "state_path": [
+        "call_event"
+      ],
+      "meaning": "Each role emitted or replaced a call this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        389,
+        391
+      ],
+      "state_path": [
+        "gate_event"
+      ],
+      "meaning": "Gate timer refreshed by an adjacent pull this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        391,
+        397
+      ],
+      "state_path": [
+        "arrival_event"
+      ],
+      "meaning": "Sheep newly admitted to either pen this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        397,
+        403
+      ],
+      "state_path": [
+        "wrong_event"
+      ],
+      "meaning": "Sheep newly admitted to a nonmatching pen this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        403,
+        406
+      ],
+      "state_path": [
+        "blocked_event"
+      ],
+      "meaning": "Shepherd movement request blocked this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        406,
+        412
+      ],
+      "state_path": [
+        "flock_block_event"
+      ],
+      "meaning": "Sheep's nonzero movement intent blocked this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        412,
+        413
+      ],
+      "meaning": "Clock t divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        413,
+        414
+      ],
+      "meaning": "Joint episode completion flag, unscaled",
+      "visibility": "public"
+    }
+  ]
+}

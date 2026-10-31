@@ -1,0 +1,926 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00245",
+  "source_sha256": "174bcf03003597af838bc1e3deda78823f72ba639ef3eddbc95133e55f1f29d6",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 12,
+  "observation_size": 466,
+  "num_actions": 16,
+  "max_steps": 512,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1.0,
+  "reward_low": -1,
+  "reward_high": 2.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "cook / pantry runner; group0, member0",
+      "group": 0,
+      "native_action_row": 0
+    },
+    {
+      "id": "agent_1",
+      "role": "cook / prep runner; group0, member1",
+      "group": 0,
+      "native_action_row": 1
+    },
+    {
+      "id": "agent_2",
+      "role": "cook / stove runner; group0, member2",
+      "group": 0,
+      "native_action_row": 2
+    },
+    {
+      "id": "agent_3",
+      "role": "cook / service runner; group0, member3",
+      "group": 0,
+      "native_action_row": 3
+    },
+    {
+      "id": "agent_4",
+      "role": "cook / pantry runner; group1, member0",
+      "group": 1,
+      "native_action_row": 4
+    },
+    {
+      "id": "agent_5",
+      "role": "cook / prep runner; group1, member1",
+      "group": 1,
+      "native_action_row": 5
+    },
+    {
+      "id": "agent_6",
+      "role": "cook / stove runner; group1, member2",
+      "group": 1,
+      "native_action_row": 6
+    },
+    {
+      "id": "agent_7",
+      "role": "cook / service runner; group1, member3",
+      "group": 1,
+      "native_action_row": 7
+    },
+    {
+      "id": "agent_8",
+      "role": "cook / pantry runner; group2, member0",
+      "group": 2,
+      "native_action_row": 8
+    },
+    {
+      "id": "agent_9",
+      "role": "cook / prep runner; group2, member1",
+      "group": 2,
+      "native_action_row": 9
+    },
+    {
+      "id": "agent_10",
+      "role": "cook / stove runner; group2, member2",
+      "group": 2,
+      "native_action_row": 10
+    },
+    {
+      "id": "agent_11",
+      "role": "cook / service runner; group2, member3",
+      "group": 2,
+      "native_action_row": 11
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait / receive adjacent handoff"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick pantry food, plate, plated ready pot meal or dry cabinet plate"
+    },
+    {
+      "id": 6,
+      "label": "Chop carried raw ingredient at board"
+    },
+    {
+      "id": 7,
+      "label": "Wash dirty plate at sink or empty-handed clean board"
+    },
+    {
+      "id": 8,
+      "label": "Load chopped food into pot or wet plate into dryer"
+    },
+    {
+      "id": 9,
+      "label": "Serve plated meal at dining window"
+    },
+    {
+      "id": 10,
+      "label": "Stoke nearby shared furnace with fuel"
+    },
+    {
+      "id": 11,
+      "label": "Vent nearby shared furnace"
+    },
+    {
+      "id": 12,
+      "label": "Empty-handed carry gangway downward with opposite-bank partner"
+    },
+    {
+      "id": 13,
+      "label": "Empty-handed carry gangway upward with opposite-bank partner"
+    },
+    {
+      "id": 14,
+      "label": "Take local current order ticket"
+    },
+    {
+      "id": 15,
+      "label": "Handoff item and ticket to adjacent empty waiting cook"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        12,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "active"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "allergen"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "spill"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "burn"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "age"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ticket"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        18,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "contamination"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "served"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "missed"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_type"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "recipe"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "deadline"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "progress"
+      ],
+      "shape": [
+        18
+      ],
+      "dtype": "float32"
+    },
+    {
+      "path": [
+        "remaining"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "preference"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "completed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "counter_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "thermal_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "counter_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "thermal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "counter_shift"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "thermal_kind"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "thermal_stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "thermal_level"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "float32"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        12,
+        12
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_vis"
+      ],
+      "shape": [
+        12,
+        18
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "counter_vis"
+      ],
+      "shape": [
+        12,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "thermal_vis"
+      ],
+      "shape": [
+        12,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        11,
+        23
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map_vis"
+      ],
+      "shape": [
+        12,
+        11,
+        23
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      22,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Ferry deck",
+          "color": "#E9D6AC"
+        },
+        {
+          "value": 1,
+          "meaning": "Deck gap; impassable",
+          "color": "#548B9B"
+        },
+        {
+          "value": 2,
+          "meaning": "Actual counter gangway; passable",
+          "color": "#986D43"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "cooks",
+      "kind": "agent",
+      "count": 12,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Home kitchen 0..2",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "item"
+          ],
+          "meaning": "0 empty;1 veg;2 fish;3 chopped veg;4 chopped fish;5 plated veg;6 plated fish;7 dirty;8 wet;9 clean plate",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "allergen"
+          ],
+          "meaning": "Fish contamination on carried food",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "meaning": "Carried plated meal age",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "ticket"
+          ],
+          "meaning": "Order ticket 0 none;1 veg;2 fish",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "spill"
+          ],
+          "meaning": "Spoilage or rejected meal this step",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "burn"
+          ],
+          "meaning": "Overheated-pot exposure this step",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "object",
+      "count": 18,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_type"
+          ],
+          "meaning": "0 veg;1 fish pantry;2 board;3 pot;4 sink;5 dining window",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Pantry ingredients, sink clean plates or window dirty plates",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "recipe"
+          ],
+          "meaning": "0 empty;3 chopped veg;4 chopped fish",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "meaning": "Cook progress: ready at4; burns at8",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "contamination"
+          ],
+          "meaning": "Board/pot fish contamination",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "order"
+          ],
+          "meaning": "0 none;1 vegetable;2 fish order",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "meaning": "Order ticks remaining",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "served"
+          ],
+          "meaning": "Correct order served this step",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "missed"
+          ],
+          "meaning": "Order expired this step",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "gangways",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "counter_pos"
+      ],
+      "active": [
+        "counter_active"
+      ],
+      "visibility": [
+        "counter_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "counter_shift"
+          ],
+          "meaning": "Signed vertical displacement this step",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "thermal",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "thermal_pos"
+      ],
+      "active": [
+        "thermal_active"
+      ],
+      "visibility": [
+        "thermal_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "thermal_kind"
+          ],
+          "meaning": "0 furnace;1 drying cabinet",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "thermal_level"
+          ],
+          "meaning": "Furnace heat 0..10 or drying progress 0..4",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "thermal_stock"
+          ],
+          "meaning": "Furnace fuel remaining or cabinet occupied 0/1",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Correct window delivery",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "missed"
+      ],
+      "meaning": "Expired window order",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill"
+      ],
+      "meaning": "Spoiled/rejected plated meal",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "burn"
+      ],
+      "meaning": "Overheated-pot exposure",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "counter_shift"
+      ],
+      "meaning": "Signed counter displacement this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "completed"
+      ],
+      "meaning": "Correct kitchen deliveries accumulated",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        12
+      ],
+      "visibility": "self",
+      "meaning": "Time/512,ID/11,team/2,x/22,y/10,item/9,allergen,age/32,ticket/2,spill,burn,home completed orders/4."
+    },
+    {
+      "slice": [
+        12,
+        132
+      ],
+      "visibility": "local",
+      "meaning": "12 actor slots: x/22,y/10,team/2,item/9,allergen,age/32,ticket/2,spill,burn,presence."
+    },
+    {
+      "slice": [
+        132,
+        348
+      ],
+      "visibility": "local",
+      "meaning": "18 station slots: x/22,y/10,type/5,stock/16,recipe/4,progress/8,contamination,order/2,deadline/96,served,missed,presence."
+    },
+    {
+      "slice": [
+        348,
+        356
+      ],
+      "visibility": "local",
+      "meaning": "Two gangway slots: x/22,y/10,signed displacement {-1,0,1},presence."
+    },
+    {
+      "slice": [
+        356,
+        368
+      ],
+      "visibility": "local",
+      "meaning": "Two thermal slots: x/22,y/10,kind,level/10,stock/36,presence."
+    },
+    {
+      "slice": [
+        368,
+        466
+      ],
+      "visibility": "local",
+      "meaning": "7x7 dy-major patch: tile/2,in-bounds; unavailable cells zero."
+    }
+  ],
+  "task": {
+    "objective": "Serve twelve staggered passenger orders before expiration, reusing plates and separating fish allergens while coordinating shared passages and heat.",
+    "natural_termination": "All twelve orders have arrived and all active orders have been served or expired. Service closure includes missed orders, so natural termination does not assert success. Otherwise H=512.",
+    "interaction": "Two opposite-bank cooks move the same actual counter, removing the old crossing and opening the new one. Shared furnace heat drives all pots and the dryer but risks burns. Carried plates, ingredients and order tickets and persistent board contamination connect three kitchens.",
+    "observation_access": "Self fields plus Chebyshev radius-three local map/entity fields; no within-square occlusion. Hidden rows and outside-map patch cells zero with presence. Dynamic remote state is not observed. Event rendering must suppress hidden entity events; debug/full-state view is separate. The explicitly listed own team score summaries are self information."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "pos"
+      ],
+      "low": 0,
+      "high": 22
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "family": "cooperative_kitchen",
+  "native_control": {
+    "ownership": "External platform may assign any one/multiple actor rows to humans or policies at native step boundaries. Ownership never changes the transition.",
+    "joint_action_shape": [
+      12
+    ],
+    "status": "SOURCE_SUPPORT_ONLY_NOT_HUMAN_PLAY_VERIFIED"
+  },
+  "status": "AUTHORED_NOT_EXECUTED"
+}

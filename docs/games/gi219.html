@@ -1,0 +1,702 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>节庆厨房 · Festival Kitchens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI219 / SPATIAL</p><h1>节庆厨房 · Festival Kitchens</h1><p class="lead">十六位员工协作加工、装盘、保温和履行各厨房订单。</p><div class="stats"><span>16 agents</span><span>22 actions</span><span>909 observation columns</span><span>384 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi219.gif" alt="Original saved demonstration gi219"></section><section><h2>Run this game</h2><pre>crucibles play --game 219</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Keep four kitchens serving their own changing festival orders by transporting food through distinct equipment stages, protecting heat, fueling the shared boiler and returning reusable trays through hands or a finite routed conveyor.&quot;,
+  &quot;natural_termination&quot;: &quot;No natural success or joint-failure terminal. This is a continuing finite world. H=384 truncates the observation window, not a success event; done inputs are absorbing.&quot;,
+  &quot;interaction&quot;: &quot;A dish requires different equipment in four locations. Route switches and occupancy change another kitchen&#x27;s item delay and freshness. Plating removes a shared clean tray until a served or expired dish&#x27;s dirty tray is washed and returned. Physical reports reveal another kitchen&#x27;s order for a limited time; insulated porter tools alter hot-food transport timing and can be exchanged.&quot;,
+  &quot;observation_access&quot;: &quot;The map, all physical staff cargo, stations, belt occupancy/direction, fuel/water levels, service clocks, public events and reward components are public. Current order flavour is directly visible only to the four actors belonging to that kitchen: order_visible is the kitchen-equality mask. Each observation adds only that actor&#x27;s own notes and note_life rows. Speaking transfers the speaker&#x27;s current home order to adjacent actors; foreign notes expire and can disagree with a changed live order. Legal serving masks do not test hidden flavour equality. A full-state/debug view must be labelled separately.&quot;
+}</pre></details><p>Declared per-step reward bounds: -5 to 40. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Four kitchens have different useful equipment: chop at 0, steam at 1, garnish at 2, plate at 3. Staff tool exchanges can change duties.</li><li>Carry one item. Stage codes progress raw, chopped, steamed, garnished, plated; only a matching warm plated order earns completion reward.</li><li>Hot dishes have 64 warmth at steaming or reheating. They cool every tick; an insulated porter grip halves carried cooling. Conveyors provide no insulation.</li><li>Twenty-four belt cells form a clockwise ring. Four junction switches divert into one-cell holding spurs or release them back into the ring.</li><li>Belts move only into cells empty at the start of their movement phase. A held item can block others; cell direction and warmth are native attributes.</li><li>Steam and reheat consume boiler fuel. Washers use one shared water to turn dirty trays clean; clean trays must return to the plating rack.</li><li>Only your kitchen&#x27;s live order is visible. Adjacent staff can tell their home order; reports have a finite lifetime and may become stale.</li><li>Service creates a dirty tray. Discarding or expiring plated food also preserves its dirty tray. Raw ingredients and utility stocks renew at explicit finite rates.</li><li>Choose hands or belt routing, direct preparation or heat-restoring detours, and immediate rush orders or support for other kitchens. H=384 truncates the continuing festival.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Festival Kitchens
+
+Status: AUTHORED_NOT_EXECUTED. Parentless initial blind source, attempt_00, train only. Requested author gpt-6-astra / max; measured provider identity, tokens, cost and reasoning telemetry are unavailable.
+
+Native dimensions are A=16, O=909, U=22, H=384. This source is an original proposal, not a claim of runtime compatibility, solvability, learned behavior or transfer.
+
+## Equipment, stock and physical work
+
+The 19 by 19 workshop square contains four fixed equipment stations, four service counters, a 24-cell conveyor ring with four one-cell spurs, and central finite fuel/washwater supplies. Four actors belong to each kitchen. Initial tools are chef knife, insulated porter grip, wash brush and bellows; tools can be swapped with an adjacent actor. Every actor moves and can carry one actual item. Staff cannot occupy station or belt cells.
+
+Every pantry supplies its own flavour, index plus one, from stock eight. It replenishes one unit every twenty old-clock ticks, capped at eight. Food can be chopped only at station 0, steamed only at station 1 using one fuel, garnished only at station 2 and plated only at station 3 using one clean tray. These stages use a chef tool. A kitchen&#x27;s workers may walk to another station or pass food to its crew; the source does not bind a worker permanently to their home equipment.
+
+Steaming and reheating set warmth to 64 before that tick&#x27;s cooling. Carried hot food cools by one each step, except tool 2 skips cooling on odd old-clock ticks; belt food always cools by one. Steamed, garnished and plated stages expire at zero. Expired unplated food disappears as waste. Expired or deliberately discarded plated food becomes a dirty tray instead, preserving its reusable tray.
+
+Four trays begin split between the sink rack at station 2 and plating rack at station 3. A service leaves its dirty tray in the server&#x27;s hands. A brush user can wash it at station 2 for one shared water and carry the resulting clean tray to station 3, return it to the rack, or pass it through hands/belt. The central fuel pile supplies carried fuel; bellows users feed it into station 1. Fuel and washwater renew slowly at the declared fixed rates. Preparation events do not receive completed-order reward.
+
+## Queue routing and information
+
+Conveyor positions are native cells. Successors follow the clockwise ring, except each corner&#x27;s route=1 sends an item to its adjacent spur and holds it there. Switching back to zero bypasses that spur on the ring and lets a spur item re-enter the corner. Items move at most one grid edge in each step&#x27;s conveyor phase after actor interactions. Movement requires a destination empty in the pre-belt-phase occupancy; items cannot follow into just-vacated cells. Competing sources use lowest source-cell ID. These rules allow genuine queues and deadlock under complete occupancy, recoverable by taking an item or switching a spur.
+
+Each kitchen initially receives a uniformly sampled flavour 1-4 using the reset key. Its public service clock starts at 96. A matching warm plated delivery changes the requested flavour cyclically, resets the clock, and produces a dirty tray. Deadline expiry changes the order cyclically and applies a cost without awarding service. Offering a mismatched plate leaves it held and still cooling. The policy legal mask exposes that a carried plate can be offered at a nearby counter, but never reveals whether a hidden foreign order matches.
+
+Only a kitchen&#x27;s four members directly observe its live flavour. Any actor can tell all adjacent actors their current home order. The listener&#x27;s notebook stores a snapshot and a lifetime initialized to 12 during interaction and then decremented at step end; own notes remain live at lifetime 12. The stale-report possibility matters when another crew serves or a deadline passes. No cross-kitchen radio, global live order array or privileged browser decision rule is supplied.
+
+A rush can take the last boiler fuel, tray or open belt slot while delaying another kitchen. A crew can keep a hot plate in insulated hands, take a longer reheating route, divert freight into a spur to unblock the ring, or walk a clean tray back to support the next order. Those options change concrete inventories, item warmth and queues instead of independent work counters.
+
+## Native action dictionary
+
+0. Wait; recover two energy.
+1. Move north.
+2. Move east.
+3. Move south.
+4. Move west.
+5. Take local pantry&#x27;s raw flavour into empty hands.
+6. Process carried food at its next equipment station, chef tool.
+7. Place carried item onto nearest empty adjacent conveyor cell.
+8. Pick item from nearest occupied adjacent conveyor cell.
+9. Hand carried item to lowest-ID adjacent empty-handed actor.
+10. Wash carried dirty tray at station 2, brush and shared water.
+11. Take clean tray from station 2 rack.
+12. Return carried clean tray to station 3 plating rack.
+13. Take one fuel from the central fuel pile.
+14. Stoke station 1 with carried fuel, bellows tool.
+15. Toggle adjacent junction between bypass and holding spur.
+16. Offer plated warm dish at adjacent service counter.
+17. Discard food; preserve its tray as dirty when plated.
+18. Tell adjacent actors the current home-kitchen order.
+19. Exchange tools with lowest-ID adjacent actor.
+20. Rest; recover five energy.
+21. Reheat cooked or later food at station 1, chef tool and fuel.
+
+## Observation, terminal and human-control contract
+
+The map, all physical staff cargo, stations, belt occupancy/direction, fuel/water levels, service clocks, public events and reward components are public. Current order flavour is directly visible only to the four actors belonging to that kitchen: order_visible is the kitchen-equality mask. Each observation adds only that actor&#x27;s own notes and note_life rows. Speaking transfers the speaker&#x27;s current home order to adjacent actors; foreign notes expire and can disagree with a changed live order. Legal serving masks do not test hidden flavour equality. A full-state/debug view must be labelled separately.
+
+Observations prepend the explicit self fields in manifest order, then flatten public_keys in their literal source order. Every column is labelled; all values are float32 and bounded by [-5, 384]. Native legal_actions is bool[A,U]; the renderer must not display hidden order/granary attributes to another role. Full-state debug views are separate from role views.
+
+This finite world has no natural joint terminal. H=384 is a truncation window, not success. A nonterminal call increments int32 t once; terminated remains false; truncated=(t&gt;=H)&amp;~terminated; done is their disjunction. The absorbing raw branch returns the identical state and observation, zero float32 rewards, all dones true and unchanged causes. There is no raw autoreset.
+
+All integer design fields use int32 and all flags bool; the supplied uint32 reset key remains external trajectory provenance. Stochastic reset variables use only that key; subsequent rules are deterministic and the step key is unused. No imported benchmark implementation, upstream game source, policy, asset or training baseline is embedded.
+
+Human and AI controls supply the same scalar int32 actor components to the same raw_step. Actor IDs and crew/farm/settlement attributes support selecting one or multiple actors. Scene metadata supplies actual positions, attributes, visibility and actions; it does not implement a browser, camera UI, animation, JaxMARL adapter or runtime integration.
+
+Movement is simultaneous and conservative: proposals entering another actor pre-step cell, any contested destination, a blocked tile or an outer boundary fail. Swaps and following into a just-vacated cell fail. Movement masks permit attempted blocked directions; failed movement leaves position unchanged. Interactions then resolve by ascending actor ID, with resource checks repeated against the current carried state. A mask-valid interaction can become a no-op after a lower-ID actor consumes the object or a neighbor moves. Nearest eligible object and then lowest index resolve spatial ties as defined in source. Invalid/out-of-range actions become wait; only wait remains legal after done.
+
+## Reward allocation and analytic bounds
+
+At most 16 actors can serve per step, so any actor receives at most 16*0.5 shared, 16*1.5 recipient-kitchen and 2 personal reward: 34. A deliberately loose waste upper count is 16 discards + 16 carried expiries + 28 belt expiries = 60, yielding at worst -3 shared waste, -0.4 wrong service, -0.3 local deadline and -0.04 effort/resource cost. Therefore [-5,40] encloses the native reward. Stage, report, utility and conveyor values are bounded by 64 or less, service clocks by 96 and native t by 384; reward components fit the declared observation bounds [-5,384].
+
+- Component 0: Shared service: +0.5 to every actor per actual matching warm plated delivery.
+- Component 1: Recipient kitchen: +1.5 to every member of the counter&#x27;s kitchen per completed order.
+- Component 2: Serving actor: +2.0 per completed order.
+- Component 3: Effort/resources: -0.01 per move or non-rest interaction attempt, and -0.03 per wash, reheat or steaming event.
+- Component 4: Quality/timing: -0.4 to the actor for an unmatched or cold offered plate, -0.05 to all per wasted food, and -0.3 to each member of a kitchen whose deadline expired.
+
+## Literal hypotheses and evidence limits
+
+The first script prepares a chopped item and proposes an adjacent chef-to-porter handoff, followed by the porter&#x27;s walk to a spur and belt placement. The second script takes a clean tray from the sink rack, hands it to a porter and carries it to another belt spur while a chef prepares food. The paired suffixes differ only in actor 0 giving the chopped item versus waiting after the same take/chop/move prefix. Four subsequent common porter actions are intended to expose the resulting carried-item and conveyor opportunity difference. No random order matching, completed service or successful replay is assumed.
+
+The paired suffixes have equal length 5 and differ in exactly one component: suffix step 0, actor 0. Prefixes and suffixes are literal JSON joint-action arrays. Both scripts and the pair have seed 0 selected without any trial. Their intention is a future counterfactual inspection, not an observed outcome.
+
+Declared invariants are source obligations: actor positions are unique under conservative movement; positions/clocks and the listed inventory, resource and progress arrays have finite bounds. No conservation claim is made across extraction, growth, expiry, meals, rain, overflow, damage or explicit resource spending. Static checks cannot establish these obligations at runtime.
+
+## Literal source evidence
+
+- candidate.py:L13-L46: reset; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+- candidate.py:L48-L49: distances; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+- candidate.py:L51-L55: successors; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+- candidate.py:L57-L60: observe; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+- candidate.py:L62-L84: legal_actions; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+- candidate.py:L86-L171: interact; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+- candidate.py:L173-L236: advance; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+- candidate.py:L238-L240: raw_step; exact source bytes are bound by SHA-256 34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb.
+
+## Actual inputs and provenance
+
+author_input_freeze.json lists all 25 actually-read current allowed inputs: two controlling authorities and 23 payloads. The four current designs and requests were read for this disjoint batch. Every byte count and SHA was checked against the current authority. The permitted PPO implementation snapshot was not read. Official README snapshots were byte-read for identity; only the recorded excerpt lines were displayed for API/design context.
+
+Reference ideas: Craftax provides context for bounded persistent exploration; JaxMARL describes per-agent dictionaries and joint done as an integration reference; Pgx separates state, legal masks and supplied randomness; PureJaxRL is algorithm implementation context, not a game library or a substitute learner. No compatibility or performance claim is transferred from these references.
+
+Only author-time stdlib AST/data/hash checks and the supplied trusted whitelist, manifest and scene validators were run. No candidate import or method, JAX/NumPy, JIT/vmap, rollout, render, training, seed search, external model, network or local model was executed. No prior source, feedback, diagnosis, selection or heldout evidence was accessed. Numerical, gameplay, animation, human-control, learning, throughput and transfer checks remain unperformed.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait; recover two energy</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Take local pantry&#x27;s raw flavour into empty hands</span></div><div class="action"><b>6</b><span>Process carried food at its next equipment station, chef tool</span></div><div class="action"><b>7</b><span>Place carried item onto nearest empty adjacent conveyor cell</span></div><div class="action"><b>8</b><span>Pick item from nearest occupied adjacent conveyor cell</span></div><div class="action"><b>9</b><span>Hand carried item to lowest-ID adjacent empty-handed actor</span></div><div class="action"><b>10</b><span>Wash carried dirty tray at station 2, brush and shared water</span></div><div class="action"><b>11</b><span>Take clean tray from station 2 rack</span></div><div class="action"><b>12</b><span>Return carried clean tray to station 3 plating rack</span></div><div class="action"><b>13</b><span>Take one fuel from the central fuel pile</span></div><div class="action"><b>14</b><span>Stoke station 1 with carried fuel, bellows tool</span></div><div class="action"><b>15</b><span>Toggle adjacent junction between bypass and holding spur</span></div><div class="action"><b>16</b><span>Offer plated warm dish at adjacent service counter</span></div><div class="action"><b>17</b><span>Discard food; preserve its tray as dirty when plated</span></div><div class="action"><b>18</b><span>Tell adjacent actors the current home-kitchen order</span></div><div class="action"><b>19</b><span>Exchange tools with lowest-ID adjacent actor</span></div><div class="action"><b>20</b><span>Rest; recover five energy</span></div><div class="action"><b>21</b><span>Reheat cooked or later food at station 1, chef tool and fuel</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>actor_00</b> Knifehouse chef</p><p><b>actor_01</b> Knifehouse porter</p><p><b>actor_02</b> Knifehouse washer</p><p><b>actor_03</b> Knifehouse stoker</p><p><b>actor_04</b> Steamroom chef</p><p><b>actor_05</b> Steamroom porter</p><p><b>actor_06</b> Steamroom washer</p><p><b>actor_07</b> Steamroom stoker</p><p><b>actor_08</b> Garnish Hall chef</p><p><b>actor_09</b> Garnish Hall porter</p><p><b>actor_10</b> Garnish Hall washer</p><p><b>actor_11</b> Garnish Hall stoker</p><p><b>actor_12</b> Tray Corner chef</p><p><b>actor_13</b> Tray Corner porter</p><p><b>actor_14</b> Tray Corner washer</p><p><b>actor_15</b> Tray Corner stoker</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;Self actor ID 0-15.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      5
+    ],
+    &quot;meaning&quot;: &quot;Cached order flavours for kitchens 0-3. Own kitchen is current; other entries contain only a nearby actor&#x27;s last spoken report, or zero when expired.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      9
+    ],
+    &quot;meaning&quot;: &quot;Remaining report lifetimes. Own kitchen is always 12; spoken foreign reports count down after each step and can become stale before expiry.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      10
+    ],
+    &quot;meaning&quot;: &quot;t: Native step clock; nonterminal transitions increment once. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      11
+    ],
+    &quot;meaning&quot;: &quot;done: Joint terminal flag, true only at the declared cap in this continuing world. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      12
+    ],
+    &quot;meaning&quot;: &quot;terminated: Natural termination cause; always false under this continuing-world rule. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      13
+    ],
+    &quot;meaning&quot;: &quot;truncated: Cap cause with natural-termination priority; preserved after done. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      374
+    ],
+    &quot;meaning&quot;: &quot;terrain: Row-major native tile map with values in the world legend. Shape [19, 19], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      374,
+      406
+    ],
+    &quot;meaning&quot;: &quot;pos: Actor coordinates in ordered actor-ID order, x then y. Shape [16, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      406,
+      422
+    ],
+    &quot;meaning&quot;: &quot;kitchen: Kitchen 0 Knifehouse, 1 Steamroom, 2 Garnish Hall, 3 Tray Corner Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      422,
+      438
+    ],
+    &quot;meaning&quot;: &quot;tool: Tool 1 chef knife, 2 insulated porter grip, 3 wash brush, 4 bellows Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      438,
+      454
+    ],
+    &quot;meaning&quot;: &quot;cargo: Hands: 0 empty, 1 raw, 2 chopped, 3 steamed, 4 garnished, 5 plated, 6 dirty tray, 7 tray, 8 fuel Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      454,
+      470
+    ],
+    &quot;meaning&quot;: &quot;flavour: Food flavour 1-4; zero when no food identity is held Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      470,
+      486
+    ],
+    &quot;meaning&quot;: &quot;warmth: Hot food remaining lifetime; reheating resets to 64 before cooling Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      486,
+      502
+    ],
+    &quot;meaning&quot;: &quot;energy: Energy 0-16 Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      502,
+      510
+    ],
+    &quot;meaning&quot;: &quot;station_pos: Actual x,y coordinates for Four distinct equipment stations and local pantries in entity-index order. Shape [4, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      510,
+      514
+    ],
+    &quot;meaning&quot;: &quot;station_type: Station 0 chop, 1 steam, 2 garnish and sink, 3 plate Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      514,
+      518
+    ],
+    &quot;meaning&quot;: &quot;fuel: Boiler fuel; only station 1 consumes and accepts it Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      518,
+      522
+    ],
+    &quot;meaning&quot;: &quot;trays: Clean trays; sink rack starts at station 2, plating rack at station 3 Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      522,
+      526
+    ],
+    &quot;meaning&quot;: &quot;pantry_stock: Local raw stock; station index plus one is its flavour Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      526,
+      582
+    ],
+    &quot;meaning&quot;: &quot;belt_pos: Actual x,y coordinates for Twenty-four ring cells and four one-cell holding spurs in entity-index order. Shape [28, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      582,
+      610
+    ],
+    &quot;meaning&quot;: &quot;belt_item: Conveyor item code uses the same dictionary as actor cargo Shape [28], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      610,
+      638
+    ],
+    &quot;meaning&quot;: &quot;belt_flavour: Carried food flavour on the cell, zero for nonfood Shape [28], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      638,
+      666
+    ],
+    &quot;meaning&quot;: &quot;belt_warmth: Remaining hot-food lifetime on the cell Shape [28], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      666,
+      722
+    ],
+    &quot;meaning&quot;: &quot;belt_flow: Current successor displacement in x,y; zero means held at a spur Shape [28, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      722,
+      730
+    ],
+    &quot;meaning&quot;: &quot;junction_pos: Actual x,y coordinates for Physical junction switches at ring corners in entity-index order. Shape [4, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      730,
+      734
+    ],
+    &quot;meaning&quot;: &quot;route: 0 bypass plus spur release, 1 divert into the holding spur Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      734,
+      742
+    ],
+    &quot;meaning&quot;: &quot;service_pos: Actual x,y coordinates for Public service counters and deadline clocks in entity-index order. Shape [4, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      742,
+      746
+    ],
+    &quot;meaning&quot;: &quot;deadline: Public order deadline; nominal reset to 96, then end-step decrement Shape [4], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      746,
+      750
+    ],
+    &quot;meaning&quot;: &quot;utility_pos: Actual x,y coordinates for Fuel pile at index 0; piped washwater tank at index 1 in entity-index order. Shape [2, 2], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      750,
+      751
+    ],
+    &quot;meaning&quot;: &quot;water: Shared piped washwater, capacity 24; one unit renews every six steps. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      751,
+      752
+    ],
+    &quot;meaning&quot;: &quot;fuel_stock: Central fuel pile, capacity 16; one fuel renews every twelve steps. Shape [], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      752,
+      768
+    ],
+    &quot;meaning&quot;: &quot;served: Per-actor completed matching warm order events, not partial processing. Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      768,
+      769
+    ],
+    &quot;meaning&quot;: &quot;wasted: One-element public count of discarded and expired food units this step. Shape [1], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      769,
+      785
+    ],
+    &quot;meaning&quot;: &quot;processed: Per-actor successful preparation stages this step; no completion reward. Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      785,
+      801
+    ],
+    &quot;meaning&quot;: &quot;handed: Per-actor physical carried-item handoffs this step. Shape [16], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      801,
+      829
+    ],
+    &quot;meaning&quot;: &quot;belt_moved: Per-source conveyor-cell movement flags this step. Shape [28], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      829,
+      909
+    ],
+    &quot;meaning&quot;: &quot;reward_parts: Columns: common completed service, recipient kitchen, serving actor, effort/resource cost, waste/wrong/late cost. Shape [16, 5], row-major flattening.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;staff&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;kitchen&quot;
+        ],
+        &quot;meaning&quot;: &quot;Kitchen 0 Knifehouse, 1 Steamroom, 2 Garnish Hall, 3 Tray Corner&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tool 1 chef knife, 2 insulated porter grip, 3 wash brush, 4 bellows&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;Hands: 0 empty, 1 raw, 2 chopped, 3 steamed, 4 garnished, 5 plated, 6 dirty tray, 7 tray, 8 fuel&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;flavour&quot;
+        ],
+        &quot;meaning&quot;: &quot;Food flavour 1-4; zero when no food identity is held&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;warmth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Hot food remaining lifetime; reheating resets to 64 before cooling&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;energy&quot;
+        ],
+        &quot;meaning&quot;: &quot;Energy 0-16&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;equipment&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_type&quot;
+        ],
+        &quot;meaning&quot;: &quot;Station 0 chop, 1 steam, 2 garnish and sink, 3 plate&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fuel&quot;
+        ],
+        &quot;meaning&quot;: &quot;Boiler fuel; only station 1 consumes and accepts it&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;trays&quot;
+        ],
+        &quot;meaning&quot;: &quot;Clean trays; sink rack starts at station 2, plating rack at station 3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pantry_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Local raw stock; station index plus one is its flavour&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;conveyor&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 28,
+    &quot;position&quot;: [
+      &quot;belt_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;belt_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;belt_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;belt_item&quot;
+        ],
+        &quot;meaning&quot;: &quot;Conveyor item code uses the same dictionary as actor cargo&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;belt_flavour&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried food flavour on the cell, zero for nonfood&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;belt_warmth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining hot-food lifetime on the cell&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;belt_flow&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current successor displacement in x,y; zero means held at a spur&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;junctions&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;junction_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;junction_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;junction_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;route&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 bypass plus spur release, 1 divert into the holding spur&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;service_counters&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;service_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;order_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;deadline&quot;
+        ],
+        &quot;meaning&quot;: &quot;Public order deadline; nominal reset to 96, then end-step decrement&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;order_cards&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;service_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;order_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;order_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;order&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current requested flavour 1-4; foreign spoken reports may be stale&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;utilities&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;utility_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;utility_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;utility_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 219,
+  &quot;key&quot;: &quot;gi219&quot;,
+  &quot;title&quot;: &quot;节庆厨房 · Festival Kitchens&quot;,
+  &quot;summary&quot;: &quot;十六位员工协作加工、装盘、保温和履行各厨房订单。&quot;,
+  &quot;tags&quot;: [
+    &quot;厨房协作&quot;,
+    &quot;16角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 16,
+    &quot;observation_size&quot;: 909,
+    &quot;num_actions&quot;: 22,
+    &quot;max_steps&quot;: 384
+  },
+  &quot;source_sha256&quot;: &quot;34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb&quot;,
+  &quot;manifest_sha256&quot;: &quot;dd4245d281f3367a221697d005162bc5df1b2dcc18cd604187e5a17347d3924c&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb&quot;,
+      &quot;bytes&quot;: 18944,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00219/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;dd4245d281f3367a221697d005162bc5df1b2dcc18cd604187e5a17347d3924c&quot;,
+      &quot;bytes&quot;: 31970,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00219/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;6b9af39fccccd97fefb046708dc26600bb92e96f20dcf2da524aecbd89ec6f05&quot;,
+      &quot;bytes&quot;: 18443,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00219/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;58883d3435fa61e40d7e6bfb6cac19cba19f8f0b15fedcc67ead3ac09dbf5b91&quot;,
+      &quot;bytes&quot;: 13167,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00219/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;2782708fca52a4aa40aef4f549a357be9d08d2372ffe0690374f97f53c2ad297&quot;,
+      &quot;bytes&quot;: 8031,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00219/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi219">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

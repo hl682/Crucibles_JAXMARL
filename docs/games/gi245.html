@@ -1,0 +1,401 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lantern Ferry Supper · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI245 / SPATIAL</p><h1>Lantern Ferry Supper</h1><p class="lead"></p><div class="stats"><span>12 agents</span><span>16 actions</span><span>466 observation columns</span><span>512 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 245</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Serve twelve staggered passenger orders before expiration, reusing plates and separating fish allergens while coordinating shared passages and heat.&quot;,
+  &quot;natural_termination&quot;: &quot;All twelve orders have arrived and all active orders have been served or expired. Service closure includes missed orders, so natural termination does not assert success. Otherwise H=512.&quot;,
+  &quot;interaction&quot;: &quot;Two opposite-bank cooks move the same actual counter, removing the old crossing and opening the new one. Shared furnace heat drives all pots and the dryer but risks burns. Carried plates, ingredients and order tickets and persistent board contamination connect three kitchens.&quot;,
+  &quot;observation_access&quot;: &quot;Self fields plus Chebyshev radius-three local map/entity fields; no within-square occlusion. Hidden rows and outside-map patch cells zero with presence. Dynamic remote state is not observed. Event rendering must suppress hidden entity events; debug/full-state view is separate. The explicitly listed own team score summaries are self information.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 2.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>All twelve cooks use the same native tools/actions. For station actions stand on or beside the nearest station; ID resolves distance ties.</li><li>Two empty-handed cooks at opposite banks must carry a counter in the same direction. Its actual position defines the crossing.</li><li>Chop food, load a pot and retrieve it with a clean plate at progress4. Uncollected food burns at progress8.</li><li>Fish contaminates boards and pots. Clean boards empty-handed; contaminated vegetables are rejected.</li><li>One central furnace drives every pot and the dryer. Stoking spends finite fuel; venting reduces heat and slows both processes.</li><li>Delivery leaves a dirty plate at the window: carry, wash, dry and reuse it.</li><li>Separate dining windows reveal local staggered orders. Carry a ticket or hand it to an adjacent waiting cook.</li><li>Only radius-three local information appears in role views; human and AI actions call this same native transition.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Lantern Ferry Supper
+
+AUTHORED_NOT_EXECUTED. Candidate game-v3-00245, attempt00, train-only, feedback0, parentless blind authoring. Source SHA256 174bcf03003597af838bc1e3deda78823f72ba639ef3eddbc95133e55f1f29d6. Native dimensions A=12, O=466, U=16, H=512. Every actor has an independently supplied scalar action, observation/reward/done row, actual position and persistent spatial consequences. There are 3 groups of 4; grouping identifies affiliation, not a single controller for that group.
+
+## Task and interaction
+
+Serve twelve staggered passenger orders before expiration, reusing plates and separating fish allergens while coordinating shared passages and heat.
+
+Two opposite-bank cooks move the same actual counter, removing the old crossing and opening the new one. Shared furnace heat drives all pots and the dryer but risks burns. Carried plates, ingredients and order tickets and persistent board contamination connect three kitchens.
+
+Place crossings near pantry paths or near service routes. Low-heat cooking leaves timing slack; hot batches require prompt plate delivery and venting. Use distinct fish/vegetable boards or spend cleaning effort for flexibility. Ticket runners can relay window information but tickets become stale when orders change.
+
+The 23x11 grid uses integer [x,y] cell centers, y down. Positions govern movement, object work and transfer. Scene colors/glyphs are original declarative cues for the independent cooperative_kitchen family. The shared platform can select arbitrary one/multiple actors and fill their unchanged native action rows. This package does not claim a working UI, animation or human acceptance.
+
+## Action meanings
+
+- 0: Wait / receive adjacent handoff.
+- 1: Move north.
+- 2: Move east.
+- 3: Move south.
+- 4: Move west.
+- 5: Pick pantry food, plate, plated ready pot meal or dry cabinet plate.
+- 6: Chop carried raw ingredient at board.
+- 7: Wash dirty plate at sink or empty-handed clean board.
+- 8: Load chopped food into pot or wet plate into dryer.
+- 9: Serve plated meal at dining window.
+- 10: Stoke nearby shared furnace with fuel.
+- 11: Vent nearby shared furnace.
+- 12: Empty-handed carry gangway downward with opposite-bank partner.
+- 13: Empty-handed carry gangway upward with opposite-bank partner.
+- 14: Take local current order ticket.
+- 15: Handoff item and ticket to adjacent empty waiting cook.
+
+Invalid or out-of-range action IDs deterministically become action0. Wait remains legal for every actor, including disabled actors and terminal input. Individual masks expose local physical/tool conditions; partner cooperation is resolved by the joint transition. Finite-resource contention uses clock-rotating actor priority. The same masks and native actions apply to human and AI ownership.
+
+## Transition order, rewards and termination
+
+Old-state masks; conservative collision movement with rotating equal-target priority; two counter carries in gap order; rotating nearest-station arbitration; furnace/cabinet; orders/expiration; adjacent handoffs; meal age/burns; closure.
+
+Clipped to [-1,2]. Correct server +0.8; each home-window kitchen member +0.2; own spill/rejection -0.15; burn -0.04; nonwait effort -0.002; home expired order -0.05; everyone -0.002 times fraction of windows holding more than three dirty plates. Plates, food and fuel are also persistent resources.
+
+Natural termination: All twelve orders have arrived and all active orders have been served or expired. Service closure includes missed orders, so natural termination does not assert success. Otherwise H=512. Natural completion or failure takes priority if it coincides with H. truncated=(next t&gt;=H) AND NOT terminated; done_all is their disjunction and equals episode_done. A nonterminal input advances t once. Already-terminal input is preserved by the final tree selection: clock, state, observation and terminal causes remain; reward is zero and all dones true. There is no internal reset.
+
+The reset key is external trajectory provenance; only the supplied key drives reset stochasticity. Authored steps are deterministic and do not consume their key. Small signed values are int32, booleans bool, persistent reals float32. The uint32 key is not duplicated in world state. Exact eager/JIT/vmap behavior and numerical parity are untested.
+
+## Exact observations and role rendering
+
+Local entity blocks use fixed ID order and explicit presence. Hidden payloads are zero. Map patches enumerate dy=-3..3, then dx=-3..3. The local square is not occlusion-limited. Debug/full-state views must be labeled and cannot become policy observations. Actual event flags/counters must be filtered by the related visible entity; their declaration does not authorize off-screen event disclosure.
+
+- Columns [0, 12): Time/512,ID/11,team/2,x/22,y/10,item/9,allergen,age/32,ticket/2,spill,burn,home completed orders/4.
+- Columns [12, 132): 12 actor slots: x/22,y/10,team/2,item/9,allergen,age/32,ticket/2,spill,burn,presence.
+- Columns [132, 348): 18 station slots: x/22,y/10,type/5,stock/16,recipe/4,progress/8,contamination,order/2,deadline/96,served,missed,presence.
+- Columns [348, 356): Two gangway slots: x/22,y/10,signed displacement {-1,0,1},presence.
+- Columns [356, 368): Two thermal slots: x/22,y/10,kind,level/10,stock/36,presence.
+- Columns [368, 466): 7x7 dy-major patch: tile/2,in-bounds; unavailable cells zero.
+
+All fixed-shape state leaves are listed in manifest.json. Entity attributes are represented by the corresponding native local block. The explicitly described own team score summaries are self information. Declared invariants include finite observations/rewards, coordinate bounds, resource nonnegativity under legal transitions, fixed state-tree shapes and absorbing terminal semantics. They remain source declarations, not passed runtime receipts.
+
+## Literal diagnostic proposals
+
+playthrough.json supplies two full-width literal scripts and one paired hypothesis. Every frame contains all 12 actions, including zeros. There is no adaptive policy, search or substitute dynamics. The branches have the same prefix and subsequent actions, and differ at exactly one actor/action/step. Intended differences come from source reasoning only. No script was imported, run, simulated, scored or accepted. Initial random details, multi-step legality, exact effects and rewards remain unverified; no solvability or learning result is claimed.
+
+## Literal source evidence
+
+- candidate.py:59: `def legal_actions(self, s):`
+- candidate.py:92: `occupied = jnp.any(jnp.all(proposal[:, None] == s[&#x27;pos&#x27;][None], axis=2) &amp; (ids[:, None] != ids[None]), axis=1)`
+- candidate.py:96: `def shift_one(k, carry):`
+- candidate.py:114: `station_pick = (((typ &lt; 2) | (typ == 4) | (typ == 5)) &amp; (it == 0) &amp; (s[&#x27;stock&#x27;][k] &gt; 0)) | ((typ == 3) &amp; (it == 9) &amp; (s[&#x27;recipe&#x27;][k] &gt; 0) &amp; (s[&#x27;progress&#x27;][k] &gt;= 4))`
+- candidate.py:129: `correct = serve &amp; (it - 4 == s[&#x27;order&#x27;][k]) &amp; ((s[&#x27;order&#x27;][k] != 1) | ~s[&#x27;allergen&#x27;])`
+- candidate.py:149: `heat = jnp.clip(s[&#x27;thermal_level&#x27;][0] - 0.05 + 2 * stoke - 2 * vent, 0, 10)`
+- candidate.py:150: `progress = jnp.where(change, 0.0, s[&#x27;progress&#x27;])`
+- candidate.py:169: `arrival = ((s[&#x27;t&#x27;] + 1) % 48 == jnp.array([0, 16, 32], jnp.int32)) &amp; (order[windows] == 0) &amp; (s[&#x27;remaining&#x27;] &gt; 0)`
+- candidate.py:174: `ticket = jnp.where((act == 14) &amp; near, s[&#x27;order&#x27;][k], s[&#x27;ticket&#x27;])`
+- candidate.py:198: `reward = 0.8 * correct + 0.2 * served[windows][s[&#x27;team&#x27;]] - 0.15 * spill - 0.04 * burn - 0.002 * (act &gt; 0) - 0.05 * missed[windows][s[&#x27;team&#x27;]] - 0.002 * jnp.mean((stock[windows] &gt; 3).astype(jnp.float32))`
+- candidate.py:196: `terminated = jnp.all(remaining == 0) &amp; ~jnp.any(order &gt; 0)`
+- candidate.py:207: `def raw_step(self, key, state, actions):`
+- candidate.py:214: `def observe(self, s):`
+
+## Provenance and remaining evidence
+
+The supplied JaxMARL README informed parallel actor-interface expectations; Pgx informed legal masks, external keys and terminal states; Craftax README informed local materials/observation and no-autoreset boundaries. PureJaxRL README and Craftax_Baselines_ppo_rnn.py informed only learner/wrapper integration boundaries. No upstream code, assets, board layouts or game recipes were copied. No supplied external score was used as evidence for these authored games. Exact supplied reference bytes and uses are in author_input_freeze.json.
+
+Authority and scope hashes were verified. ROOT_INPUT_REFERENCE_CLARIFICATION247.json explicitly supersedes the missing inherited194 reference; that absent file was not searched or read. Current247 population/family and current design/request bytes control. Actual allowed paths, byte counts, SHA256 and uses are frozen in author_input_freeze.json. No MEMORY, prior candidate/results, other coordination, training/IR, selection, heldout or final-test evidence entered authoring.
+
+Author checks are AST parsing/whitelist-oriented text inspection, manifest/scene data inspection, literal script dimensions and single-action-difference counting, and byte/hash verification. Candidate code was never imported or executed. No NumPy/JAX/PRNG/runtime tests occurred. Runtime shape/parity/throughput, physical paired replay, native renderer/animation, arbitrary human play, learning and meta-learning transfer are UNKNOWN or UNEXECUTED. Independent immutable-source integration release is required.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait / receive adjacent handoff</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Pick pantry food, plate, plated ready pot meal or dry cabinet plate</span></div><div class="action"><b>6</b><span>Chop carried raw ingredient at board</span></div><div class="action"><b>7</b><span>Wash dirty plate at sink or empty-handed clean board</span></div><div class="action"><b>8</b><span>Load chopped food into pot or wet plate into dryer</span></div><div class="action"><b>9</b><span>Serve plated meal at dining window</span></div><div class="action"><b>10</b><span>Stoke nearby shared furnace with fuel</span></div><div class="action"><b>11</b><span>Vent nearby shared furnace</span></div><div class="action"><b>12</b><span>Empty-handed carry gangway downward with opposite-bank partner</span></div><div class="action"><b>13</b><span>Empty-handed carry gangway upward with opposite-bank partner</span></div><div class="action"><b>14</b><span>Take local current order ticket</span></div><div class="action"><b>15</b><span>Handoff item and ticket to adjacent empty waiting cook</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> cook / pantry runner; group0, member0</p><p><b>agent_1</b> cook / prep runner; group0, member1</p><p><b>agent_2</b> cook / stove runner; group0, member2</p><p><b>agent_3</b> cook / service runner; group0, member3</p><p><b>agent_4</b> cook / pantry runner; group1, member0</p><p><b>agent_5</b> cook / prep runner; group1, member1</p><p><b>agent_6</b> cook / stove runner; group1, member2</p><p><b>agent_7</b> cook / service runner; group1, member3</p><p><b>agent_8</b> cook / pantry runner; group2, member0</p><p><b>agent_9</b> cook / prep runner; group2, member1</p><p><b>agent_10</b> cook / stove runner; group2, member2</p><p><b>agent_11</b> cook / service runner; group2, member3</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      12
+    ],
+    &quot;visibility&quot;: &quot;self&quot;,
+    &quot;meaning&quot;: &quot;Time/512,ID/11,team/2,x/22,y/10,item/9,allergen,age/32,ticket/2,spill,burn,home completed orders/4.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      132
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;12 actor slots: x/22,y/10,team/2,item/9,allergen,age/32,ticket/2,spill,burn,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      132,
+      348
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;18 station slots: x/22,y/10,type/5,stock/16,recipe/4,progress/8,contamination,order/2,deadline/96,served,missed,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      348,
+      356
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;Two gangway slots: x/22,y/10,signed displacement {-1,0,1},presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      356,
+      368
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;Two thermal slots: x/22,y/10,kind,level/10,stock/36,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      368,
+      466
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;7x7 dy-major patch: tile/2,in-bounds; unavailable cells zero.&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;cooks&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 12,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Home kitchen 0..2&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;item&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty;1 veg;2 fish;3 chopped veg;4 chopped fish;5 plated veg;6 plated fish;7 dirty;8 wet;9 clean plate&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;allergen&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fish contamination on carried food&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;age&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried plated meal age&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;ticket&quot;
+        ],
+        &quot;meaning&quot;: &quot;Order ticket 0 none;1 veg;2 fish&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;spill&quot;
+        ],
+        &quot;meaning&quot;: &quot;Spoilage or rejected meal this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;burn&quot;
+        ],
+        &quot;meaning&quot;: &quot;Overheated-pot exposure this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;stations&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 18,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_type&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 veg;1 fish pantry;2 board;3 pot;4 sink;5 dining window&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Pantry ingredients, sink clean plates or window dirty plates&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty;3 chopped veg;4 chopped fish&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cook progress: ready at4; burns at8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;contamination&quot;
+        ],
+        &quot;meaning&quot;: &quot;Board/pot fish contamination&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;order&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 none;1 vegetable;2 fish order&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;deadline&quot;
+        ],
+        &quot;meaning&quot;: &quot;Order ticks remaining&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;served&quot;
+        ],
+        &quot;meaning&quot;: &quot;Correct order served this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;missed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Order expired this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gangways&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;counter_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;counter_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;counter_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;counter_shift&quot;
+        ],
+        &quot;meaning&quot;: &quot;Signed vertical displacement this step&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;thermal&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;thermal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;thermal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;thermal_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;thermal_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 furnace;1 drying cabinet&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;thermal_level&quot;
+        ],
+        &quot;meaning&quot;: &quot;Furnace heat 0..10 or drying progress 0..4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;thermal_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Furnace fuel remaining or cabinet occupied 0/1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 245,
+  &quot;key&quot;: &quot;gi245&quot;,
+  &quot;title&quot;: &quot;Lantern Ferry Supper&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 12,
+    &quot;observation_size&quot;: 466,
+    &quot;num_actions&quot;: 16,
+    &quot;max_steps&quot;: 512
+  },
+  &quot;source_sha256&quot;: &quot;174bcf03003597af838bc1e3deda78823f72ba639ef3eddbc95133e55f1f29d6&quot;,
+  &quot;manifest_sha256&quot;: &quot;037092dc37c912b78b41fe41064ba50d48910040baf856cfc6c8ae218d5b2ff9&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;174bcf03003597af838bc1e3deda78823f72ba639ef3eddbc95133e55f1f29d6&quot;,
+      &quot;bytes&quot;: 17414,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00245/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;037092dc37c912b78b41fe41064ba50d48910040baf856cfc6c8ae218d5b2ff9&quot;,
+      &quot;bytes&quot;: 17877,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00245/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;cfe4e9cf8959a3472222c14a67f69f1cc9fe9352e2df82872034def98d8e66ce&quot;,
+      &quot;bytes&quot;: 8970,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00245/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;380c60ffffab278ccb2b9ada833d5cc41f9ad64ce8d86bee051ec3d4ebceeaf3&quot;,
+      &quot;bytes&quot;: 9325,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00245/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;d77f027e0185070bb0e48a2715594fd7e7774eb287d5b90ef8578bfea68c0920&quot;,
+      &quot;bytes&quot;: 7000,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00245/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi245">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

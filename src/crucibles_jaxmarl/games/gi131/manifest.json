@@ -1,0 +1,1419 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00131",
+  "source_sha256": "0b76969b21720d1b7319d9611873f0d4c0a58edd84e3da79ce1635892ec18194",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 514,
+  "num_actions": 10,
+  "max_steps": 120,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 160,
+  "reward_low": -8,
+  "reward_high": 8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Rescue priority for survivors 0 and 3"
+    },
+    {
+      "id": "agent_1",
+      "role": "Rescue priority for survivors 1 and 4"
+    },
+    {
+      "id": "agent_2",
+      "role": "Rescue priority for survivors 2 and 5"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Clear fuel on the facing cell if unburning"
+    },
+    {
+      "id": 6,
+      "label": "Spray one water unit onto the facing cell"
+    },
+    {
+      "id": 7,
+      "label": "Pick up or drop one nearby survivor"
+    },
+    {
+      "id": 8,
+      "label": "Take one unit from the nearby shared tank"
+    },
+    {
+      "id": 9,
+      "label": "Give one water unit to the facing adjacent crew member"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "smoke"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cell_pos"
+      ],
+      "shape": [
+        63,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire_level"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel_level"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "smoke_level"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_health"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tank_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tank_stock"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spent_water"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "safe_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "survivor_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "survivor_carrier"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "survivor_health"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_spray"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cell_active"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tank_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "safe_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "survivor_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_rescued"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_lost"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_injury"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_spread"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_cut"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_refill"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_share"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "survivor_vis"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cell_vis"
+      ],
+      "shape": [
+        3,
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tank_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "safe_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Fuel-bearing ground unless cleared or burned",
+          "color": "#A9B879"
+        },
+        {
+          "value": 1,
+          "meaning": "Fireproof access strip and safe corner",
+          "color": "#CBD1D4"
+        },
+        {
+          "value": 2,
+          "meaning": "Impassable masonry wall",
+          "color": "#5E656B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "Direction: north, east, south, west",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "agent_health"
+          ],
+          "meaning": "Crew health; zero permits only wait",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "meaning": "Portable water units",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "hazard_cells",
+      "kind": "hazard",
+      "count": 63,
+      "position": [
+        "cell_pos"
+      ],
+      "active": [
+        "cell_active"
+      ],
+      "visibility": [
+        "cell_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "fire_level"
+          ],
+          "meaning": "Native flame intensity",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "fuel_level"
+          ],
+          "meaning": "Remaining combustible fuel",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "smoke_level"
+          ],
+          "meaning": "Native smoke intensity",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "survivors",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "survivor_pos"
+      ],
+      "active": [
+        "survivor_active"
+      ],
+      "visibility": [
+        "survivor_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "survivor_health"
+          ],
+          "meaning": "Remaining survivor health",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "survivor_carrier"
+          ],
+          "meaning": "-1 waiting; 0-2 carrier; 3 rescued; 4 lost",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "tank",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "tank_pos"
+      ],
+      "active": [
+        "tank_active"
+      ],
+      "visibility": [
+        "tank_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tank_stock"
+          ],
+          "meaning": "Remaining communal water",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "safe",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "safe_pos"
+      ],
+      "active": [
+        "safe_active"
+      ],
+      "visibility": [
+        "safe_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "last_rescued"
+      ],
+      "meaning": "Survivor first reached the safe corner this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_lost"
+      ],
+      "meaning": "Survivor reached zero health this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_injury"
+      ],
+      "meaning": "Crew lost one health this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_spread"
+      ],
+      "meaning": "Cell ignited this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_cut"
+      ],
+      "meaning": "A successful clear vote reached this unburning ground cell",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_spray"
+      ],
+      "meaning": "Water units sprayed into each cell this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_refill"
+      ],
+      "meaning": "Crew took one tank unit this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_share"
+      ],
+      "meaning": "Crew gave one unit to its facing ally this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spent_water"
+      ],
+      "meaning": "Total water expended on spraying",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role identity, one-hot in declared agent index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Live transition clock, starting at zero",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "t"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "done"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Natural terminal cause",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "terminated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Horizon cause only when natural termination is false",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "truncated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        7,
+        70
+      ],
+      "meaning": "Native tile map flattened in y-major order; see the public world legend",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "tile"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        70,
+        133
+      ],
+      "meaning": "Native fire grid flattened in y-major order",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "fire_level"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        133,
+        196
+      ],
+      "meaning": "Native remaining fuel grid flattened in y-major order",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "fuel_level"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        196,
+        259
+      ],
+      "meaning": "Native smoke grid flattened in y-major order",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "smoke_level"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        259,
+        265
+      ],
+      "meaning": "agent pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "agent_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        265,
+        268
+      ],
+      "meaning": "Direction: north, east, south, west",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "facing"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        268,
+        271
+      ],
+      "meaning": "Crew health; zero permits only wait",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "agent_health"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        271,
+        274
+      ],
+      "meaning": "Portable water units",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "water"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        274,
+        276
+      ],
+      "meaning": "tank pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "tank_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        276,
+        277
+      ],
+      "meaning": "Remaining communal water",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "tank_stock"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        277,
+        278
+      ],
+      "meaning": "Cumulative sprayed water units",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "spent_water"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        278,
+        280
+      ],
+      "meaning": "safe pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "safe_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        280,
+        292
+      ],
+      "meaning": "survivor pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "survivor_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        292,
+        298
+      ],
+      "meaning": "-1 waiting; 0-2 carrier; 3 rescued; 4 lost",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "survivor_carrier"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        298,
+        304
+      ],
+      "meaning": "Remaining survivor health",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "survivor_health"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        304,
+        310
+      ],
+      "meaning": "Survivor first reached the safe corner this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_rescued"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        310,
+        316
+      ],
+      "meaning": "Survivor reached zero health this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_lost"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        316,
+        319
+      ],
+      "meaning": "Crew lost one health this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_injury"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        319,
+        382
+      ],
+      "meaning": "Cell ignited this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_spread"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        382,
+        445
+      ],
+      "meaning": "A successful clear vote reached this unburning ground cell",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_cut"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        445,
+        508
+      ],
+      "meaning": "Water units sprayed into each cell this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_spray"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        508,
+        511
+      ],
+      "meaning": "Crew took one tank unit this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_refill"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        511,
+        514
+      ],
+      "meaning": "Crew gave one unit to its facing ally this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_share"
+        ]
+      ]
+    }
+  ],
+  "task": {
+    "objective": "Rescue six individually conserved survivors while protecting crews and managing finite water. Every rescue has shared value and extra value to its actual rescuer and the survivor-index priority role.",
+    "natural_termination": "All six survivors are resolved as rescued or lost, or all three crew health values are zero. Surviving unresolved civilians remain in the final state when all crews are disabled. Otherwise truncate at 120 live steps.",
+    "interaction": "Cleared fuel blocks future orthogonal ignition, spraying changes immediate hazards, and directed water gifts change a partner resource budget. Survivor custody is exclusive and can be relayed by dropping then picking. A common finite tank, occupied cells and priorities couple rescue decisions.",
+    "observation_access": "Fully observable public fire, fuel, smoke, people, supplies and events. Flat cell arrays are row-major duplicates of the corresponding native grids; fixed cell positions are determined by the public 9-by-7 grid. Visibility masks are all true. Lost survivors become inactive; their loss and final health remain in the observation."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 120
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "water"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tank_stock"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "spent_water"
+      ],
+      "low": 0,
+      "high": 15
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fire"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "smoke"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_health"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "survivor_health"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "survivor_carrier"
+      ],
+      "low": -1,
+      "high": 4
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "state_visibility_mapping": [
+    {
+      "state_path": [
+        "t"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "tile"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "fuel"
+      ],
+      "access_rule": "Exactly the public fuel_level field reshaped to [7,9]."
+    },
+    {
+      "state_path": [
+        "fire"
+      ],
+      "access_rule": "Exactly the public fire_level field reshaped to [7,9]."
+    },
+    {
+      "state_path": [
+        "smoke"
+      ],
+      "access_rule": "Exactly the public smoke_level field reshaped to [7,9]."
+    },
+    {
+      "state_path": [
+        "cell_pos"
+      ],
+      "access_rule": "Public redundant geometry or derived bookkeeping, exactly determined by the public fields and fixed map."
+    },
+    {
+      "state_path": [
+        "fire_level"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "fuel_level"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "smoke_level"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "agent_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "facing"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "agent_health"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "water"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "tank_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "tank_stock"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "spent_water"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "safe_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "survivor_pos"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "survivor_carrier"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "survivor_health"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_spray"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "terminated"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "truncated"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "cell_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "agent_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "tank_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "safe_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "survivor_active"
+      ],
+      "access_rule": "Entity activity is a public constant or a deterministic function of its equally visible status. Activity never overrides its role visibility mask."
+    },
+    {
+      "state_path": [
+        "last_rescued"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_lost"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_injury"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_spread"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_cut"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_refill"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "last_share"
+      ],
+      "access_rule": "Direct public observation field."
+    },
+    {
+      "state_path": [
+        "agent_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "survivor_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "cell_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "tank_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    },
+    {
+      "state_path": [
+        "safe_vis"
+      ],
+      "access_rule": "Native entity visibility mask: the renderer uses only the current role row. Constant true rows are public; partial rows are supplied in that role observation or are the identical mask used for that role private record."
+    }
+  ],
+  "action_semantics": "Every indexed intent is legal for a live capable role, even when its spatial/resource precondition fails; failed intents become deterministic no-ops. Out-of-range actions become wait. Terminal roles, and temporarily/incapacitated roles where specified, retain wait only. Masks do not leak private feasibility.",
+  "joint_movement_semantics": "Targets outside the map, duplicate requested destinations, or another role current cell are rejected. No swaps or following into a just-vacated occupied cell occur in that transition.",
+  "randomness": "Deterministic reset and deterministic orthogonal spread. Both supplied keys are unused. No random wind, agent-order draw or stochastic ignition is hidden in the implementation."
+}

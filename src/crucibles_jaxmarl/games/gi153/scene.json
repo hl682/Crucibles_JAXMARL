@@ -1,0 +1,322 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "e9d1a6de2281874cecfbf6b2f2ce57605925694d281ce97040c40634e54779c6",
+  "manifest_sha256": "887f4abd209f545aea0dd1a7a765186732de79fc13c589c3ffbd433006dfd1d2",
+  "title": "Bonded Bridges",
+  "rules": [
+    "North issuer is agent 0; south issuer is agent 1. Issuers cannot request their own bridge.",
+    "Requests are posted from a bridge approach, lock the old advertised toll, last four ticks and become grantable next tick.",
+    "At a nearby control point, an issuer can bond one token to grant a six-tick permit to a pending requester.",
+    "Entering a bridge consumes that permit, charges its quote and refunds the issuer bond. Unused expiry also refunds the bond.",
+    "The sum of all wallets and bridge bonds stays eight; changing a posted toll cannot change an existing quote.",
+    "A carrier already on a bridge may exit even if its permit is gone; backing out does not refund a used toll.",
+    "Each parcel has a distinct recipient; its private target row is sampled from the supplied reset key and revealed to sender, recipient and carrier.",
+    "Only adjacent empty carriers accept hand-offs; parcel identity and recipient persist.",
+    "Delivery rewards carrier +0.5, sender +0.25 and recipient +1; toll utility is a zero-sum 0.05 per token; every live step costs 0.001.",
+    "All four deliveries end naturally; otherwise the horizon is 160."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Bank path",
+          "color": "#D6D4CB"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall or unbridged river",
+          "color": "#394652"
+        },
+        {
+          "value": 2,
+          "meaning": "Narrow bridge",
+          "color": "#BA8A45"
+        },
+        {
+          "value": 3,
+          "meaning": "Possible delivery depot; private contract selects row",
+          "color": "#6D95A6"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "carriers",
+      "glyph": "worker",
+      "label": "Carriers and bridge issuers",
+      "color": "#8A7663",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Parcel id carried; -1 means empty"
+        },
+        {
+          "state_path": [
+            "wallet"
+          ],
+          "label": "Token balance; public on contract board"
+        },
+        {
+          "state_path": [
+            "in_transit"
+          ],
+          "label": "Bridge entered, or -1 when on a bank"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Complementary cargo",
+      "color": "#C3914B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_type"
+          ],
+          "label": "Complementary cargo type equals immutable parcel id"
+        },
+        {
+          "state_path": [
+            "cargo_carrier"
+          ],
+          "label": "Current carrier, or -1 when delivered"
+        },
+        {
+          "state_path": [
+            "recipient"
+          ],
+          "label": "Agent whose complementary demand this parcel fulfills"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "glyph": "gate",
+      "label": "Bonded access bridges",
+      "color": "#6289A3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_owner"
+          ],
+          "label": "Issuer: north 0, south 1"
+        },
+        {
+          "state_path": [
+            "toll"
+          ],
+          "label": "Advertised toll for new requests"
+        },
+        {
+          "state_path": [
+            "beneficiary"
+          ],
+          "label": "Role with the current permit, or -1"
+        },
+        {
+          "state_path": [
+            "permit_ttl"
+          ],
+          "label": "Remaining permit lifetime"
+        },
+        {
+          "state_path": [
+            "permit_price"
+          ],
+          "label": "Quoted toll locked into the current or last permit"
+        },
+        {
+          "state_path": [
+            "bond"
+          ],
+          "label": "Issuer token currently held in escrow"
+        }
+      ]
+    },
+    {
+      "id": "addresses",
+      "glyph": "flag",
+      "label": "Known delivery addresses",
+      "color": "#76A17B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "recipient"
+          ],
+          "label": "Receiving agent for this bilateral private delivery contract"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "deliver_event"
+      ],
+      "meaning": "Public completed delivery notices by parcel",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cross_event"
+      ],
+      "meaning": "Public opposite-bank exits by carrier this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "grant_event"
+      ],
+      "meaning": "Public newly issued permit notices by bridge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expire_event"
+      ],
+      "meaning": "Public expired unused permit notices by bridge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "received"
+      ],
+      "meaning": "Fulfilled complementary demands by receiving agent",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Request north bridge at its approach; quote current toll"
+    },
+    {
+      "id": 6,
+      "label": "Request south bridge at its approach; quote current toll"
+    },
+    {
+      "id": 7,
+      "label": "As issuer, grant one prior request at own control point and escrow one token"
+    },
+    {
+      "id": 8,
+      "label": "As issuer, toggle advertised own-bridge toll between zero and one"
+    },
+    {
+      "id": 9,
+      "label": "Hand carried parcel to adjacent empty agent 0"
+    },
+    {
+      "id": 10,
+      "label": "Hand carried parcel to adjacent empty agent 1"
+    },
+    {
+      "id": 11,
+      "label": "Hand carried parcel to adjacent empty agent 2"
+    },
+    {
+      "id": 12,
+      "label": "Hand carried parcel to adjacent empty agent 3"
+    },
+    {
+      "id": 13,
+      "label": "Attempt delivery of held parcel at its private target"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        7
+      ],
+      "visibility": "self",
+      "meaning": "Own x,y,id,carried parcel id,received count,clock,joint done."
+    },
+    {
+      "slice": [
+        7,
+        53
+      ],
+      "visibility": "public",
+      "meaning": "Contract board: wallets[4]; request triples gate,ttl,quote for four agents[12]; bridge records x,y,beneficiary,ttl,advertised toll,locked price,bond[14]; delivery flags[4],crossing flags[4],grant flags[2],expiry flags[2],received counts[4]."
+    },
+    {
+      "slice": [
+        53,
+        73
+      ],
+      "visibility": "local",
+      "meaning": "Four agent records: x,y,carried parcel,in-transit bridge,visible. Radius 3 without wall occlusion; hidden fields -1."
+    },
+    {
+      "slice": [
+        73,
+        93
+      ],
+      "visibility": "local",
+      "meaning": "Four parcel records: x,y,carrier,active,visible. Active parcels within radius 3; immutable type equals record id and recipients are [1,2,3,0]."
+    },
+    {
+      "slice": [
+        93,
+        105
+      ],
+      "visibility": "local",
+      "meaning": "Four private address records: x,y,visible. Known to original sender, named recipient and current carrier; otherwise -1. Delivered target becomes inactive and hidden."
+    },
+    {
+      "slice": [
+        105,
+        182
+      ],
+      "visibility": "public",
+      "meaning": "Static 7 by 11 public tile map, row-major yx."
+    }
+  ]
+}

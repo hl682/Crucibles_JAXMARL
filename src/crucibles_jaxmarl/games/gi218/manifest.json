@@ -1,0 +1,1385 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00218",
+  "source_sha256": "92695bd8eb6cd6e635e053ef152bf22ecb92b0d148a78c8246dcdd11a1844f0d",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 12,
+  "observation_size": 671,
+  "num_actions": 28,
+  "max_steps": 512,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -2,
+  "observation_high": 6144,
+  "reward_low": -2,
+  "reward_high": 20,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "actor_00",
+      "role": "Cairn miner"
+    },
+    {
+      "id": "actor_01",
+      "role": "Cairn rigger"
+    },
+    {
+      "id": "actor_02",
+      "role": "Cairn hauler"
+    },
+    {
+      "id": "actor_03",
+      "role": "Fern miner"
+    },
+    {
+      "id": "actor_04",
+      "role": "Fern rigger"
+    },
+    {
+      "id": "actor_05",
+      "role": "Fern hauler"
+    },
+    {
+      "id": "actor_06",
+      "role": "Ash miner"
+    },
+    {
+      "id": "actor_07",
+      "role": "Ash rigger"
+    },
+    {
+      "id": "actor_08",
+      "role": "Ash hauler"
+    },
+    {
+      "id": "actor_09",
+      "role": "Flint miner"
+    },
+    {
+      "id": "actor_10",
+      "role": "Flint rigger"
+    },
+    {
+      "id": "actor_11",
+      "role": "Flint hauler"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait and recover two energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Quarry adjacent stock; pick required for stone or ore"
+    },
+    {
+      "id": 6,
+      "label": "Make one cable from two fibre and one ore with spanner"
+    },
+    {
+      "id": 7,
+      "label": "Build adjacent pylon: two stone and one cable, spanner"
+    },
+    {
+      "id": 8,
+      "label": "Brace adjacent pylon this step with hauling yoke"
+    },
+    {
+      "id": 9,
+      "label": "Repair adjacent anchor by three health for one stone, spanner"
+    },
+    {
+      "id": 10,
+      "label": "Load span 0 carrier; ore before stone"
+    },
+    {
+      "id": 11,
+      "label": "Load span 1 carrier; ore before stone"
+    },
+    {
+      "id": 12,
+      "label": "Load span 2 carrier; ore before stone"
+    },
+    {
+      "id": 13,
+      "label": "Load span 3 carrier; ore before stone"
+    },
+    {
+      "id": 14,
+      "label": "Unload span 0 carrier"
+    },
+    {
+      "id": 15,
+      "label": "Unload span 1 carrier"
+    },
+    {
+      "id": 16,
+      "label": "Unload span 2 carrier"
+    },
+    {
+      "id": 17,
+      "label": "Unload span 3 carrier"
+    },
+    {
+      "id": 18,
+      "label": "Reverse span 0 carrier direction"
+    },
+    {
+      "id": 19,
+      "label": "Reverse span 1 carrier direction"
+    },
+    {
+      "id": 20,
+      "label": "Reverse span 2 carrier direction"
+    },
+    {
+      "id": 21,
+      "label": "Reverse span 3 carrier direction"
+    },
+    {
+      "id": 22,
+      "label": "Install one stone counterweight, hauling yoke"
+    },
+    {
+      "id": 23,
+      "label": "Withdraw one counterweight stone, hauling yoke"
+    },
+    {
+      "id": 24,
+      "label": "Deliver ore or stone to an adjacent foreign village"
+    },
+    {
+      "id": 25,
+      "label": "Give first carried material to lowest-ID adjacent actor with room"
+    },
+    {
+      "id": 26,
+      "label": "Exchange tools with lowest-ID adjacent actor"
+    },
+    {
+      "id": 27,
+      "label": "Rest and recover four energy"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        17,
+        21
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        12,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        12,
+        12
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crew"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "inventory"
+      ],
+      "shape": [
+        12,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "village_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "village_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "village_visible"
+      ],
+      "shape": [
+        12,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "received"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_pos"
+      ],
+      "shape": [
+        8,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_kind"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "node_active"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "node_visible"
+      ],
+      "shape": [
+        12,
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchor_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "anchor_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchor_visible"
+      ],
+      "shape": [
+        12,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "built"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "counterweight"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tension"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "braced"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrier_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrier_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrier_visible"
+      ],
+      "shape": [
+        12,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "load"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_crew"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "progress"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "direction"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "span_from"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "span_to"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "span_length"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wind"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "constructed"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "damaged"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "transferred"
+      ],
+      "shape": [
+        12
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reward_parts"
+      ],
+      "shape": [
+        12,
+        5
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      20,
+      16
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable valley blocks",
+          "color": "#C8B18A"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable rock wall; central walking gap remains",
+          "color": "#605B54"
+        },
+        {
+          "value": 2,
+          "meaning": "Pylon footing",
+          "color": "#8C664A"
+        },
+        {
+          "value": 3,
+          "meaning": "Village depot",
+          "color": "#BE8656"
+        },
+        {
+          "value": 4,
+          "meaning": "Finite quarry or fibre bed",
+          "color": "#9C9A6B"
+        },
+        {
+          "value": 5,
+          "meaning": "Installed sound cable route; hand-carry path remains walkable",
+          "color": "#B5A081"
+        },
+        {
+          "value": 6,
+          "meaning": "Installed cable with a broken endpoint anchor",
+          "color": "#9B6357"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 12,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "meaning": "Crew 0 Cairn, 1 Fern, 2 Ash, 3 Flint",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "meaning": "Tool 1 pick, 2 spanner, 3 hauling yoke; freely exchangeable",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "inventory"
+          ],
+          "meaning": "Inventory columns stone, fibre, ore, cable; total capacity eight",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "meaning": "Energy 0-12; wait or rest replenishes it",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "villages",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "village_pos"
+      ],
+      "active": [
+        "village_active"
+      ],
+      "visibility": [
+        "village_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "received"
+          ],
+          "meaning": "Cumulative stone or ore received; deliveries consume one unit",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "deposits",
+      "kind": "resource",
+      "count": 8,
+      "position": [
+        "node_pos"
+      ],
+      "active": [
+        "node_active"
+      ],
+      "visibility": [
+        "node_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "node_kind"
+          ],
+          "meaning": "Resource 0 stone, 1 fibre, 2 ore",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Remaining finite extraction stock; does not renew",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "anchors",
+      "kind": "gate",
+      "count": 4,
+      "position": [
+        "anchor_pos"
+      ],
+      "active": [
+        "anchor_active"
+      ],
+      "visibility": [
+        "anchor_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "built"
+          ],
+          "meaning": "Pylon has been installed and remains installed after damage",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Repairable anchor health 0-6; zero stops adjacent carriers",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "counterweight"
+          ],
+          "meaning": "Installed stone counterweight units 0-3",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "tension"
+          ],
+          "meaning": "Two per incident loaded carrier plus the current gust",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "braced"
+          ],
+          "meaning": "Additional support from this step's bracing actors",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "carriers",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "carrier_pos"
+      ],
+      "active": [
+        "carrier_active"
+      ],
+      "visibility": [
+        "carrier_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "load"
+          ],
+          "meaning": "Cargo 0 empty, 1 stone, 3 ore",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo_crew"
+          ],
+          "meaning": "Loading crew -1 when empty; other crews may unload",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "meaning": "Distance along the assigned straight cable span",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "direction"
+          ],
+          "meaning": "Signed direction along the span; a parked carrier can reverse",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "span_from"
+          ],
+          "meaning": "Starting pylon index for the assigned span",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "span_to"
+          ],
+          "meaning": "Ending pylon index for the assigned span",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "span_length"
+          ],
+          "meaning": "Span length in native grid cells",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Per-actor foreign delivery units",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "constructed"
+      ],
+      "meaning": "First pylon installations",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "damaged"
+      ],
+      "meaning": "Anchor wear from excess tension",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transferred"
+      ],
+      "meaning": "Physical material handoffs",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "received"
+      ],
+      "meaning": "Village receipts since reset",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "wind"
+      ],
+      "meaning": "Current public gust load",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Self actor ID 0-11; identifies which component the observer controls.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "t: Native step clock; nonterminal transitions increment once. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "done: Joint terminal flag, true only at the declared cap in this continuing world. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "terminated: Natural termination cause; always false under this continuing-world rule. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "truncated: Cap cause with natural-termination priority; preserved after done. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        362
+      ],
+      "meaning": "terrain: Row-major native tile map with values in the world legend. Shape [17, 21], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        362,
+        386
+      ],
+      "meaning": "pos: Actor coordinates in ordered actor-ID order, x then y. Shape [12, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        386,
+        398
+      ],
+      "meaning": "crew: Crew 0 Cairn, 1 Fern, 2 Ash, 3 Flint Shape [12], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        398,
+        410
+      ],
+      "meaning": "tool: Tool 1 pick, 2 spanner, 3 hauling yoke; freely exchangeable Shape [12], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        410,
+        458
+      ],
+      "meaning": "inventory: Inventory columns stone, fibre, ore, cable; total capacity eight Shape [12, 4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        458,
+        470
+      ],
+      "meaning": "energy: Energy 0-12; wait or rest replenishes it Shape [12], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        470,
+        478
+      ],
+      "meaning": "village_pos: Actual x,y coordinates for Village depots; index equals recipient crew in entity-index order. Shape [4, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        478,
+        482
+      ],
+      "meaning": "received: Cumulative stone or ore received; deliveries consume one unit Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        482,
+        498
+      ],
+      "meaning": "node_pos: Actual x,y coordinates for Original stone, fibre and ore deposits in entity-index order. Shape [8, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        498,
+        506
+      ],
+      "meaning": "node_kind: Resource 0 stone, 1 fibre, 2 ore Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        506,
+        514
+      ],
+      "meaning": "stock: Remaining finite extraction stock; does not renew Shape [8], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        514,
+        522
+      ],
+      "meaning": "anchor_pos: Actual x,y coordinates for Shared pylon anchors in clockwise order in entity-index order. Shape [4, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        522,
+        526
+      ],
+      "meaning": "built: Pylon has been installed and remains installed after damage Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        526,
+        530
+      ],
+      "meaning": "health: Repairable anchor health 0-6; zero stops adjacent carriers Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        530,
+        534
+      ],
+      "meaning": "counterweight: Installed stone counterweight units 0-3 Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        534,
+        538
+      ],
+      "meaning": "tension: Two per incident loaded carrier plus the current gust Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        538,
+        542
+      ],
+      "meaning": "braced: This-step extra support at each anchor, two units per brace action. Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        542,
+        550
+      ],
+      "meaning": "carrier_pos: Actual x,y coordinates for Four single-unit cable carriers in entity-index order. Shape [4, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        550,
+        554
+      ],
+      "meaning": "load: Cargo 0 empty, 1 stone, 3 ore Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        554,
+        558
+      ],
+      "meaning": "cargo_crew: Loading crew -1 when empty; other crews may unload Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        558,
+        562
+      ],
+      "meaning": "progress: Distance along the assigned straight cable span Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        562,
+        566
+      ],
+      "meaning": "direction: Signed direction along the span; a parked carrier can reverse Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        566,
+        570
+      ],
+      "meaning": "span_from: Starting pylon index for the assigned span Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        570,
+        574
+      ],
+      "meaning": "span_to: Ending pylon index for the assigned span Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        574,
+        578
+      ],
+      "meaning": "span_length: Span length in native grid cells Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        578,
+        579
+      ],
+      "meaning": "wind: Binary gust level; alternates every 16 old-clock ticks. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        579,
+        591
+      ],
+      "meaning": "delivered: One unit per actor's actual foreign-village delivery this step. Shape [12], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        591,
+        595
+      ],
+      "meaning": "constructed: First pylon constructions this step, not repairs. Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        595,
+        599
+      ],
+      "meaning": "damaged: Anchor wear events this step. Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        599,
+        611
+      ],
+      "meaning": "transferred: Successful material handoffs per actor this step. Shape [12], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        611,
+        671
+      ],
+      "meaning": "reward_parts: Columns: personal delivery, crew/recipient delivery, first infrastructure, effort/material cost, shared anchor damage. Shape [12, 5], row-major flattening.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Move extracted stone and ore to other crews' villages while choosing between hand-carry routes and a shared, repairable ropeway; leave infrastructure and depleted deposits persistent through the 512-step window.",
+    "natural_termination": "No natural success or joint-failure terminal. This is a continuing finite world. H=512 truncates the observation window, not a success event; done inputs are absorbing.",
+    "interaction": "Each pylon supports both incident loaded spans. A second crew loading its carrier can overload a neighbor's transport; a hauler's temporary brace, permanent counterweight, unload or reroute changes both crews' next feasible movements. Material and tool handoffs physically change a neighbor's inventory and capabilities.",
+    "observation_access": "Full public physical state: every observer receives actor ID followed by the identical public_keys vector. Agent inventories, anchor load/support, finite deposits, carrier positions, routing direction, village receipts and component rewards are public. Visibility masks for all entity groups are true. Constant active/visibility arrays contain no private information."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "pos"
+      ],
+      "low": 0,
+      "high": 20
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 512
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "inventory"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "energy"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tool"
+      ],
+      "low": 1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stock"
+      ],
+      "low": 0,
+      "high": 24
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "health"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "counterweight"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tension"
+      ],
+      "low": 0,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "braced"
+      ],
+      "low": 0,
+      "high": 24
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "load"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cargo_crew"
+      ],
+      "low": -1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "progress"
+      ],
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "direction"
+      ],
+      "low": -1,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "received"
+      ],
+      "low": 0,
+      "high": 6144
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "reward_components": [
+    "Personal: 0.6 per actor delivery",
+    "Crew/recipient: 1.4 to each member of the delivering crew and 1.0 to each member of the receiving foreign crew per unit",
+    "Infrastructure: 0.25 to every actor per first pylon installation",
+    "Costs: -0.02 per move or non-rest interaction effort and -0.05 per material unit spent on construction, repair, counterweight installation or cable crafting",
+    "Damage: -0.10 to every actor per anchor wear event"
+  ],
+  "reward_bound_derivation": "All five float32 components are returned and exposed. Each actor has one action. At most three own-crew deliveries contribute 4.2 to a member and at most nine foreign deliveries to that crew contribute 9.0; personal reward is at most 0.6. Only two initially unbuilt pylons can produce first-installation events, at most 0.5 shared reward. Thus 14.3 is a loose positive per-actor bound. One action spends at most three material units plus one effort, and at most four anchors wear, so the lower bound is no smaller than -0.57. Declared [-2,20] is conservative. Village cumulative receipt cannot exceed 12*512=6144. Counts, energy, tools, progress and all observed reward components fit [-2,6144].",
+  "human_control": {
+    "native_actions": "int32[12]",
+    "native_observations": "float32[12,671]",
+    "transition": "GeneratedEnv.raw_step",
+    "selectable_actor_ids": [
+      "actor_00",
+      "actor_01",
+      "actor_02",
+      "actor_03",
+      "actor_04",
+      "actor_05",
+      "actor_06",
+      "actor_07",
+      "actor_08",
+      "actor_09",
+      "actor_10",
+      "actor_11"
+    ],
+    "single_or_multiple_actor_takeover": "Assign any subset of joint-action components at native step boundaries; unassigned components come from policies or explicit waits.",
+    "group_state_path": [
+      "crew"
+    ],
+    "camera_hint": "Use actual selected actor coordinates; retain overview and labelled group IDs.",
+    "separate_browser_dynamics": false,
+    "frontend_implemented_by_author": false
+  },
+  "author_evidence_status": "AUTHORED_NOT_EXECUTED"
+}

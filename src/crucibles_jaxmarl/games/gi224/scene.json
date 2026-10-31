@@ -1,0 +1,388 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "197db96ab84b89e440a2d4e381d2eb42dcfc37140913d3b7374a84f46694bd4b",
+  "manifest_sha256": "f0afae6b42dcf98a1c05d8ddd711fab0648650dad78681d8a2fe7ce97c5971ec",
+  "title": "Archipelago Councils",
+  "rules": [
+    "48 settlers in eight towns. Every actor moves and carries materials; tools change at the actor's own town.",
+    "Two timber investments make a bridge walkable. A canal prevents its surge damage and downstream water diversion; each investment uses one carried timber.",
+    "A ferry moves an actor across its two-cell channel. One shared fuel unit and cooldown are consumed; town owners can close their port to outsiders.",
+    "At high tide a reef crossing requires a navigator; a failed crossing attempt stays in place. Any actor can refuel a ferry.",
+    "A messenger spends a fuel pack to broadcast its town's reef/tide chart for 16 ticks. Charts are public and can become stale.",
+    "A complete bridge is protected from collapse while occupied. Uncanalized construction can reduce the next town's seasonal farm renewal.",
+    "Deliver two timber and two grain to each town for development. Aid rewards the beneficiary town and the delivering actor.",
+    "Grove/farm renewal is bounded to eight cycles. Finite town fuel and the longer southern coastal road make local investment and reciprocal transport distinct choices."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      33,
+      14
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "visibility": [
+        "map_visible"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Island or southern coast road",
+          "color": "#C2C299"
+        },
+        {
+          "value": 1,
+          "meaning": "Boundary",
+          "color": "#384D5C"
+        },
+        {
+          "value": 2,
+          "meaning": "Water; bridge or ferry needed",
+          "color": "#659FBC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Agent",
+      "color": "#E8C37C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "Native crew index"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Current tool code"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Carried timber units"
+        },
+        {
+          "state_path": [
+            "grain"
+          ],
+          "label": "Carried grain units"
+        },
+        {
+          "state_path": [
+            "fuel_pack"
+          ],
+          "label": "Carried fuel packs"
+        }
+      ]
+    },
+    {
+      "id": "town",
+      "glyph": "flag",
+      "label": "Town",
+      "color": "#C7AA73",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "timber_delivered"
+          ],
+          "label": "Development timber delivered, capped at two"
+        },
+        {
+          "state_path": [
+            "grain_delivered"
+          ],
+          "label": "Development grain delivered, capped at two"
+        },
+        {
+          "state_path": [
+            "fuel_store"
+          ],
+          "label": "Finite town fuel stock"
+        },
+        {
+          "state_path": [
+            "open_port"
+          ],
+          "label": "Foreign actors permitted at owned ferry"
+        }
+      ]
+    },
+    {
+      "id": "crossing",
+      "glyph": "gate",
+      "label": "Crossing",
+      "color": "#B19575",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge"
+          ],
+          "label": "Bridge construction level; two is walkable"
+        },
+        {
+          "state_path": [
+            "canal"
+          ],
+          "label": "Drainage canal installed"
+        }
+      ]
+    },
+    {
+      "id": "ferry",
+      "glyph": "water",
+      "label": "Ferry",
+      "color": "#6FAFC8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ferry_fuel"
+          ],
+          "label": "Ferry fuel available"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Ferry service cooldown ticks"
+        },
+        {
+          "state_path": [
+            "reef"
+          ],
+          "label": "Local binary reef hazard"
+        },
+        {
+          "state_path": [
+            "used_crossing"
+          ],
+          "label": "Ferry has been used"
+        }
+      ]
+    },
+    {
+      "id": "grove",
+      "glyph": "resource",
+      "label": "Grove",
+      "color": "#5B9063",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "timber_stock"
+          ],
+          "label": "Harvestable timber units"
+        },
+        {
+          "state_path": [
+            "renewals"
+          ],
+          "label": "Resource renewal cycles remaining"
+        }
+      ]
+    },
+    {
+      "id": "farm",
+      "glyph": "plant",
+      "label": "Farm",
+      "color": "#AFC46A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "grain_stock"
+          ],
+          "label": "Harvestable grain units"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Farm seasonal water allowance"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "developed_count"
+      ],
+      "meaning": "Towns with two timber and two grain deliveries",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "crossings_count"
+      ],
+      "meaning": "Distinct ferry crossings used",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Face or move north"
+    },
+    {
+      "id": 2,
+      "label": "Face or move east"
+    },
+    {
+      "id": 3,
+      "label": "Face or move south"
+    },
+    {
+      "id": 4,
+      "label": "Face or move west"
+    },
+    {
+      "id": 5,
+      "label": "Cut grove timber with builder"
+    },
+    {
+      "id": 6,
+      "label": "Harvest farm grain with farmer"
+    },
+    {
+      "id": 7,
+      "label": "Pass wood, grain or fuel to nearest actor"
+    },
+    {
+      "id": 8,
+      "label": "Deliver timber to town"
+    },
+    {
+      "id": 9,
+      "label": "Deliver grain to town"
+    },
+    {
+      "id": 10,
+      "label": "Build or repair adjacent bridge with builder"
+    },
+    {
+      "id": 11,
+      "label": "Build adjacent drainage canal with builder"
+    },
+    {
+      "id": 12,
+      "label": "Use adjacent ferry crossing"
+    },
+    {
+      "id": 13,
+      "label": "Refuel adjacent ferry"
+    },
+    {
+      "id": 14,
+      "label": "Broadcast chart with messenger"
+    },
+    {
+      "id": 15,
+      "label": "Collect town fuel pack"
+    },
+    {
+      "id": 16,
+      "label": "Cycle tool at home town"
+    },
+    {
+      "id": 17,
+      "label": "Toggle home port access with steward"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "meaning": "Self x,y,town,tool,wood,grain,fuel packs,face.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        28
+      ],
+      "meaning": "t,tide phase,developed towns,used crossings; 8 chart codes; 8 chart ages. Chart code=3*reef+tide, -1 absent.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        412
+      ],
+      "meaning": "48 actor slots width 8: visible,x,y,town,tool,wood,grain,fuel packs.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        412,
+        468
+      ],
+      "meaning": "8 town slots width 7: visible,x,y,timber delivered,grain delivered,fuel store,port access.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        468,
+        503
+      ],
+      "meaning": "7 bridge slots width 5: visible,x,y,bridge level,canal.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        503,
+        552
+      ],
+      "meaning": "7 ferry slots width 7: visible,x,y,fuel,cooldown,reef,ever used.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        552,
+        592
+      ],
+      "meaning": "8 grove slots width 5: visible,x,y,timber stock,remaining renewals.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        592,
+        632
+      ],
+      "meaning": "8 farm slots width 5: visible,x,y,grain stock,water.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        632,
+        681
+      ],
+      "meaning": "7x7 base terrain patch y-major, outside=-1. Bridge entities override water passability at their cell when level 2.",
+      "visibility": "local"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# astra-d2-00037: Expiring bilateral escrow with private surplus
+
+This parentless proposal combines generic bilateral escrow, revocable assent and an endogenous collateral requirement. It is not presented as a new named game or as proven different from existing mechanisms. No benchmark or other proposal source was consulted.
+
+Actions are 0 earn liquid credit, 1 deposit collateral, 2 endorse the current deal, 3 withdraw one's own collateral, and 4 attempt settlement. Deposits use available credit and remain locked. Each agent's required amount is 0.4 + 0.4 times one minus the other agent's public trust. Both old-state deposits must exist before endorsement is effective. Settlement needs both old endorsements, both deposit ages at least two, and at least one current settlement attempt. A current withdrawal or an age-eight expiry prevents settlement. Deposits created this step cannot bypass these old-state requirements.
+
+Voluntary withdrawal refunds 75 percent of that agent's collateral and reduces that agent's trust by 0.18. Expiry refunds 90 percent without reducing trust. Any release clears both endorsements; a counterpart's still-locked deposit otherwise remains. Successful settlement releases both deposits, adds 0.08 credit to each and increases both trust values by 0.08. Balances are capped at two and trust at one. Remaining deposits advance their age once per step and expire upon being observed at age eight.
+
+Each agent privately knows its balance and its current deal value, initially sampled in [-0.8,1). Only a successful settlement redraws both private values from the supplied step key. Thus the current payoff can be favorable to one party and unfavorable to the other. Other collateral, endorsements, ages, trust and previous actions are public. Observation columns 0..15 are time/32; own balance/2; own collateral/0.8; own endorsement; own age/8; own trust; normalized own private value; counterpart collateral/0.8; counterpart endorsement; counterpart age/8; counterpart trust; own and counterpart prior actions/4; previous settlement indicator; counterpart's previous withdrawal indicator; settlement count/8.
+
+Per-agent reward is settlement times (0.25 + 0.6 times own current private value), minus 0.12 for withdrawal, 0.06 for expiry, 0.02 for a new deposit and 0.01 for a first endorsement. Simultaneous withdrawal at expiry incurs both listed penalties. Clipping explicitly enforces [-1,1]; the listed payoff terms also remain within this interval. Locked credit restricts future deposits, while trust changes future counterpart requirements. Settlement therefore affects information, liquidity and future admission conditions, beyond its immediate payoff.
+
+All actions remain legal, including ineffective attempts. The horizon is 32 raw steps and terminal state is preserved. No terminal escrow liquidation or bonus is implied. This can yield refusal or non-settlement rather than a cooperative outcome, which is a possible result to retain.
+
+Status: authored source only, with no execution, compiler claim, validation receipt, eligibility claim or learning evidence.

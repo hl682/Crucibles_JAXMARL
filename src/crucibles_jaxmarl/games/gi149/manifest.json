@@ -1,0 +1,864 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00149",
+  "source_sha256": "9abcc5d6624660d59aecb39b200c169a66fc87c4e017edba89e97954d69bd011",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 170,
+  "num_actions": 10,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 96,
+  "reward_low": -13,
+  "reward_high": 13,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "west_rigger"
+    },
+    {
+      "id": "agent_1",
+      "role": "west_hauler"
+    },
+    {
+      "id": "agent_2",
+      "role": "east_rigger"
+    },
+    {
+      "id": "agent_3",
+      "role": "east_hauler"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move south"
+    },
+    {
+      "id": 3,
+      "label": "Move west"
+    },
+    {
+      "id": 4,
+      "label": "Move east"
+    },
+    {
+      "id": 5,
+      "label": "Stabilize a nearby lock from a console"
+    },
+    {
+      "id": 6,
+      "label": "Crank a nearby counterweight"
+    },
+    {
+      "id": 7,
+      "label": "Lift one nearby unclaimed crate"
+    },
+    {
+      "id": 8,
+      "label": "Drop carried crate"
+    },
+    {
+      "id": 9,
+      "label": "Deposit carried crate at own base"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tide"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "holding"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crate_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crate_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crate_vis"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lock_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "console_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "console_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "console_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crate_holder"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crate_delivered_team"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crate_weight"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lock_charge"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lock_timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lock_tickets"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lock_operator"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "winner"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crate_total"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "held_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crank_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cross_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pickup_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "bank or traversable channel approach"
+        },
+        {
+          "value": 1,
+          "meaning": "wall or uncrossable canal"
+        },
+        {
+          "value": 2,
+          "meaning": "shared tidal lock passage"
+        },
+        {
+          "value": 3,
+          "meaning": "counterweight console"
+        },
+        {
+          "value": 4,
+          "meaning": "west delivery base"
+        },
+        {
+          "value": 5,
+          "meaning": "east delivery base"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crews",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Zero west crew, one east crew",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Zero rigger, one hauler",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "meaning": "Loaded movement recovery ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "holding"
+          ],
+          "meaning": "Hauler carries one crate",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "salvage",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "crate_pos"
+      ],
+      "active": [
+        "crate_active"
+      ],
+      "visibility": [
+        "crate_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "crate_holder"
+          ],
+          "meaning": "Carrier id or minus one",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "crate_delivered_team"
+          ],
+          "meaning": "Credited team or minus one for unclaimed salvage",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "crate_weight"
+          ],
+          "meaning": "Immutable lift load of one",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "locks",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "lock_pos"
+      ],
+      "active": [
+        "lock_active"
+      ],
+      "visibility": [
+        "lock_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "lock_charge"
+          ],
+          "meaning": "Counterweight charge, bounded by four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "lock_timer"
+          ],
+          "meaning": "Opening interval timer",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "lock_tickets"
+          ],
+          "meaning": "Remaining shared entry opportunities, at most two",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "lock_operator"
+          ],
+          "meaning": "Rigger who supported the preceding transition or minus one",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "consoles",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "console_pos"
+      ],
+      "active": [
+        "console_active"
+      ],
+      "visibility": [
+        "console_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "bases",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "base_pos"
+      ],
+      "active": [
+        "base_active"
+      ],
+      "visibility": [
+        "base_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "base_team"
+          ],
+          "meaning": "Owning crew",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tide"
+      ],
+      "meaning": "Public tide: zero low, one rising, two high, three falling",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Public cumulative delivered crates by crew",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lock_timer"
+      ],
+      "meaning": "Public remaining opening intervals",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lock_tickets"
+      ],
+      "meaning": "Public unconsumed lock entries",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lock_operator"
+      ],
+      "meaning": "Preceding-transition rigger support",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Public t, tide phase, west score, east score, joint done, winner id or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        13
+      ],
+      "meaning": "Self id, team, role, x, y, movement recovery, carrying flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        90
+      ],
+      "meaning": "Public 7 by 11 fixed terrain map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        118
+      ],
+      "meaning": "Four crew records: visible, x, y, team, role, recovery, carrying. Teammates shared; enemies within Manhattan three; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        118,
+        136
+      ],
+      "meaning": "Three crate records: visible, x, y, holder, delivered team, weight. Local radius three or carried by own team; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        150
+      ],
+      "meaning": "Two public lock records: visible, x, y, counterweight charge, opening timer, entry tickets, preceding operator",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        162
+      ],
+      "meaning": "Four public console records: visible, x, y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        170
+      ],
+      "meaning": "Two public base records: visible, x, y, team",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Each two-role crew competes for a majority of three movable salvage crates while using shared tidal locks.",
+    "natural_termination": "A crew deposits at least two of the three crates, otherwise horizon ninety-six. At joint end the higher score wins; equal scores draw. Natural completion takes priority at the horizon.",
+    "interaction": "Only riggers operate counterweights and only haulers lift crates. A loaded move entering or leaving a lock requires a simultaneous rigger of the same crew. Unladen opposing entrants can use and consume shared entry tickets, and rival riggers can contest the same console-controlled lock. Loaded motion imposes recovery time.",
+    "observation_access": "Terrain, tide, lock counterweights/timers/tickets/operators, bases and scores are public. Teammate state is shared. Enemy crew state is visible within Manhattan three, and crates are visible locally or while carried by the observer's crew. Geometry has no occlusion. Hidden payloads are minus one."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "crate_total"
+      ],
+      "value": 3
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "crate_weight"
+      ],
+      "value": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "team"
+      ],
+      "value": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "role"
+      ],
+      "value": [
+        0,
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lock_charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lock_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lock_tickets"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

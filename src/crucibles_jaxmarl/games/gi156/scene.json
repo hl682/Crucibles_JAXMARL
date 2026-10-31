@@ -1,0 +1,317 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "54c4ac626a7aeaf416e5b2d2ae88649299ecaa06d9b66f37102c8d076a368c75",
+  "manifest_sha256": "8834da6c2c115196fe06394edb2d1220f152dfba572350feadeeaae8b5b4c4e1",
+  "title": "Leeward Caravan",
+  "rules": [
+    "Any two travelers can grip the opposite north/south load handles; there are no permanently assigned specialist roles.",
+    "A matching directional command translates the whole load-and-carrier body only if all target cells are free and both carriers can pay.",
+    "The windbreak casts a three-cell downwind shadow with lateral width one cell on each side.",
+    "Unattached movement costs one energy; hauling costs two. Exposure adds two, and moving against wind adds one.",
+    "Windbreak shifts happen before cost calculation and consume two energy from one adjacent unattached traveler.",
+    "Resting in shade restores two energy. Drinking spends one water to restore up to four energy.",
+    "Water gifts and well draws transfer real finite units. Wells do not refill.",
+    "Wind rotates east, south, west and north in eight-tick blocks. The ridge permits alternative upper and lower routes.",
+    "Arrival ends naturally; otherwise the horizon is 128."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Desert path",
+          "color": "#D7D8CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Boundary or central ridge obstruction",
+          "color": "#394751"
+        },
+        {
+          "value": 2,
+          "meaning": "Finite water well",
+          "color": "#6E9FAC"
+        },
+        {
+          "value": 3,
+          "meaning": "Caravan destination",
+          "color": "#C39A58"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "travelers",
+      "glyph": "worker",
+      "label": "Interchangeable travelers",
+      "color": "#AA8868",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Movement energy, capacity twelve"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried water units, capacity three"
+        },
+        {
+          "state_path": [
+            "grip"
+          ],
+          "label": "Currently attached to a load handle"
+        },
+        {
+          "state_path": [
+            "sheltered"
+          ],
+          "label": "Inside the current three-cell downwind shadow"
+        }
+      ]
+    },
+    {
+      "id": "load",
+      "glyph": "crate",
+      "label": "Shared heavy load",
+      "color": "#B99354",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "load_grips"
+          ],
+          "label": "Number of attached travelers"
+        },
+        {
+          "state_path": [
+            "load_sheltered"
+          ],
+          "label": "Load center is in the windbreak shadow"
+        }
+      ]
+    },
+    {
+      "id": "windbreak",
+      "glyph": "gate",
+      "label": "Movable windbreak",
+      "color": "#7E9C89",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wind_dir"
+          ],
+          "label": "Current wind direction, rotating every eight ticks"
+        },
+        {
+          "state_path": [
+            "wind_strength"
+          ],
+          "label": "Exposure surcharge for movement"
+        }
+      ]
+    },
+    {
+      "id": "wells",
+      "glyph": "water",
+      "label": "Finite wells",
+      "color": "#6E98A7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "well_stock"
+          ],
+          "label": "Finite remaining water, with no regeneration"
+        }
+      ]
+    },
+    {
+      "id": "destination",
+      "glyph": "flag",
+      "label": "Caravan destination",
+      "color": "#A58CAB",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "haul_event"
+      ],
+      "meaning": "Shared load translated this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shelter_event"
+      ],
+      "meaning": "Windbreak moved this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "water_used"
+      ],
+      "meaning": "Total water consumed by drinking",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Load center reached the destination",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest; gain two energy only inside current windbreak shadow"
+    },
+    {
+      "id": 1,
+      "label": "Move north or request synchronized northward haul"
+    },
+    {
+      "id": 2,
+      "label": "Move east or request synchronized eastward haul"
+    },
+    {
+      "id": 3,
+      "label": "Move south or request synchronized southward haul"
+    },
+    {
+      "id": 4,
+      "label": "Move west or request synchronized westward haul"
+    },
+    {
+      "id": 5,
+      "label": "Attach to a north/south load handle, or release"
+    },
+    {
+      "id": 6,
+      "label": "Shift adjacent windbreak north, spending two energy"
+    },
+    {
+      "id": 7,
+      "label": "Shift adjacent windbreak east, spending two energy"
+    },
+    {
+      "id": 8,
+      "label": "Shift adjacent windbreak south, spending two energy"
+    },
+    {
+      "id": 9,
+      "label": "Shift adjacent windbreak west, spending two energy"
+    },
+    {
+      "id": 10,
+      "label": "Drink one water to restore up to four energy"
+    },
+    {
+      "id": 11,
+      "label": "Give one water to adjacent agent 0"
+    },
+    {
+      "id": 12,
+      "label": "Give one water to adjacent agent 1"
+    },
+    {
+      "id": 13,
+      "label": "Give one water to adjacent agent 2"
+    },
+    {
+      "id": 14,
+      "label": "Fill one water from nearest adjacent finite well"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "visibility": "self",
+      "meaning": "Own traveler id."
+    },
+    {
+      "slice": [
+        1,
+        7
+      ],
+      "visibility": "public",
+      "meaning": "Clock,joint done,total water drunk,haul event,windbreak-move event,load delivered."
+    },
+    {
+      "slice": [
+        7,
+        25
+      ],
+      "visibility": "public",
+      "meaning": "Three traveler records: x,y,energy,water,grip,sheltered."
+    },
+    {
+      "slice": [
+        25,
+        29
+      ],
+      "visibility": "public",
+      "meaning": "Load x,y,number of grips,shadow flag."
+    },
+    {
+      "slice": [
+        29,
+        34
+      ],
+      "visibility": "public",
+      "meaning": "Windbreak x,y,current wind dx,dy,exposure surcharge."
+    },
+    {
+      "slice": [
+        34,
+        40
+      ],
+      "visibility": "public",
+      "meaning": "Two well records: x,y,remaining water."
+    },
+    {
+      "slice": [
+        40,
+        42
+      ],
+      "visibility": "public",
+      "meaning": "Destination x,y."
+    },
+    {
+      "slice": [
+        42,
+        159
+      ],
+      "visibility": "public",
+      "meaning": "Static 9 by 13 public map in yx row-major order."
+    }
+  ]
+}

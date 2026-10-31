@@ -1,0 +1,951 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00164",
+  "source_sha256": "e6733e86be518cfc4a5d87ffb5f56ba7701ed5b3506a9a9cb831a1635e2562ea",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 94,
+  "num_actions": 14,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 96,
+  "reward_low": -1,
+  "reward_high": 8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "type-zero specialist"
+    },
+    {
+      "id": "agent_1",
+      "role": "type-one specialist"
+    },
+    {
+      "id": "agent_2",
+      "role": "type-two specialist"
+    },
+    {
+      "id": "agent_3",
+      "role": "type-three specialist"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "gather one nearby raw unit"
+    },
+    {
+      "id": 6,
+      "label": "start own workstation job"
+    },
+    {
+      "id": 7,
+      "label": "collect own workstation shelf"
+    },
+    {
+      "id": 8,
+      "label": "offer own component for next component"
+    },
+    {
+      "id": 9,
+      "label": "offer own component for one raw"
+    },
+    {
+      "id": 10,
+      "label": "accept adjacent affordable offer"
+    },
+    {
+      "id": 11,
+      "label": "deposit lowest missing component at assembly"
+    },
+    {
+      "id": 12,
+      "label": "sell lowest held component at own station"
+    },
+    {
+      "id": 13,
+      "label": "cancel own offer"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "raw"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "inventory"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "job_timer"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shelf"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pile_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_live"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "offer_need"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "assembly_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "assembly_parts"
+      ],
+      "shape": [
+        1,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "contributors"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "machine_timer"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "products"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trade_from"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "expired"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "sold"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "deposited"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "job_done"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gathered"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pile_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pile_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "assembly_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "assembly_visible"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable workshop floor",
+          "color": "#3F444A"
+        },
+        {
+          "value": 1,
+          "meaning": "specialist workstation",
+          "color": "#756893"
+        },
+        {
+          "value": 2,
+          "meaning": "shared assembly station",
+          "color": "#3F8D80"
+        },
+        {
+          "value": 3,
+          "meaning": "raw stock location",
+          "color": "#856742"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "raw"
+          ],
+          "meaning": "Raw material",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "inventory"
+          ],
+          "meaning": "Four physical component inventories",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "meaning": "Specialist tool",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_live"
+          ],
+          "meaning": "Reserved own component",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "offer_need"
+          ],
+          "meaning": "Posted requested type, raw=4",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_ttl"
+          ],
+          "meaning": "Offer lifetime",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "trade_from"
+          ],
+          "meaning": "Last-step supplying peer",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool"
+          ],
+          "meaning": "Station component type",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "job_timer"
+          ],
+          "meaning": "Remaining production ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "shelf"
+          ],
+          "meaning": "Completed shelf stock",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "pile",
+      "kind": "resource",
+      "count": 4,
+      "position": [
+        "pile_pos"
+      ],
+      "active": [
+        "pile_active"
+      ],
+      "visibility": [
+        "pile_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Remaining raw units",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "assembly",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "assembly_pos"
+      ],
+      "active": [
+        "assembly_active"
+      ],
+      "visibility": [
+        "assembly_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "assembly_parts"
+          ],
+          "meaning": "Deposited type slots",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "machine_timer"
+          ],
+          "meaning": "Assembly ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "products"
+          ],
+          "meaning": "Completed machines",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "trade_from"
+      ],
+      "meaning": "Seller index for each successful buyer in this step, -1 for no settlement.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expired"
+      ],
+      "meaning": "Per-step expired unsold offers whose reserved component is returned.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sold"
+      ],
+      "meaning": "Per-step privately sold components.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "deposited"
+      ],
+      "meaning": "Per-step successful assembly deposit flags.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "job_done"
+      ],
+      "meaning": "Per-step workstation completions; shelf stock is a separate persistent level.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gathered"
+      ],
+      "meaning": "Per-step physical gathering successes.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "products"
+      ],
+      "meaning": "Cumulative completed shared machines.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own acting role as one-hot in agent-index order.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Raw step clock; also determines public rotating priorities and periodic updates.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        13
+      ],
+      "meaning": "All agent [x,y] positions in agent-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        17
+      ],
+      "meaning": "Each worker unspent raw units.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        33
+      ],
+      "meaning": "Public worker-by-component inventory, four component types in tool-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        37
+      ],
+      "meaning": "Ticks remaining at each specialist workstation.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        41
+      ],
+      "meaning": "Completed physical components waiting at each owner-only collection shelf.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        45
+      ],
+      "meaning": "Remaining physical resource stock at each fixed source.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        49
+      ],
+      "meaning": "Each seller has exactly one own-type component reserved in escrow.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        53
+      ],
+      "meaning": "Each posted price: component type 0..3, raw unit 4, absent -1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        57
+      ],
+      "meaning": "Remaining ticks until unsold escrow is returned.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        61
+      ],
+      "meaning": "Four physically deposited component-presence slots at the shared assembly station.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        61,
+        65
+      ],
+      "meaning": "Credited depositor index for each assembly slot, -1 when empty.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        66
+      ],
+      "meaning": "Ticks remaining until the current full assembly completes.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        67
+      ],
+      "meaning": "Cumulative completed shared machines.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        71
+      ],
+      "meaning": "Seller index for each successful buyer in this step, -1 for no settlement.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        75
+      ],
+      "meaning": "Per-step expired unsold offers whose reserved component is returned.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        79
+      ],
+      "meaning": "Per-step privately sold components.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        83
+      ],
+      "meaning": "Per-step successful assembly deposit flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        87
+      ],
+      "meaning": "Per-step workstation completions; shelf stock is a separate persistent level.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        87,
+        91
+      ],
+      "meaning": "Per-step physical gathering successes.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        92
+      ],
+      "meaning": "Joint terminal state, including natural completion or time limit.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        93
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        94
+      ],
+      "meaning": "Time-limit cause only when no natural termination occurs.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Use complementary specialist production and local escrow trades to complete shared machines, or take immediate private component-sale rewards.",
+    "natural_termination": "Completion of two shared machines ends the game; otherwise truncate at 96 steps. Finite raw supply can be consumed by private sales, leaving shared completion impossible within that trajectory.",
+    "interaction": "A posted offer removes a real component into escrow; an adjacent controlled buyer pays a real price and receives that item. Scarce gathering, rotating settlement priority, expiring reservations and four-way complementary assembly change peers resources and recipes.",
+    "observation_access": "All inventories, reservations, stock, jobs, contributions and spatial positions are public. Own-role one-hot precedes the public vector. Immutable tool assignment, station/pile locations and topology are known rules. Colocation is permitted for physical exchange at a common workshop tile; only Manhattan-distance-one handoffs settle."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "raw"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "inventory"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "job_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "shelf"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "offer_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "assembly_parts"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "machine_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "products"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

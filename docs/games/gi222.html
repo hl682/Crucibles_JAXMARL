@@ -1,0 +1,310 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>洞窟救援公会 · Cavern Rescue Guilds · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI222 / SPATIAL</p><h1>洞窟救援公会 · Cavern Rescue Guilds</h1><p class="lead">分工开岩、支护与通风，把伤员带回补给站；粉尘也会影响伙伴。</p><div class="stats"><span>20 agents</span><span>18 actions</span><span>344 observation columns</span><span>512 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi222.gif" alt="Original saved demonstration gi222"></section><section><h2>Run this game</h2><pre>crucibles play --game 222</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Evacuate all five casualties through excavated caverns; sustain shared air and infrastructure while provisioning other crews.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion exactly when rescued == 5; otherwise truncate at 512. Health never falls below 1, so injured actors remain controllable.&quot;,
+  &quot;interaction&quot;: &quot;Excavation opens native tiles and emits spreading dust. Duct pumping changes nearby air; beams prevent dust-triggered floor collapse. Carried casualties follow actors to depots; shared supplies and hauling routes change other actors&#x27; opportunities.&quot;,
+  &quot;observation_access&quot;: &quot;Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 30. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>20 miners in five crews share a connected cavern. Move or face, mine, build and carry people through the actual map.</li><li>Tools 0 pick, 1 builder, 2 ventilator, 3 medic can be cycled at a depot. Build actions use one wood.</li><li>Dig only the facing rock cell. Dust spreads through open cardinal neighbors; high dust injures workers and can collapse unsupported empty floor every 24 ticks.</li><li>Stand on a duct to pump. Support beams, rails and winches replace ordinary floor and persist. Rail haul needs two clear rail/winch cells ahead.</li><li>A medic lifts a nearby casualty only after its rock cell is cleared; a winch extends lift reach to three cells. Arrival near any depot evacuates the passenger.</li><li>Adjacent transfers choose the nearest actor, then lowest index. Foreign depots accept at most two rewarded wood donations.</li><li>All actors remain actionable. Health 1-2 slows movement; treatment restores health to 5. All five rescues finish the episode.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Cavern Rescue Guilds
+
+Status: AUTHORED_NOT_EXECUTED. Initial proposal, attempt 00, feedback_used=0. All scripts are unexecuted source-derived hypotheses.
+
+Native interface: A=20, O=344, U=18, H=512. Every counted actor has a scalar int32 action and its own float32 observation/reward and bool done row. The family is block_survival.
+
+Evacuate all five casualties through excavated caverns; sustain shared air and infrastructure while provisioning other crews.
+
+Interdependence: a miner can improve access while imposing dust on nearby workers; a ventilator can spend wood on a duct instead of donating it; a carpenter can trade support safety for faster hauling. Winch/rail routes and walking rescue routes are alternatives. Donations are bounded first receipts, not a repeatable pickup/redeposit reward. Layout and initial supplies are deterministic; key is intentionally unused.
+
+Rules and physical meanings:
+
+- 20 miners in five crews share a connected cavern. Move or face, mine, build and carry people through the actual map.
+- Tools 0 pick, 1 builder, 2 ventilator, 3 medic can be cycled at a depot. Build actions use one wood.
+- Dig only the facing rock cell. Dust spreads through open cardinal neighbors; high dust injures workers and can collapse unsupported empty floor every 24 ticks.
+- Stand on a duct to pump. Support beams, rails and winches replace ordinary floor and persist. Rail haul needs two clear rail/winch cells ahead.
+- A medic lifts a nearby casualty only after its rock cell is cleared; a winch extends lift reach to three cells. Arrival near any depot evacuates the passenger.
+- Adjacent transfers choose the nearest actor, then lowest index. Foreign depots accept at most two rewarded wood donations.
+- All actors remain actionable. Health 1-2 slows movement; treatment restores health to 5. All five rescues finish the episode.
+
+Transition order and controls:
+
+The native joint vector is processed in rotating actor order (k+t) modulo A. An actor checks its action against current state at its turn; a resource lost to an earlier actor converts the action to wait. Out-of-range input becomes wait. Nonterminal movement codes always allow facing even when walking is blocked; occupancy and terrain control actual movement. Ties for nearby targets choose minimum Manhattan distance, then lowest index. No direction action teleports through a blocked walking cell.
+All spatial updates, resources and tool effects are in candidate.py:L137-L184 (actor). Movement/collision is in candidate.py:L54-L65 (move_actor) and candidate.py:L116-L118 (passable). Exact contextual masks are in candidate.py:L120-L135 (choices); mask assembly is in candidate.py:L23-L25 (mask_row) and candidate.py:L27-L29 (legal_actions).
+The world updates production/ecology/hazards after actor actions. These delayed effects and reward components are in candidate.py:L186-L215 (raw_step).
+
+Rewards and finite bounds:
+
+Each successful evacuation adds 5 to every member of the carrier&#x27;s crew and 0.4 to every actor. A foreign-depot wood donation adds 0.4 to its donor, with two receipts per depot. A build or medical treatment costs its actor 0.02. A dust-injury tick costs the injured actor 0.1 and every actor 0.005 per injured worker. At most five rescues and twenty injury flags occur in a step; [-1,30] safely contains these components. No reward clipping is used.
+Observation entries are float32 in [-2,65536]. This loose finite envelope includes coordinates, codes, quantities and cumulative counters; at most A*H &lt;= 49152 actor actions can contribute to a counter in one episode. It is a representational bound, never a performance threshold.
+
+Exact observation layout:
+
+- Columns [0,9): Self x,y,crew,tool,wood,medicine,health,carrying,face. Access: self.
+- Columns [9,11): Clock t; total rescued. Access: public.
+- Columns [11,191): 20 actor slots, width 9: visible,x,y,crew,tool,wood,medicine,health,carrying. Access: local.
+- Columns [191,221): 5 depot slots, width 6: visible,x,y,wood,medicine,foreign-aid receipts. Access: local.
+- Columns [221,246): 5 casualty slots, width 5: visible,x,y,bearer,active. Access: local.
+- Columns [246,295): 7x7 terrain patch in y-major order, dx/dy -3..3; outside=-1. Access: local.
+- Columns [295,344): 7x7 dust patch, same ordering; outside=-1. Access: local.
+
+Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.
+The observer construction is candidate.py:L217-L223 (observe). Entity/map masks are regenerated in candidate.py:L31-L40 (refresh). Masked entity flattening and patch boundaries are candidate.py:L42-L44 (visible_rows) and candidate.py:L46-L52 (patch). No role-view animation may expose hidden state or use full-state event arrays as public announcements. Only the declared public counters are scene events.
+
+Declared persistent state and invariants:
+
+Initial arrays, positions, resource stocks and integer/bool representations are defined in candidate.py:L79-L105 (reset). The manifest declares every reset key exactly once. Every state leaf keeps a fixed shape; positions are [x,y], maps are indexed [y,x], and all actors remain active through termination. Native actor positions are unique; non-agent objects may share a cell with an actor when the mechanic permits it.
+Analytical ranges used during author review: wood in [0,4]; med in [0,2]; health in [1,5]; dust in [0,8]; depot_aid in [0,2]; rescued in [0,5]. These are source assertions awaiting independent native checking.
+
+Termination:
+
+Natural completion exactly when rescued == 5; otherwise truncate at 512. Health never falls below 1, so injured actors remain controllable.
+The terminal helper candidate.py:L67-L77 (end_step) increments t once for nonterminal input, gives natural completion priority over horizon truncation, and preserves all leaves and causes on already-terminal input with zero rewards. Joint dones agree with done_all. No reset occurs inside raw_step.
+
+Source-derived partner intervention:
+
+Excavate (5) versus wait (0), at the first branch step.
+Only branch A is intended to open cell [3,2] and emit dust. Common waiting lets the local dust field change other actors&#x27; patch observations and makes a cleared casualty available to a later medic. No effect magnitude or successful rescue is claimed.
+The two full literal diagnostic scripts and both paired suffixes are in playthrough.json. They are dimension/range-checked as JSON only. Prefix and branch actions were chosen from rules, not searched, simulated or replayed. They are not a solvability, success-rate or causal-effect receipt.
+
+Presentation and provenance:
+
+The scene binds the exact source and manifest hashes, actual position/active/visibility leaves, tile map, actions and observed attributes. Crew index, actor identity, current tool and object state support later camera/actor selection. Scene metadata is delivered; native animation, RGB rendering and a human-play UI have not been executed or accepted. Any human control must call the same native transition as a policy.
+The sanitized authority and scope files govern these initial ordinals and current counts. Historical count examples are not applied. All input files are enumerated with bytes/SHA256 and truthful semantic-read scope in author_input_freeze.json. Five allowed official reference snapshots were hashed for integrity only; their contents were not used as design/code inputs. No upstream code or commercial art was copied.
+All small integer quantities use int32; no uint32 PRNG key is duplicated in state. Requested model configuration is gpt-6-astra/max; this author self-report does not establish provider model identity or token/cost telemetry.
+
+Evidence boundary:
+
+Only source AST screening, data-schema checking, symbolic observation-width accounting, reset-key coverage and literal-script structure checking were performed. No candidate was imported or executed; no JAX/numpy simulation, native reset/step, R0, eager/JIT/vmap comparison, benchmark, training, heldout evaluation, browser or downstream feedback was used. Intra-author static corrections to whitelist-rejected constructs occurred before this initial freeze and are recorded in generation_record.json. Native compatibility, replay legality, strategic richness, solvability, learning, UI quality and transfer remain unestablished.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Face or move north</span></div><div class="action"><b>2</b><span>Face or move east</span></div><div class="action"><b>3</b><span>Face or move south</span></div><div class="action"><b>4</b><span>Face or move west</span></div><div class="action"><b>5</b><span>Excavate facing rock with pick</span></div><div class="action"><b>6</b><span>Build duct here with ventilator</span></div><div class="action"><b>7</b><span>Shore floor here with builder</span></div><div class="action"><b>8</b><span>Lay rail here with builder</span></div><div class="action"><b>9</b><span>Install winch here with builder</span></div><div class="action"><b>10</b><span>Pump standing duct</span></div><div class="action"><b>11</b><span>Haul two rail cells forward</span></div><div class="action"><b>12</b><span>Lift cleared casualty with medic</span></div><div class="action"><b>13</b><span>Pass wood, otherwise medicine, to nearest actor</span></div><div class="action"><b>14</b><span>Treat nearest actor with medic</span></div><div class="action"><b>15</b><span>Draw wood and medicine at depot</span></div><div class="action"><b>16</b><span>Cycle tool at depot</span></div><div class="action"><b>17</b><span>Donate wood to foreign depot</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> crew 0 / initial pick miner / actor 0</p><p><b>agent_1</b> crew 0 / initial support carpenter / actor 1</p><p><b>agent_2</b> crew 0 / initial ventilator / actor 2</p><p><b>agent_3</b> crew 0 / initial field medic / actor 3</p><p><b>agent_4</b> crew 1 / initial pick miner / actor 4</p><p><b>agent_5</b> crew 1 / initial support carpenter / actor 5</p><p><b>agent_6</b> crew 1 / initial ventilator / actor 6</p><p><b>agent_7</b> crew 1 / initial field medic / actor 7</p><p><b>agent_8</b> crew 2 / initial pick miner / actor 8</p><p><b>agent_9</b> crew 2 / initial support carpenter / actor 9</p><p><b>agent_10</b> crew 2 / initial ventilator / actor 10</p><p><b>agent_11</b> crew 2 / initial field medic / actor 11</p><p><b>agent_12</b> crew 3 / initial pick miner / actor 12</p><p><b>agent_13</b> crew 3 / initial support carpenter / actor 13</p><p><b>agent_14</b> crew 3 / initial ventilator / actor 14</p><p><b>agent_15</b> crew 3 / initial field medic / actor 15</p><p><b>agent_16</b> crew 4 / initial pick miner / actor 16</p><p><b>agent_17</b> crew 4 / initial support carpenter / actor 17</p><p><b>agent_18</b> crew 4 / initial ventilator / actor 18</p><p><b>agent_19</b> crew 4 / initial field medic / actor 19</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      9
+    ],
+    &quot;meaning&quot;: &quot;Self x,y,crew,tool,wood,medicine,health,carrying,face.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      11
+    ],
+    &quot;meaning&quot;: &quot;Clock t; total rescued.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      191
+    ],
+    &quot;meaning&quot;: &quot;20 actor slots, width 9: visible,x,y,crew,tool,wood,medicine,health,carrying.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      191,
+      221
+    ],
+    &quot;meaning&quot;: &quot;5 depot slots, width 6: visible,x,y,wood,medicine,foreign-aid receipts.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      221,
+      246
+    ],
+    &quot;meaning&quot;: &quot;5 casualty slots, width 5: visible,x,y,bearer,active.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      246,
+      295
+    ],
+    &quot;meaning&quot;: &quot;7x7 terrain patch in y-major order, dx/dy -3..3; outside=-1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      295,
+      344
+    ],
+    &quot;meaning&quot;: &quot;7x7 dust patch, same ordering; outside=-1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agent&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Native crew index&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried timber units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;med&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried medicine units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Worker health&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carrying&quot;
+        ],
+        &quot;meaning&quot;: &quot;Actor carries a casualty&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;depot&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 5,
+    &quot;position&quot;: [
+      &quot;depot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;depot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;depot_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;depot_wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Depot timber stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;depot_med&quot;
+        ],
+        &quot;meaning&quot;: &quot;Depot medicine stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;depot_aid&quot;
+        ],
+        &quot;meaning&quot;: &quot;Foreign wood donations received, capped at two&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;casualty&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 5,
+    &quot;position&quot;: [
+      &quot;casualty_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;casualty_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;casualty_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;bearer&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carrier actor index; -1 awaiting rescue&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 222,
+  &quot;key&quot;: &quot;gi222&quot;,
+  &quot;title&quot;: &quot;洞窟救援公会 · Cavern Rescue Guilds&quot;,
+  &quot;summary&quot;: &quot;分工开岩、支护与通风，把伤员带回补给站；粉尘也会影响伙伴。&quot;,
+  &quot;tags&quot;: [
+    &quot;方块工程&quot;,
+    &quot;20角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 20,
+    &quot;observation_size&quot;: 344,
+    &quot;num_actions&quot;: 18,
+    &quot;max_steps&quot;: 512
+  },
+  &quot;source_sha256&quot;: &quot;79c337638b54d537f4bbf30ac2e2a38c0a1dd3718e22d14e98d9035079f7ee51&quot;,
+  &quot;manifest_sha256&quot;: &quot;ff0436b0862f21d7db018eba35cf882b7b51bb68da7c287f2e7eff2caeceb0fe&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;79c337638b54d537f4bbf30ac2e2a38c0a1dd3718e22d14e98d9035079f7ee51&quot;,
+      &quot;bytes&quot;: 13927,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00222/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;ff0436b0862f21d7db018eba35cf882b7b51bb68da7c287f2e7eff2caeceb0fe&quot;,
+      &quot;bytes&quot;: 14891,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00222/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;227c9702e30b4a369794dd576ac77ae29ff7365c3f59ec2345874bb89d35dbcb&quot;,
+      &quot;bytes&quot;: 6861,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00222/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;9380e0123c066738ec0585cf417215795f61b4441fb77f357f9820fee911125e&quot;,
+      &quot;bytes&quot;: 8766,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00222/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;17a76118f863e1be039d54ac5e48b2621b1d5bdeabac70778d89a9fab5b002d5&quot;,
+      &quot;bytes&quot;: 7264,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00222/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi222">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

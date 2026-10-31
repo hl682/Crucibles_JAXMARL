@@ -1,0 +1,298 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "20e103c1ebebdf437054a37eb1ffa7df0b5dd1beb3d22e8fee619ecc9cf6f041",
+  "manifest_sha256": "1460e0f43e2facc7677bd091a5b029a444ae518dd887d6ed741d7e0557b7d3ea",
+  "title": "Echo Hunt and Distributed Local Sensing",
+  "rules": [
+    "Two scouts have different radio sensing footprints: horizontal and vertical. Runners have local radius two.",
+    "A scout pulse spends one of three personal tokens and shares a live track with the other scout for three state frames.",
+    "A runner's smoke spends a token, cancels its pulse track and blocks non-adjacent ordinary scout sight for two state frames.",
+    "Beacons require a nearby scout, consume one of three charges and reveal nearby runners through smoke. Nearby runner jamming wins a simultaneous contest.",
+    "Dashes spend a token and attempt two simultaneous movement substeps. A blocked first hop cancels the second.",
+    "Moves into occupied active cells or contested destinations fail; swaps and follow-through are disallowed.",
+    "Tag attempts need a ready scout and capture adjacent visible runners. A tag wins over an escape attempted in the same transition.",
+    "Escaping requires action seven on an exit. Each resolution gives scouts plus six for capture or minus six for escape, and the reverse to runners."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "traversable corridor"
+        },
+        {
+          "value": 1,
+          "meaning": "wall"
+        },
+        {
+          "value": 2,
+          "meaning": "physical sensor beacon"
+        },
+        {
+          "value": 3,
+          "meaning": "runner escape hatch"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "glyph": "agent",
+      "label": "Scouts and runners",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Zero scouts, one runners"
+        },
+        {
+          "state_path": [
+            "tokens"
+          ],
+          "label": "Finite pulse, smoke, dash and jam resource"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Remaining special-action cooldown"
+        },
+        {
+          "state_path": [
+            "cloak"
+          ],
+          "label": "Remaining smoke ticks"
+        },
+        {
+          "state_path": [
+            "status"
+          ],
+          "label": "Zero active, one captured, two escaped"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "glyph": "beacon",
+      "label": "Shared sensor beacons",
+      "color": "#06B6D4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "label": "Current live beacon ticks remaining"
+        },
+        {
+          "state_path": [
+            "beacon_jam"
+          ],
+          "label": "Reactivation denial ticks remaining"
+        },
+        {
+          "state_path": [
+            "beacon_charge"
+          ],
+          "label": "Finite activation charges remaining"
+        }
+      ]
+    },
+    {
+      "id": "signals",
+      "glyph": "circle",
+      "label": "Actual pulse and smoke origins",
+      "color": "#A855F7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "label": "Pulse or smoke marker lifetime"
+        },
+        {
+          "state_path": [
+            "signal_kind"
+          ],
+          "label": "Zero scout pulse, one runner smoke"
+        }
+      ]
+    },
+    {
+      "id": "exits",
+      "glyph": "flag",
+      "label": "Runner escape hatches",
+      "color": "#22C55E",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "captured"
+      ],
+      "meaning": "Public cumulative runner captures",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "escaped"
+      ],
+      "meaning": "Public cumulative runner escapes",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "beacon_ttl"
+      ],
+      "meaning": "Public beacon transmission lifetime",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "beacon_jam"
+      ],
+      "meaning": "Public beacon reactivation denial",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move south"
+    },
+    {
+      "id": 3,
+      "label": "Move west"
+    },
+    {
+      "id": 4,
+      "label": "Move east"
+    },
+    {
+      "id": 5,
+      "label": "Scout pulse or runner smoke"
+    },
+    {
+      "id": 6,
+      "label": "Scout activate beacon or runner jam beacon"
+    },
+    {
+      "id": 7,
+      "label": "Scout tag or runner escape"
+    },
+    {
+      "id": 8,
+      "label": "Dash north"
+    },
+    {
+      "id": 9,
+      "label": "Dash south"
+    },
+    {
+      "id": 10,
+      "label": "Dash west"
+    },
+    {
+      "id": 11,
+      "label": "Dash east"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Self t, id, team, x, y, tokens, cooldown, smoke timer, joint done",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Public captured and escaped counts",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        88
+      ],
+      "meaning": "Public 7 by 11 fixed terrain map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        88,
+        120
+      ],
+      "meaning": "Four player records: visible, x, y, team, tokens, cooldown, cloak, status. Teammates always visible; opponents require local sensor or legitimate scout network; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        120,
+        132
+      ],
+      "meaning": "Two public beacon records: visible, x, y, active TTL, jam TTL, remaining charges",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        152
+      ],
+      "meaning": "Four signal-origin records: visible, x, y, TTL, kind. Own-team origins shared; opponent origins only within Manhattan two; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        152,
+        158
+      ],
+      "meaning": "Two public exit records: visible, x, y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        160
+      ],
+      "meaning": "Scout-team tracking TTL for the two runners; runner rows receive minus one",
+      "visibility": "self"
+    }
+  ]
+}

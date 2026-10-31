@@ -1,0 +1,144 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>astra-d2-00037: Expiring bilateral escrow with private surplus · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI037 / LEGACY_ARRAY</p><h1>astra-d2-00037: Expiring bilateral escrow with private surplus</h1><p class="lead"></p><div class="stats"><span>2 agents</span><span>5 actions</span><span>16 observation columns</span><span>32 original horizon</span><span>Runtime: PASS</span></div><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi037.gif" alt="Actual verification episode gi037"></section><section><h2>Run this game</h2><pre>crucibles play --game 37</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;termination&quot;: &quot;Original kernel t &gt;= 32; see mechanism and source&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 1.0. Observability: source_defined.</p></section><section><h2>Rules</h2><ol></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># astra-d2-00037: Expiring bilateral escrow with private surplus
+
+This parentless proposal combines generic bilateral escrow, revocable assent and an endogenous collateral requirement. It is not presented as a new named game or as proven different from existing mechanisms. No benchmark or other proposal source was consulted.
+
+Actions are 0 earn liquid credit, 1 deposit collateral, 2 endorse the current deal, 3 withdraw one&#x27;s own collateral, and 4 attempt settlement. Deposits use available credit and remain locked. Each agent&#x27;s required amount is 0.4 + 0.4 times one minus the other agent&#x27;s public trust. Both old-state deposits must exist before endorsement is effective. Settlement needs both old endorsements, both deposit ages at least two, and at least one current settlement attempt. A current withdrawal or an age-eight expiry prevents settlement. Deposits created this step cannot bypass these old-state requirements.
+
+Voluntary withdrawal refunds 75 percent of that agent&#x27;s collateral and reduces that agent&#x27;s trust by 0.18. Expiry refunds 90 percent without reducing trust. Any release clears both endorsements; a counterpart&#x27;s still-locked deposit otherwise remains. Successful settlement releases both deposits, adds 0.08 credit to each and increases both trust values by 0.08. Balances are capped at two and trust at one. Remaining deposits advance their age once per step and expire upon being observed at age eight.
+
+Each agent privately knows its balance and its current deal value, initially sampled in [-0.8,1). Only a successful settlement redraws both private values from the supplied step key. Thus the current payoff can be favorable to one party and unfavorable to the other. Other collateral, endorsements, ages, trust and previous actions are public. Observation columns 0..15 are time/32; own balance/2; own collateral/0.8; own endorsement; own age/8; own trust; normalized own private value; counterpart collateral/0.8; counterpart endorsement; counterpart age/8; counterpart trust; own and counterpart prior actions/4; previous settlement indicator; counterpart&#x27;s previous withdrawal indicator; settlement count/8.
+
+Per-agent reward is settlement times (0.25 + 0.6 times own current private value), minus 0.12 for withdrawal, 0.06 for expiry, 0.02 for a new deposit and 0.01 for a first endorsement. Simultaneous withdrawal at expiry incurs both listed penalties. Clipping explicitly enforces [-1,1]; the listed payoff terms also remain within this interval. Locked credit restricts future deposits, while trust changes future counterpart requirements. Settlement therefore affects information, liquidity and future admission conditions, beyond its immediate payoff.
+
+All actions remain legal, including ineffective attempts. The horizon is 32 raw steps and terminal state is preserved. No terminal escrow liquidation or bonus is implied. This can yield refusal or non-settlement rather than a cooperative outcome, which is a possible result to retain.
+
+Status: authored source only, with no execution, compiler claim, validation receipt, eligibility claim or learning evidence.</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Action 0; see mechanism and source</span></div><div class="action"><b>1</b><span>Action 1; see mechanism and source</span></div><div class="action"><b>2</b><span>Action 2; see mechanism and source</span></div><div class="action"><b>3</b><span>Action 3; see mechanism and source</span></div><div class="action"><b>4</b><span>Action 4; see mechanism and source</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Original legacy agent; see mechanism and source</p><p><b>agent_1</b> Original legacy agent; see mechanism and source</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi037&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;9e2e2eae153f0e757bcfa6a84bd38114e0f96e24934c31de830f7dc837fb8731&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.0565476417541504
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.12699151039123535
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8595230579376221
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.4209005832672119
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.4355783462524414
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0005548000335693359
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.4397282600402832
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.3752565383911133
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5969254970550537
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.1084556579589844
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 5.9224936962127686,
+  &quot;float_parity_max_abs&quot;: 1.4901161193847656e-08,
+  &quot;numerical_parity&quot;: &quot;UNDETERMINED_NONZERO_FLOAT_DIFFERENCE&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;NOT_PART_OF_ORIGINAL_LEGACY_CONTRACT&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 32,
+  &quot;scripted_random_returns&quot;: [
+    -0.2899999935179949,
+    -0.30999999307096004
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 33,
+  &quot;render_roles_checked&quot;: 2
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi037&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;ui_sha256&quot;: &quot;15b5861d23b3c42811865c954d5a988280bbfd21cf8e93754be2437a027158c5&quot;,
+  &quot;seconds&quot;: 4.239455938339233
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 37,
+  &quot;key&quot;: &quot;gi037&quot;,
+  &quot;title&quot;: &quot;astra-d2-00037: Expiring bilateral escrow with private surplus&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;legacy_array&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;source_sha256&quot;: &quot;9e2e2eae153f0e757bcfa6a84bd38114e0f96e24934c31de830f7dc837fb8731&quot;,
+  &quot;manifest_sha256&quot;: &quot;fd2114d598649b1d18ea47c478a05c4aadf238aa96bcc2756cb941462d5f71d6&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;9e2e2eae153f0e757bcfa6a84bd38114e0f96e24934c31de830f7dc837fb8731&quot;,
+      &quot;bytes&quot;: 5056,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00037/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;742764697b39e39ce60f9bd11cc94e22360f0f6f28c4cbdfe547c1ee5401c875&quot;,
+      &quot;bytes&quot;: 3111,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00037/attempt_00/mechanism.md&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;LEGACY_SOURCE&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi037">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

@@ -1,0 +1,366 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "4269d24c4659c474d5734959cd66e5504a11a772055437cc79b399d6c41b5768",
+  "manifest_sha256": "8d87b498de6f261608e1f5b1c77dcaa1bc8315ccdff1ea5764a1504989be38a7",
+  "title": "Phase-Lock Relay",
+  "rules": [
+    "Deliver each numbered cargo to its same-numbered dock. Each player carries at most one cargo; Pick/Drop acts at the player actual cell.",
+    "Walls divide the map at x=4 and x=7. Each partition has gates at y=1 and y=5; floor paths within chambers connect the two routes.",
+    "Gates cycle through six phases and naturally open at phases 0 and 1. Gate state for a call is computed at t+1 before movement.",
+    "Hold at a local station forces its gate open now and for two following calls, then leaves that operator with two forced Wait calls.",
+    "Shift adds three to the gate persistent phase offset modulo six and forces the operator to Wait for one following call.",
+    "Commands resolve before movement, so one player can open a gate for a moving teammate on the same call.",
+    "Entering a closed gate fails. A player already on a gate may leave when it closes; closure neither crushes nor teleports.",
+    "Other players old cells and contested destinations block movement. Swaps and following into a just-vacated cell are rejected.",
+    "Each delivery gives every role one reward. Each active call costs 0.001, with another 0.005 for a Hold or Shift command. Both deliveries end play; horizon is 96."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#ECE9DF"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable partition wall",
+          "color": "#555D69"
+        },
+        {
+          "value": 2,
+          "meaning": "Gate cell; entry depends on actual gate_open after current commands",
+          "color": "#BBA56C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "operators",
+      "glyph": "worker",
+      "label": "Operators and courier",
+      "color": "#4C6998",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lock_timer"
+          ],
+          "label": "Forced Wait calls remaining from station commitment"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Cargo id carried; -1 means empty"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Undelivered cargo",
+      "color": "#B88448",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_id"
+          ],
+          "label": "Cargo id and matching dock id"
+        },
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "label": "Carrier agent index; -1 means on floor"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Delivered to the matching dock"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Periodic gates",
+      "color": "#A481AD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_phase"
+          ],
+          "label": "Current cycle phase 0 to 5; phases 0 and 1 are naturally open"
+        },
+        {
+          "state_path": [
+            "gate_override"
+          ],
+          "label": "Current forced-open duration remaining"
+        },
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Gate is open for entry on the represented transition"
+        }
+      ]
+    },
+    {
+      "id": "switches",
+      "glyph": "tool",
+      "label": "Local control stations",
+      "color": "#5C8B83",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "switch_gate"
+          ],
+          "label": "Index of the gate controlled from this station"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "glyph": "beacon",
+      "label": "Matching delivery docks",
+      "color": "#739359",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_id"
+          ],
+          "label": "Accepted cargo id"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Matching cargo has arrived"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "gate_changed"
+      ],
+      "meaning": "Gate entry-open flag changed from the previous frame",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "commanded"
+      ],
+      "meaning": "Hold or phase-shift command applied at this station index",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Cargo newly delivered to its matching dock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Cargo picked up on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Cargo voluntarily dropped on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent delivered status",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lock_timer"
+      ],
+      "meaning": "Current operator commitment countdown",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait or serve operation commitment"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up or drop cargo at own cell"
+    },
+    {
+      "id": 6,
+      "label": "Hold local gate open; commit two future calls"
+    },
+    {
+      "id": 7,
+      "label": "Shift local gate phase by three; commit one future call"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        12
+      ],
+      "meaning": "Agent-major 3 x [x/10,y/6,lock_timer/2,(carrying+1)/2], agent index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        20
+      ],
+      "meaning": "Cargo-major 2 x [x/10,y/6,(owner+1)/3,delivered]. Cargo identity is its row index.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        40
+      ],
+      "meaning": "Gate-major 4 x [x/10,y/6,phase/5,override/3,open]. The associated station is the same index.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        48
+      ],
+      "meaning": "Four station positions [x/10,y/6] in gate-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        52
+      ],
+      "meaning": "Two matching dock positions [x/10,y/6] in cargo-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        55
+      ],
+      "meaning": "One-hot observing role identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        55,
+        56
+      ],
+      "meaning": "Elapsed calls t/96.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "meaning": "Joint episode_done.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        134
+      ],
+      "meaning": "Public 7x11 terrain, y-major, divided by two: floor 0, wall 0.5, gate cell 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        138
+      ],
+      "meaning": "Latest gate-open-state change flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        142
+      ],
+      "meaning": "Latest Hold or Shift command flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        144
+      ],
+      "meaning": "Latest cargo delivery flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        146
+      ],
+      "meaning": "Latest cargo pickup flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        148
+      ],
+      "meaning": "Latest cargo drop flags.",
+      "visibility": "public"
+    }
+  ]
+}

@@ -1,0 +1,468 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>港湾宴席 · Harbor Banquet · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI223 / SPATIAL</p><h1>港湾宴席 · Harbor Banquet</h1><p class="lead">备餐、传菜、清洗与回收餐盘，合做宴席并疏通港湾水道。</p><div class="stats"><span>40 agents</span><span>18 actions</span><span>576 observation columns</span><span>512 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi223.gif" alt="Original saved demonstration gi223"></section><section><h2>Run this game</h2><pre>crucibles play --game 223</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Complete at least one fish-and-stew feast at every kitchen; optional single meals compete for dishes, trays and return boats.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion when every table has feasts &gt;= 1; otherwise truncate at 512.&quot;,
+  &quot;interaction&quot;: &quot;Complementary station specialties require spatial transfer of ingredients or cooked dishes. Cooking consumes fuel, creates mess and takes four ticks. A tray is tied up in a physical return boat until a crew unloads it; one shared blockage and diversion affect all boats.&quot;,
+  &quot;observation_access&quot;: &quot;Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 4. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>40 workers in eight kitchens. Item codes: 0 empty, 1 raw fish, 2 vegetables, 3 cooked fish, 4 stew, 5 fuel crate, 6 spoiled dish.</li><li>Cook tool 1 starts only matching raw food at a compatible station. Fuel is consumed; four ticks finish a dish and add mess.</li><li>Pick up cooked output before 12 ticks. Carried dishes cool after 16 ticks; adjacent handoffs preserve remaining warmth.</li><li>Serve either cooked dish locally, or contribute one of each to a composite feast. The first feast component reserves a tray for up to 24 ticks.</li><li>A completed service launches that kitchen&#x27;s return boat. It must travel a full 32-cell circuit and be unloaded near its actual location before its tray is reused.</li><li>The junction diverts boats around recurring flotsam. Engineer tool 4 can clear the shared blockage; boats cannot move into occupied boat cells.</li><li>Dock deliveries replace remaining dock cargo every 32 ticks, at most eight times. Assortments alternate between the two ingredients and fuel.</li><li>Cycle tools at your home table. Each kitchen completing one composite feast ends the episode; single dishes remain an alternative use of scarce equipment.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Harbor Banquet
+
+Status: AUTHORED_NOT_EXECUTED. Initial proposal, attempt 00, feedback_used=0. All scripts are unexecuted source-derived hypotheses.
+
+Native interface: A=40, O=576, U=18, H=512. Every counted actor has a scalar int32 action and its own float32 observation/reward and bool done row. The family is cooperative_kitchen.
+
+Complete at least one fish-and-stew feast at every kitchen; optional single meals compete for dishes, trays and return boats.
+
+Single meals offer a faster local return, while a composite feast uses complementary stations and offers a larger local plus common reward. Queue clearing competes with cooking and carrying. Channels are shallow walkable service lanes for workers; boat collision is separate. Dock replenishment is a bounded scheduled state update, not an authored animated supply-boat subsystem. Deterministic reset; no upstream game code copied.
+
+Rules and physical meanings:
+
+- 40 workers in eight kitchens. Item codes: 0 empty, 1 raw fish, 2 vegetables, 3 cooked fish, 4 stew, 5 fuel crate, 6 spoiled dish.
+- Cook tool 1 starts only matching raw food at a compatible station. Fuel is consumed; four ticks finish a dish and add mess.
+- Pick up cooked output before 12 ticks. Carried dishes cool after 16 ticks; adjacent handoffs preserve remaining warmth.
+- Serve either cooked dish locally, or contribute one of each to a composite feast. The first feast component reserves a tray for up to 24 ticks.
+- A completed service launches that kitchen&#x27;s return boat. It must travel a full 32-cell circuit and be unloaded near its actual location before its tray is reused.
+- The junction diverts boats around recurring flotsam. Engineer tool 4 can clear the shared blockage; boats cannot move into occupied boat cells.
+- Dock deliveries replace remaining dock cargo every 32 ticks, at most eight times. Assortments alternate between the two ingredients and fuel.
+- Cycle tools at your home table. Each kitchen completing one composite feast ends the episode; single dishes remain an alternative use of scarce equipment.
+
+Transition order and controls:
+
+The native joint vector is processed in rotating actor order (k+t) modulo A. An actor checks its action against current state at its turn; a resource lost to an earlier actor converts the action to wait. Out-of-range input becomes wait. Nonterminal movement codes always allow facing even when walking is blocked; occupancy and terrain control actual movement. Ties for nearby targets choose minimum Manhattan distance, then lowest index. No direction action teleports through a blocked walking cell.
+All spatial updates, resources and tool effects are in candidate.py:L138-L194 (actor). Movement/collision is in candidate.py:L54-L65 (move_actor) and candidate.py:L119-L120 (passable). Exact contextual masks are in candidate.py:L122-L136 (choices); mask assembly is in candidate.py:L23-L25 (mask_row) and candidate.py:L27-L29 (legal_actions).
+The world updates production/ecology/hazards after actor actions. These delayed effects and reward components are in candidate.py:L210-L240 (raw_step).
+
+Rewards and finite bounds:
+
+A single meal gives each beneficiary-kitchen actor 1 for the current preferred dish or 0.5 for substitution. A completed composite gives each beneficiary-kitchen actor 2 and every actor 0.1. Each executed action with a&gt;=6 except pickup action 7 and transfer action 14 costs its actor 0.01, including local service, cleaning and tool cycling. Spoiled station output costs each kitchen member 0.25, a cold carried dish costs its carrier 0.1, and a timed-out reserved feast component costs each kitchen member 0.3. At most one launch per table per tick and eight tables bound reward within [-1,4]. No reward clipping.
+Observation entries are float32 in [-2,65536]. This loose finite envelope includes coordinates, codes, quantities and cumulative counters; at most A*H &lt;= 49152 actor actions can contribute to a counter in one episode. It is a representational bound, never a performance threshold.
+
+Exact observation layout:
+
+- Columns [0,7): Self x,y,kitchen,tool,item,warmth,face. Access: self.
+- Columns [7,10): Clock t; total single meals; total composite feasts. Access: public.
+- Columns [10,290): 40 actor slots width 7: visible,x,y,kitchen,tool,item,warmth. Access: local.
+- Columns [290,362): 8 station slots width 9: visible,x,y,specialty,fuel,mess,timer,output,age. Access: local.
+- Columns [362,410): 8 dock slots width 6: visible,x,y,stock,assortment,remaining deliveries. Access: local.
+- Columns [410,482): 8 table slots width 9: visible,x,y,trays,fish,stew,feast age,single serves,feasts. Access: local.
+- Columns [482,522): 8 boat slots width 5: visible,x,y,moved cells,ready. Access: local.
+- Columns [522,527): Junction slot: visible,x,y,diversion,blockage. Access: local.
+- Columns [527,576): 7x7 terrain patch y-major, outside=-1. Access: local.
+
+Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.
+The observer construction is candidate.py:L242-L251 (observe). Entity/map masks are regenerated in candidate.py:L31-L40 (refresh). Masked entity flattening and patch boundaries are candidate.py:L42-L44 (visible_rows) and candidate.py:L46-L52 (patch). No role-view animation may expose hidden state or use full-state event arrays as public announcements. Only the declared public counters are scene events.
+
+Declared persistent state and invariants:
+
+Initial arrays, positions, resource stocks and integer/bool representations are defined in candidate.py:L79-L107 (reset). The manifest declares every reset key exactly once. Every state leaf keeps a fixed shape; positions are [x,y], maps are indexed [y,x], and all actors remain active through termination. Native actor positions are unique; non-agent objects may share a cell with an actor when the mechanic permits it.
+Analytical ranges used during author review: item in [0,6]; warmth in [0,16]; fuel in [0,11]; mess in [0,3]; timer in [0,4]; trays in [0,2]; stock in [0,4]; deliveries_left in [0,8]. These are source assertions awaiting independent native checking.
+
+Termination:
+
+Natural completion when every table has feasts &gt;= 1; otherwise truncate at 512.
+The terminal helper candidate.py:L67-L77 (end_step) increments t once for nonterminal input, gives natural completion priority over horizon truncation, and preserves all leaves and causes on already-terminal input with zero rewards. Joint dones agree with done_all. No reset occurs inside raw_step.
+
+Source-derived partner intervention:
+
+Start cooking (6) versus wait (0), at branch step 0.
+After the identical three waiting steps, the source intends station 0 output/mess/fuel to differ. Actor 0&#x27;s local station observation and future pickup opportunities depend on its partner&#x27;s initial action. This is unexecuted.
+The two full literal diagnostic scripts and both paired suffixes are in playthrough.json. They are dimension/range-checked as JSON only. Prefix and branch actions were chosen from rules, not searched, simulated or replayed. They are not a solvability, success-rate or causal-effect receipt.
+
+Presentation and provenance:
+
+The scene binds the exact source and manifest hashes, actual position/active/visibility leaves, tile map, actions and observed attributes. Crew index, actor identity, current tool and object state support later camera/actor selection. Scene metadata is delivered; native animation, RGB rendering and a human-play UI have not been executed or accepted. Any human control must call the same native transition as a policy.
+The sanitized authority and scope files govern these initial ordinals and current counts. Historical count examples are not applied. All input files are enumerated with bytes/SHA256 and truthful semantic-read scope in author_input_freeze.json. Five allowed official reference snapshots were hashed for integrity only; their contents were not used as design/code inputs. No upstream code or commercial art was copied.
+All small integer quantities use int32; no uint32 PRNG key is duplicated in state. Requested model configuration is gpt-6-astra/max; this author self-report does not establish provider model identity or token/cost telemetry.
+
+Evidence boundary:
+
+Only source AST screening, data-schema checking, symbolic observation-width accounting, reset-key coverage and literal-script structure checking were performed. No candidate was imported or executed; no JAX/numpy simulation, native reset/step, R0, eager/JIT/vmap comparison, benchmark, training, heldout evaluation, browser or downstream feedback was used. Intra-author static corrections to whitelist-rejected constructs occurred before this initial freeze and are recorded in generation_record.json. Native compatibility, replay legality, strategic richness, solvability, learning, UI quality and transfer remain unestablished.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Face or move north</span></div><div class="action"><b>2</b><span>Face or move east</span></div><div class="action"><b>3</b><span>Face or move south</span></div><div class="action"><b>4</b><span>Face or move west</span></div><div class="action"><b>5</b><span>Take one dock ingredient</span></div><div class="action"><b>6</b><span>Start compatible cooking with cook tool</span></div><div class="action"><b>7</b><span>Take station dish</span></div><div class="action"><b>8</b><span>Serve local dish on tray</span></div><div class="action"><b>9</b><span>Clean adjacent station</span></div><div class="action"><b>10</b><span>Toggle channel diversion</span></div><div class="action"><b>11</b><span>Clear channel with engineer</span></div><div class="action"><b>12</b><span>Refuel station using fuel crate</span></div><div class="action"><b>13</b><span>Discard carried item</span></div><div class="action"><b>14</b><span>Pass item to nearest empty-handed actor</span></div><div class="action"><b>15</b><span>Contribute dish to composite feast</span></div><div class="action"><b>16</b><span>Unload returned tray boat</span></div><div class="action"><b>17</b><span>Cycle tool at home table</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> crew 0 / initial preparer / actor 0</p><p><b>agent_1</b> crew 0 / initial cook / actor 1</p><p><b>agent_2</b> crew 0 / initial carrier / actor 2</p><p><b>agent_3</b> crew 0 / initial steward / actor 3</p><p><b>agent_4</b> crew 0 / initial dock engineer / actor 4</p><p><b>agent_5</b> crew 1 / initial preparer / actor 5</p><p><b>agent_6</b> crew 1 / initial cook / actor 6</p><p><b>agent_7</b> crew 1 / initial carrier / actor 7</p><p><b>agent_8</b> crew 1 / initial steward / actor 8</p><p><b>agent_9</b> crew 1 / initial dock engineer / actor 9</p><p><b>agent_10</b> crew 2 / initial preparer / actor 10</p><p><b>agent_11</b> crew 2 / initial cook / actor 11</p><p><b>agent_12</b> crew 2 / initial carrier / actor 12</p><p><b>agent_13</b> crew 2 / initial steward / actor 13</p><p><b>agent_14</b> crew 2 / initial dock engineer / actor 14</p><p><b>agent_15</b> crew 3 / initial preparer / actor 15</p><p><b>agent_16</b> crew 3 / initial cook / actor 16</p><p><b>agent_17</b> crew 3 / initial carrier / actor 17</p><p><b>agent_18</b> crew 3 / initial steward / actor 18</p><p><b>agent_19</b> crew 3 / initial dock engineer / actor 19</p><p><b>agent_20</b> crew 4 / initial preparer / actor 20</p><p><b>agent_21</b> crew 4 / initial cook / actor 21</p><p><b>agent_22</b> crew 4 / initial carrier / actor 22</p><p><b>agent_23</b> crew 4 / initial steward / actor 23</p><p><b>agent_24</b> crew 4 / initial dock engineer / actor 24</p><p><b>agent_25</b> crew 5 / initial preparer / actor 25</p><p><b>agent_26</b> crew 5 / initial cook / actor 26</p><p><b>agent_27</b> crew 5 / initial carrier / actor 27</p><p><b>agent_28</b> crew 5 / initial steward / actor 28</p><p><b>agent_29</b> crew 5 / initial dock engineer / actor 29</p><p><b>agent_30</b> crew 6 / initial preparer / actor 30</p><p><b>agent_31</b> crew 6 / initial cook / actor 31</p><p><b>agent_32</b> crew 6 / initial carrier / actor 32</p><p><b>agent_33</b> crew 6 / initial steward / actor 33</p><p><b>agent_34</b> crew 6 / initial dock engineer / actor 34</p><p><b>agent_35</b> crew 7 / initial preparer / actor 35</p><p><b>agent_36</b> crew 7 / initial cook / actor 36</p><p><b>agent_37</b> crew 7 / initial carrier / actor 37</p><p><b>agent_38</b> crew 7 / initial steward / actor 38</p><p><b>agent_39</b> crew 7 / initial dock engineer / actor 39</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      7
+    ],
+    &quot;meaning&quot;: &quot;Self x,y,kitchen,tool,item,warmth,face.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      10
+    ],
+    &quot;meaning&quot;: &quot;Clock t; total single meals; total composite feasts.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      290
+    ],
+    &quot;meaning&quot;: &quot;40 actor slots width 7: visible,x,y,kitchen,tool,item,warmth.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      290,
+      362
+    ],
+    &quot;meaning&quot;: &quot;8 station slots width 9: visible,x,y,specialty,fuel,mess,timer,output,age.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      362,
+      410
+    ],
+    &quot;meaning&quot;: &quot;8 dock slots width 6: visible,x,y,stock,assortment,remaining deliveries.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      410,
+      482
+    ],
+    &quot;meaning&quot;: &quot;8 table slots width 9: visible,x,y,trays,fish,stew,feast age,single serves,feasts.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      482,
+      522
+    ],
+    &quot;meaning&quot;: &quot;8 boat slots width 5: visible,x,y,moved cells,ready.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      522,
+      527
+    ],
+    &quot;meaning&quot;: &quot;Junction slot: visible,x,y,diversion,blockage.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      527,
+      576
+    ],
+    &quot;meaning&quot;: &quot;7x7 terrain patch y-major, outside=-1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agent&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 40,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Native crew index&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;item&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried item code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;warmth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining carried-dish warmth&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;station&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;specialty&quot;
+        ],
+        &quot;meaning&quot;: &quot;Raw ingredient accepted by station&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fuel&quot;
+        ],
+        &quot;meaning&quot;: &quot;Station fuel units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;mess&quot;
+        ],
+        &quot;meaning&quot;: &quot;Station dirt level&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;timer&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining cooking ticks&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;output&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cooked output item&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;age&quot;
+        ],
+        &quot;meaning&quot;: &quot;Output age&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;dock&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;dock_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;dock_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;dock_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Dock cargo stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;assortment&quot;
+        ],
+        &quot;meaning&quot;: &quot;Dock cargo item code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;deliveries_left&quot;
+        ],
+        &quot;meaning&quot;: &quot;Scheduled deliveries remaining&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;table&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;table_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;table_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;table_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;trays&quot;
+        ],
+        &quot;meaning&quot;: &quot;Available reusable trays&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fish&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fish component reserved&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stew component reserved&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;feast_age&quot;
+        ],
+        &quot;meaning&quot;: &quot;Reserved-component waiting age&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;served&quot;
+        ],
+        &quot;meaning&quot;: &quot;Single meals served here&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;feasts&quot;
+        ],
+        &quot;meaning&quot;: &quot;Composite feasts completed here&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;boat&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;boat_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;boat_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;boat_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;boat_ticks&quot;
+        ],
+        &quot;meaning&quot;: &quot;Moved channel cells this return trip&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;boat_ready&quot;
+        ],
+        &quot;meaning&quot;: &quot;Return tray ready for unloading&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;junction&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;junction_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;junction_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;junction_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;divert&quot;
+        ],
+        &quot;meaning&quot;: &quot;Junction sends boats to bypass lane&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;blocked&quot;
+        ],
+        &quot;meaning&quot;: &quot;Main lane blocked at x17&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 223,
+  &quot;key&quot;: &quot;gi223&quot;,
+  &quot;title&quot;: &quot;港湾宴席 · Harbor Banquet&quot;,
+  &quot;summary&quot;: &quot;备餐、传菜、清洗与回收餐盘，合做宴席并疏通港湾水道。&quot;,
+  &quot;tags&quot;: [
+    &quot;厨房协作&quot;,
+    &quot;40角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 40,
+    &quot;observation_size&quot;: 576,
+    &quot;num_actions&quot;: 18,
+    &quot;max_steps&quot;: 512
+  },
+  &quot;source_sha256&quot;: &quot;68f262f8c70e0e968bab3398c6503b1d266760238e921a9c36cd700b8826328e&quot;,
+  &quot;manifest_sha256&quot;: &quot;eb91c6a9ac653da313ac6c23e719080da85ecf92a72e5bd937513be8690d3e5d&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;68f262f8c70e0e968bab3398c6503b1d266760238e921a9c36cd700b8826328e&quot;,
+      &quot;bytes&quot;: 16755,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00223/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;eb91c6a9ac653da313ac6c23e719080da85ecf92a72e5bd937513be8690d3e5d&quot;,
+      &quot;bytes&quot;: 21985,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00223/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;3487c13f741644643ca8f3cd43b4b003cd77981325d8115d346e8098c6f403dc&quot;,
+      &quot;bytes&quot;: 9199,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00223/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;27ea44a0575ae8a56827e4e5222e1cf0f5ec3411c1e312866e7b72c8f71d5c62&quot;,
+      &quot;bytes&quot;: 9295,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00223/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;3e8e74fbd543f7d8abeac3510f658e0fb82054a64da08be3a76efce762eb8224&quot;,
+      &quot;bytes&quot;: 13330,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00223/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi223">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

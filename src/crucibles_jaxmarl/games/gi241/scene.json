@@ -1,0 +1,416 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "28bcfc20a24ce6c51091ff12efd320c58b98d9eddb2a0d3015f66f2240a294c3",
+  "manifest_sha256": "b4a1c9ae7be103e2d2a045e0d00494cdc42410538b0fa7cd43b794c230b1a0c0",
+  "title": "Skyport Banquet Kitchens",
+  "rules": [
+    "Eight workers per kitchen have individually selectable actions and exchangeable tools.",
+    "Chop raw ingredients into an empty bench, tend cooking, then plate a ready meal. Shared washing steam warms benches and can spoil old food.",
+    "A loaded lift moves only with a second worker at its counterweight. Moving opens one passage and closes the other.",
+    "Read a local departure order with empty hands. Serve a matching meal during its first eight ticks; service returns a dirty tray.",
+    "Wash reservoirs share water and heat between nearby benches. Adjacent consenting partners can exchange cargo and its order tag.",
+    "Role view shows a radius-two native patch. Human controls and animation await independent integration."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      -0.5,
+      -0.5,
+      47.5,
+      23.5
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_visibility"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "terminal floor",
+          "color": "#EAD9C3"
+        },
+        {
+          "value": 1,
+          "meaning": "closed lift passage",
+          "color": "#503B46"
+        },
+        {
+          "value": 2,
+          "meaning": "open lift passage",
+          "color": "#9BBDCF"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "worker",
+      "label": "kitchen actors; select by native actor index",
+      "color": "#E96D53",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "fixed profession code"
+        },
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "home crew identifier"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "current exchangeable tool code"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "carried cargo kind"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "carried cargo units"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "stamina, 0 to 20"
+        },
+        {
+          "state_path": [
+            "memory"
+          ],
+          "label": "physically carried information code"
+        }
+      ]
+    },
+    {
+      "id": "supply",
+      "glyph": "food",
+      "label": "ingredient lockers",
+      "color": "#E3B54A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "remaining raw ingredients"
+        }
+      ]
+    },
+    {
+      "id": "prep",
+      "glyph": "tool",
+      "label": "prep and cooking bench",
+      "color": "#CE8059",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "food stage 0 empty to 4 ready"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "bench food age"
+        },
+        {
+          "state_path": [
+            "recipe"
+          ],
+          "label": "bench allergy recipe tag"
+        },
+        {
+          "state_path": [
+            "heat"
+          ],
+          "label": "bench heat"
+        }
+      ]
+    },
+    {
+      "id": "lift",
+      "glyph": "crate",
+      "label": "paired service lift",
+      "color": "#7E9FB8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tray"
+          ],
+          "label": "loaded meal flag"
+        },
+        {
+          "state_path": [
+            "tray_tag"
+          ],
+          "label": "loaded recipe tag"
+        },
+        {
+          "state_path": [
+            "phase"
+          ],
+          "label": "lift platform 0 upper or 1 lower"
+        }
+      ]
+    },
+    {
+      "id": "counter",
+      "glyph": "tool",
+      "label": "counterweight handle",
+      "color": "#5D6F8C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "held"
+          ],
+          "label": "counterweight held this step"
+        }
+      ]
+    },
+    {
+      "id": "terminal",
+      "glyph": "flag",
+      "label": "moving departure counter",
+      "color": "#B35C77",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "order"
+          ],
+          "label": "local allergy order code"
+        },
+        {
+          "state_path": [
+            "window"
+          ],
+          "label": "departure clock"
+        },
+        {
+          "state_path": [
+            "served_total"
+          ],
+          "label": "accepted meals"
+        }
+      ]
+    },
+    {
+      "id": "wash",
+      "glyph": "water",
+      "label": "shared washing reservoir",
+      "color": "#51AFC1",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wash_water"
+          ],
+          "label": "water remaining"
+        },
+        {
+          "state_path": [
+            "steam"
+          ],
+          "label": "steam heat level"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "lift_moved"
+      ],
+      "meaning": "lift changed platform this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "accepted meals this step by kitchen",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "bench spoiled this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served_total"
+      ],
+      "meaning": "accepted meals by kitchen",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest"
+    },
+    {
+      "id": 1,
+      "label": "East"
+    },
+    {
+      "id": 2,
+      "label": "West"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "North"
+    },
+    {
+      "id": 5,
+      "label": "Take ingredient"
+    },
+    {
+      "id": 6,
+      "label": "Chop into prep bench"
+    },
+    {
+      "id": 7,
+      "label": "Tend cooking"
+    },
+    {
+      "id": 8,
+      "label": "Plate cooked meal"
+    },
+    {
+      "id": 9,
+      "label": "Load service lift"
+    },
+    {
+      "id": 10,
+      "label": "Hold counterweight"
+    },
+    {
+      "id": 11,
+      "label": "Receive lift tray"
+    },
+    {
+      "id": 12,
+      "label": "Serve local departure"
+    },
+    {
+      "id": 13,
+      "label": "Wash dirty tray"
+    },
+    {
+      "id": 14,
+      "label": "Read local order with empty hands"
+    },
+    {
+      "id": 15,
+      "label": "Exchange tools with adjacent partner"
+    },
+    {
+      "id": 16,
+      "label": "Handoff cargo and message with adjacent partner"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "native clock / H",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "own x / (width - 1)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "own y / (height - 1)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "own stamina / 20",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "own tool / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "own cargo kind / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "own cargo units / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "own carried information / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        733
+      ],
+      "meaning": "5 by 5 local patch, dy then dx from -2 through +2, then channel; outside world all -1. Channels: 0=terrain value / 10; 1=actor identity (id + 1) / A; 2=role (role + 1) / R; 3=home crew (team + 1) / C; 4=held tool / 4; 5=cargo type / 4; 6=cargo amount / 4; 7=stamina / 20; 8=carried message / 4; 9=supply identity (index + 1) / capacity; 10=remaining raw ingredients / 24; 11=prep identity (index + 1) / capacity; 12=food stage 0 empty to 4 ready / 4; 13=bench food age / 12; 14=bench allergy recipe tag / 2; 15=bench heat / 4; 16=lift identity (index + 1) / capacity; 17=loaded meal flag / 1; 18=loaded recipe tag / 2; 19=lift platform 0 upper or 1 lower / 1; 20=counter identity (index + 1) / capacity; 21=counterweight held this step / 1; 22=terminal identity (index + 1) / capacity; 23=local allergy order code / 2; 24=departure clock / 11; 25=accepted meals / 32; 26=wash identity (index + 1) / capacity; 27=water remaining / 8; 28=steam heat level / 4",
+      "visibility": "local"
+    }
+  ]
+}

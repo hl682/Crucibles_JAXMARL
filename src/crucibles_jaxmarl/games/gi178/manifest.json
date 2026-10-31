@@ -1,0 +1,750 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00178",
+  "source_sha256": "05b69a62c906aaabddd68e35bd6c5b8877b664f2dc4595ea1637576418bb451b",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 44,
+  "num_actions": 8,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -0.3,
+  "reward_high": 4.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "west tug, private dock preference"
+    },
+    {
+      "id": "agent_1",
+      "role": "north tug, independently sampled private dock preference"
+    },
+    {
+      "id": "agent_2",
+      "role": "east tug, private dock preference"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Coast"
+    },
+    {
+      "id": 1,
+      "label": "Thrust west; spend one fuel"
+    },
+    {
+      "id": 2,
+      "label": "Thrust east; spend one fuel"
+    },
+    {
+      "id": 3,
+      "label": "Thrust north; spend one fuel"
+    },
+    {
+      "id": 4,
+      "label": "Thrust south; spend one fuel"
+    },
+    {
+      "id": 5,
+      "label": "Brake; spend one fuel"
+    },
+    {
+      "id": 6,
+      "label": "Toggle tether at cardinal adjacency"
+    },
+    {
+      "id": 7,
+      "label": "Give one fuel to poorest old adjacent peer"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "vel"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offset"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "preference"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_values"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_vel"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_health"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tether_vector"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spent"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel_given"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "burned"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "attached"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "private_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_delivered"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_occupied"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "collision"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_hit"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "docking"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tether_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      10
+    ]
+  },
+  "entities": [
+    {
+      "id": "tugs",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "vel"
+          ],
+          "meaning": "Native integer velocity [vx,vy]",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "meaning": "Current transferable fuel",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "attached"
+          ],
+          "meaning": "Attached to the shared load",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "salvage",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_vel"
+          ],
+          "meaning": "Shared load velocity [vx,vy]",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "cargo_health"
+          ],
+          "meaning": "Remaining collision integrity",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "cargo_delivered"
+          ],
+          "meaning": "Load docked",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "dock_open"
+          ],
+          "meaning": "Public six-tick window is open",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "dock_occupied"
+          ],
+          "meaning": "Load delivered here",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "tethers",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "tether_pos"
+      ],
+      "active": [
+        "attached"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tether_vector"
+          ],
+          "meaning": "Actual tug-to-cargo displacement; midpoint is native geometry",
+          "display": "direction"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "attached"
+      ],
+      "meaning": "Persistent attachment state per tug",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "dock_occupied"
+      ],
+      "meaning": "Persistent occupied dock state",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cargo_health"
+      ],
+      "meaning": "Current salvage integrity",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own x/12,y/10",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        4
+      ],
+      "meaning": "Own vx,vy in [-1,1]",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own fuel/54",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own attached flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        8
+      ],
+      "meaning": "Own private preferred dock one-hot; values are 4 there and 1 elsewhere",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "meaning": "Clock/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        15
+      ],
+      "meaning": "All tug positions in agent order, each x/12,y/10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        21
+      ],
+      "meaning": "All tug vx,vy pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "All tug fuel/54",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "meaning": "All attachment flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        29
+      ],
+      "meaning": "Cargo x/12,y/10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        31
+      ],
+      "meaning": "Cargo vx,vy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        32
+      ],
+      "meaning": "Cargo integrity/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        36
+      ],
+      "meaning": "Two dock positions, each x/12,y/10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        38
+      ],
+      "meaning": "Two public open-window flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        40
+      ],
+      "meaning": "Two occupied-dock flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "meaning": "Joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        44
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Deliver the shared salvage to either exact dock while stopped and attached to at least two tugs; each tug values one destination more.",
+    "natural_termination": "Successful docking or zero cargo integrity; success/failure at H takes precedence over truncation.",
+    "interaction": "Attached thrust sums before a mass-two threshold; one tug changes all attached trajectories, fuel demands, damage risk and dock choice.",
+    "observation_access": "All geometry, fuel, velocity, attachment, integrity and dock windows are public. Each role sees only its own preferred dock. Visibility matrices are all true for public groups; private_visible is the identity and private values are omitted from scene attributes."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fuel"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cargo_health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "burned"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_permissions": "Only coast at joint terminal. Fuel actions require positive fuel; toggling requires attachment or cardinal adjacency; giving requires an old adjacent peer. Coast is always valid. All out-of-range or masked actions become coast. No per-agent early removal.",
+  "private_state_permissions": [
+    {
+      "state_path": [
+        "preference"
+      ],
+      "owner_axis": 0,
+      "visibility": [
+        "private_visible"
+      ],
+      "access": "self row only; omitted from entity attributes; full-state debug must be explicitly privileged"
+    },
+    {
+      "state_path": [
+        "dock_values"
+      ],
+      "owner_axis": 0,
+      "visibility": [
+        "private_visible"
+      ],
+      "access": "self row only; omitted from entity attributes; full-state debug must be explicitly privileged"
+    }
+  ],
+  "authoring_status": "AUTHORED_NOT_EXECUTED",
+  "representation_adaptations": [
+    "All signed small integer rule fields are represented losslessly as int32.",
+    "Reset key is supplied by the trusted caller and is not duplicated in state. Private values use the literal randint distribution in reset.",
+    "Absorbing raw terminal calls preserve all state and causes, return zero reward, and never auto-reset."
+  ]
+}

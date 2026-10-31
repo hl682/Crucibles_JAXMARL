@@ -1,0 +1,345 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0bf7d018ace424e77dc0c3f7571e7889fde9463a76b053e9c167e2e6a836be16",
+  "manifest_sha256": "9c2999c2d45af63f6fe6bb08913e6c50314c10d846ea8795c5034a3a44052c47",
+  "title": "Firebreak Pumps and Shared Evacuation",
+  "rules": [
+    "Three firefighters share 24 total water units: four initially carried and twenty in the pump. Tanks hold four.",
+    "Ground hose couplings conduct only over Manhattan-one links to the pump. A carried coupling does not conduct.",
+    "Pump and receive must occur together. Each receiver gets at most one pump unit per turn, and pump throughput is two.",
+    "Giving transfers one water to an adjacent consenting receiver. Spraying and holding the console each consume one water.",
+    "The console opens the firebreak only for the current joint transition. A displayed open flag describes the preceding transition.",
+    "Moves into occupied old cells and contested destinations fail; swaps and follow-through are disallowed.",
+    "Sprays clear radius-one fire. Every eighth transition fire spreads one edge using finite fuel.",
+    "Carry one occupant at a time to the refuge. Any casualty ends the rescue; two evacuations succeed. Horizon is eighty."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable floor"
+        },
+        {
+          "value": 1,
+          "meaning": "wall"
+        },
+        {
+          "value": 2,
+          "meaning": "firebreak gate"
+        },
+        {
+          "value": 3,
+          "meaning": "finite pump"
+        },
+        {
+          "value": 4,
+          "meaning": "firebreak console"
+        },
+        {
+          "value": 5,
+          "meaning": "evacuation refuge"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "firefighters",
+      "glyph": "worker",
+      "label": "Firefighters",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Stored water units, capacity four"
+        },
+        {
+          "state_path": [
+            "has_hose"
+          ],
+          "label": "Carries one portable coupling"
+        },
+        {
+          "state_path": [
+            "has_person"
+          ],
+          "label": "Carries one living occupant"
+        }
+      ]
+    },
+    {
+      "id": "pump",
+      "glyph": "water",
+      "label": "Finite water pump",
+      "color": "#0EA5E9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pump_water"
+          ],
+          "label": "Finite communal water reserve"
+        }
+      ]
+    },
+    {
+      "id": "couplings",
+      "glyph": "tool",
+      "label": "Portable hose couplings",
+      "color": "#14B8A6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "hose_holder"
+          ],
+          "label": "Carrier id or minus one for a ground coupling"
+        },
+        {
+          "state_path": [
+            "hose_connected"
+          ],
+          "label": "Ground coupling physically connected to pump"
+        }
+      ]
+    },
+    {
+      "id": "occupants",
+      "glyph": "circle",
+      "label": "Occupants awaiting rescue",
+      "color": "#EAB308",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "person_holder"
+          ],
+          "label": "Carrier id or minus one"
+        },
+        {
+          "state_path": [
+            "person_status"
+          ],
+          "label": "Zero unresolved, one evacuated, two lost"
+        },
+        {
+          "state_path": [
+            "person_health"
+          ],
+          "label": "Remaining heat tolerance"
+        }
+      ]
+    },
+    {
+      "id": "fire_cells",
+      "glyph": "hazard",
+      "label": "Actual burning cells",
+      "color": "#EF4444",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fire_level"
+          ],
+          "label": "Zero out, one burning, two movement-blocking fire"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Remaining finite burn fuel"
+        }
+      ]
+    },
+    {
+      "id": "firebreak",
+      "glyph": "gate",
+      "label": "Firebreak passage",
+      "color": "#F97316",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "A console was held during the preceding transition"
+        }
+      ]
+    },
+    {
+      "id": "console",
+      "glyph": "tool",
+      "label": "Console for the firebreak",
+      "color": "#A855F7",
+      "attribute_labels": []
+    },
+    {
+      "id": "refuge",
+      "glyph": "flag",
+      "label": "Evacuation refuge",
+      "color": "#22C55E",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Public cumulative evacuated occupants",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost"
+      ],
+      "meaning": "Public cumulative casualties",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "spent_water"
+      ],
+      "meaning": "Public cumulative water irreversibly consumed",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Console held in the preceding transition",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move south"
+    },
+    {
+      "id": 3,
+      "label": "Move west"
+    },
+    {
+      "id": 4,
+      "label": "Move east"
+    },
+    {
+      "id": 5,
+      "label": "Operate pump"
+    },
+    {
+      "id": 6,
+      "label": "Receive water"
+    },
+    {
+      "id": 7,
+      "label": "Pick up or drop hose coupling"
+    },
+    {
+      "id": 8,
+      "label": "Spray radius one"
+    },
+    {
+      "id": 9,
+      "label": "Hold firebreak console"
+    },
+    {
+      "id": 10,
+      "label": "Pick up or drop occupant"
+    },
+    {
+      "id": 11,
+      "label": "Evacuate carried occupant at refuge"
+    },
+    {
+      "id": 12,
+      "label": "Give one water to a consenting receiver"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "meaning": "Public t, pump reserve, spent water, total water ledger, evacuated count, casualty count, preceding gate-open flag, joint done",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "Self id, x, y, stored water",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        75
+      ],
+      "meaning": "Public 7 by 9 terrain map, row-major yx; dynamic fire is excluded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        93
+      ],
+      "meaning": "Three local firefighter records: visible, x, y, water, carries coupling, carries occupant; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        93,
+        103
+      ],
+      "meaning": "Two local coupling records: visible, x, y, holder id, connected gauge; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        103,
+        115
+      ],
+      "meaning": "Two local occupant records: visible, x, y, holder id, status, health; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        115,
+        304
+      ],
+      "meaning": "63 row-major local cell records: visible, fire level, fuel; coordinates are implied by public map; hidden payload minus one",
+      "visibility": "local"
+    }
+  ]
+}

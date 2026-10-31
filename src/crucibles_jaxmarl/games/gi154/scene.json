@@ -1,0 +1,285 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "89509f88d98359279efbc7b4edb01503a0239f859542be02fb65161fd105e187",
+  "manifest_sha256": "21e948750bb5ad427cf8ff0462842ff512d0fdae81c8e669c5c06fab6e77708f",
+  "title": "Island Spark",
+  "rules": [
+    "This is a fictional token-and-grid game, not an electrical engineering model.",
+    "Role 0 repairs, role 1 switches and role 2 black-starts or delivers portable energy.",
+    "A link needs health two, a closed switch and zero cooldown; downstream power depends on the trunk.",
+    "The repair crew cannot enter live coupler cells; repairing requires a de-energized, cool adjacent coupler.",
+    "Source-fed tool charging and sink service are simultaneous requests. Trunk capacity is two; each branch capacity is one.",
+    "An overload opens and damages its line and sets a three-tick cooldown before repair. Downstream requests lose power before fulfillment.",
+    "Portable service bypasses the grid at two charge per sink unit. One-charge gifts require adjacency.",
+    "Starting the source consumes two portable charge and then one fuel per live step. Both sinks completed or fuel exhausted end naturally."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable yard",
+          "color": "#D7D8CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Boundary wall",
+          "color": "#394751"
+        },
+        {
+          "value": 2,
+          "meaning": "Black-start source",
+          "color": "#6E9FAC"
+        },
+        {
+          "value": 3,
+          "meaning": "Shared junction node",
+          "color": "#C39A58"
+        },
+        {
+          "value": 4,
+          "meaning": "Demand sink",
+          "color": "#8BA76B"
+        },
+        {
+          "value": 5,
+          "meaning": "Interactive line coupler",
+          "color": "#9D819B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crews",
+      "glyph": "worker",
+      "label": "Complementary crews",
+      "color": "#6C8FA5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "charge"
+          ],
+          "label": "Portable tool charge, capacity six"
+        },
+        {
+          "state_path": [
+            "personal"
+          ],
+          "label": "Sink units serviced by this crew"
+        }
+      ]
+    },
+    {
+      "id": "couplers",
+      "glyph": "gate",
+      "label": "Physical couplers",
+      "color": "#9A7796",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Repair stages completed, zero to two"
+        },
+        {
+          "state_path": [
+            "closed"
+          ],
+          "label": "Switch closed; conductivity also needs health and cooldown"
+        },
+        {
+          "state_path": [
+            "cool"
+          ],
+          "label": "Remaining trip cooldown"
+        },
+        {
+          "state_path": [
+            "line_live"
+          ],
+          "label": "Coupler is currently energized"
+        }
+      ]
+    },
+    {
+      "id": "nodes",
+      "glyph": "battery",
+      "label": "Source, junction and sinks",
+      "color": "#C39C4D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "powered"
+          ],
+          "label": "Node currently receives power"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Completed demand units; only sinks 2 and 3 need three"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "trip_event"
+      ],
+      "meaning": "Public breaker-trip flags by line",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "boot_event"
+      ],
+      "meaning": "Public source black-start pulse this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Public completed sink-demand units by node",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "powered"
+      ],
+      "meaning": "Public node-power indicators",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Repair nearest eligible adjacent coupler; repair crew only"
+    },
+    {
+      "id": 6,
+      "label": "Toggle nearest adjacent coupler; switching crew only"
+    },
+    {
+      "id": 7,
+      "label": "Black-start source from adjacent cell, spending two charge; energy crew only"
+    },
+    {
+      "id": 8,
+      "label": "Service one unmet sink unit while standing at the sink"
+    },
+    {
+      "id": 9,
+      "label": "Request one tool-charge unit from nearest node within one cell"
+    },
+    {
+      "id": 10,
+      "label": "Deliver one sink unit with two portable charge; energy crew only"
+    },
+    {
+      "id": 11,
+      "label": "Give one charge to adjacent agent 0"
+    },
+    {
+      "id": 12,
+      "label": "Give one charge to adjacent agent 1"
+    },
+    {
+      "id": 13,
+      "label": "Give one charge to adjacent agent 2"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        7
+      ],
+      "visibility": "self",
+      "meaning": "Own id,x,y,portable charge,clock,source-started flag,personal serviced count."
+    },
+    {
+      "slice": [
+        7,
+        24
+      ],
+      "visibility": "public",
+      "meaning": "Fuel[1],node delivered counts[4],node power[4],live-line flags[3],trip flags[3],black-start flag,joint done."
+    },
+    {
+      "slice": [
+        24,
+        39
+      ],
+      "visibility": "local",
+      "meaning": "Three agent records: x,y,charge,personal count,visible. Manhattan radius 3; hidden values -1."
+    },
+    {
+      "slice": [
+        39,
+        57
+      ],
+      "visibility": "local",
+      "meaning": "Three coupler records: x,y,health,closed,cooldown,visible. Radius 3; current live flags are separately public."
+    },
+    {
+      "slice": [
+        57,
+        73
+      ],
+      "visibility": "public",
+      "meaning": "Four node records: x,y,powered,delivered."
+    },
+    {
+      "slice": [
+        73,
+        150
+      ],
+      "visibility": "public",
+      "meaning": "Static 7 by 11 public map flattened yx, using world tile legend."
+    }
+  ]
+}

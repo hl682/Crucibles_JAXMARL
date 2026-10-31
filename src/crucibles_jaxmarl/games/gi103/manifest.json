@@ -1,0 +1,590 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00103",
+  "source_sha256": "d98dbe089d3ce8809102038f69d9fd15b489bc1986d2dadb267d4a45b15faef4",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 110,
+  "num_actions": 10,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": 0,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Structural engineer: wrench-required bridge and transmitter work"
+    },
+    {
+      "id": "agent_1",
+      "role": "Electrician: power-cell-required pump and transmitter work"
+    },
+    {
+      "id": "agent_2",
+      "role": "Courier: transport either scarce tool and assist timed repairs"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Toggle tool: drop held tool or pick nearest adjacent free tool"
+    },
+    {
+      "id": 6,
+      "label": "Work on nearest adjacent unfinished device"
+    },
+    {
+      "id": 7,
+      "label": "Assist nearest adjacent unfinished device"
+    },
+    {
+      "id": 8,
+      "label": "Offer held tool to adjacent receiving worker"
+    },
+    {
+      "id": 9,
+      "label": "Receive an adjacent offered tool"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_holding"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_kind"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "device_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "device_progress"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_need"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "device_done"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_repair"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_handoff"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable expedition floor or repaired crossing",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall or impassable river bank",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "Broken central crossing, impassable until bridge device repaired",
+          "color": "#D97706"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "meaning": "Role: 0 engineer, 1 electrician, 2 courier",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_holding"
+          ],
+          "meaning": "Held tool: -1 empty, 0 wrench, 1 power cell",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "tool_pos"
+      ],
+      "active": [
+        "tool_active"
+      ],
+      "visibility": [
+        "tool_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool_kind"
+          ],
+          "meaning": "Tool type: 0 wrench, 1 power cell",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tool_carrier"
+          ],
+          "meaning": "Carrier role id; -1 means on ground",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "devices",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "device_pos"
+      ],
+      "active": [
+        "device_active"
+      ],
+      "visibility": [
+        "device_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "device_progress"
+          ],
+          "meaning": "Current actual work progress",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "device_need"
+          ],
+          "meaning": "Progress required to finish this device",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "device_done"
+          ],
+          "meaning": "Device repaired and permanently operational",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_repair"
+      ],
+      "meaning": "Device ids first completed during this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_handoff"
+      ],
+      "meaning": "Tool ids transferred by offer plus receive during this transition",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot, divided by 128",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        7
+      ],
+      "meaning": "Public [t,episode_done,terminated,truncated], divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        11
+      ],
+      "meaning": "Worker 0: [x,y,specialist_role,held_tool]; -1 means empty. All divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        15
+      ],
+      "meaning": "Worker 1: [x,y,specialist_role,held_tool]; -1 means empty. All divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        19
+      ],
+      "meaning": "Worker 2: [x,y,specialist_role,held_tool]; -1 means empty. All divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        23
+      ],
+      "meaning": "Tool 0: [x,y,kind,carrier]; carrier -1 means ground. All divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Tool 1: [x,y,kind,carrier]; carrier -1 means ground. All divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        32
+      ],
+      "meaning": "Device 0: [x,y,progress,required_progress,repaired_flag], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        37
+      ],
+      "meaning": "Device 1: [x,y,progress,required_progress,repaired_flag], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        42
+      ],
+      "meaning": "Device 2: [x,y,progress,required_progress,repaired_flag], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        105
+      ],
+      "meaning": "Public current 7x9 map flattened y then x, including actual crossing opening, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        108
+      ],
+      "meaning": "Public newly repaired device flags in device order, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        110
+      ],
+      "meaning": "Public bilateral tool-handoff flags in tool order, divided by 128",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Repair the bridge console, prime the pump and restore the transmitter using the one wrench, one power cell and complementary worker capabilities.",
+    "natural_termination": "All three devices repaired: bridge progress 3, pump 2 and transmitter 3. Otherwise horizon 96 truncates, with natural completion taking priority.",
+    "interaction": "Tool possession is exclusive and transferable; engineer bridge work opens the physical central route. Pump priming requires simultaneous electrician work and another worker assistance on two consecutive ticks. Powered transmitter repair requires both specialists with their distinct tools to work together.",
+    "observation_access": "Fully observable public map and all worker, tool, device and event state. Every entity visibility mask is true. Own role identity is additionally one-hot; float32 observations are integer features divided by 128."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "device_progress"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "device_need"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

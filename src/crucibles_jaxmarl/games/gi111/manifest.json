@@ -1,0 +1,717 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00111",
+  "source_sha256": "0b28fc38d89bddbf15e2acd499d1803733f583a42634a8e19828a71f042eef36",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 146,
+  "num_actions": 10,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "team 0 mobile relay operator or guard"
+    },
+    {
+      "id": "agent_1",
+      "role": "team 0 mobile relay operator or guard"
+    },
+    {
+      "id": "agent_2",
+      "role": "team 1 mobile relay operator or guard"
+    },
+    {
+      "id": "agent_3",
+      "role": "team 1 mobile relay operator or guard"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "move north"
+    },
+    {
+      "id": 2,
+      "label": "move east"
+    },
+    {
+      "id": 3,
+      "label": "move south"
+    },
+    {
+      "id": 4,
+      "label": "move west"
+    },
+    {
+      "id": 5,
+      "label": "pulse own usable relay"
+    },
+    {
+      "id": 6,
+      "label": "pick up or drop own relay"
+    },
+    {
+      "id": 7,
+      "label": "jam nearby enemy relay"
+    },
+    {
+      "id": 8,
+      "label": "guard own nearby relay"
+    },
+    {
+      "id": 9,
+      "label": "recharge own relay at its base"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_carry"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "guard"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "relay_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "relay_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "relay_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "relay_carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "relay_charge"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "relay_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_radius"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plot_vis"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plot_control"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_award"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score_step"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable garden path",
+          "color": "#DBE7C8"
+        },
+        {
+          "value": 1,
+          "meaning": "wall or dense hedge",
+          "color": "#465747"
+        },
+        {
+          "value": 2,
+          "meaning": "scoring plot and passage",
+          "color": "#B8D886"
+        },
+        {
+          "value": 3,
+          "meaning": "team recharge base",
+          "color": "#E9CC7D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "gardeners",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Public team index",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_carry"
+          ],
+          "meaning": "Carried relay index; -1 means none",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "meaning": "Guarding this transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "relays",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "relay_pos"
+      ],
+      "active": [
+        "relay_active"
+      ],
+      "visibility": [
+        "relay_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "relay_team"
+          ],
+          "meaning": "Relay native team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "relay_charge"
+          ],
+          "meaning": "Battery units; maximum four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "relay_carrier"
+          ],
+          "meaning": "Carrier agent index; -1 means on ground",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "signals",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "signal_pos"
+      ],
+      "active": [
+        "signal_active"
+      ],
+      "visibility": [
+        "signal_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "relay_team"
+          ],
+          "meaning": "Signal native team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "meaning": "Remaining pulse lifetime",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "signal_radius"
+          ],
+          "meaning": "Manhattan coverage radius",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "plots",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "plot_pos"
+      ],
+      "active": [
+        "plot_active"
+      ],
+      "visibility": [
+        "plot_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "plot_owner"
+          ],
+          "meaning": "Owner team; -1 means unclaimed",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "plot_control"
+          ],
+          "meaning": "Control from -3 for team 1 to +3 for team 0",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "plot_award"
+          ],
+          "meaning": "This step award: 0 none, 1 team 0, 2 team 1",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "base_pos"
+      ],
+      "active": [
+        "base_active"
+      ],
+      "visibility": [
+        "base_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "score_step"
+      ],
+      "meaning": "Public points each team received in the last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Public cumulative territorial points for both teams",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self identity one-hot; team is fixed by agent ID",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        7
+      ],
+      "meaning": "Public [t/128,team0 score/256,team1 score/256]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        31
+      ],
+      "meaning": "Four local agent blocks [visible,x/8,y/8,team,(carry+1)/2,guard]; hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        31,
+        43
+      ],
+      "meaning": "Two relay blocks [visible,x/8,y/8,team,charge/4,(carrier+1)/4]; own relay radio known globally, enemy within L1 distance 3; hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        43,
+        53
+      ],
+      "meaning": "Two signal blocks [visible,x/8,y/8,ttl/4,radius/4]; native radio global, enemy L1 distance 3; inactive/hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        65
+      ],
+      "meaning": "Three plot blocks [visible,(owner+1)/2,control/4,award/2]; L1 distance 3, hidden payload zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        65,
+        146
+      ],
+      "meaning": "Public 9x9 map flattened y-major, tile value/4",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Score by uncontested live signal coverage of an owned plot. Team reward is own minus opponent step points divided by four, less each actor non-wait cost 1/128.",
+    "natural_termination": "Either team reaches 24 accumulated plot points; otherwise truncate at 80. Simultaneous threshold crossings are possible.",
+    "interaction": "One mobile relay per team must be carried, pulsed, guarded, jammed or returned to recharge. Guarding blocks opposing drain and extends a new pulse; pickup can remove a teammate access to the same relay. Competing signals change control and scoring.",
+    "observation_access": "Public static map, IDs/team mapping, clock and team totals. Agent and plot details are local L1 radius 3. Native relay/signal telemetry is global to its own team; enemy telemetry is local radius 3. All hidden payloads zero with explicit visible flags. Events publish only total points."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "relay_charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "signal_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

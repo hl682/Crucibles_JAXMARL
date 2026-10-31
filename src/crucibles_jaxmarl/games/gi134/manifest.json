@@ -1,0 +1,746 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00134",
+  "source_sha256": "22d1dc5fbcc3633ea3cf707b9815b2aac03c8aced58f88d5177a7e0d6c0d0e6f",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 64,
+  "num_actions": 11,
+  "max_steps": 64,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "padded_flat",
+  "observability": "partially_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -3,
+  "reward_high": 12,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Salvager 0: private valuations and token reserve"
+    },
+    {
+      "id": "agent_1",
+      "role": "Salvager 1: private valuations and token reserve"
+    },
+    {
+      "id": "agent_2",
+      "role": "Salvager 2: private valuations and token reserve"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up eligible salvage here; deliver carried salvage at depot"
+    },
+    {
+      "id": 6,
+      "label": "Commit bid 1 on current lot"
+    },
+    {
+      "id": 7,
+      "label": "Commit bid 2 on current lot"
+    },
+    {
+      "id": 8,
+      "label": "Commit bid 3 on current lot"
+    },
+    {
+      "id": 9,
+      "label": "Release lowest-index owned uncarried claim without refund"
+    },
+    {
+      "id": 10,
+      "label": "Drop carried salvage here"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "tilemap"
+      ],
+      "dtype": "int32",
+      "shape": [
+        7,
+        9
+      ]
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "bids"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "budget"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "initial_tokens"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "treasury"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "values"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "private_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "private_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "private_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "object_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "object_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "object_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "owner"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "carrier"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "deadline"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "depot_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        1
+      ]
+    },
+    {
+      "path": [
+        "auction_closed"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "picked"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "released"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "delivered_now"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tilemap"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable yard",
+          "color": "#D8C6A4"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable breakwater",
+          "color": "#34495E"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "salvagers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carried lot: -1 means empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "bids"
+          ],
+          "meaning": "Public commitments by lot, 0 means none",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "private_cards",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "private_pos"
+      ],
+      "active": [
+        "private_active"
+      ],
+      "visibility": [
+        "private_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "budget"
+          ],
+          "meaning": "Own unspent tokens, private",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "values"
+          ],
+          "meaning": "Own delivery values for lots 0,1,2, private",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "salvage",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "object_pos"
+      ],
+      "active": [
+        "object_active"
+      ],
+      "visibility": [
+        "object_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "meaning": "Exclusive claimant: -1 is open access",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "meaning": "Physical carrier: -1 is on ground",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "meaning": "Exclusive claim expiry clock",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visibility"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "auction_closed"
+      ],
+      "meaning": "Current two-tick auction closed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Lots physically picked up this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "released"
+      ],
+      "meaning": "Claims released or expired this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Lots delivered this transition",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Clock t/64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Auction-phase flag: t<6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Clipped lot index min(t//2,2)/2; remains 1 after auction phase",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Public treasury /9",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        10
+      ],
+      "meaning": "All agent x,y positions in role order /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "Each agent carried lot encoded (lot+1)/3, zero empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        22
+      ],
+      "meaning": "Public bid matrix, agent-major then lot /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        28
+      ],
+      "meaning": "All physical salvage x,y positions /8, including delivered last positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        31
+      ],
+      "meaning": "Lot claimant encoded (owner+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        34
+      ],
+      "meaning": "Lot carrier encoded (carrier+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Delivered flags by lot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Exclusive-claim deadlines /64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "meaning": "Own private unspent budget /7",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        41,
+        44
+      ],
+      "meaning": "Own private lot valuations /8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        44,
+        47
+      ],
+      "meaning": "Own role one-hot identity",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        47,
+        50
+      ],
+      "meaning": "Claim release/expiry flags for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        53
+      ],
+      "meaning": "Pickup flags for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        56
+      ],
+      "meaning": "Delivery flags for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "meaning": "Auction closure flag for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        64
+      ],
+      "meaning": "Zero padding; no policy information",
+      "visibility": "padding"
+    }
+  ],
+  "task": {
+    "objective": "Deliver three salvage lots through shared bottlenecks. Individual delivery values compete with auction costs; every delivery also benefits all three salvagers.",
+    "natural_termination": "All three lots delivered. Otherwise truncate at 64 steps; natural completion has priority on step 64. Terminal raw calls are absorbing.",
+    "interaction": "Public escalating bids determine exclusive claims and token payments. Agents physically obstruct routes, can release/drop claims for partners, and lose uncollected exclusivity at deadlines.",
+    "observation_access": "Public fixed yard layout, agent/object positions, commitments, claims, deadlines and event flags. Each role alone receives its own budget and valuation row. Private cards use identity visibility. Initial total tokens and other roles' private budgets/values are not policy observations."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "budget"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "treasury"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "bids"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_semantics": "Auctions occupy input t=0..5, two ticks per lot. Only wait/strictly increased affordable bid are legal then. Physical actions start at t=6. Input-state mask is applied before transition; movement attempts resolve against walls, old occupants and destination contention. There are no swaps/following. Claim expiry and release precede pickups but a newly available pickup may need the next input mask. Invalid or masked actions become wait.",
+  "native_adapter_note": "The source exposes the frozen flat-array kernel. A separate trusted JaxMARL dictionary adapter is required; it must not change observations, masks, rules, rewards or terminal semantics."
+}

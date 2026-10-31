@@ -1,0 +1,952 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00198",
+  "source_sha256": "c47d540aaeb23d50e5a606c127f68424aed5fe0a4b0943d6a2608a0353f91ff1",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 254,
+  "num_actions": 14,
+  "max_steps": 168,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -5,
+  "observation_high": 256,
+  "reward_low": -3,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West builder and cargo owner 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "Mid-channel worker and cargo owner 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "East builder and cargo owner 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Pick/drop crate on own cell"
+    },
+    {
+      "id": 6,
+      "label": "Lift an adjacent unanchored isolated empty pontoon"
+    },
+    {
+      "id": 7,
+      "label": "Place held pontoon one cell east into channel"
+    },
+    {
+      "id": 8,
+      "label": "Place held pontoon one cell west into channel"
+    },
+    {
+      "id": 9,
+      "label": "Toggle adjacent section anchor"
+    },
+    {
+      "id": 10,
+      "label": "Lash adjacent section to all touching deployed sections"
+    },
+    {
+      "id": 11,
+      "label": "Unlash adjacent linked section from its neighbors"
+    },
+    {
+      "id": 12,
+      "label": "Owner toggles adjacent pontoon private/shared entry"
+    },
+    {
+      "id": 13,
+      "label": "Deliver carried crate at its owner's depot"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "phase"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "soaked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "section"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pontoon_pos"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pontoon_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shared"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchored"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "drifted"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "anchor_changed"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "linked_now"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pontoon_visible"
+      ],
+      "shape": [
+        3,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pontoon_holder"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pontoon_owner"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "links"
+      ],
+      "shape": [
+        5,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "connected"
+      ],
+      "shape": [
+        5,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crate_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crate_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "sunk_now"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crate_visible"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "crate_holder"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crate_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Permanent harbor ground",
+          "color": "#C3AB82"
+        },
+        {
+          "value": 1,
+          "meaning": "Water channel; deployed pontoons provide support",
+          "color": "#477F9C"
+        },
+        {
+          "value": 2,
+          "meaning": "Permanent northern footbridge",
+          "color": "#8B7357"
+        },
+        {
+          "value": 3,
+          "meaning": "Southern causeway, supported only in low phase 0",
+          "color": "#9E9A82"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "meaning": "Held crate index or -1.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "section"
+          ],
+          "meaning": "Held pontoon index or -1; same single carrying slot.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "soaked"
+          ],
+          "meaning": "Worker lacks support after the tide/raft update; natural failure cause.",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "pontoons",
+      "kind": "object",
+      "count": 5,
+      "position": [
+        "pontoon_pos"
+      ],
+      "active": [
+        "pontoon_active"
+      ],
+      "visibility": [
+        "pontoon_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pontoon_holder"
+          ],
+          "meaning": "-1 deployed; otherwise holder role.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pontoon_owner"
+          ],
+          "meaning": "Fixed owner 0..2, controlling private/shared entry.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "shared"
+          ],
+          "meaning": "Peers may step onto this deployed section when true.",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "anchored"
+          ],
+          "meaning": "This section anchors its entire connected component.",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "links"
+          ],
+          "meaning": "Explicit symmetric direct lashings to section indices 0..4.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "connected"
+          ],
+          "meaning": "Transitive connected-component membership by section index.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "crates",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "crate_pos"
+      ],
+      "active": [
+        "crate_active"
+      ],
+      "visibility": [
+        "crate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "crate_holder"
+          ],
+          "meaning": "-1 loose, 0..2 held, -2 delivered, -3 sunk.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "crate_owner"
+          ],
+          "meaning": "Destination/reward owner role.",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Cumulative completed crates for this owner.",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "phase"
+      ],
+      "meaning": "0 low, 1 rising, 2 high, 3 falling; three ticks per phase.",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "drifted"
+      ],
+      "meaning": "Sections physically translated by the current this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "anchor_changed"
+      ],
+      "meaning": "Section anchor toggled this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "linked_now"
+      ],
+      "meaning": "Lash or unlash command applied at this section this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Crates delivered this step by owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sunk_now"
+      ],
+      "meaning": "Crates that lost support and sank this step.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Role one-hot in fixed agent order 0,1,2.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "t: Raw episode clock; frozen after completion. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "done: Joint episode latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "terminated: Natural cause latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "truncated: Cap-only latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        84
+      ],
+      "meaning": "tiles: Actual y-major map codes in the world legend. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        85
+      ],
+      "meaning": "phase: floor(t/3) mod 4: low, rising, high, falling. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        91
+      ],
+      "meaning": "agent_pos: Real worker [x,y] coordinates. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        94
+      ],
+      "meaning": "agent_active: Native agent active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "cargo: Held crate index, -1 empty. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        100
+      ],
+      "meaning": "section: Held pontoon index, -1 empty. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        103
+      ],
+      "meaning": "soaked: Per-worker unsupported-water flag after physical update. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        113
+      ],
+      "meaning": "pontoon_pos: Real pontoon [x,y], following a holder or floating as a deployed section. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        118
+      ],
+      "meaning": "pontoon_active: Native pontoon active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        118,
+        123
+      ],
+      "meaning": "pontoon_holder: -1 deployed, otherwise carrying role. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        128
+      ],
+      "meaning": "pontoon_owner: Fixed owner role 0..2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        133
+      ],
+      "meaning": "shared: Deployed section entry is permitted to nonowners iff true. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        138
+      ],
+      "meaning": "anchored: Anchor installed on the section; a single anchor fixes its connected component. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        163
+      ],
+      "meaning": "links: Symmetric direct lashings, 5x5, zero diagonal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        163,
+        188
+      ],
+      "meaning": "connected: Reflexive/transitive closure of current actual lashings. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        188,
+        200
+      ],
+      "meaning": "crate_pos: Real crate [x,y]; follows holder or drifting supporting raft. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        200,
+        206
+      ],
+      "meaning": "crate_active: Native crate active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        206,
+        212
+      ],
+      "meaning": "crate_holder: -1 loose, 0..2 held, -2 delivered, -3 sunk. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        212,
+        218
+      ],
+      "meaning": "crate_owner: Owner determining depot and private bonus. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        218,
+        224
+      ],
+      "meaning": "depot_pos: Owner 0,1,2 delivery positions. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        224,
+        227
+      ],
+      "meaning": "depot_active: Native depot active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        227,
+        230
+      ],
+      "meaning": "delivered: Cumulative crates delivered per owner. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        230,
+        235
+      ],
+      "meaning": "drifted: Per-section actual current translation this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        235,
+        240
+      ],
+      "meaning": "anchor_changed: Per-section anchor toggle this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        240,
+        245
+      ],
+      "meaning": "linked_now: Per-section lash/unlash command this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        245,
+        248
+      ],
+      "meaning": "delivered_now: Per-owner crate delivery count this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        248,
+        254
+      ],
+      "meaning": "sunk_now: Per-crate newly lost support this step. Flattened row-major.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver all six construction crates while building, sharing, anchoring or drifting real pontoon routes across the harbor channel.",
+    "natural_termination": "Success when all six crates are delivered. Failure when a worker lacks physical support after tide/current update or any crate sinks. Failure excludes success on the same step.",
+    "interaction": "One anchor stabilizes a whole lashed component; releasing it can carry a peer and their cargo to a different row. Sharing, unsharing, lifting and lashing sections change peer movement permissions and connectivity, with a permanent detour and a low-tide causeway as alternatives.",
+    "observation_access": "Fully observable. The role one-hot and public obs_keys vector expose all map/tide state, worker cargo, pontoon positions/holders/owners/permissions/anchors/direct and transitive connectivity, all crate identities, owner depots and events. Deployed and carried sections are actual state entities. Inactive delivered/sunk crate coordinates stay in public accounting but their entity active mask is false. Scene information is drawn from these same leaves."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "phase"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

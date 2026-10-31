@@ -1,0 +1,368 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "c35f23acaeac5fd11c09e8fe9300c678941be158c5f940cb24f2a330c6321b62",
+  "manifest_sha256": "13b255be9d3459aa1653f4b93ab9558ef7164769664056023b7774cd5ac342cc",
+  "title": "Lantern Strait",
+  "rules": [
+    "Upper crossing (4,2) is always open; lower crossing (4,4) is open at tide phases 0..3 and closed at phases 4..7.",
+    "Adjacent EAST/WEST requests set public lanterns and seek a three-step entrance lease. Matching side and rotating initiative decide conflicts before movement.",
+    "Unreserved entrances are open to either direction. A lease excludes other entrants; YIELD releases it and departure from the gate also releases it.",
+    "Maneuvers and signals each spend one fuel, including blocked attempts. A grounded vessel must wait for the tide; exhausted vessels remain physical obstacles.",
+    "Only own destination is private. Docking exactly there starts two later steps of service; completed vessels depart and release their berth.",
+    "Own completion is worth 0.75 plus 0.25 shared per completion; working cost is 1/64 per step, collision cost 1/8, new stranding cost 1/2."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Deep navigable water",
+          "color": "#74AFC9"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid central breakwater",
+          "color": "#5D6974"
+        },
+        {
+          "value": 2,
+          "meaning": "Tidal passage currently open",
+          "color": "#9FD0CE"
+        },
+        {
+          "value": 3,
+          "meaning": "Tidal passage closed; vessel there is grounded",
+          "color": "#ACAA83"
+        },
+        {
+          "value": 4,
+          "meaning": "One-vessel service berth",
+          "color": "#C4BDA0"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "vessels",
+      "glyph": "agent",
+      "label": "Vessels and public lanterns",
+      "color": "#436EA6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Remaining maneuver/signal fuel"
+        },
+        {
+          "state_path": [
+            "signal"
+          ],
+          "label": "0 neutral, 1 EAST, 2 WEST, 3 YIELD"
+        },
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "label": "Remaining public signal lifetime"
+        },
+        {
+          "state_path": [
+            "service"
+          ],
+          "label": "Remaining service steps"
+        },
+        {
+          "state_path": [
+            "finished"
+          ],
+          "label": "Cargo delivered and vessel departed"
+        },
+        {
+          "state_path": [
+            "stranded"
+          ],
+          "label": "Fuel-exhausted physical obstruction"
+        },
+        {
+          "state_path": [
+            "grounded"
+          ],
+          "label": "On the closed tidal passage"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Cargo attached to actual vessels",
+      "color": "#D8A357",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "label": "Fixed vessel id carrying this parcel"
+        },
+        {
+          "state_path": [
+            "cargo_status"
+          ],
+          "label": "0 aboard, 1 delivered, 2 lost on a stranded vessel"
+        }
+      ]
+    },
+    {
+      "id": "private_destinations",
+      "glyph": "flag",
+      "label": "Private destination, own-role view only",
+      "color": "#C37DA9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goal_id"
+          ],
+          "label": "Destination berth known only to the corresponding vessel"
+        }
+      ]
+    },
+    {
+      "id": "berths",
+      "glyph": "gate",
+      "label": "Service berths",
+      "color": "#AA9872",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "berth_owner"
+          ],
+          "label": "Serving vessel id; -1 free"
+        },
+        {
+          "state_path": [
+            "berth_timer"
+          ],
+          "label": "Remaining berth occupancy steps"
+        }
+      ]
+    },
+    {
+      "id": "passages",
+      "glyph": "water",
+      "label": "Shared passages",
+      "color": "#579EA7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lease_owner"
+          ],
+          "label": "Vessel entitled to enter; -1 unreserved"
+        },
+        {
+          "state_path": [
+            "lease_ttl"
+          ],
+          "label": "Remaining reservation lifetime"
+        },
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Current physical tide accessibility"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "reservation_event"
+      ],
+      "meaning": "Passage reservations granted or renewed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "blocked_event"
+      ],
+      "meaning": "Vessel maneuver intents denied by tide/reservation/terrain/traffic",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collision_event"
+      ],
+      "meaning": "Vessel movement intents blocked by another vessel or a shared target",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "entered_event"
+      ],
+      "meaning": "Vessels entering a passage cell this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dock_event"
+      ],
+      "meaning": "Vessels beginning berth service this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "completed_event"
+      ],
+      "meaning": "Vessels finishing service and departing this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "stranded_event"
+      ],
+      "meaning": "Vessels newly exhausting fuel outside service this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "grounding_event"
+      ],
+      "meaning": "Vessels newly caught on the closing tidal passage this transition",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait or remain in service"
+    },
+    {
+      "id": 1,
+      "label": "Attempt northward maneuver"
+    },
+    {
+      "id": 2,
+      "label": "Attempt eastward maneuver"
+    },
+    {
+      "id": 3,
+      "label": "Attempt southward maneuver"
+    },
+    {
+      "id": 4,
+      "label": "Attempt westward maneuver"
+    },
+    {
+      "id": 5,
+      "label": "Broadcast EAST and request an adjacent eastbound passage"
+    },
+    {
+      "id": 6,
+      "label": "Broadcast WEST and request an adjacent westbound passage"
+    },
+    {
+      "id": 7,
+      "label": "Broadcast YIELD and release own reservation"
+    },
+    {
+      "id": 8,
+      "label": "Start service at own private destination berth"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self: id/4,private destination berth id/8,private goal x/16,y/16",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        6
+      ],
+      "meaning": "Public clock t/128 and tide phase/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        33
+      ],
+      "meaning": "Three public vessel records, stride 9: x/16,y/16,fuel/32,signal/4,signal_ttl/4,service/4,finished,stranded,grounded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        45
+      ],
+      "meaning": "Three public cargo records, stride 4: x/16,y/16,status/4,active",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        69
+      ],
+      "meaning": "Six public berth records, stride 4: x/16,y/16,(owner+1)/4,timer/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        69,
+        79
+      ],
+      "meaning": "Two public passage records, stride 5: x/16,y/16,(lease_owner+1)/4,lease_ttl/4,open",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        102
+      ],
+      "meaning": "Public flags: reservation[2],blocked[3],collision[3],entered[3],dock[3],completed[3],stranded[3],grounding[3]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        165
+      ],
+      "meaning": "Public 7x9 physical water/breakwater/berth map, y-major tile value/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        165,
+        168
+      ],
+      "meaning": "Three constant zeros",
+      "visibility": "padding"
+    }
+  ]
+}

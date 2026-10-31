@@ -1,0 +1,1207 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00073",
+  "source_sha256": "e83181823a7f50afd71c9e48b32914e8ab3ee05f1b0c49867058fa7f18a84924",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 557,
+  "num_actions": 9,
+  "max_steps": 512,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -0.1,
+  "reward_high": 1.34,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Interchangeable technician: walk, inspect local demand, set a nearby turnout, or operate the source."
+    },
+    {
+      "id": "agent_1",
+      "role": "Interchangeable technician: walk, inspect local demand, set a nearby turnout, or operate the source."
+    },
+    {
+      "id": "agent_2",
+      "role": "Interchangeable technician: walk, inspect local demand, set a nearby turnout, or operate the source."
+    },
+    {
+      "id": "agent_3",
+      "role": "Interchangeable technician: walk, inspect local demand, set a nearby turnout, or operate the source."
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "WAIT — Do not walk or issue a fixture command; existing pulses still advance."
+    },
+    {
+      "id": 1,
+      "label": "MOVE_N — Attempt [0,-1] walking."
+    },
+    {
+      "id": 2,
+      "label": "MOVE_E — Attempt [1,0] walking."
+    },
+    {
+      "id": 3,
+      "label": "MOVE_S — Attempt [0,1] walking."
+    },
+    {
+      "id": 4,
+      "label": "MOVE_W — Attempt [-1,0] walking."
+    },
+    {
+      "id": 5,
+      "label": "SET_BRANCH_0 — When adjacent to a turnout at old position, request outgoing branch 0."
+    },
+    {
+      "id": 6,
+      "label": "SET_BRANCH_1 — When adjacent to a turnout at old position, request outgoing branch 1."
+    },
+    {
+      "id": 7,
+      "label": "LAUNCH_BLUE — When adjacent to the source, request one blue pulse."
+    },
+    {
+      "id": 8,
+      "label": "LAUNCH_AMBER — When adjacent to the source, request one amber pulse."
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "All true; no deaths or individual removal."
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Current technician positions on walkable distinct cells."
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "Active technicians in each observer's Chebyshev-radius-2 window."
+    },
+    {
+      "path": [
+        "amber_active"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "bool",
+      "meaning": "Physical pulse slots active and amber; disjoint from blue_active."
+    },
+    {
+      "path": [
+        "amber_visibility"
+      ],
+      "shape": [
+        4,
+        16
+      ],
+      "dtype": "bool",
+      "meaning": "Local amber pulse visibility, including amber_active mask."
+    },
+    {
+      "path": [
+        "blue_active"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "bool",
+      "meaning": "Physical pulse slots active and blue; disjoint from amber_active."
+    },
+    {
+      "path": [
+        "blue_visibility"
+      ],
+      "shape": [
+        4,
+        16
+      ],
+      "dtype": "bool",
+      "meaning": "Local blue pulse visibility, including blue_active mask."
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "Joint episode completion; absorbing raw-state flag."
+    },
+    {
+      "path": [
+        "event_agent_outcome"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32",
+      "meaning": "0=wait, 1=walk accepted, 2=walk rejected, 3=set accepted, 4=set conflict, 5=launch accepted, 6=launch rejected, 7=set rejected."
+    },
+    {
+      "path": [
+        "event_invalid_action"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "True for out-of-range input IDs replaced by WAIT."
+    },
+    {
+      "path": [
+        "event_pulse_active"
+      ],
+      "shape": [
+        17
+      ],
+      "dtype": "bool",
+      "meaning": "Mask of this transition's actual pulse events."
+    },
+    {
+      "path": [
+        "event_pulse_colour"
+      ],
+      "shape": [
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "Colour of the event pulse; -1 for inactive event."
+    },
+    {
+      "path": [
+        "event_pulse_from"
+      ],
+      "shape": [
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "Old node index; -1 for a launch or inactive event."
+    },
+    {
+      "path": [
+        "event_pulse_id"
+      ],
+      "shape": [
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "Unique launch identity of this event pulse; -1 when inactive."
+    },
+    {
+      "path": [
+        "event_pulse_kind"
+      ],
+      "shape": [
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "0=none, 1=ordinary rail motion, 2=arrival accepted, 3=arrival wrong colour, 4=arrival at already-complete receiver, 5=new launch."
+    },
+    {
+      "path": [
+        "event_pulse_slot"
+      ],
+      "shape": [
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "Storage slot associated with the event, allowing an old consumed pulse and a newly launched pulse to reuse a slot without sharing an identity."
+    },
+    {
+      "path": [
+        "event_pulse_to"
+      ],
+      "shape": [
+        17
+      ],
+      "dtype": "int32",
+      "meaning": "Actual destination node, including a receiver for consumed pulses; source node 0 for a launch; -1 for inactive event."
+    },
+    {
+      "path": [
+        "event_sink_outcome"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32",
+      "meaning": "0=no arrival, 1=accepted next colour, 2=wrong colour, 3=already complete."
+    },
+    {
+      "path": [
+        "event_source_conflict"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "True when eligible nearby source requesters requested both colours, producing no launch."
+    },
+    {
+      "path": [
+        "event_switch_conflict"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool",
+      "meaning": "True when adjacent technicians issued both conflicting SET values in this transition."
+    },
+    {
+      "path": [
+        "event_switch_delta"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32",
+      "meaning": "New mode minus old mode: -1,0,+1."
+    },
+    {
+      "path": [
+        "event_terminal_reason"
+      ],
+      "shape": [],
+      "dtype": "int32",
+      "meaning": "0 unless this transition ends the episode, then the corresponding new terminal_reason."
+    },
+    {
+      "path": [
+        "launch_count"
+      ],
+      "shape": [],
+      "dtype": "int32",
+      "meaning": "Total pulses launched, 0..16; next pulse receives the old value as its unique ID."
+    },
+    {
+      "path": [
+        "map_visibility"
+      ],
+      "shape": [
+        4,
+        15,
+        21
+      ],
+      "dtype": "bool",
+      "meaning": "Actual local 5x5 map window for each current technician position."
+    },
+    {
+      "path": [
+        "node_active"
+      ],
+      "shape": [
+        64
+      ],
+      "dtype": "bool",
+      "meaning": "True for indices 0..58, false for 59..63."
+    },
+    {
+      "path": [
+        "node_flow"
+      ],
+      "shape": [
+        64,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Actual currently selected successor minus node position; zero for receivers/inactive rows."
+    },
+    {
+      "path": [
+        "node_kind"
+      ],
+      "shape": [
+        64
+      ],
+      "dtype": "int32",
+      "meaning": "-1=inactive, 0=ordinary rail, 1=source, 2=turnout, 3=receiver."
+    },
+    {
+      "path": [
+        "node_next"
+      ],
+      "shape": [
+        64,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Fixed branch successor table; -1 for sink/inactive nodes."
+    },
+    {
+      "path": [
+        "node_pos"
+      ],
+      "shape": [
+        64,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Exact fixed rail node coordinates, inactive rows [-1,-1]."
+    },
+    {
+      "path": [
+        "node_sink_id"
+      ],
+      "shape": [
+        64
+      ],
+      "dtype": "int32",
+      "meaning": "-1 except node 29->0, node 39->1, node 49->2, node 58->3."
+    },
+    {
+      "path": [
+        "node_switch_id"
+      ],
+      "shape": [
+        64
+      ],
+      "dtype": "int32",
+      "meaning": "-1 except node 4->0, node 12->1, node 20->2."
+    },
+    {
+      "path": [
+        "node_visibility"
+      ],
+      "shape": [
+        4,
+        64
+      ],
+      "dtype": "bool",
+      "meaning": "Active rail nodes in each observer's actual local window."
+    },
+    {
+      "path": [
+        "prev_agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Technician positions at start of the latest active transition."
+    },
+    {
+      "path": [
+        "prev_sink_progress"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32",
+      "meaning": "Receiver progress before this transition's arrivals."
+    },
+    {
+      "path": [
+        "prev_switch_mode"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32",
+      "meaning": "Turnout modes that governed this transition's pulse routing."
+    },
+    {
+      "path": [
+        "pulse_active"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "bool",
+      "meaning": "Active pulse slot mask."
+    },
+    {
+      "path": [
+        "pulse_colour"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32",
+      "meaning": "0 or 1 for active pulses, -1 when inactive."
+    },
+    {
+      "path": [
+        "pulse_id"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32",
+      "meaning": "Unique monotonic launch identity, or -1 when inactive."
+    },
+    {
+      "path": [
+        "pulse_node"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32",
+      "meaning": "Current rail node of active pulses; -1 when inactive. No returned active pulse occupies a receiver node."
+    },
+    {
+      "path": [
+        "pulse_pos"
+      ],
+      "shape": [
+        16,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Actual active pulse node coordinate; [-1,-1] if inactive."
+    },
+    {
+      "path": [
+        "pulse_visibility"
+      ],
+      "shape": [
+        4,
+        16
+      ],
+      "dtype": "bool",
+      "meaning": "Active physical pulses in each observer's local window."
+    },
+    {
+      "path": [
+        "sink_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "All four receivers exist."
+    },
+    {
+      "path": [
+        "sink_demand"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32",
+      "meaning": "Current demand colour only; -1 if complete. Future recipe stays hidden."
+    },
+    {
+      "path": [
+        "sink_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Actual receiver fixture positions."
+    },
+    {
+      "path": [
+        "sink_progress"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32",
+      "meaning": "Number of correct arrivals already accepted, 0..3. Current demand is recipe[s,progress] while progress<3."
+    },
+    {
+      "path": [
+        "sink_recipe"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "int32",
+      "meaning": "Hidden fixed ordered colour recipes, each drawn from the six-entry catalogue."
+    },
+    {
+      "path": [
+        "sink_visibility"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool",
+      "meaning": "Receivers visible only in the observer's local window."
+    },
+    {
+      "path": [
+        "source_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool",
+      "meaning": "The single source exists."
+    },
+    {
+      "path": [
+        "source_amber"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32",
+      "meaning": "Singleton view of actual remaining amber stock."
+    },
+    {
+      "path": [
+        "source_blue"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32",
+      "meaning": "Singleton view of actual remaining blue stock."
+    },
+    {
+      "path": [
+        "source_cooldown"
+      ],
+      "shape": [],
+      "dtype": "int32",
+      "meaning": "0,1,2. Launch is eligible only when old value is 0; a launch sets new value to 2; otherwise decrement toward 0."
+    },
+    {
+      "path": [
+        "source_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Actual source fixture coordinate."
+    },
+    {
+      "path": [
+        "source_stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Remaining blue and amber charges, initially [8,8]; never replenished."
+    },
+    {
+      "path": [
+        "source_timer"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32",
+      "meaning": "Singleton view of actual source cooldown."
+    },
+    {
+      "path": [
+        "source_visibility"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool",
+      "meaning": "Source visible only in the observer's local window."
+    },
+    {
+      "path": [
+        "switch_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool",
+      "meaning": "All three turnouts exist."
+    },
+    {
+      "path": [
+        "switch_direction"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Actual selected outgoing grid direction for each turnout."
+    },
+    {
+      "path": [
+        "switch_mode"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32",
+      "meaning": "0 or 1: selected outgoing branch for pulses departing each turnout."
+    },
+    {
+      "path": [
+        "switch_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32",
+      "meaning": "Actual turnout fixture positions, nodes 4,12,20."
+    },
+    {
+      "path": [
+        "switch_visibility"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "bool",
+      "meaning": "Turnouts visible only in the observer's local window."
+    },
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32",
+      "meaning": "Completed transition count, 0..512."
+    },
+    {
+      "path": [
+        "terminal_reason"
+      ],
+      "shape": [],
+      "dtype": "int32",
+      "meaning": "0=ongoing, 1=all receivers complete, 2=no charges and no active pulses with work remaining, 3=time limit."
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "True for natural success or complete source exhaustion after all pulses have been absorbed."
+    },
+    {
+      "path": [
+        "tile_map"
+      ],
+      "shape": [
+        15,
+        21
+      ],
+      "dtype": "int32",
+      "meaning": "Actual fixed floor/wall/rail/source/turnout/receiver grid."
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool",
+      "meaning": "True only for the 512-step limit without natural termination."
+    },
+    {
+      "path": [
+        "wall"
+      ],
+      "shape": [
+        15,
+        21
+      ],
+      "dtype": "bool",
+      "meaning": "Static perimeter wall grid."
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      20.5,
+      14.5
+    ],
+    "map": {
+      "state_path": [
+        "tile_map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#E4E8EA"
+        },
+        {
+          "value": 1,
+          "meaning": "Perimeter wall",
+          "color": "#28343D"
+        },
+        {
+          "value": 2,
+          "meaning": "Ordinary rail, walkable on independent technician layer",
+          "color": "#8A9DA9"
+        },
+        {
+          "value": 3,
+          "meaning": "Solid source fixture",
+          "color": "#687FBE"
+        },
+        {
+          "value": 4,
+          "meaning": "Solid turnout fixture",
+          "color": "#B67BBD"
+        },
+        {
+          "value": 5,
+          "meaning": "Solid receiver fixture",
+          "color": "#69A583"
+        }
+      ],
+      "visibility": [
+        "map_visibility"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "technicians",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "event_agent_outcome"
+          ],
+          "meaning": "Latest actual action outcome code.",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "rail_nodes",
+      "kind": "landmark",
+      "count": 64,
+      "position": [
+        "node_pos"
+      ],
+      "active": [
+        "node_active"
+      ],
+      "visibility": [
+        "node_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "node_kind"
+          ],
+          "meaning": "0 rail, 1 source, 2 turnout, 3 receiver.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "node_flow"
+          ],
+          "meaning": "Actual currently selected outgoing edge direction; zero at receivers.",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "source",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "source_pos"
+      ],
+      "active": [
+        "source_active"
+      ],
+      "visibility": [
+        "source_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "source_blue"
+          ],
+          "meaning": "Remaining blue charges.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "source_amber"
+          ],
+          "meaning": "Remaining amber charges.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "source_timer"
+          ],
+          "meaning": "Actual remaining launch cooldown.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "turnouts",
+      "kind": "gate",
+      "count": 3,
+      "position": [
+        "switch_pos"
+      ],
+      "active": [
+        "switch_active"
+      ],
+      "visibility": [
+        "switch_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "switch_mode"
+          ],
+          "meaning": "Selected outgoing branch 0 or 1.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "switch_direction"
+          ],
+          "meaning": "Actual selected outgoing edge direction.",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "event_switch_conflict"
+          ],
+          "meaning": "Contradictory local SET requests occurred this step.",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "receivers",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "sink_pos"
+      ],
+      "active": [
+        "sink_active"
+      ],
+      "visibility": [
+        "sink_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "sink_demand"
+          ],
+          "meaning": "Only current requested colour: 0 blue, 1 amber, -1 complete.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "sink_progress"
+          ],
+          "meaning": "Accepted prefix length, from 0 to 3.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "event_sink_outcome"
+          ],
+          "meaning": "Latest actual arrival outcome: 0 none,1 accepted,2 wrong,3 already complete.",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "blue_pulses",
+      "kind": "object",
+      "count": 16,
+      "position": [
+        "pulse_pos"
+      ],
+      "active": [
+        "blue_active"
+      ],
+      "visibility": [
+        "blue_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pulse_id"
+          ],
+          "meaning": "Unique physical launch identity; slot reuse does not reuse identity.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "amber_pulses",
+      "kind": "object",
+      "count": 16,
+      "position": [
+        "pulse_pos"
+      ],
+      "active": [
+        "amber_active"
+      ],
+      "visibility": [
+        "amber_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pulse_id"
+          ],
+          "meaning": "Unique physical launch identity; masks are disjoint from blue_pulses.",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_agent_outcome"
+      ],
+      "meaning": "0=wait, 1=walk accepted, 2=walk rejected, 3=set accepted, 4=set conflict, 5=launch accepted, 6=launch rejected, 7=set rejected.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_invalid_action"
+      ],
+      "meaning": "True for out-of-range input IDs replaced by WAIT.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_switch_delta"
+      ],
+      "meaning": "New mode minus old mode: -1,0,+1.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_switch_conflict"
+      ],
+      "meaning": "True when adjacent technicians issued both conflicting SET values in this transition.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_source_conflict"
+      ],
+      "meaning": "True when eligible nearby source requesters requested both colours, producing no launch.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_active"
+      ],
+      "meaning": "Mask of this transition's actual pulse events.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_kind"
+      ],
+      "meaning": "0=none, 1=ordinary rail motion, 2=arrival accepted, 3=arrival wrong colour, 4=arrival at already-complete receiver, 5=new launch.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_from"
+      ],
+      "meaning": "Old node index; -1 for a launch or inactive event.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_to"
+      ],
+      "meaning": "Actual destination node, including a receiver for consumed pulses; source node 0 for a launch; -1 for inactive event.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_colour"
+      ],
+      "meaning": "Colour of the event pulse; -1 for inactive event.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_id"
+      ],
+      "meaning": "Unique launch identity of this event pulse; -1 when inactive.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_slot"
+      ],
+      "meaning": "Storage slot associated with the event, allowing an old consumed pulse and a newly launched pulse to reuse a slot without sharing an identity.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_sink_outcome"
+      ],
+      "meaning": "0=no arrival, 1=accepted next colour, 2=wrong colour, 3=already complete.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_terminal_reason"
+      ],
+      "meaning": "0 unless this transition ends the episode, then the corresponding new terminal_reason.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "launch_count"
+      ],
+      "meaning": "Total actual source launches, never decreases.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        550
+      ],
+      "meaning": "Row-major local [5,5,22] square. Channels 0..21: in-bounds; walking blocked; rail; source; source blue/8; amber/8; cooldown/2; turnout; branch0; branch1; receiver; current demand blue; current demand amber; progress/3; complete; blue pulse; amber pulse; self; agent0; agent1; agent2; agent3. Off-map cells are all zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        550,
+        554
+      ],
+      "meaning": "Observer's one-hot identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        554,
+        556
+      ],
+      "meaning": "Observer's own position [x/20,y/14].",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        556,
+        557
+      ],
+      "meaning": "Public completed-step clock t/512.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Complete all four receivers' ordered three-colour demands using the finite 8-blue/8-amber source.",
+    "natural_termination": "Success when every receiver progress is 3; natural failure when both source stocks are empty and all pulses absorbed with work remaining. Natural completion precedes the 512-step limit.",
+    "interaction": "Technicians must be orthogonally adjacent to operate physical fixtures. Pulses advance along the rail tree using old turnout states, are consumed by arrivals, and reveal the next local demand only after a match.",
+    "observation_access": "Only Chebyshev-radius-2 local cells and current local receiver demand are observed, plus own identity/position and time. Map/entity visibility arrays match this access. Full recipes, remote state and debug events remain privileged; scene rendering adds no policy inputs."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "source_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "sink_progress"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pulse_pos"
+      ],
+      "active_path": [
+        "pulse_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

@@ -1,0 +1,422 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "b92429afa8deddf0ef620259fd2bd55df3d2b2b81d20409f875a4d556d1d8750",
+  "manifest_sha256": "c648d0ec17b76221a5cde2907d61c8334d2bdecc00b8673cace278287b702705",
+  "title": "Beacon Marches",
+  "rules": [
+    "The native cycle is council, march, works; only actions for the current phase are legal.",
+    "At home in council, spend one carried supply to offer another role passage. The recipient must accept in a later council and spend one supply.",
+    "Offers last three works ticks. Accepted grants last four; acceptance wins over simultaneous renewal, and commitments cannot be revoked early.",
+    "During march, a courier may enter a pass only as its owner or under that owner's active grant. Leaving an expired pass remains possible.",
+    "During works, load at home, deliver at your opposite-bank outpost, or spend one supply to build/refuel a nearby relay socket.",
+    "A powered relay reveals radius-three route information to its owner and current accepted guests. Dark relays reveal no surrounding terrain.",
+    "Every fifteen raw steps, all public defenses lose one. A delivery restores two defense, capped at six.",
+    "Hidden route obstructions come only from the reset key. Public agreement and local scene displays use the same native state as policies."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable frontier ground",
+          "color": "#BECEA9"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable river",
+          "color": "#5286A9"
+        },
+        {
+          "value": 2,
+          "meaning": "Impassable rough-route obstruction; observed only when revealed",
+          "color": "#6B7765"
+        },
+        {
+          "value": 3,
+          "meaning": "Fortified pass requiring ownership or an active grant",
+          "color": "#BCA473"
+        }
+      ],
+      "visibility": [
+        "map_visible"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "glyph": "agent",
+      "label": "Polity couriers",
+      "color": "#D3A146",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carried"
+          ],
+          "label": "carried"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "glyph": "square",
+      "label": "Home settlements and supply depots",
+      "color": "#B28553",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bank"
+          ],
+          "label": "bank"
+        }
+      ]
+    },
+    {
+      "id": "outposts",
+      "glyph": "flag",
+      "label": "Publicly reported frontier defenses",
+      "color": "#9C695C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "defense"
+          ],
+          "label": "defense"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "delivered"
+        }
+      ]
+    },
+    {
+      "id": "passes",
+      "glyph": "gate",
+      "label": "Fortified passes and public agreements",
+      "color": "#C6AB6A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pass_owner"
+          ],
+          "label": "pass owner"
+        },
+        {
+          "state_path": [
+            "pass_access"
+          ],
+          "label": "pass access"
+        },
+        {
+          "state_path": [
+            "pass_offers"
+          ],
+          "label": "pass offers"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "glyph": "beacon",
+      "label": "Relay sockets and built beacons",
+      "color": "#8B7AB7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_built"
+          ],
+          "label": "beacon built"
+        },
+        {
+          "state_path": [
+            "beacon_owner"
+          ],
+          "label": "beacon owner"
+        },
+        {
+          "state_path": [
+            "beacon_fuel"
+          ],
+          "label": "beacon fuel"
+        },
+        {
+          "state_path": [
+            "recharged"
+          ],
+          "label": "recharged"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "offer_now"
+      ],
+      "meaning": "Public owner-to-guest offer matrix created this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "accepted_now"
+      ],
+      "meaning": "Public owner-to-guest acceptance matrix this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Public outpost deliveries this step by owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pressure"
+      ],
+      "meaning": "Public frontier pressure reduced defenses this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative public outpost deliveries by owner.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / decline by doing nothing"
+    },
+    {
+      "id": 1,
+      "label": "North during march"
+    },
+    {
+      "id": 2,
+      "label": "East during march"
+    },
+    {
+      "id": 3,
+      "label": "South during march"
+    },
+    {
+      "id": 4,
+      "label": "West during march"
+    },
+    {
+      "id": 5,
+      "label": "Load up to two supplies at own home during works"
+    },
+    {
+      "id": 6,
+      "label": "Deliver one supply at own outpost during works"
+    },
+    {
+      "id": 7,
+      "label": "Build or refuel an accessible relay socket during works"
+    },
+    {
+      "id": 8,
+      "label": "At home in council: offer passage to next role (i+1 mod 3)"
+    },
+    {
+      "id": 9,
+      "label": "At home in council: offer passage to previous role (i+2 mod 3)"
+    },
+    {
+      "id": 10,
+      "label": "At home in council: accept next role's pending offer"
+    },
+    {
+      "id": 11,
+      "label": "At home in council: accept previous role's pending offer"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot in polity order 0,1,2.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        8
+      ],
+      "meaning": "Public t, phase (0 council / 1 march / 2 works), done, terminated, truncated.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "Own carried supplies, own home bank, own cumulative supplies spent, own blocked-move flag.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        24
+      ],
+      "meaning": "Three courier rows [x,y,carried,visible]; invisible numeric fields are -1. Visibility is the role's revealed map.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        24,
+        36
+      ],
+      "meaning": "Three settlement rows [x,y,bank,visible]; own home is always known, other homes require map visibility; masked fields -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        36,
+        42
+      ],
+      "meaning": "Public outpost [x,y] positions in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Public outpost defense levels in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Cumulative public outpost deliveries in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        54
+      ],
+      "meaning": "Public fortified-pass [x,y] positions, north/middle/south.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        57
+      ],
+      "meaning": "Public pass owner roles: 1,2,0.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        66
+      ],
+      "meaning": "Public pending-offer lifetimes, row owner / column guest, flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        75
+      ],
+      "meaning": "Public accepted passage durations, row owner / column guest, flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        111
+      ],
+      "meaning": "Six relay rows [x,y,owner,fuel,built,visible]; unknown numeric fields -1. A role always receives its owned beacon telemetry, but a dark beacon reveals no surrounding tiles.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        111,
+        192
+      ],
+      "meaning": "Actual 9x9 terrain codes where map_visible is true; -1 elsewhere. Row-major yx.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        192,
+        273
+      ],
+      "meaning": "The role's explicit 9x9 map visibility mask, row-major yx.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        273,
+        276
+      ],
+      "meaning": "Public per-step delivery counts in owner order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        276,
+        285
+      ],
+      "meaning": "Public per-step new-offer matrix, row owner / column guest.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        285,
+        294
+      ],
+      "meaning": "Public per-step accepted-offer matrix, row owner / column guest.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        294,
+        300
+      ],
+      "meaning": "Per-relay build/refuel flags where that relay is visible; -1 elsewhere.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        300,
+        301
+      ],
+      "meaning": "Public per-step frontier pressure flag.",
+      "visibility": "public"
+    }
+  ]
+}

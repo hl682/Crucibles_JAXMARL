@@ -1,0 +1,554 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "78a651a4ff09f8353eddeb74fcd42a854cfc1f95df4cd61cbab49e1920161c66",
+  "manifest_sha256": "3f1bd16d71032802a017a53d88349aadcc60da37c3852345a8079258c59026f3",
+  "title": "Seedwind Orchard",
+  "rules": [
+    "Eight gardeners share twenty-four plots, eight borrowable baskets, four drying slots, a finite well reservoir and persistent windbreaks.",
+    "Foragers create timber; builders turn timber into windbreaks or a rainproof shared roof; propagators graft; waterkeepers supply moisture.",
+    "Harvesting gives fruit but resets the plant to stage two, removes canopy and consumes its ripe seedbank. A basket catches the wet seeds if it has room.",
+    "Dry traits require two, four or six usable shed ticks. Wet and dry seeds together are capped at six per basket.",
+    "Wind moves real seeds every second tick. Their trait is inherited; a suitable empty moist bed can receive a seed.",
+    "Windbreak orientation blocks seed passage; mature tree canopy and windbreaks shade eastern neighbors. Shade saves moisture but prevents hardy-trait growth.",
+    "Clearing young growth opens a bed for replanting. Grafting consumes both dry base traits and produces a hybrid crop.",
+    "Rain renews water and fertility. Harvests and local goals never reset the bounded world; tick 512 is its observation window."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      23,
+      23
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Connected orchard ground",
+          "color": "#BBCB93"
+        },
+        {
+          "value": 1,
+          "meaning": "Permanent pond; not walkable",
+          "color": "#7AA9B7"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "gardeners",
+      "glyph": "worker",
+      "label": "Eight neighboring gardeners",
+      "color": "#B27E5B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "0 propagator, 1 forager, 2 builder, 3 waterkeeper"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "1 north, 2 east, 3 south, 4 west"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Carried timber, 0..6"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carried basket index, -1 none"
+        },
+        {
+          "state_path": [
+            "carry_break"
+          ],
+          "label": "Carried windbreak index, -1 none"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried watering units, 0..3"
+        },
+        {
+          "state_path": [
+            "selected"
+          ],
+          "label": "Selected trait 0 hardy, 1 lush, 2 hybrid"
+        }
+      ]
+    },
+    {
+      "id": "plots",
+      "glyph": "plant",
+      "label": "Physical crop beds",
+      "color": "#64934D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bed_owner"
+          ],
+          "label": "Neighbor owning the plot, 0..7"
+        },
+        {
+          "state_path": [
+            "trait"
+          ],
+          "label": "-1 empty, 0 hardy, 1 lush, 2 hybrid"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Crop stage, 0..6; six ripe"
+        },
+        {
+          "state_path": [
+            "canopy"
+          ],
+          "label": "Stage-five/six canopy casts eastern shade"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Soil moisture, 0..6"
+        },
+        {
+          "state_path": [
+            "fertility"
+          ],
+          "label": "Available growth nutrients, 0..6"
+        },
+        {
+          "state_path": [
+            "seedbank"
+          ],
+          "label": "Ripe wet seeds available, 0..2"
+        },
+        {
+          "state_path": [
+            "shade"
+          ],
+          "label": "Hedge or neighboring canopy currently shades bed"
+        }
+      ]
+    },
+    {
+      "id": "baskets",
+      "glyph": "crate",
+      "label": "Borrowable physical seed baskets",
+      "color": "#C19B62",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "basket_holder"
+          ],
+          "label": "-1 unattended, 0..7 gardener"
+        },
+        {
+          "state_path": [
+            "basket_slot"
+          ],
+          "label": "Shared drying slot, -1 none"
+        },
+        {
+          "state_path": [
+            "wet"
+          ],
+          "label": "Wet seed counts by three traits"
+        },
+        {
+          "state_path": [
+            "dry"
+          ],
+          "label": "Dry seed counts by three traits"
+        },
+        {
+          "state_path": [
+            "dry_timer"
+          ],
+          "label": "Accumulated usable drying ticks, 0..6"
+        }
+      ]
+    },
+    {
+      "id": "windbreaks",
+      "glyph": "plant",
+      "label": "Movable persistent windbreaks",
+      "color": "#69856B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "break_holder"
+          ],
+          "label": "-1 standing/unheld, 0..7 carrier"
+        },
+        {
+          "state_path": [
+            "break_axis"
+          ],
+          "label": "0 blocks vertical wind; 1 blocks horizontal wind"
+        },
+        {
+          "state_path": [
+            "deployed"
+          ],
+          "label": "Standing and able to block movement/wind"
+        }
+      ]
+    },
+    {
+      "id": "drifting_seeds",
+      "glyph": "circle",
+      "label": "Native moving seed particles",
+      "color": "#D3AD56",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "seed_trait"
+          ],
+          "label": "Inherited seed trait 0..2"
+        },
+        {
+          "state_path": [
+            "seed_owner"
+          ],
+          "label": "Source gardener bearing dispersal loss"
+        },
+        {
+          "state_path": [
+            "seed_age"
+          ],
+          "label": "Airborne age, max eight ticks"
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "glyph": "water",
+      "label": "Shared well / drying-shed center",
+      "color": "#83A8AF",
+      "attribute_labels": []
+    },
+    {
+      "id": "drying_slots",
+      "glyph": "square",
+      "label": "Four shared physical drying spaces",
+      "color": "#B59E7D",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "wind"
+      ],
+      "meaning": "Actual public wind vector x,y",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "rain"
+      ],
+      "meaning": "Current public rainy phase",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "daylight"
+      ],
+      "meaning": "Current public daylight phase",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "reservoir"
+      ],
+      "meaning": "Shared well water units, 0..20",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "roof"
+      ],
+      "meaning": "Shared drying shelter level, 1 or 2",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index adjacent unheld seed basket; hands must be free"
+    },
+    {
+      "id": 6,
+      "label": "Put held seed basket on current tile"
+    },
+    {
+      "id": 7,
+      "label": "Harvest adjacent ripe crop for fruit; collect wet seeds if carrying a basket with room"
+    },
+    {
+      "id": 8,
+      "label": "Plant selected dry seed into adjacent empty moist bed"
+    },
+    {
+      "id": 9,
+      "label": "Set held basket on adjacent empty shared drying slot"
+    },
+    {
+      "id": 10,
+      "label": "Fill carried water to three from shared reservoir at well; waterkeeper"
+    },
+    {
+      "id": 11,
+      "label": "Water adjacent needy bed with one carried unit; waterkeeper"
+    },
+    {
+      "id": 12,
+      "label": "Prune mature growth for two timber or clear young growth for one; forager"
+    },
+    {
+      "id": 13,
+      "label": "Build a front windbreak for two timber; builder"
+    },
+    {
+      "id": 14,
+      "label": "Rotate adjacent standing windbreak orientation"
+    },
+    {
+      "id": 15,
+      "label": "Lift adjacent windbreak with free hands"
+    },
+    {
+      "id": 16,
+      "label": "Place held windbreak on clear front cell"
+    },
+    {
+      "id": 17,
+      "label": "Graft nearby growing crop to hybrid using one dry seed of each base trait; propagator"
+    },
+    {
+      "id": 18,
+      "label": "Upgrade shared drying roof with two timber; builder"
+    },
+    {
+      "id": 19,
+      "label": "Select next seed trait: hardy, lush, hybrid"
+    },
+    {
+      "id": 20,
+      "label": "Give one selected dry seed to adjacent peer's carried basket"
+    },
+    {
+      "id": 21,
+      "label": "Mulch adjacent depleted soil with one timber"
+    },
+    {
+      "id": 22,
+      "label": "Dismantle adjacent windbreak and recover one timber; builder"
+    },
+    {
+      "id": 23,
+      "label": "Release one selected dry seed from held basket into the current wind"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        580
+      ],
+      "meaning": "Public 24x24 connected ground with a fixed impassable southeast pond; crops and current objects are separate local records",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        580,
+        584
+      ],
+      "meaning": "Public well and shared drying-shed center coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        584,
+        592
+      ],
+      "meaning": "Public four fixed drying-slot coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        592,
+        594
+      ],
+      "meaning": "Actual current public x,y wind vector, cardinal and unit length",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        594,
+        595
+      ],
+      "meaning": "rain; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        595,
+        596
+      ],
+      "meaning": "daylight; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        596,
+        597
+      ],
+      "meaning": "Seeded initial wind-cycle offset; only supplied reset key used",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        597,
+        598
+      ],
+      "meaning": "Shared finite-capacity well reservoir, 0..20, replenished by rain",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        598,
+        599
+      ],
+      "meaning": "Shared roof level: one permits dry-weather work; two also permits drying in rain",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        599,
+        608
+      ],
+      "meaning": "Self actor id, first-harvest trait achievements[3], native reward components[5]",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        608,
+        688
+      ],
+      "meaning": "Eight local gardener records: visible,x,y,role,facing,wood,carried basket,carried windbreak,water,selected trait; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        688,
+        952
+      ],
+      "meaning": "24 local bed records: visible,x,y,plot owner,trait,growth,canopy,moisture,fertility,seedbank,shade; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        952,
+        1048
+      ],
+      "meaning": "Eight local basket records: visible,x,y,holder,drying slot,wet[3],dry[3],dry timer; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        1048,
+        1096
+      ],
+      "meaning": "Eight local windbreak records: visible,x,y,holder,axis,deployed; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        1096,
+        1192
+      ],
+      "meaning": "16 local seed records: visible,x,y,trait,source owner,air age; hidden/inactive data -1",
+      "visibility": "local"
+    }
+  ]
+}

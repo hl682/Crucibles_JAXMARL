@@ -1,0 +1,398 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "e83181823a7f50afd71c9e48b32914e8ab3ee05f1b0c49867058fa7f18a84924",
+  "manifest_sha256": "982762519bf3b8c31738b39c6d88b6038208847c346659585b04fa4ca12ecad3",
+  "title": "Chromatic Switchyard / 彩脉分流场",
+  "rules": [
+    "Four technicians walk to real source/turnout fixtures to operate them. Ordinary rail cells remain walkable on a separate technician layer.",
+    "A launch spends one of eight charges of that colour. Existing pulses advance one edge per step; a new pulse starts at the source until the next step.",
+    "A departing pulse reads the OLD turnout mode. A same-step SET applies only to subsequent departures.",
+    "Only the current receiver demand is visible nearby. Correct colours advance its three-step prefix; wrong or unnecessary arrivals consume the pulse without progress.",
+    "Role maps and entity locations must use their actual radius-two visibility masks. Full-state/debug views are privileged; future recipes are never scene attributes.",
+    "Event outcomes, pulse identities and rail direction annotations are debug diagnostics, not extra policy columns. The policy receives only the declared 557 columns.",
+    "Blue and amber groups are disjoint masks over the same sixteen physical slots. Follow unique pulse IDs when a consumed slot is reused.",
+    "Arrival events carry actual from/to nodes. No radio, collision, recall, fabricated delivery or hypothetical successful-run animation is permitted.",
+    "All receivers complete means success; empty stock with no pulses and incomplete receivers means failure. Natural outcomes precede the 512-step limit.",
+    "Terminal states are absorbing. Consume a recorded event only once per t; full-state diagnostics must not masquerade as a role observation."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      20.5,
+      14.5
+    ],
+    "map": {
+      "state_path": [
+        "tile_map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#E4E8EA"
+        },
+        {
+          "value": 1,
+          "meaning": "Perimeter wall",
+          "color": "#28343D"
+        },
+        {
+          "value": 2,
+          "meaning": "Ordinary rail, walkable on independent technician layer",
+          "color": "#8A9DA9"
+        },
+        {
+          "value": 3,
+          "meaning": "Solid source fixture",
+          "color": "#687FBE"
+        },
+        {
+          "value": 4,
+          "meaning": "Solid turnout fixture",
+          "color": "#B67BBD"
+        },
+        {
+          "value": 5,
+          "meaning": "Solid receiver fixture",
+          "color": "#69A583"
+        }
+      ],
+      "visibility": [
+        "map_visibility"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "technicians",
+      "glyph": "worker",
+      "label": "Technicians",
+      "color": "#536D8F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "event_agent_outcome"
+          ],
+          "label": "Latest action outcome (debug diagnostic)"
+        }
+      ]
+    },
+    {
+      "id": "rail_nodes",
+      "glyph": "circle",
+      "label": "Actual directed rail nodes",
+      "color": "#9AAAB4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "node_kind"
+          ],
+          "label": "Rail fixture kind"
+        },
+        {
+          "state_path": [
+            "node_flow"
+          ],
+          "label": "Current actual outgoing edge"
+        }
+      ]
+    },
+    {
+      "id": "source",
+      "glyph": "battery",
+      "label": "Finite blue and amber source",
+      "color": "#536DC0",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "source_blue"
+          ],
+          "label": "Blue charges remaining"
+        },
+        {
+          "state_path": [
+            "source_amber"
+          ],
+          "label": "Amber charges remaining"
+        },
+        {
+          "state_path": [
+            "source_timer"
+          ],
+          "label": "Launch cooldown"
+        }
+      ]
+    },
+    {
+      "id": "turnouts",
+      "glyph": "gate",
+      "label": "Routing turnouts",
+      "color": "#A76DAF",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "switch_mode"
+          ],
+          "label": "Selected branch"
+        },
+        {
+          "state_path": [
+            "switch_direction"
+          ],
+          "label": "Selected outgoing edge"
+        },
+        {
+          "state_path": [
+            "event_switch_conflict"
+          ],
+          "label": "Latest command conflict (debug diagnostic)"
+        }
+      ]
+    },
+    {
+      "id": "receivers",
+      "glyph": "beacon",
+      "label": "Ordered-colour receivers",
+      "color": "#56A37B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "sink_demand"
+          ],
+          "label": "Current demand: 0 blue, 1 amber, -1 complete"
+        },
+        {
+          "state_path": [
+            "sink_progress"
+          ],
+          "label": "Accepted sequence prefix (0..3)"
+        },
+        {
+          "state_path": [
+            "event_sink_outcome"
+          ],
+          "label": "Latest arrival outcome (debug diagnostic)"
+        }
+      ]
+    },
+    {
+      "id": "blue_pulses",
+      "glyph": "resource",
+      "label": "Active blue pulses",
+      "color": "#3478DB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pulse_id"
+          ],
+          "label": "Physical pulse identity (debug diagnostic)"
+        }
+      ]
+    },
+    {
+      "id": "amber_pulses",
+      "glyph": "resource",
+      "label": "Active amber pulses",
+      "color": "#E5A42A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pulse_id"
+          ],
+          "label": "Physical pulse identity (debug diagnostic)"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_agent_outcome"
+      ],
+      "meaning": "0=wait, 1=walk accepted, 2=walk rejected, 3=set accepted, 4=set conflict, 5=launch accepted, 6=launch rejected, 7=set rejected.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_invalid_action"
+      ],
+      "meaning": "True for out-of-range input IDs replaced by WAIT.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_switch_delta"
+      ],
+      "meaning": "New mode minus old mode: -1,0,+1.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_switch_conflict"
+      ],
+      "meaning": "True when adjacent technicians issued both conflicting SET values in this transition.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_source_conflict"
+      ],
+      "meaning": "True when eligible nearby source requesters requested both colours, producing no launch.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_active"
+      ],
+      "meaning": "Mask of this transition's actual pulse events.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_kind"
+      ],
+      "meaning": "0=none, 1=ordinary rail motion, 2=arrival accepted, 3=arrival wrong colour, 4=arrival at already-complete receiver, 5=new launch.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_from"
+      ],
+      "meaning": "Old node index; -1 for a launch or inactive event.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_to"
+      ],
+      "meaning": "Actual destination node, including a receiver for consumed pulses; source node 0 for a launch; -1 for inactive event.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_colour"
+      ],
+      "meaning": "Colour of the event pulse; -1 for inactive event.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_id"
+      ],
+      "meaning": "Unique launch identity of this event pulse; -1 when inactive.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pulse_slot"
+      ],
+      "meaning": "Storage slot associated with the event, allowing an old consumed pulse and a newly launched pulse to reuse a slot without sharing an identity.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_sink_outcome"
+      ],
+      "meaning": "0=no arrival, 1=accepted next colour, 2=wrong colour, 3=already complete.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_terminal_reason"
+      ],
+      "meaning": "0 unless this transition ends the episode, then the corresponding new terminal_reason.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "launch_count"
+      ],
+      "meaning": "Total actual source launches, never decreases.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "WAIT — Do not walk or issue a fixture command; existing pulses still advance."
+    },
+    {
+      "id": 1,
+      "label": "MOVE_N — Attempt [0,-1] walking."
+    },
+    {
+      "id": 2,
+      "label": "MOVE_E — Attempt [1,0] walking."
+    },
+    {
+      "id": 3,
+      "label": "MOVE_S — Attempt [0,1] walking."
+    },
+    {
+      "id": 4,
+      "label": "MOVE_W — Attempt [-1,0] walking."
+    },
+    {
+      "id": 5,
+      "label": "SET_BRANCH_0 — When adjacent to a turnout at old position, request outgoing branch 0."
+    },
+    {
+      "id": 6,
+      "label": "SET_BRANCH_1 — When adjacent to a turnout at old position, request outgoing branch 1."
+    },
+    {
+      "id": 7,
+      "label": "LAUNCH_BLUE — When adjacent to the source, request one blue pulse."
+    },
+    {
+      "id": 8,
+      "label": "LAUNCH_AMBER — When adjacent to the source, request one amber pulse."
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        550
+      ],
+      "meaning": "Row-major local [5,5,22] square. Channels 0..21: in-bounds; walking blocked; rail; source; source blue/8; amber/8; cooldown/2; turnout; branch0; branch1; receiver; current demand blue; current demand amber; progress/3; complete; blue pulse; amber pulse; self; agent0; agent1; agent2; agent3. Off-map cells are all zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        550,
+        554
+      ],
+      "meaning": "Observer's one-hot identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        554,
+        556
+      ],
+      "meaning": "Observer's own position [x/20,y/14].",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        556,
+        557
+      ],
+      "meaning": "Public completed-step clock t/512.",
+      "visibility": "public"
+    }
+  ]
+}

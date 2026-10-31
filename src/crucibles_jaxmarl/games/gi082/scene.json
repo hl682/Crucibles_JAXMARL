@@ -1,0 +1,286 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "ad66babf039e1ebd3643e035f8cd685e5641ebd2a67714c4e683c5a91ac5af2e",
+  "manifest_sha256": "9722a9e0785236a9b080b9a0a316206a30188562b984bedb4fedac73e91eaba7",
+  "title": "Lantern Flood",
+  "rules": [
+    "Rigger spends two shared supplies to open the central sluice permanently.",
+    "Medic spends one supply to stabilize an adjacent casualty and stop its countdown.",
+    "Each role carries at most one casualty; paired adjacent handoff transfers to an empty receiver.",
+    "Recover attempts casualty pickup before pack collection; lowest eligible index wins.",
+    "Beacons last six ticks and share actual radius-two sensing with every role.",
+    "Deliver carried casualties within one tile of the depot; unstabilized casualties can expire.",
+    "Moves into other starting cells or shared requested destinations fail; no swaps.",
+    "Both casualties resolved ends naturally; otherwise step 96 truncates. Raw terminal state absorbs."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "grid"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid flood barrier"
+        },
+        {
+          "value": 2,
+          "meaning": "Sluice tile; passable exactly when gate_open is true"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "rescuers",
+      "glyph": "agent",
+      "label": "Rescuers",
+      "color": "#60A5FA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Held casualty index; -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "casualties",
+      "glyph": "circle",
+      "label": "Casualties",
+      "color": "#FB7185",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "life"
+          ],
+          "label": "Unsupported lifetime remaining"
+        },
+        {
+          "state_path": [
+            "stable"
+          ],
+          "label": "Stabilization stops lifetime loss"
+        },
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "label": "Carrier role index; -1 ground"
+        },
+        {
+          "state_path": [
+            "victim_status"
+          ],
+          "label": "0 unresolved; 1 rescued; 2 lost"
+        }
+      ]
+    },
+    {
+      "id": "supply_packs",
+      "glyph": "battery",
+      "label": "Supply Packs",
+      "color": "#FBBF24",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pack_value"
+          ],
+          "label": "Units added to shared supplies"
+        }
+      ]
+    },
+    {
+      "id": "sluice",
+      "glyph": "gate",
+      "label": "Sluice",
+      "color": "#94A3B8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Permanently opened crossing"
+        }
+      ]
+    },
+    {
+      "id": "rescue_depot",
+      "glyph": "flag",
+      "label": "Rescue Depot",
+      "color": "#34D399",
+      "attribute_labels": []
+    },
+    {
+      "id": "sensor_beacons",
+      "glyph": "beacon",
+      "label": "Sensor Beacons",
+      "color": "#C084FC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "label": "Remaining shared sensor ticks"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Casualties delivered to depot proximity",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost"
+      ],
+      "meaning": "Casualties expired",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Sluice passage open",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "supply"
+      ],
+      "meaning": "Common opening and treatment supplies",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Recover: pick adjacent casualty if empty; otherwise collect adjacent supply pack"
+    },
+    {
+      "id": 6,
+      "label": "Specialist work: rigger opens sluice; medic stabilizes casualty; scout has no effect"
+    },
+    {
+      "id": 7,
+      "label": "Mutual adjacent casualty handoff"
+    },
+    {
+      "id": 8,
+      "label": "Place or renew six-tick shared sensor beacon"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Own role one-hot(3), x,y,carrying index (-1 empty)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        11
+      ],
+      "meaning": "Clock, shared supply, gate-open flag, cumulative rescued and lost",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        23
+      ],
+      "meaning": "Visible rescuers: x,y,carrying per slot (9), then 3 visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        23,
+        37
+      ],
+      "meaning": "Visible casualties: x,y,life,stable,carrier,status per slot (12), then 2 visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        37,
+        45
+      ],
+      "meaning": "Visible packs: x,y,value per slot (6), then 2 visibility flags; hidden features -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        45,
+        54
+      ],
+      "meaning": "Public beacons: x,y,TTL per slot; inactive features -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        117
+      ],
+      "meaning": "Public 7-by-9 map flattened row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        121
+      ],
+      "meaning": "Public gate x,y followed by depot x,y",
+      "visibility": "public"
+    }
+  ]
+}

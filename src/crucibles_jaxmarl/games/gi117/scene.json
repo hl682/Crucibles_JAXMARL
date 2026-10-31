@@ -1,0 +1,361 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "5726fbbef820541fcb14591d64f11730f02c4feccf98b7305bd5f8bd63c4ad60",
+  "manifest_sha256": "fbf6eea5e59b465c87b6776e57c0fd44db341db1fb0e74f6799f67cde06449e7",
+  "title": "Hidden-demand exchange yard",
+  "rules": [
+    "Every trader has one carrying slot and needs two units of its private type at its indexed dock. Six identified goods exist: two of each type.",
+    "The map, cargo types, goods and bay reservations are public. Other traders private orders remain hidden until their actions reveal information.",
+    "Action thirteen broadcasts the speakers actual private demand for five ticks. Silence leaves that order private.",
+    "An offer is posted only while carrying a good on an exchange bay. It commits the actual good for four displayed ticks and prevents movement, pickup, drop and delivery while active.",
+    "Reciprocal compatible offers settle atomically; a three-way compatible cycle may clear when no bilateral pair does. Trading itself has zero reward.",
+    "Reservations last six displayed ticks and block another trader from entering that bay. Renewing or cancelling uses a turn.",
+    "Natural completion requires all six deliveries. An individually completed trader becomes inactive and accepts only wait.",
+    "Replay and role-view privacy still require independent execution; this is an authored hypothesis, not an accepted game result."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable public yard",
+          "color": "#C7D5CD"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall, closed to movement",
+          "color": "#5B6770"
+        },
+        {
+          "value": 2,
+          "meaning": "Exchange bay with atomic clearing service",
+          "color": "#D4B58B"
+        },
+        {
+          "value": 3,
+          "meaning": "Indexed private-order delivery dock; type not painted here",
+          "color": "#80B08A"
+        },
+        {
+          "value": 4,
+          "meaning": "Initial goods station",
+          "color": "#E5C66D"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "traders",
+      "glyph": "worker",
+      "label": "Traders and public signals",
+      "color": "#4C9FCD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Public number delivered by this trader"
+        },
+        {
+          "state_path": [
+            "cargo_code"
+          ],
+          "label": "Public carried type, minus one means empty"
+        },
+        {
+          "state_path": [
+            "signal_type"
+          ],
+          "label": "Voluntarily revealed truthful demand type, minus one means silent"
+        },
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "label": "Remaining public signal ticks"
+        }
+      ]
+    },
+    {
+      "id": "goods",
+      "glyph": "crate",
+      "label": "Six conserved goods",
+      "color": "#D9A95E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goods_type"
+          ],
+          "label": "Public physical good type zero, one or two"
+        },
+        {
+          "state_path": [
+            "goods_owner"
+          ],
+          "label": "Minus one ground, zero to two carrier, three delivered"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "glyph": "flag",
+      "label": "Indexed delivery docks",
+      "color": "#6AAB73",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Public delivered count at this indexed dock"
+        }
+      ]
+    },
+    {
+      "id": "private_orders",
+      "glyph": "key",
+      "label": "Private order, owner view only",
+      "color": "#B08FC7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "demand"
+          ],
+          "label": "Private required type: visible only to this order owner"
+        },
+        {
+          "state_path": [
+            "remaining"
+          ],
+          "label": "Remaining deliveries for this order"
+        }
+      ]
+    },
+    {
+      "id": "loading_bays",
+      "glyph": "square",
+      "label": "Reservable exchange bays",
+      "color": "#B79978",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bay_owner"
+          ],
+          "label": "Reservation holder, minus one means unreserved"
+        },
+        {
+          "state_path": [
+            "bay_ttl"
+          ],
+          "label": "Remaining reservation ticks"
+        }
+      ]
+    },
+    {
+      "id": "public_offers",
+      "glyph": "resource",
+      "label": "Public committed offers",
+      "color": "#EDC95A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "offer_give"
+          ],
+          "label": "Offered physical good type, minus one means inactive"
+        },
+        {
+          "state_path": [
+            "offer_request"
+          ],
+          "label": "Requested type chosen by the trader, not a private-order field"
+        },
+        {
+          "state_path": [
+            "offer_ttl"
+          ],
+          "label": "Remaining escrow commitment ticks"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "trade_count"
+      ],
+      "meaning": "Number of atomic bilateral or three-way settlements; no reward is paid merely for trading",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "delivery_count"
+      ],
+      "meaning": "Number of goods delivered, public",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up one nearby ground good if empty"
+    },
+    {
+      "id": 6,
+      "label": "Drop carried good at current cell"
+    },
+    {
+      "id": 7,
+      "label": "Deliver matching good at own dock"
+    },
+    {
+      "id": 8,
+      "label": "Reserve or renew a nearby free loading bay"
+    },
+    {
+      "id": 9,
+      "label": "Release own bay reservation"
+    },
+    {
+      "id": 10,
+      "label": "Post carried good requesting type zero"
+    },
+    {
+      "id": 11,
+      "label": "Post carried good requesting type one"
+    },
+    {
+      "id": 12,
+      "label": "Post carried good requesting type two"
+    },
+    {
+      "id": 13,
+      "label": "Truthfully reveal own demand for five ticks"
+    },
+    {
+      "id": 14,
+      "label": "Cancel own escrow offer"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self trader identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        6
+      ],
+      "meaning": "Only this row owners private demand type one-hot; other demand entries are absent",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        69
+      ],
+      "meaning": "Row-major public terrain divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        69,
+        87
+      ],
+      "meaning": "Three public trader records: x/8,y/8,(cargo type+1)/3,delivered/2,(truthful signal type+1)/3,signal ttl/5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        87,
+        111
+      ],
+      "meaning": "Six goods records: x/8,y/8,type/2,(owner+1)/4, including publicly known delivered locations",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        123
+      ],
+      "meaning": "Three loading bay records: x/8,y/8,(reservation holder+1)/3,reservation ttl/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        138
+      ],
+      "meaning": "Three public offer records: x/8,y/8,(offered type+1)/3,(requested type+1)/3,offer ttl/4; inactive type fields are zero after encoding",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        147
+      ],
+      "meaning": "Three delivery dock records: x/8,y/8,delivered/2; no private demand is included",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        150
+      ],
+      "meaning": "Elapsed ticks/160, cumulative atomic clearings/160, cumulative delivered goods/6",
+      "visibility": "public"
+    }
+  ]
+}

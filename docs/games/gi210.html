@@ -1,0 +1,485 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>灯网工坊 · Lantern Grid · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI210 / SPATIAL</p><h1>灯网工坊 · Lantern Grid</h1><p class="lead">管理照明、升降与分拣电路，交六份有限原矿。</p><div class="stats"><span>3 agents</span><span>14 actions</span><span>167 observation columns</span><span>160 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi210.gif" alt="Original saved demonstration gi210"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi210.gif" alt="Actual verification episode gi210"></section><section><h2>Run this game</h2><pre>crucibles play --game 210</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Transport and sort six finite ore blocks, then carry them to the west depot while managing a finite electric grid.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion when all six ore blocks have been delivered. Otherwise truncate at tick 160.&quot;,
+  &quot;interaction&quot;: &quot;Toggling a branch allocates shared capacitor charge; demand above trunk capacity trips the highest-demand branch. Lamp power changes other crews&#x27; visible objects, while lift and sorter power alter transport and processing opportunities.&quot;,
+  &quot;observation_access&quot;: &quot;The map, clock, terminal causes, fixed circuit/facility positions and all circuit/fuel/charge/bypass/delivery indicators are public. Each crew sees itself and agents/items within Manhattan radius 1; radius expands to 4 if it is within four tiles of the powered lamp. Visibility is recomputed after each transition. Hidden agent/item records are -1 with a separate visibility bit. Inventory is shown only on visible entities. No hidden object data appears in event channels.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2.0 to 4.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Three crews share one finite electric grid and six ore blocks. All roles use the same native actions.</li><li>Lamp, lift and sorter draw 1, 3 and 2 units per tick. The common trunk carries at most 4.</li><li>Excess demand trips the highest-demand branch fuse before supply. A carried spare fuse repairs it.</li><li>A generator crank spends one of nine fuel units to add six charge when charge is at most six.</li><li>Wire the lift using a carried cable, or hold its manual bypass for three ticks. Movement uses the previous interval&#x27;s power.</li><li>Powered light expands nearby crews&#x27; sight from one to four tiles; hidden items remain hidden in role view.</li><li>Sort carried ore beside the powered sorter, then take it to the west depot. Materials are never respawned.</li><li>All six deposits finish naturally; tick 160 otherwise truncates. This source and its scripts are unexecuted.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Lantern Grid
+
+AUTHORED_NOT_EXECUTED. Original initial source attempt 00 for game-v3-00210. Requested author gpt-6-astra / max; provider measured identity, tokens and cost unknown.
+
+The quarry has a wall with a central lift gate and longer routes around its north/south ends. Six ore blocks start east of the wall; two cable segments and two replacement fuses are shared finite objects. Every actor carries at most one object. The lamp starts on, the lift starts disconnected, and the sorter starts off. Moving a material, installing a cable, repairing a fuse, sorting ore and depositing it update its original object&#x27;s holder/activity state.
+
+The three branch demands are 1/3/2 with a common trunk capacity of 4. Switching on both industrial branches can therefore destroy the lift fuse; losing the light instead preserves capacity but narrows other crews&#x27; observations. After a trip, remaining connected demands receive supply together only if total charge is sufficient. A crank adds six charge at the cost of one fuel, never overflowing twelve. Switching and generation affect the next interval; current movement and sorting use input-state power. The three-tick manual gate and outer perimeter routes exchange labor or travel time for electricity. Partners can respond by coordinating switch schedules, carrying spare parts, waiting, using manual bypass, or detouring. These are source-defined alternatives, not observed strategies.
+
+Interaction priority rotates with the clock. A branch interaction chooses the closest branch, with lowest-index distance ties. Pickup chooses lowest-index eligible material within one tile (not geometric nearest). A held item&#x27;s position follows its holder; consuming it leaves its final physical position but disables activity.
+
+## Native interface and source evidence
+
+A/O/U/H = (3, 167, 14, 160). Humans and policies choose the same ordered native integer actions. Any subset of the three roles can be assigned to humans by the shared platform; this package adds no separate browser transition or controller restriction. Legal masks are contextual affordances, not a proof that an interaction will find an object. Out-of-range or mask-false actions become wait. Eligible interactions resolve in rotating actor order (t + k) mod 3; ties among eligible objects use lowest native object index. Movement rejects destinations occupied at the start of the tick and duplicate destinations; swaps and following into a simultaneously vacated cell therefore wait.
+
+- candidate.py:L13-L36: reset.
+- candidate.py:L38-L44: visibility.
+- candidate.py:L46-L57: observe.
+- candidate.py:L59-L71: legal_actions.
+- candidate.py:L73-L142: advance.
+- candidate.py:L144-L146: raw_step.
+
+## Action legend
+
+- 0: Wait.
+- 1: Walk north.
+- 2: Walk east.
+- 3: Walk south.
+- 4: Walk west.
+- 5: Pick lowest-index eligible loose item within one tile; hands must be empty.
+- 6: Drop held item on current tile.
+- 7: Toggle closest branch switch within one tile.
+- 8: Crank generator within one tile: one fuel gives six charge if charge &lt;= 6.
+- 9: Install held cable at closest unwired branch within one tile.
+- 10: Repair closest blown branch with held fuse within one tile.
+- 11: Hold manual lift bypass open for three ticks from within one tile.
+- 12: Sort held ore beside powered sorter branch 2.
+- 13: Deliver sorted held ore beside depot.
+
+## Observations and scene
+
+The map, clock, terminal causes, fixed circuit/facility positions and all circuit/fuel/charge/bypass/delivery indicators are public. Each crew sees itself and agents/items within Manhattan radius 1; radius expands to 4 if it is within four tiles of the powered lamp. Visibility is recomputed after each transition. Hidden agent/item records are -1 with a separate visibility bit. Inventory is shown only on visible entities. No hidden object data appears in event channels. All state leaves and exact observation slices are in manifest.json. Every visible attribute is native state; scenes introduce no hidden policy data. Public event channels contain only intentionally public values. Debug/full-state inspection must be separate from role view. Use original muted quarry blocks, brass circuit indicators and blue ore crates. The wall, lift and circuit objects bind native grid cells; no imported commercial art.
+
+## End states, reward and invariants
+
+Every actor receives (new deposits) - 0.01 - 0.1 times the current overload flag per nonterminal step. No reward is paid again after termination. Natural completion when all six ore blocks have been delivered. Otherwise truncate at tick 160. Natural termination has priority on the cap step. Already done input is absorbing with unchanged state, observation and clock; rewards become zero and terminal causes persist. No raw autoreset occurs. The declared bounds and invariants are source obligations, not observed numerical results. Exactly six original ore objects, two cables and two fuses exist. A material is either active on the floor/carried or inactive after use/deposit. One holder per item and at most one item per actor are intended invariants; installed or delivered items are not picked up again. Charge remains 0..12 and fuel 0..9.
+
+## Hypotheses and provenance limits
+
+Two literal scripts and one single actor/action paired intervention are supplied in playthrough.json; suffix lengths follow the implemented timers or locations. All have UNEXECUTED_AUTHOR_HYPOTHESIS status, and the seed is literal rather than searched. They do not certify legal trajectories, solvability or mechanism success. Prospective tests could vary fuel allocation, starting branch connectivity, item placement or partner switching policies under a separately frozen future design; none has been run. This source does not establish compatibility, numerical parity, strategic richness, learning, generalization or transfer.
+
+The actual allowed-input inventory, full-byte hashes and excerpt extents are frozen in author_input_freeze.json. Current scope overrides historical IDs in copied generic requirements. Four supplied official README excerpts provided API context: JaxMARL parallel dictionaries, Pgx explicit-key/terminal concepts, Craftax spatial world/interface context, PureJaxRL single-file implementation philosophy. No benchmark implementation, layout, upstream code or assets were copied; the supplied PPO implementation was not read. Static author checks parse data/AST only and import only supplied trusted stdlib validators. Candidate/JAX/NumPy import, native calls, numerical replay, rendering, training, seed search and network/model calls were not performed.
+
+## Literal rule evidence
+
+candidate.py:L41: radius = jnp.where(lit, 4, 1)
+
+candidate.py:L124: overload = jnp.sum(demand)&gt;4
+
+candidate.py:L131: n[&#x27;charge&#x27;] = n[&#x27;charge&#x27;]-jnp.where(supplied,jnp.sum(demand,dtype=jnp.int32),0)
+
+candidate.py:L108: cable = (a==9)&amp;near&amp;has&amp;(n[&#x27;kind&#x27;][h]==1)&amp;~n[&#x27;wired&#x27;][b]
+
+candidate.py:L115: hand = (a==11)&amp;(jnp.sum(jnp.abs(p-jnp.array([4,3],jnp.int32)))&lt;=1)
+
+candidate.py:L117: sort = (a==12)&amp;has&amp;(n[&#x27;kind&#x27;][h]==0)&amp;s[&#x27;powered&#x27;][2]&amp;(jnp.sum(jnp.abs(p-n[&#x27;branch_pos&#x27;][2]))&lt;=1)
+
+candidate.py:L119: deliver = (a==13)&amp;has&amp;(n[&#x27;kind&#x27;][h]==0)&amp;n[&#x27;sorted&#x27;][h]&amp;(jnp.sum(jnp.abs(p-n[&#x27;plant_pos&#x27;][1]))&lt;=1)
+
+candidate.py:L145: n,r = jax.lax.cond(state[&#x27;done&#x27;],lambda _: (state,jnp.zeros((3,),jnp.float32)),lambda _: self.advance(state,actions),operand=None)
+
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Walk north</span></div><div class="action"><b>2</b><span>Walk east</span></div><div class="action"><b>3</b><span>Walk south</span></div><div class="action"><b>4</b><span>Walk west</span></div><div class="action"><b>5</b><span>Pick lowest-index eligible loose item within one tile; hands must be empty</span></div><div class="action"><b>6</b><span>Drop held item on current tile</span></div><div class="action"><b>7</b><span>Toggle closest branch switch within one tile</span></div><div class="action"><b>8</b><span>Crank generator within one tile: one fuel gives six charge if charge &lt;= 6</span></div><div class="action"><b>9</b><span>Install held cable at closest unwired branch within one tile</span></div><div class="action"><b>10</b><span>Repair closest blown branch with held fuse within one tile</span></div><div class="action"><b>11</b><span>Hold manual lift bypass open for three ticks from within one tile</span></div><div class="action"><b>12</b><span>Sort held ore beside powered sorter branch 2</span></div><div class="action"><b>13</b><span>Deliver sorted held ore beside depot</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> West grid keeper; all native actions available</p><p><b>agent_1</b> Central cable runner; all native actions available</p><p><b>agent_2</b> East ore sorter; all native actions available</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;t; native state, row-major order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;done; native state, row-major order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;terminated; native state, row-major order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;truncated; native state, row-major order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      67
+    ],
+    &quot;meaning&quot;: &quot;terrain; native state, row-major order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      67,
+      73
+    ],
+    &quot;meaning&quot;: &quot;Public circuit positions in index order lamp, lift, sorter; x,y&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      73,
+      76
+    ],
+    &quot;meaning&quot;: &quot;Three public switch demands&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      76,
+      79
+    ],
+    &quot;meaning&quot;: &quot;Three public cable installed flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      79,
+      82
+    ],
+    &quot;meaning&quot;: &quot;Three public fuse integrity flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      82,
+      85
+    ],
+    &quot;meaning&quot;: &quot;Three public current supply flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      85,
+      89
+    ],
+    &quot;meaning&quot;: &quot;Public generator then depot positions; x,y&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      89,
+      90
+    ],
+    &quot;meaning&quot;: &quot;Remaining shared generator fuel units, 0..9&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      90,
+      91
+    ],
+    &quot;meaning&quot;: &quot;Capacitor stored charge, 0..12&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      91,
+      92
+    ],
+    &quot;meaning&quot;: &quot;Manual gate bypass ticks remaining, 0..3&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      92,
+      93
+    ],
+    &quot;meaning&quot;: &quot;Sorted ore already deposited, 0..6&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      93,
+      94
+    ],
+    &quot;meaning&quot;: &quot;Cumulative trunk overload count; at most t&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      94,
+      95
+    ],
+    &quot;meaning&quot;: &quot;Own immutable actor index, 0..2&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      95,
+      107
+    ],
+    &quot;meaning&quot;: &quot;Three records: visible, x, y, held item index; hidden values -1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      107,
+      167
+    ],
+    &quot;meaning&quot;: &quot;Ten item records: visible, x, y, kind, holder, sorted; hidden values -1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;workers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Held item index; -1 empty&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;circuits&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;branch_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;branch_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;branch_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;branch_on&quot;
+        ],
+        &quot;meaning&quot;: &quot;Switch requested on&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wired&quot;
+        ],
+        &quot;meaning&quot;: &quot;Installed cable connection&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fuse&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fuse intact&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;powered&quot;
+        ],
+        &quot;meaning&quot;: &quot;Supply available this interval&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;facilities&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;plant_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;plant_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;plant_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;materials&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 10,
+    &quot;position&quot;: [
+      &quot;item_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;item_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;item_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 ore, 1 cable, 2 fuse&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;holder&quot;
+        ],
+        &quot;meaning&quot;: &quot;-1 ground, &gt;=0 actor, -2 consumed, -3 delivered&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sorted&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ore sorted&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi210&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;be6bf2ba2aaccce15d7be4c910873bebcee93b51b5b010b62ad910216b91617c&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 167,
+    &quot;num_actions&quot;: 14,
+    &quot;max_steps&quot;: 160
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.4191546440124512
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.133713722229004
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.0093498229980469
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.08613848686218262
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.1592087745666504
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0011425018310546875
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1466064453125
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.5050771236419678
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.0164844989776611
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7392914295196533
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 8.619964838027954,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 160,
+  &quot;scripted_random_returns&quot;: [
+    -1.5999999642372131,
+    -1.5999999642372131,
+    -1.5999999642372131
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 28,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 210,
+  &quot;key&quot;: &quot;gi210&quot;,
+  &quot;title&quot;: &quot;灯网工坊 · Lantern Grid&quot;,
+  &quot;summary&quot;: &quot;管理照明、升降与分拣电路，交六份有限原矿。&quot;,
+  &quot;tags&quot;: [
+    &quot;方块工程&quot;,
+    &quot;3角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 167,
+    &quot;num_actions&quot;: 14,
+    &quot;max_steps&quot;: 160
+  },
+  &quot;source_sha256&quot;: &quot;be6bf2ba2aaccce15d7be4c910873bebcee93b51b5b010b62ad910216b91617c&quot;,
+  &quot;manifest_sha256&quot;: &quot;d645bf382e21961a5f913625af7f132c7323ad4d8055f2332f5ca87cb959cba3&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;be6bf2ba2aaccce15d7be4c910873bebcee93b51b5b010b62ad910216b91617c&quot;,
+      &quot;bytes&quot;: 9166,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00210/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;d645bf382e21961a5f913625af7f132c7323ad4d8055f2332f5ca87cb959cba3&quot;,
+      &quot;bytes&quot;: 14513,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00210/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;f6a95fc502f072363f032b56601aad41632058d87e4acf06d6333e95681b3750&quot;,
+      &quot;bytes&quot;: 8341,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00210/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;73abb17b8a76beaf153ee248586f31c689725010313acecdb90dee637c942be4&quot;,
+      &quot;bytes&quot;: 7377,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00210/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;b0f6a599cae11f0beb2fca99b78b6e51ea766df5aa12d297f2274d4c622b4138&quot;,
+      &quot;bytes&quot;: 3512,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00210/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi210">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

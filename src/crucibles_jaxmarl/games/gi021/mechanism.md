@@ -1,0 +1,15 @@
+# Transportable work with separated ownership and processing fees
+
+Candidate: astra-d2-00021. This is a parentless source proposal with no supplied predecessor, score, or feedback.
+
+The queue is a two-by-two matrix: rows denote processing stations and columns denote the owner of the work. Each agent controls one station. Action 0 rests, restoring energy faster. Action 1 injects one unit of locally owned work. Action 2 processes a fraction of the station's current mixed queue, with throughput determined by persistent machine condition. Action 3 dispatches up to one unit of the local mixture to the other station. Action 4 repairs machine condition. Non-rest actions require enough energy, and processing and routing additionally require a nonempty queue.
+
+Processing preserves the distinction between station and owner: the processor receives a fee, while each owner receives a dividend proportional to its work completed at either station. Thus routing changes who can supply the processing action and who can earn the processing fee. An agent can help or defer the other agent's income by processing or retaining its work. Injection and routing also compete for finite station capacity, so one agent's deliveries can cause losses attributed to the owner of the discarded work.
+
+A newly dispatched mixture enters a far pipeline, moves to a near pipeline one transition later, and joins the destination queue another transition later. Arriving work cannot be processed until a subsequent action because processing uses the previous queue. Every storage or transport stage loses 1.5 percent of its mass. Station queue capacity is four units, with proportional loss across owners on overflow. Machine wear and energy consumption persist, creating delayed tradeoffs between throughput, maintenance, rest and outsourcing.
+
+Both agents see the ownership composition of both current queues, but transit observations expose total mass only. The transit ownership mixture remains part of the latent state. The sixteen columns are time fraction, role sign, own-owned work at own station, other-owned work at own station, own-owned work at the other station, other-owned work at the other station, own and other near-pipeline totals, own and other far-pipeline totals, own and other energy, own and other machine condition, and own and other last reward. Queue entries are divided by four.
+
+Utility combines an owner dividend of 0.6 per completed unit, a station fee of 0.2 per processed unit, action costs for injection, routing and maintenance, and owner-attributed spoilage costs. Reward is tanh of this finite utility, bounding each reward in [-1, 1] without changing its sign. The source retains the terminal state and terminates both agents at transition 32.
+
+This draws on generic queueing, production-network and outsourcing mechanisms. The proposed causal feature is that delayed movable work keeps its ownership claim while its processing location and service controller change. This is an intended mechanism description, not evidence of novelty, operational eligibility, compilation or learning benefit. No candidate code has been executed by the author.

@@ -1,0 +1,283 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "dd21f93f71a3b24167e86e3dc1098b05bc286ee88e0cb5c489b32f83427dd360",
+  "manifest_sha256": "415e8890239aa517c90f5df84bb51a68c9fba663128d47b3274ad5472dd82068",
+  "title": "Freight canal locks and shared water",
+  "rules": [
+    "Left basin is low and right basin is high. Each lock chamber has a low gate, a high gate and a level from zero to two.",
+    "Only two water units exist across both chambers and the shared reservoir. Filling, draining and inter-chamber transfer conserve their sum.",
+    "A boat may command a lane while at x=3 through 7 on its lock row, including the chamber and gate approaches.",
+    "One command wins per lane by rotating boat priority; lane processing order alternates to settle shared-reservoir conflicts.",
+    "Closed gates permit pumping. A low gate opens only at level zero; a high gate opens only at level two.",
+    "Boats occupy cells. The rotating move order permits following an already vacated cell but blocks occupied destinations and direct swaps.",
+    "Each own delivery gives six reward units and each team delivery gives every boat one; waiting and pump attempts incur costs.",
+    "No executed convoy, numerical conservation trace or learning result is claimed by this author package."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      10.5,
+      4.5
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Navigable basin or lock chamber",
+          "color": "#A9D6E5"
+        },
+        {
+          "value": 1,
+          "meaning": "Bank or median, not navigable",
+          "color": "#6B705C"
+        },
+        {
+          "value": 2,
+          "meaning": "Destination dock",
+          "color": "#95D5B2"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "boats",
+      "glyph": "agent",
+      "label": "Freight boats",
+      "color": "#5DADE2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "Undelivered freight units on this boat"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Whether this boat has completed its delivery"
+        }
+      ]
+    },
+    {
+      "id": "chambers",
+      "glyph": "water",
+      "label": "Lock chambers",
+      "color": "#489FB5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "level"
+          ],
+          "label": "Chamber water level: zero low, two high"
+        },
+        {
+          "state_path": [
+            "flow"
+          ],
+          "label": "Net chamber water change on the last transition"
+        },
+        {
+          "state_path": [
+            "last_operator"
+          ],
+          "label": "Chosen command issuer, minus one means none"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Low and high lock gates",
+      "color": "#E0A458",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Passable gate state: low and high gate per chamber"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "glyph": "flag",
+      "label": "Boat-specific destinations",
+      "color": "#8BC34A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "dock_served"
+          ],
+          "label": "Destination delivery completed"
+        }
+      ]
+    },
+    {
+      "id": "shared_reservoir",
+      "glyph": "water",
+      "label": "Shared reservoir",
+      "color": "#2D82B7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Available shared water units"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivery_count"
+      ],
+      "meaning": "Completed freight deliveries",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "flow"
+      ],
+      "meaning": "Net signed chamber water transfer during this transition, not a cumulative level",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Open nearby low-side gate if chamber is low"
+    },
+    {
+      "id": 6,
+      "label": "Open nearby high-side gate if chamber is high"
+    },
+    {
+      "id": 7,
+      "label": "Close both gates of nearby chamber"
+    },
+    {
+      "id": 8,
+      "label": "Fill nearby closed chamber by one reservoir unit"
+    },
+    {
+      "id": 9,
+      "label": "Drain one chamber unit back to the reservoir"
+    },
+    {
+      "id": 10,
+      "label": "Transfer one unit from this closed chamber to the other closed chamber"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self boat identity one-hot; destination uses the same index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Elapsed ticks divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        59
+      ],
+      "meaning": "Row-major public terrain divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        71
+      ],
+      "meaning": "Three boat records: x/10,y/10,cargo,delivered; completed boats are inactive but their delivered position remains known",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        85
+      ],
+      "meaning": "Two chamber records: x/10,y/10,level/2,low gate open,high gate open,net flow/2,(chosen operator+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        94
+      ],
+      "meaning": "Three destination records: x/10,y/10,served",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "Shared reservoir record: x/10,y/10,stock/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        100
+      ],
+      "meaning": "One-hot first boat in the next rotating arbitration order",
+      "visibility": "public"
+    }
+  ]
+}

@@ -1,0 +1,783 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00093",
+  "source_sha256": "27b76e957066e5558ac1617ceaf024d154cc42b45f8a5642f46197e6d74a90d2",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 224,
+  "num_actions": 11,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Northern hauler and builder; own cart goal is (8,1)"
+    },
+    {
+      "id": "agent_1",
+      "role": "Central hauler and builder; own cart goal is (8,3)"
+    },
+    {
+      "id": "agent_2",
+      "role": "Southern hauler and builder; own cart goal is (8,5)"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north attempt; face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east attempt; face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south attempt; face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west attempt; face west"
+    },
+    {
+      "id": 5,
+      "label": "Build front bridge for two wood, or repair it for one"
+    },
+    {
+      "id": 6,
+      "label": "Pick up or set down own cart at current position"
+    },
+    {
+      "id": 7,
+      "label": "Give one wood to adjacent teammate with capacity"
+    },
+    {
+      "id": 8,
+      "label": "Draw one wood from a nearby finite depot"
+    },
+    {
+      "id": 9,
+      "label": "Salvage own unoccupied front bridge; recover at most one wood"
+    },
+    {
+      "id": 10,
+      "label": "Release front bridge ownership; waive its future toll"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wood"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "credits"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carried"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_pos"
+      ],
+      "shape": [
+        21,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_active"
+      ],
+      "shape": [
+        21
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_visible"
+      ],
+      "shape": [
+        3,
+        21
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "durability"
+      ],
+      "shape": [
+        21
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_owner"
+      ],
+      "shape": [
+        21
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pending"
+      ],
+      "shape": [
+        21
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "supply"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "events"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable riverbank",
+          "color": "#6F7754"
+        },
+        {
+          "value": 1,
+          "meaning": "River: entry needs an actual live bridge",
+          "color": "#326F94"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "haulers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "wood"
+          ],
+          "meaning": "Carried construction material, capacity six",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "Direction 1 north, 2 east, 3 south, 4 west",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "credits"
+          ],
+          "meaning": "Cumulative net toll units, each unit is reward 1/32",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "carried"
+          ],
+          "meaning": "Currently carrying own cart",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "kind": "gate",
+      "count": 21,
+      "position": [
+        "bridge_pos"
+      ],
+      "active": [
+        "bridge_active"
+      ],
+      "visibility": [
+        "bridge_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "durability"
+          ],
+          "meaning": "Remaining crossing durability, zero to four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "bridge_owner"
+          ],
+          "meaning": "Toll recipient role, -1 for public/unowned",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pending"
+          ],
+          "meaning": "Zero-strength occupied remnant: allows current occupant to leave, blocks entry",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "carts",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "meaning": "Role permitted to carry this cart",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carried"
+          ],
+          "meaning": "Whether owner is carrying this cart",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Whether cart has reached its matching goal",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "supply"
+          ],
+          "meaning": "Finite material remaining; accessible to any nearby role",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "goal_owner"
+          ],
+          "meaning": "Role whose cart belongs at this goal",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices 0 to 6: new bridge built, bridge repaired, wood transferred, bridge salvaged, toll waived, a toll paid, a cart delivered; flags refer to the most recent nonterminal transition.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "All hauler xy positions divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Carried wood divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Facing action IDs divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Cumulative net toll units divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        21
+      ],
+      "meaning": "Own-cart carrying flags for all haulers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        84
+      ],
+      "meaning": "Public terrain flattened yx; zero bank, one river",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        126
+      ],
+      "meaning": "All potential bridge cell positions flattened xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        147
+      ],
+      "meaning": "Bridge durability divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        168
+      ],
+      "meaning": "Bridge owner plus one divided by 4; zero is public/unowned",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        189
+      ],
+      "meaning": "Occupied zero-strength remnant flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        189,
+        195
+      ],
+      "meaning": "Actual cart positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        198
+      ],
+      "meaning": "Cart delivery flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        198,
+        204
+      ],
+      "meaning": "Depot positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        204,
+        207
+      ],
+      "meaning": "Finite depot supplies divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        213
+      ],
+      "meaning": "Matching goal positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        213,
+        214
+      ],
+      "meaning": "Clock divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        214,
+        221
+      ],
+      "meaning": "Last-step flags: build, repair, transfer, salvage, waive, toll, delivery",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        221,
+        224
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Move each role's actual cart from the western bank to its matching eastern goal, while deciding whether to pool construction resources, share bridges, maintain access or pursue toll income.",
+    "natural_termination": "All three carts delivered ends naturally. A cart delivery rewards its owner +1 and each other role +0.25. A crossing of another role's owned bridge transfers 1/32 reward from traveler to owner. Otherwise truncate at step 128.",
+    "interaction": "Any role may use a live bridge. Entering wears it by one, or two when hauling a cart; depleted occupied remnants permit departure but block new entry. Ownership allocates real payoff transfers, while maintenance, public access, shared depots and material handoffs change others' later route opportunities.",
+    "observation_access": "All terrain, bridge states and ownership, cargo positions, worker resources, depot stock and goal identities are public. Entity visibility is true for all roles. Public observation contains the entire dynamic infrastructure state and net toll ledgers."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "wood"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "durability"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "supply"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}
+

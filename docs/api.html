@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Api · Crucibles JAXMARL</title><link rel="stylesheet" href="style.css"></head><body><header><a href="index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="guide.html">Install & play</a><a href="api.html">API</a><a href="verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">API / PURE FUNCTIONS / EXPLICIT KEYS</p><h1>A training contract<br>you can compose.</h1><p class="lead">Original array kernels are wrapped with agent-keyed observations, actions, rewards and done dictionaries. The API follows the JaxMARL convention without modifying or registering into the upstream project.</p><section><h2>Reset and one transition</h2><pre>import jax
+from crucibles_jaxmarl import make, registered_envs
+
+env = make("gi072")  # integers and game-v3-00072 also work
+key = jax.random.PRNGKey(0)
+key, reset_key, action_key, step_key = jax.random.split(key, 4)
+obs, state = env.reset(reset_key)
+actions = env.sample_actions(action_key, state)  # legal sampling
+obs, state, rewards, dones, info = env.step_env(step_key, state, actions)
+assert set(obs) == set(env.agents)
+done = dones["__all__"]</pre><p>Every agent supplies a command simultaneously. Actions are scalar int32 and masks have shape <code>(num_actions,)</code> for each role. The original kernel controls masked-command behavior, ordering, contention, per-agent rewards and terminal conditions. The interactive server rejects illegal inputs before invoking the kernel.</p></section>
+<section><h2>Terminal semantics</h2><p><code>step_env</code> returns original terminal observations and state without resetting. <code>step</code> splits the supplied key into transition and reset keys and performs terminal-triggered outer autoreset. It retains terminal data as <code>info['raw_state']</code> and <code>info['raw_observation']</code>. An optional <code>reset_state</code> supplies the autoreset state. Spatial kernels declare raw absorbing terminals; early abstract kernels retain their original historical behavior, which is separately documented.</p><pre>obs, state, rewards, dones, info = env.step(key, state, actions)
+# Observe the terminal state even when state has been reset:
+terminal_state = info["raw_state"]</pre></section>
+<section><h2>JIT, batches and scans</h2><pre>reset = jax.jit(env.reset)
+step = jax.jit(env.step)
+batch_keys = jax.random.split(key, 16)
+batch_obs, batch_state = jax.jit(jax.vmap(env.reset))(batch_keys)
+batch_actions = jax.vmap(env.sample_actions)(batch_keys, batch_state)
+batch_obs, batch_state, r, d, info = jax.jit(jax.vmap(env.step))(
+    batch_keys, batch_state, batch_actions)
+
+def rollout(carry, _):
+    key, state = carry
+    key, ak, sk = jax.random.split(key, 3)
+    actions = env.sample_actions(ak, state)
+    obs, state, rewards, dones, info = env.step(sk, state, actions)
+    return (key, state), (rewards, dones)
+
+(_, final_state), trajectory = jax.jit(
+    lambda k, s: jax.lax.scan(rollout, (k, s), None, length=128)
+)(key, state)</pre><p>Batch and horizon sizes above are usage examples, not substitutions for a game's original verification horizon. Batch the same environment identity and shape with vmap. Different game shapes require grouping or an explicit padded learner; the library does not silently shrink maps, agent populations or observations. The pure state tree and explicit keys support recurrent, context-conditioned and meta-RL pipelines; no DiscoRL compatibility, differentiability of discrete game dynamics, convergence or transfer result is claimed.</p></section>
+<section><h2>Spaces and native arrays</h2><pre>env.agents
+env.agent_classes
+env.num_agents, env.observation_size, env.num_actions, env.max_steps
+env.action_space("agent_0").sample(key)
+env.observation_space("agent_0").contains(obs["agent_0"])
+env.get_avail_actions(state)  # dict of boolean masks
+env.get_obs(state)           # dict of native observation rows
+env.observe(state)           # original [A, O] observation array
+env.legal_actions(state)     # original [A, U] masks
+env.raw_step(key, state, action_array)  # original array contract
+env.manifest                # task, role, observation and world metadata
+env.metadata                # release identity and source hashes</pre><p>Training never consumes the browser render projection. Render callbacks use host-side NumPy/Pillow and are deliberately outside the JAX-compiled training path. Installation verifies source and manifest hashes before loading a kernel. Game modules depend only on the bundled source and their installed numerical dependencies.</p></section><section><h2>Upstream reference</h2><p>The facade follows the <a href="https://jaxmarl.foersterlab.com/api/multi_agent_env/">official JaxMARL MultiAgentEnv API</a>. Installation and documentation organization were reviewed against <a href="https://github.com/bold-lab-ai/JaxMARL">JaxMARL</a> and its <a href="https://jaxmarl.foersterlab.com/">documentation</a>. This independent library is not an upstream certification or benchmark result.</p></section></main>
+<footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

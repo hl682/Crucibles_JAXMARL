@@ -1,0 +1,934 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00202",
+  "source_sha256": "0c742fac8207748d82eb6f7029ace9f48b95e4b62d77e2422cbe5b8cc5adec40",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 182,
+  "num_actions": 13,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 160,
+  "reward_low": -4,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West winch operator; all shared actions available"
+    },
+    {
+      "id": "agent_1",
+      "role": "East winch operator; all shared actions available"
+    },
+    {
+      "id": "agent_2",
+      "role": "Guide and rigger; all shared actions available"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up lowest-ID loose crate within one cell"
+    },
+    {
+      "id": 6,
+      "label": "Pick up lowest-ID unheld counterweight within one cell"
+    },
+    {
+      "id": 7,
+      "label": "Drop held object at own cell"
+    },
+    {
+      "id": 8,
+      "label": "Winch local end north one row"
+    },
+    {
+      "id": 9,
+      "label": "Winch local end south one row"
+    },
+    {
+      "id": 10,
+      "label": "Brace nearby beam for this joint step"
+    },
+    {
+      "id": 11,
+      "label": "Load carried crate at beam centre"
+    },
+    {
+      "id": 12,
+      "label": "Mount carried counterweight at local winch"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "failure"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "held_kind"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "held_id"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "work"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ends"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tension"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "braced"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beam_pos"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beam_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beam_vis"
+      ],
+      "shape": [
+        3,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pad_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pad_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pad_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "weight_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "weight_holder"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "weight_mount"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "weight_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "weight_vis"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_status"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_holder"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shipment"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dropped"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "jam"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Workshop floor; walking blocked only by workers and actual beam cells",
+          "color": "#C5B9A0"
+        },
+        {
+          "value": 1,
+          "meaning": "Crane rail; traversal follows actual beam occupancy",
+          "color": "#5B646A"
+        },
+        {
+          "value": 2,
+          "meaning": "Original loose-crate loading row marker",
+          "color": "#BD9C66"
+        },
+        {
+          "value": 3,
+          "meaning": "Delivery row marker; beam must be level at row seven",
+          "color": "#76A58C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "held_kind"
+          ],
+          "meaning": "Carry kind: 0 empty, 1 crate, 2 counterweight",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "held_id"
+          ],
+          "meaning": "Carried object ID; -1 empty",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "meaning": "Cumulative non-wait actions after mask coercion",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "meaning": "Invalid request or lost walking contention this step",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "beam",
+      "kind": "object",
+      "count": 5,
+      "position": [
+        "beam_pos"
+      ],
+      "active": [
+        "beam_active"
+      ],
+      "visibility": [
+        "beam_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "pad",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "pad_pos"
+      ],
+      "active": [
+        "pad_active"
+      ],
+      "visibility": [
+        "pad_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "ends"
+          ],
+          "meaning": "Current rail row controlled by this winch",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "weight",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "weight_pos"
+      ],
+      "active": [
+        "weight_active"
+      ],
+      "visibility": [
+        "weight_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "weight_holder"
+          ],
+          "meaning": "Worker holding weight; -1 unheld",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "weight_mount"
+          ],
+          "meaning": "Mounted end: -1 loose or carried, 0 west, 1 east",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_status"
+          ],
+          "meaning": "0 floor, 1 carried, 2 beam, 3 delivered, 4 lost",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo_holder"
+          ],
+          "meaning": "Carrier; -1 not carried",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "meaning": "Owner receiving shipment bonus",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "shipment"
+      ],
+      "meaning": "Per-crate delivery on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Per-crate slipping or breakage on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "jam"
+      ],
+      "meaning": "Requested beam motion cancelled by worker occupancy",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative delivered count for each tagged crate",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "tension"
+      ],
+      "meaning": "Current accumulated beam tension, zero to eight",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "braced"
+      ],
+      "meaning": "A nearby free-handed worker braced on this step",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Public t, done, terminated, truncated, success, failure, tension, braced, jam in that order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        108
+      ],
+      "meaning": "Public map flattened y then x; nine rows by eleven columns",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        114
+      ],
+      "meaning": "All worker coordinates, agent order, interleaved x/y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        117
+      ],
+      "meaning": "held_kind per worker: 0 empty, 1 crate, 2 counterweight",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        120
+      ],
+      "meaning": "held_id per worker; -1 empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        123
+      ],
+      "meaning": "Cumulative work per worker",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        126
+      ],
+      "meaning": "Invalid request or walking-contention blocked flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        136
+      ],
+      "meaning": "Five actual beam cell coordinates, west to east",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        138
+      ],
+      "meaning": "West/east endpoint rows",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        142
+      ],
+      "meaning": "West/east local control positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        150
+      ],
+      "meaning": "Four physical counterweight positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        154
+      ],
+      "meaning": "Counterweight holder IDs, -1 unheld",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        158
+      ],
+      "meaning": "Counterweight mounted end IDs, -1 not mounted",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        164
+      ],
+      "meaning": "Three crate positions; last position retained after deactivation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        167
+      ],
+      "meaning": "Crate statuses 0 floor, 1 carried, 2 loaded, 3 delivered, 4 lost",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        167,
+        170
+      ],
+      "meaning": "Crate holder IDs, -1 unheld",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        170,
+        173
+      ],
+      "meaning": "Crate owner IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        173,
+        176
+      ],
+      "meaning": "Cumulative shipment ledger by crate",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        176,
+        179
+      ],
+      "meaning": "Per-step shipment flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        179,
+        182
+      ],
+      "meaning": "Per-step slip or breakage flags",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver all three tagged crates by loading the beam and bringing both ends to row seven.",
+    "natural_termination": "Success when all three crate statuses equal delivered. Failure when any crate is lost or beam tension reaches eight, unless success. Otherwise cap at 160 nonterminal transitions.",
+    "interaction": "One worker's winch request changes beam tilt, occupied cells, partner control positions and cargo risk. Carrying or removing shared counterweights changes peer lift feasibility; nearby bracing can substitute for weight support and reduce tension at an individual work cost.",
+    "observation_access": "Fully observable workshop: every policy row contains the same public fields. Agent, beam, winch and weight groups are visible to all; delivered/lost crates deactivate but their ledger and final coordinates remain public. No hidden scene-only event information."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 160
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ends"
+      ],
+      "low": 1,
+      "high": 7
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tension"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "weight_mount"
+      ],
+      "low": -1,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "weight_holder"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cargo_status"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cargo_holder"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "held_kind"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "held_id"
+      ],
+      "low": -1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "delivered"
+      ],
+      "low": 0,
+      "high": 1
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

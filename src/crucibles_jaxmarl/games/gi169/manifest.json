@@ -1,0 +1,851 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00169",
+  "source_sha256": "07ba52771b39560e4c187a9d82f4f79f3ba6a6a8dcfd55a0019008e14d08f721",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 79,
+  "num_actions": 10,
+  "max_steps": 64,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 64,
+  "reward_low": -20,
+  "reward_high": 20,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Controlled cargo carrier 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "Controlled cargo carrier 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "Controlled cargo carrier 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Buy three-tick self-protection for two coins"
+    },
+    {
+      "id": 6,
+      "label": "Repair nearby injured peer, otherwise own cargo, for one coin"
+    },
+    {
+      "id": 7,
+      "label": "Offer cover to nearest active peer within two cells"
+    },
+    {
+      "id": 8,
+      "label": "Accept an input-state nearby cover offer and reserve two coins from each member"
+    },
+    {
+      "id": 9,
+      "label": "Escort nearest adjacent peer this tick for one coin"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cash"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "escrow"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "partner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pact_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shield"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_to"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "escort_to"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "failed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_phase"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "damage"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "settlement_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "repair_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "offer_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "accept_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable cargo ground; hazards are native separate entities",
+          "color": "#e2e8f0"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "carriers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cash"
+          ],
+          "meaning": "Spendable coins",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "escrow"
+          ],
+          "meaning": "Reserved collateral",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "partner"
+          ],
+          "meaning": "Cover partner index or -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pact_ttl"
+          ],
+          "meaning": "Cover ticks remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "offer_to"
+          ],
+          "meaning": "Offer recipient index or -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_ttl"
+          ],
+          "meaning": "Offer ticks remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "escort_to"
+          ],
+          "meaning": "Escorted recipient this tick or -1",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Cargo health",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "shield"
+          ],
+          "meaning": "Self-protection ticks remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "hazards",
+      "kind": "hazard",
+      "count": 3,
+      "position": [
+        "hazard_pos"
+      ],
+      "active": [
+        "hazard_active"
+      ],
+      "visibility": [
+        "hazard_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "hazard_phase"
+          ],
+          "meaning": "Public periodic hazard phase",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "damage"
+      ],
+      "meaning": "Damage applied at native active hazard cell",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Cargo reached its own destination intact",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "settlement_event"
+      ],
+      "meaning": "Reserved collateral settled and pact ended",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "repair_event"
+      ],
+      "meaning": "Cargo received one health repair",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "offer_event"
+      ],
+      "meaning": "Spatial cover offer created",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "accept_event"
+      ],
+      "meaning": "Offered cover accepted and collateral locked",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own identity one-hot; all actual game state below is public.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "Cargo-agent x,y pairs.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Cargo health 0..3.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Spendable cash, excluding reserved collateral.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Reserved collateral 0 or 2.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        21
+      ],
+      "meaning": "Pact partner index or -1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "Pact lifetime remaining.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "meaning": "Protection lifetime remaining.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        30
+      ],
+      "meaning": "Delivered cargo flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        33
+      ],
+      "meaning": "Destroyed cargo flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        36
+      ],
+      "meaning": "Offer recipient index or -1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        39
+      ],
+      "meaning": "Offer lifetime remaining.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        42
+      ],
+      "meaning": "Current-tick escorted recipient index or -1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        48
+      ],
+      "meaning": "Per-agent delivery goal x,y pairs.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        54
+      ],
+      "meaning": "Hazard-cell x,y pairs.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        57
+      ],
+      "meaning": "Hazard active flags at current phase.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        60
+      ],
+      "meaning": "Hazard phases (t+lane)%4; phases zero and one are active.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        61
+      ],
+      "meaning": "Elapsed decision ticks.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        61,
+        64
+      ],
+      "meaning": "Cargo damage in last transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        67
+      ],
+      "meaning": "Deliveries in last transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        70
+      ],
+      "meaning": "Pact settlement flags in last transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        73
+      ],
+      "meaning": "Repair received flags in last transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        76
+      ],
+      "meaning": "Offers made in last transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "Acceptance action succeeded flags in last transition.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Move finite cargo to own destination while choosing cash expenditure, safer spatial routes, protection, escort, repairs and credible collateralized cover.",
+    "natural_termination": "Natural completion when every cargo is delivered or destroyed. Each cargo outcome is retained separately; joint termination need not mean success. H=64 otherwise; unexpired pacts at truncation remain recorded with collateral locked.",
+    "interaction": "Nearby offers require peer acceptance and reserve actual coins from both agents. Later spatial hazard damage transfers the pooled collateral, delivery/expiry refunds it, escort reduces peer damage, and a nearby repair spends actor cash on peer cargo.",
+    "observation_access": "Fully observable native map, positions, hazards/phases, health, cash, offers, pacts, timers, delivery/destruction status and events. There is no hidden risk state in this design. Role-specific masks still suppress inactive entity drawing; their final positions/outcomes are observed."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cash"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "escrow"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pact_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "shield"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "offer_ttl"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

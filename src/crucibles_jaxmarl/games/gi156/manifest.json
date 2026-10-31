@@ -1,0 +1,739 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00156",
+  "source_sha256": "54c4ac626a7aeaf416e5b2d2ae88649299ecaa06d9b66f37102c8d076a368c75",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 159,
+  "num_actions": 15,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 128,
+  "reward_low": -0.01,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Interchangeable traveler 0; starts at north load handle"
+    },
+    {
+      "id": "agent_1",
+      "role": "Interchangeable traveler 1; starts at south load handle"
+    },
+    {
+      "id": "agent_2",
+      "role": "Interchangeable traveler 2; starts near the movable windbreak"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Rest; gain two energy only inside current windbreak shadow"
+    },
+    {
+      "id": 1,
+      "label": "Move north or request synchronized northward haul"
+    },
+    {
+      "id": 2,
+      "label": "Move east or request synchronized eastward haul"
+    },
+    {
+      "id": 3,
+      "label": "Move south or request synchronized southward haul"
+    },
+    {
+      "id": 4,
+      "label": "Move west or request synchronized westward haul"
+    },
+    {
+      "id": 5,
+      "label": "Attach to a north/south load handle, or release"
+    },
+    {
+      "id": 6,
+      "label": "Shift adjacent windbreak north, spending two energy"
+    },
+    {
+      "id": 7,
+      "label": "Shift adjacent windbreak east, spending two energy"
+    },
+    {
+      "id": 8,
+      "label": "Shift adjacent windbreak south, spending two energy"
+    },
+    {
+      "id": 9,
+      "label": "Shift adjacent windbreak west, spending two energy"
+    },
+    {
+      "id": 10,
+      "label": "Drink one water to restore up to four energy"
+    },
+    {
+      "id": 11,
+      "label": "Give one water to adjacent agent 0"
+    },
+    {
+      "id": 12,
+      "label": "Give one water to adjacent agent 1"
+    },
+    {
+      "id": 13,
+      "label": "Give one water to adjacent agent 2"
+    },
+    {
+      "id": 14,
+      "label": "Fill one water from nearest adjacent finite well"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_used"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "load_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shelter_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wind_dir"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "load_grips"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wind_strength"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "well_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "well_stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "haul_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grip"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "sheltered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "load_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "load_sheltered"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "load_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "well_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "well_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Desert path",
+          "color": "#D7D8CE"
+        },
+        {
+          "value": 1,
+          "meaning": "Boundary or central ridge obstruction",
+          "color": "#394751"
+        },
+        {
+          "value": 2,
+          "meaning": "Finite water well",
+          "color": "#6E9FAC"
+        },
+        {
+          "value": 3,
+          "meaning": "Caravan destination",
+          "color": "#C39A58"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "travelers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "energy"
+          ],
+          "meaning": "Movement energy, capacity twelve",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "meaning": "Carried water units, capacity three",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "grip"
+          ],
+          "meaning": "Currently attached to a load handle",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "sheltered"
+          ],
+          "meaning": "Inside the current three-cell downwind shadow",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "load",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "load_pos"
+      ],
+      "active": [
+        "load_active"
+      ],
+      "visibility": [
+        "load_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "load_grips"
+          ],
+          "meaning": "Number of attached travelers",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "load_sheltered"
+          ],
+          "meaning": "Load center is in the windbreak shadow",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "windbreak",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "shelter_pos"
+      ],
+      "active": [
+        "shelter_active"
+      ],
+      "visibility": [
+        "shelter_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "wind_dir"
+          ],
+          "meaning": "Current wind direction, rotating every eight ticks",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "wind_strength"
+          ],
+          "meaning": "Exposure surcharge for movement",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "wells",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "well_pos"
+      ],
+      "active": [
+        "well_active"
+      ],
+      "visibility": [
+        "well_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "well_stock"
+          ],
+          "meaning": "Finite remaining water, with no regeneration",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "destination",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "haul_event"
+      ],
+      "meaning": "Shared load translated this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shelter_event"
+      ],
+      "meaning": "Windbreak moved this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "water_used"
+      ],
+      "meaning": "Total water consumed by drinking",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Load center reached the destination",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "visibility": "self",
+      "meaning": "Own traveler id."
+    },
+    {
+      "slice": [
+        1,
+        7
+      ],
+      "visibility": "public",
+      "meaning": "Clock,joint done,total water drunk,haul event,windbreak-move event,load delivered."
+    },
+    {
+      "slice": [
+        7,
+        25
+      ],
+      "visibility": "public",
+      "meaning": "Three traveler records: x,y,energy,water,grip,sheltered."
+    },
+    {
+      "slice": [
+        25,
+        29
+      ],
+      "visibility": "public",
+      "meaning": "Load x,y,number of grips,shadow flag."
+    },
+    {
+      "slice": [
+        29,
+        34
+      ],
+      "visibility": "public",
+      "meaning": "Windbreak x,y,current wind dx,dy,exposure surcharge."
+    },
+    {
+      "slice": [
+        34,
+        40
+      ],
+      "visibility": "public",
+      "meaning": "Two well records: x,y,remaining water."
+    },
+    {
+      "slice": [
+        40,
+        42
+      ],
+      "visibility": "public",
+      "meaning": "Destination x,y."
+    },
+    {
+      "slice": [
+        42,
+        159
+      ],
+      "visibility": "public",
+      "meaning": "Static 9 by 13 public map in yx row-major order."
+    }
+  ],
+  "task": {
+    "objective": "Deliver one heavy load across a ridge using synchronized hauling, movable wind shelter, finite water and interchangeable transport/support roles.",
+    "natural_termination": "The load center reaching (10,4) terminates naturally. Energy or water exhaustion alone does not fabricate a failure: waiting, shade and partner support remain possible; unresolved play truncates at 128.",
+    "interaction": "A traveler repositioning the windbreak changes the current-step movement costs and resting recovery of others. A load needs two correctly positioned matching actions, while physical bodies and selfish shelter occupation can block travel or shade placement.",
+    "observation_access": "Fully observable terrain, positions, resources, grip states, wind, shadow flags, wells and event counters. The renderer displays the same fixed state variables; own id distinguishes policy roles."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "energy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "load_grips"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "wind_strength"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "well_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "water_used"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

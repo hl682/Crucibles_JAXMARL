@@ -1,0 +1,391 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "9733681abc63b4d46b4265092215aa9d4c9e5ac3fb049c5a28fb5ca499e8671b",
+  "manifest_sha256": "b90d34a4c2039dbd910be6ded7d45f54af55570f72730a28e4ff294c23eb2860",
+  "title": "Escrow Street Market",
+  "rules": [
+    "Each trader starts carrying two units of their own commodity. Capacity is two; three individual surplus goods lie on the central street.",
+    "At reset each trader privately needs two units of one of the other commodities. Other roles cannot see the private order card.",
+    "Posting an offer locks a specific owned good for a six-state countdown. A locked good cannot be delivered; withdrawal or expiry releases it.",
+    "Post a requested commodity separately. Both adjacent traders must choose confirm with reciprocal live offers for an atomic one-for-one swap.",
+    "Public offers are voluntary signals and need not truthfully state a private need. Trade itself pays no reward.",
+    "Deliver only an unlocked required good at your own address. Individual and smaller shared delivery rewards create both bargaining incentives and competing priorities.",
+    "Goods have persistent identities and move with actual carriers. Delivered goods stay at their real destination; scarcity is never replenished."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable street",
+          "color": "#E7E5E4"
+        },
+        {
+          "value": 1,
+          "meaning": "Initial public surplus stall site; remaining goods are separate entities",
+          "color": "#FDE68A"
+        },
+        {
+          "value": 2,
+          "meaning": "Public delivery address",
+          "color": "#BBF7D0"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "traders",
+      "glyph": "worker",
+      "label": "Market traders",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "0 grain producer; 1 tool maker; 2 medicine courier"
+        },
+        {
+          "state_path": [
+            "offer_good"
+          ],
+          "label": "Public escrow good id, or -1"
+        },
+        {
+          "state_path": [
+            "ask_kind"
+          ],
+          "label": "Public requested kind, or -1"
+        },
+        {
+          "state_path": [
+            "offer_timer"
+          ],
+          "label": "Remaining escrow commitment clock"
+        },
+        {
+          "state_path": [
+            "delivery_count"
+          ],
+          "label": "Public number of completed deliveries"
+        }
+      ]
+    },
+    {
+      "id": "goods",
+      "glyph": "crate",
+      "label": "Individual conserved goods",
+      "color": "#EAB308",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "good_kind"
+          ],
+          "label": "0 grain; 1 tool; 2 medicine"
+        },
+        {
+          "state_path": [
+            "good_owner"
+          ],
+          "label": "-2 delivered; -1 ground; 0..2 carrier"
+        },
+        {
+          "state_path": [
+            "good_status"
+          ],
+          "label": "0 ground; 1 carried; 2 delivered"
+        },
+        {
+          "state_path": [
+            "good_locked"
+          ],
+          "label": "Committed in an unexpired posted offer"
+        },
+        {
+          "state_path": [
+            "good_destination"
+          ],
+          "label": "Receiving destination id, or -1"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "glyph": "flag",
+      "label": "Public delivery addresses",
+      "color": "#22C55E",
+      "attribute_labels": []
+    },
+    {
+      "id": "private_orders",
+      "glyph": "tool",
+      "label": "Owner-only order cards",
+      "color": "#A855F7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "order_kind"
+          ],
+          "label": "Private required commodity type; visible only to its owner"
+        },
+        {
+          "state_path": [
+            "order_remaining"
+          ],
+          "label": "Private remaining delivery quantity"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "trade_count"
+      ],
+      "meaning": "Atomic bilateral exchanges completed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pickup_count"
+      ],
+      "meaning": "Ground goods acquired this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expired_count"
+      ],
+      "meaning": "Prior offers whose countdown reached zero this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Actual deliveries by role this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_count"
+      ],
+      "meaning": "Cumulative deliveries by role",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "escrow one owned grain"
+    },
+    {
+      "id": 6,
+      "label": "escrow one owned tool"
+    },
+    {
+      "id": 7,
+      "label": "escrow one owned medicine"
+    },
+    {
+      "id": 8,
+      "label": "request grain"
+    },
+    {
+      "id": 9,
+      "label": "request tool"
+    },
+    {
+      "id": 10,
+      "label": "request medicine"
+    },
+    {
+      "id": 11,
+      "label": "confirm reciprocal nearby trade"
+    },
+    {
+      "id": 12,
+      "label": "withdraw offer and request"
+    },
+    {
+      "id": 13,
+      "label": "pick up ground good if capacity remains"
+    },
+    {
+      "id": 14,
+      "label": "deliver required unlocked good at own address"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own trader role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        6
+      ],
+      "meaning": "Own private required commodity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own outstanding quantity/2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        13
+      ],
+      "meaning": "All trader x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        31
+      ],
+      "meaning": "All individual good x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        40
+      ],
+      "meaning": "Public commodity kinds/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        49
+      ],
+      "meaning": "Public good owner shifted by two and divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        58
+      ],
+      "meaning": "Good status/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        67
+      ],
+      "meaning": "Public escrow lock flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        70
+      ],
+      "meaning": "Public posted good ids shifted by one and divided by 9",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        73
+      ],
+      "meaning": "Public requested kinds shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        76
+      ],
+      "meaning": "Escrow timers/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "Public completed deliveries/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        85
+      ],
+      "meaning": "Public delivery address x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        86
+      ],
+      "meaning": "Clock/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        149
+      ],
+      "meaning": "Public row-major market terrain/2",
+      "visibility": "public"
+    }
+  ]
+}

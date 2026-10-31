@@ -1,0 +1,498 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "7cf4953174873acf0e3efbb70d9592a9ed3d8cadd48d96e6ae690607f247a8b4",
+  "manifest_sha256": "e50a560bfce8d1d9d3b07601aad66d047264e60fbfb07bd44cfd6ffb96275451",
+  "title": "Dockside Promises | Right-of-way is a costly promise",
+  "rules": [
+    "Carry your own parcels to their exact opposite-dock targets. One order per robot starts now; the second is released at time 36. Deadlines are 55 and 115.",
+    "Ordinary movement cannot enter a currently occupied robot cell. Empty travel costs one battery; carried travel costs two.",
+    "Central corridor cells (5,4) through (7,4) admit the current lease holder. A robot already inside can clear it after expiry; new grants wait until it is empty.",
+    "A request deposits one service credit, lasts ten steps and states crossing direction. It is eligible after four queue-age steps or immediately when an opposite-side robot is yielding.",
+    "An eligible oldest request wins with rotating tie priority and receives an eight-step lease. The bond returns only after the holder actually enters and reaches the requested opposite side.",
+    "Yielding binds a robot to avoid the central corridor for six steps and relinquishes an existing claim without refund. A real opposite-side partner crossing can reward that promise once.",
+    "North bridge follows phase 0-3 and south bridge phase 6-9 of the twelve-step tide. An occupied bridge remains open to let its robot clear.",
+    "A charger gives six energy to one adjacent robot per step. Adjacent robots can transfer two energy; mutually offered swaps exchange positions and cost two energy each.",
+    "Individual delivery rewards favor timely own orders; small common delivery/expiry terms make other robots outcomes matter. Expired parcels remain recorded as failures.",
+    "All positions, requests, commitments and parcel states are actual public state. The episode ends when all parcels are settled, preserving mixed delivery and expiry outcomes."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable apron or currently open bridge",
+          "color": "#DCE5EB"
+        },
+        {
+          "value": 1,
+          "meaning": "solid dock boundary or river divider",
+          "color": "#526C80"
+        },
+        {
+          "value": 2,
+          "meaning": "closed crossing",
+          "color": "#AD8560"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "robot",
+      "label": "Couriers and binding route promises",
+      "color": "#4BA4BB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_battery"
+          ],
+          "label": "Movement energy; carrying costs two per step, empty costs one"
+        },
+        {
+          "state_path": [
+            "agent_credits"
+          ],
+          "label": "Service credits available for a reservation bond; not real money"
+        },
+        {
+          "state_path": [
+            "agent_cargo"
+          ],
+          "label": "-1 empty; otherwise actual parcel index 0-7"
+        },
+        {
+          "state_path": [
+            "request_ttl"
+          ],
+          "label": "Pending bonded request lifetime"
+        },
+        {
+          "state_path": [
+            "request_dir"
+          ],
+          "label": "Requested crossing direction: +1 east, -1 west, 0 none yet"
+        },
+        {
+          "state_path": [
+            "request_age"
+          ],
+          "label": "Age determining queue priority and fallback eligibility"
+        },
+        {
+          "state_path": [
+            "yield_ttl"
+          ],
+          "label": "Remaining binding commitment to stay out of the central corridor"
+        },
+        {
+          "state_path": [
+            "yield_rewarded"
+          ],
+          "label": "Whether this current yield commitment has already earned its one credit"
+        },
+        {
+          "state_path": [
+            "agent_completed"
+          ],
+          "label": "Own actually completed deliveries, at most two"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "label": "Last movement or consented-swap direction"
+        }
+      ]
+    },
+    {
+      "id": "parcel",
+      "glyph": "crate",
+      "label": "Actual time-limited parcels",
+      "color": "#D8A454",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "parcel_dest"
+          ],
+          "label": "Actual delivery target x,y"
+        },
+        {
+          "state_path": [
+            "parcel_owner"
+          ],
+          "label": "Robot assigned to carry and deliver this parcel"
+        },
+        {
+          "state_path": [
+            "parcel_status"
+          ],
+          "label": "0 unreleased; 1 waiting; 2 carried; 3 delivered; 4 expired"
+        },
+        {
+          "state_path": [
+            "parcel_release"
+          ],
+          "label": "Release time of this actual order"
+        },
+        {
+          "state_path": [
+            "parcel_deadline"
+          ],
+          "label": "Inclusive last valid delivery time before expiry transition"
+        }
+      ]
+    },
+    {
+      "id": "charger",
+      "glyph": "battery",
+      "label": "One-service-per-step dock chargers",
+      "color": "#74A86A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "charger_busy"
+          ],
+          "label": "This charger served one robot on the current step; capacity is one robot per step"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "glyph": "gate",
+      "label": "Tidal bypasses and reserved center",
+      "color": "#9F85C6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge_open"
+          ],
+          "label": "Actual map passability of north, center and south crossing"
+        },
+        {
+          "state_path": [
+            "bridge_owner"
+          ],
+          "label": "Middle crossing lease owner; -1 means no lease"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_request"
+      ],
+      "meaning": "Robot actually posted one service-credit bond for a timed route request",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_yield"
+      ],
+      "meaning": "Robot began a binding yield commitment and relinquished any claim",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_cross"
+      ],
+      "meaning": "Lease holder entered and exited the actual central corridor on the requested opposite side",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_yield_bonus"
+      ],
+      "meaning": "A qualifying opposite-side yielder earned one credit after a partner really crossed",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_transfer"
+      ],
+      "meaning": "Robot actually transferred two battery units to a neighboring robot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_swap"
+      ],
+      "meaning": "Robot participated in a mutual-consent physical position swap",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_pickup"
+      ],
+      "meaning": "A waiting parcel became carried by its assigned robot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_delivery"
+      ],
+      "meaning": "An actual carried parcel was unloaded at its exact target",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_expired"
+      ],
+      "meaning": "An undelivered parcel passed its deadline and expired",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "All eight actual parcels were delivered",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up own adjacent waiting parcel or unload at its exact target"
+    },
+    {
+      "id": 6,
+      "label": "Post a bonded request for central right-of-way"
+    },
+    {
+      "id": 7,
+      "label": "Pledge six-turn yielding and relinquish pending/current claim"
+    },
+    {
+      "id": 8,
+      "label": "Charge six energy at a neighboring dock charger"
+    },
+    {
+      "id": 9,
+      "label": "Transfer two energy to adjacent lowest-battery robot"
+    },
+    {
+      "id": 10,
+      "label": "Offer bilateral adjacent swap; both must choose this action"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Elapsed time /128, tidal phase /12, lease owner encoded (owner+1)/4, lease TTL /8, signed lease direction, entered-corridor flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        123
+      ],
+      "meaning": "Public 9 by 13 terrain row-major /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        131
+      ],
+      "meaning": "Four robot x,y positions /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        135
+      ],
+      "meaning": "Four batteries /24",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        139
+      ],
+      "meaning": "Four service-credit balances /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        143
+      ],
+      "meaning": "Four cargo indices encoded (index+1)/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        147
+      ],
+      "meaning": "Four pending request TTLs /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        151
+      ],
+      "meaning": "Four signed requested directions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        155
+      ],
+      "meaning": "Four pending request ages /10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        159
+      ],
+      "meaning": "Four binding yield TTLs /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        163
+      ],
+      "meaning": "Four current-yield rewarded flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        163,
+        167
+      ],
+      "meaning": "Four completed delivery counts /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        167,
+        175
+      ],
+      "meaning": "Four robot last movement/swap direction vectors",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        175,
+        191
+      ],
+      "meaning": "Eight parcel x,y positions /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        191,
+        207
+      ],
+      "meaning": "Eight exact target x,y positions /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        215
+      ],
+      "meaning": "Eight assigned owner indices /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        215,
+        223
+      ],
+      "meaning": "Eight parcel status codes /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        223,
+        231
+      ],
+      "meaning": "Eight release times /128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        231,
+        239
+      ],
+      "meaning": "Eight inclusive deadlines /128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        239,
+        247
+      ],
+      "meaning": "Four charger x,y positions /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        247,
+        250
+      ],
+      "meaning": "Three actual open-crossing flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        250,
+        254
+      ],
+      "meaning": "Observer robot identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

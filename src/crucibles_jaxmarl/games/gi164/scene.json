@@ -1,0 +1,483 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "e6733e86be518cfc4a5d87ffb5f56ba7701ed5b3506a9a9cb831a1635e2562ea",
+  "manifest_sha256": "b34ad9501e20bc8ebb84b7184a715828c1f7c3d7beb44834fdd66cd7542c14c4",
+  "title": "Workshop Exchange",
+  "rules": [
+    "Each worker owns one complementary tool and workstation; one raw unit takes three or four ticks to become that type of component.",
+    "Completed components stay on the owner collection shelf until physically collected.",
+    "Post a component-for-next-type or component-for-raw offer; that exact component is removed into escrow.",
+    "Adjacent buyers settle real handoffs using public rotating priority. Unsold offers return after eight ticks or cancellation.",
+    "Depositing all four types starts a three-tick shared assembly with public contribution credit.",
+    "A finished machine rewards everyone and its contributors. Private station sales pay immediately but consume scarce parts.",
+    "Two machines naturally finish the episode; exhaustion and poor coordination remain possible."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable workshop floor",
+          "color": "#3F444A"
+        },
+        {
+          "value": 1,
+          "meaning": "specialist workstation",
+          "color": "#756893"
+        },
+        {
+          "value": 2,
+          "meaning": "shared assembly station",
+          "color": "#3F8D80"
+        },
+        {
+          "value": 3,
+          "meaning": "raw stock location",
+          "color": "#856742"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Specialist workers",
+      "color": "#DDB962",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "raw"
+          ],
+          "label": "Raw material"
+        },
+        {
+          "state_path": [
+            "inventory"
+          ],
+          "label": "Four physical component inventories"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Specialist tool"
+        },
+        {
+          "state_path": [
+            "offer_live"
+          ],
+          "label": "Reserved own component"
+        },
+        {
+          "state_path": [
+            "offer_need"
+          ],
+          "label": "Posted requested type, raw=4"
+        },
+        {
+          "state_path": [
+            "offer_ttl"
+          ],
+          "label": "Offer lifetime"
+        },
+        {
+          "state_path": [
+            "trade_from"
+          ],
+          "label": "Last-step supplying peer"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "glyph": "tool",
+      "label": "Specialist workstations",
+      "color": "#9A91D2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Station component type"
+        },
+        {
+          "state_path": [
+            "job_timer"
+          ],
+          "label": "Remaining production ticks"
+        },
+        {
+          "state_path": [
+            "shelf"
+          ],
+          "label": "Completed shelf stock"
+        }
+      ]
+    },
+    {
+      "id": "pile",
+      "glyph": "resource",
+      "label": "Scarce physical components feedstock",
+      "color": "#B58A53",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Remaining raw units"
+        }
+      ]
+    },
+    {
+      "id": "assembly",
+      "glyph": "crate",
+      "label": "Shared asynchronous assembly",
+      "color": "#66BCAB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "assembly_parts"
+          ],
+          "label": "Deposited type slots"
+        },
+        {
+          "state_path": [
+            "machine_timer"
+          ],
+          "label": "Assembly ticks"
+        },
+        {
+          "state_path": [
+            "products"
+          ],
+          "label": "Completed machines"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "trade_from"
+      ],
+      "meaning": "Seller index for each successful buyer in this step, -1 for no settlement.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expired"
+      ],
+      "meaning": "Per-step expired unsold offers whose reserved component is returned.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sold"
+      ],
+      "meaning": "Per-step privately sold components.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "deposited"
+      ],
+      "meaning": "Per-step successful assembly deposit flags.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "job_done"
+      ],
+      "meaning": "Per-step workstation completions; shelf stock is a separate persistent level.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gathered"
+      ],
+      "meaning": "Per-step physical gathering successes.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "products"
+      ],
+      "meaning": "Cumulative completed shared machines.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "gather one nearby raw unit"
+    },
+    {
+      "id": 6,
+      "label": "start own workstation job"
+    },
+    {
+      "id": 7,
+      "label": "collect own workstation shelf"
+    },
+    {
+      "id": 8,
+      "label": "offer own component for next component"
+    },
+    {
+      "id": 9,
+      "label": "offer own component for one raw"
+    },
+    {
+      "id": 10,
+      "label": "accept adjacent affordable offer"
+    },
+    {
+      "id": 11,
+      "label": "deposit lowest missing component at assembly"
+    },
+    {
+      "id": 12,
+      "label": "sell lowest held component at own station"
+    },
+    {
+      "id": 13,
+      "label": "cancel own offer"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own acting role as one-hot in agent-index order.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Raw step clock; also determines public rotating priorities and periodic updates.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        13
+      ],
+      "meaning": "All agent [x,y] positions in agent-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        17
+      ],
+      "meaning": "Each worker unspent raw units.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        33
+      ],
+      "meaning": "Public worker-by-component inventory, four component types in tool-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        37
+      ],
+      "meaning": "Ticks remaining at each specialist workstation.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        41
+      ],
+      "meaning": "Completed physical components waiting at each owner-only collection shelf.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        45
+      ],
+      "meaning": "Remaining physical resource stock at each fixed source.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        49
+      ],
+      "meaning": "Each seller has exactly one own-type component reserved in escrow.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        53
+      ],
+      "meaning": "Each posted price: component type 0..3, raw unit 4, absent -1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        57
+      ],
+      "meaning": "Remaining ticks until unsold escrow is returned.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        61
+      ],
+      "meaning": "Four physically deposited component-presence slots at the shared assembly station.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        61,
+        65
+      ],
+      "meaning": "Credited depositor index for each assembly slot, -1 when empty.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        66
+      ],
+      "meaning": "Ticks remaining until the current full assembly completes.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        67
+      ],
+      "meaning": "Cumulative completed shared machines.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        71
+      ],
+      "meaning": "Seller index for each successful buyer in this step, -1 for no settlement.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        75
+      ],
+      "meaning": "Per-step expired unsold offers whose reserved component is returned.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        79
+      ],
+      "meaning": "Per-step privately sold components.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        83
+      ],
+      "meaning": "Per-step successful assembly deposit flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        87
+      ],
+      "meaning": "Per-step workstation completions; shelf stock is a separate persistent level.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        87,
+        91
+      ],
+      "meaning": "Per-step physical gathering successes.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        92
+      ],
+      "meaning": "Joint terminal state, including natural completion or time limit.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        93
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        94
+      ],
+      "meaning": "Time-limit cause only when no natural termination occurs.",
+      "visibility": "public"
+    }
+  ]
+}

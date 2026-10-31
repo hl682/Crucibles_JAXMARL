@@ -1,0 +1,385 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "12a058e28bdb121dfe6afffc3eb56e0dabaafcc872f2fbc5938da1a3a84c5355",
+  "manifest_sha256": "315c970966e7d7237755b9313dd6c33cee2b87e6db192ef9875d3d296135731f",
+  "title": "Tag Exchange",
+  "rules": [
+    "Two controlled pairs oppose each other. Move on public floor; co-location, crossing and swaps are allowed. Walls leave middle and outer routes.",
+    "Tag at distance at most one after movement: nearest free enemy, then lower index. Each successful attacker spends one energy; simultaneous mutual tags both land.",
+    "A new tag freezes for three ticks and drops carried flag. Frozen players can wait or spend two energy to thaw. Natural timer expiry is free.",
+    "An untagged free teammate may spend one energy to rescue an adjacent frozen player. Fresh same-tick tags cannot be rescued; release changes the next action boundary.",
+    "At an exact flag cell, interact to return your own displaced flag or pick up the enemy flag. Contested pickup resolves by lower actor index.",
+    "Pass a carried flag to your adjacent free teammate. Scoring requires enemy flag at your own exact base and your own flag home; scored enemy flag returns home.",
+    "Recharge near your own base draws from its finite four-unit depot. No energy or depot stock regenerates automatically.",
+    "Two captures terminate the episode. Each capture rewards both scoring teammates +1 and both opponents -1."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Public walkable arena floor",
+          "color": "#D8D3BC"
+        },
+        {
+          "value": 1,
+          "meaning": "Permanent arena wall",
+          "color": "#4D5A68"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "glyph": "agent",
+      "label": "Four controlled team players",
+      "color": "#658DD2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team index"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Finite action/recovery energy"
+        },
+        {
+          "state_path": [
+            "frozen"
+          ],
+          "label": "Frozen ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "flags",
+      "glyph": "flag",
+      "label": "Native team flags",
+      "color": "#E2B84F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "flag_team"
+          ],
+          "label": "Flag home team"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "Current holder index; -1 ground/home"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "glyph": "beacon",
+      "label": "Team bases and finite depots",
+      "color": "#8AA57C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "recovery_stock"
+          ],
+          "label": "Finite depot recharge units"
+        },
+        {
+          "state_path": [
+            "scores"
+          ],
+          "label": "Team captures"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tagged"
+      ],
+      "meaning": "Player newly tagged this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Player released by its teammate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "passed"
+      ],
+      "meaning": "Player handed its flag to its teammate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Player picked up enemy flag this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "returned"
+      ],
+      "meaning": "Player returned its own displaced flag this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "recharged"
+      ],
+      "meaning": "Player drew a finite depot unit this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "self_thawed"
+      ],
+      "meaning": "Player spent two energy to self-thaw this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "goal_event"
+      ],
+      "meaning": "Team scored a capture this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "frozen"
+      ],
+      "meaning": "Remaining native freeze timer",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "scores"
+      ],
+      "meaning": "Persistent team capture count",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "tag enemy attempt"
+    },
+    {
+      "id": 6,
+      "label": "rescue teammate attempt"
+    },
+    {
+      "id": 7,
+      "label": "pickup enemy or return own flag"
+    },
+    {
+      "id": 8,
+      "label": "pass flag to teammate"
+    },
+    {
+      "id": 9,
+      "label": "draw finite depot energy"
+    },
+    {
+      "id": 10,
+      "label": "spend two energy to self-thaw"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        6
+      ],
+      "meaning": "Observer team one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Clock / 96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        84
+      ],
+      "meaning": "Public row-major 7 by 11 floor=0 wall=1 map",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        92
+      ],
+      "meaning": "Player-major [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        96
+      ],
+      "meaning": "Player energy / 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        96,
+        100
+      ],
+      "meaning": "Freeze timers / 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        104
+      ],
+      "meaning": "Player team indices 0 or 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        108
+      ],
+      "meaning": "Flag-major [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        110
+      ],
+      "meaning": "Flag holder code (holder+1)/4; 0 means ground/home",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        114
+      ],
+      "meaning": "Team base-major [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        116
+      ],
+      "meaning": "Remaining depot stock / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        118
+      ],
+      "meaning": "Team capture counts / 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        118,
+        122
+      ],
+      "meaning": "Players tagged this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        126
+      ],
+      "meaning": "Players rescued this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        130
+      ],
+      "meaning": "Players passing this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        132
+      ],
+      "meaning": "Teams scoring this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        135
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ]
+}

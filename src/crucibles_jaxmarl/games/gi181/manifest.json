@@ -1,0 +1,720 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00181",
+  "source_sha256": "41fd76cd8f3a07938911f7529ee4b6f4591ba9f5f43b175c780f754426fdf19e",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 137,
+  "num_actions": 11,
+  "max_steps": 120,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -0.1,
+  "reward_high": 5.8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "west builder initially carrying wood"
+    },
+    {
+      "id": "agent_1",
+      "role": "west builder initially carrying bolts"
+    },
+    {
+      "id": "agent_2",
+      "role": "east builder initially carrying bolts"
+    },
+    {
+      "id": "agent_3",
+      "role": "east builder initially carrying wood"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move west"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move north"
+    },
+    {
+      "id": 4,
+      "label": "Move south"
+    },
+    {
+      "id": 5,
+      "label": "Commit wood to first reachable missing-wood cell"
+    },
+    {
+      "id": 6,
+      "label": "Commit bolts to first reachable missing-bolts cell"
+    },
+    {
+      "id": 7,
+      "label": "Give one wood to poorest adjacent peer"
+    },
+    {
+      "id": 8,
+      "label": "Give one bolts to poorest adjacent peer"
+    },
+    {
+      "id": 9,
+      "label": "Consume wood and bolts to repair weakest reachable cell"
+    },
+    {
+      "id": 10,
+      "label": "Deliver at either opposing terminal"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "materials"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "values"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wood"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bolts"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_occupancy"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "terminal_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "repair_used"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "contributed"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shared"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "private_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_visible"
+      ],
+      "shape": [
+        4,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminal_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminal_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "repaired"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "completed_now"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "worn_out"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_now"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Solid island ground"
+        },
+        {
+          "value": 1,
+          "meaning": "Water; impassable"
+        },
+        {
+          "value": 2,
+          "meaning": "Potential bridge cell; needs both materials and positive health for new entry"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "builders",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "materials"
+          ],
+          "meaning": "Owned [wood,bolts] stock",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Own parcel delivered",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "bridge_cells",
+      "kind": "gate",
+      "count": 6,
+      "position": [
+        "bridge_pos"
+      ],
+      "active": [
+        "bridge_active"
+      ],
+      "visibility": [
+        "bridge_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "wood"
+          ],
+          "meaning": "Permanent wood commitment 0 or 1",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "bolts"
+          ],
+          "meaning": "Permanent bolts commitment 0 or 1",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Current usable integrity",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "bridge_occupancy"
+          ],
+          "meaning": "Number of actual builders on this capacity-one cell",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "terminals",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "terminal_pos"
+      ],
+      "active": [
+        "terminal_active"
+      ],
+      "visibility": [
+        "terminal_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "wood"
+      ],
+      "meaning": "Persistent wood commitments",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "bolts"
+      ],
+      "meaning": "Persistent bolts commitments",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "health"
+      ],
+      "meaning": "Current crossing integrity",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent parcel delivery receipts",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "repair_used"
+      ],
+      "meaning": "Cumulative wood and bolts irreversibly consumed in repairs",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own private north/south delivery values/5",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Clock/120",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        11
+      ],
+      "meaning": "Four builder x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        19
+      ],
+      "meaning": "Agent-major [wood,bolts] inventory/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        23
+      ],
+      "meaning": "Parcel delivered flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        35
+      ],
+      "meaning": "Six ordered bridge-cell x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        41
+      ],
+      "meaning": "Persistent wood bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        47
+      ],
+      "meaning": "Persistent bolts bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        47,
+        53
+      ],
+      "meaning": "Bridge integrity/12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        59
+      ],
+      "meaning": "Bridge occupancy 0 or 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        67
+      ],
+      "meaning": "Four terminal x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        130
+      ],
+      "meaning": "Public y-major terrain values/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        132
+      ],
+      "meaning": "Cumulative wood,bolts repair consumption/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        133
+      ],
+      "meaning": "Joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        137
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Build and maintain real capacity-one multi-cell crossings to deliver each parcel across separated islands; either north or south terminal pays a private value.",
+    "natural_termination": "All four parcels delivered, otherwise H=120 truncation. Stranded builders and incomplete routes remain valid outcomes.",
+    "interaction": "Different builders initially own complementary scarce materials. A single contribution can unlock a peer step later; sharing, repair, route diversion, occupation and wear change later connectivity for everyone.",
+    "observation_access": "All geometry, material stock, construction components, integrity, occupancy, repair consumption and delivery flags are public. Each role alone sees its two private terminal values. The scene does not bind private value attributes; private_visible is the identity mask."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "materials"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "wood"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "bolts"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "bridge_occupancy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "repair_used"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_permissions": "Movement targets must be old-empty ground or a complete positive-health bridge cell; common empty targets go to lowest agent id. Construction reaches own/cardinal-adjacent cells and needs the missing material. Giving requires positive stock and an old adjacent peer. Repair needs both resources and a reachable completed cell below maximum integrity. Delivery requires an undelivered parcel at an opposing terminal. Old live bridges govern movement; newly built cells become available next transition. A zero-health occupied cell keeps its occupant, allows waiting/repair/valid exit and rejects new entry. Joint terminal allows only wait; invalid actions become wait.",
+  "private_state_permissions": [
+    {
+      "state_path": [
+        "values"
+      ],
+      "owner_axis": 0,
+      "visibility": [
+        "private_visible"
+      ],
+      "access": "self row only; omitted from entity attributes; full-state debug must be explicitly privileged"
+    }
+  ],
+  "authoring_status": "AUTHORED_NOT_EXECUTED",
+  "representation_adaptations": [
+    "All signed small integer rule fields are represented losslessly as int32.",
+    "Reset key is supplied by the trusted caller and is not duplicated in state. Private values use the literal randint distribution in reset.",
+    "Absorbing raw terminal calls preserve all state and causes, return zero reward, and never auto-reset."
+  ]
+}

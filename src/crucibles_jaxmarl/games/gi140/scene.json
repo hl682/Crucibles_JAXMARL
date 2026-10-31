@@ -1,0 +1,335 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "31f01f76be6f5741e75f16e0f04cc65c6fae797175ed3894cc56cd5dd5f41f47",
+  "manifest_sha256": "842a99deed767a44035b6f82a50d63a33f59b924d54976edacce3290bca1d1ec",
+  "title": "Two-bank Trestle",
+  "rules": [
+    "Carpenter carries one of three beams; rigger allocates two clamps among four bank anchors; hauler carries the heavy crate.",
+    "Beam slots are x=3..5 at y=2 or y=4. A beam graph reaching one clamped bank supports workers; reaching both banks supports heavy cargo.",
+    "Movement uses old support. Carpenter/rigger edits then change support, collapse unattached installed beams, and check current workers and cargo.",
+    "Recovering a beam or releasing a clamp can strand another worker or destroy a heavy crossing. Lost beams never return.",
+    "All movement into currently occupied cells is blocked; competing empty-target moves are all rejected.",
+    "Delivery gives +1 each; any support/load failure ends the episode with -1 each. No execution or solvability result is claimed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Solid bank",
+          "color": "#D8CAA6"
+        },
+        {
+          "value": 1,
+          "meaning": "River without a supported deck",
+          "color": "#528EB5"
+        },
+        {
+          "value": 2,
+          "meaning": "Deck connected to one bank: light workers only",
+          "color": "#BB9F69"
+        },
+        {
+          "value": 3,
+          "meaning": "Deck connected to both clamped banks: heavy cargo allowed",
+          "color": "#6AA78B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "glyph": "worker",
+      "label": "Complementary crew",
+      "color": "#496DA6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_role"
+          ],
+          "label": "0 carpenter, 1 rigger, 2 hauler"
+        },
+        {
+          "state_path": [
+            "fallen"
+          ],
+          "label": "Crew member failed the current support/load check"
+        }
+      ]
+    },
+    {
+      "id": "beams",
+      "glyph": "tool",
+      "label": "Three conserved beams",
+      "color": "#B28A54",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beam_status"
+          ],
+          "label": "0 stock, 1 carried, 2 installed, 3 lost"
+        },
+        {
+          "state_path": [
+            "beam_owner"
+          ],
+          "label": "0 carpenter when carried; otherwise -1"
+        },
+        {
+          "state_path": [
+            "beam_support"
+          ],
+          "label": "0 unsupported/not installed, 1 one-bank connected, 2 both-bank connected"
+        }
+      ]
+    },
+    {
+      "id": "anchors",
+      "glyph": "gate",
+      "label": "Bank anchors",
+      "color": "#76828E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "clamp_on"
+          ],
+          "label": "A reusable clamp is engaged here"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Heavy cargo",
+      "color": "#D58956",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "label": "2 when carried by hauler; otherwise -1"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Cargo reached the goal"
+        },
+        {
+          "state_path": [
+            "cargo_lost"
+          ],
+          "label": "Cargo lacked heavy-load support"
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "glyph": "flag",
+      "label": "East delivery depot",
+      "color": "#5C996A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Delivery completion state"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tool_event"
+      ],
+      "meaning": "Successful carpenter/rigger/hauler tool use this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collapse_event"
+      ],
+      "meaning": "Installed beams that lost all clamped-bank connectivity this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fall_event"
+      ],
+      "meaning": "Workers failing their actual post-edit support/load requirement this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "blocked_event"
+      ],
+      "meaning": "Movement intents blocked by terrain/load/occupancy/shared targets",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Actual delivered cargo state",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cargo_lost"
+      ],
+      "meaning": "Actual cargo-loss state",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lift nearby stock beam (carpenter) or cargo (hauler); rigger no-op"
+    },
+    {
+      "id": 6,
+      "label": "Tool north: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 7,
+      "label": "Tool east: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 8,
+      "label": "Tool south: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 9,
+      "label": "Tool west: place/recover beam, toggle clamp, or drop cargo"
+    },
+    {
+      "id": 10,
+      "label": "Deliver heavy cargo within one cell of the east depot; other roles no-op"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Clock t/128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Observer id/4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        14
+      ],
+      "meaning": "Three crew records, stride 4: x/16,y/16,tool_role/4,fallen",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        29
+      ],
+      "meaning": "Three beam records, stride 5: x/16,y/16,status/4,(owner+1)/2,support/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        41
+      ],
+      "meaning": "Four anchor records, stride 3: x/16,y/16,clamp_on; available clamp stock equals 2 minus sum(clamp_on)",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        46
+      ],
+      "meaning": "Cargo: x/16,y/16,(owner+1)/4,delivered,lost",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        48
+      ],
+      "meaning": "Goal x/16,y/16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        60
+      ],
+      "meaning": "Per-transition flags tool[3],collapse[3],fall[3],blocked[3]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        123
+      ],
+      "meaning": "Actual 7x9 terrain/support map in y-major order, tile value/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        128
+      ],
+      "meaning": "Five constant zeros",
+      "visibility": "padding"
+    }
+  ]
+}

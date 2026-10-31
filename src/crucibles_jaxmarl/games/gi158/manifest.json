@@ -1,0 +1,1038 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00158",
+  "source_sha256": "cc0e1733768baa6628b753304337966e59738a9cc364bc6738d8e2625250f592",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 155,
+  "num_actions": 15,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -3,
+  "observation_high": 192,
+  "reward_low": -1,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Engineer: one leak patch"
+    },
+    {
+      "id": "agent_1",
+      "role": "Air operator: pump from shared reserve"
+    },
+    {
+      "id": "agent_2",
+      "role": "Porter: pressure-proof artifact sleeve"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Toggle nearest adjacent door safely"
+    },
+    {
+      "id": 6,
+      "label": "Force nearest adjacent door open; spend two oxygen"
+    },
+    {
+      "id": 7,
+      "label": "Operator pump current room at panel"
+    },
+    {
+      "id": 8,
+      "label": "Engineer patch leak"
+    },
+    {
+      "id": 9,
+      "label": "Refill breathing tank at panel"
+    },
+    {
+      "id": 10,
+      "label": "Pick up nearby floor artifact"
+    },
+    {
+      "id": 11,
+      "label": "Hand artifact to adjacent empty teammate; otherwise drop"
+    },
+    {
+      "id": 12,
+      "label": "Give up to three oxygen to adjacent teammate"
+    },
+    {
+      "id": 13,
+      "label": "Deliver carried artifact at dock"
+    },
+    {
+      "id": 14,
+      "label": "Hold gentle equalization vent at adjacent door"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tile"
+      ],
+      "shape": [
+        7,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "oxygen"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "room_id"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_action"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "air_given"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "room_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "room_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "room_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pressure"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "door_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "door_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "door_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "door_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "door_changed"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flow"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservoir"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "leak_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "leak_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "leak_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "leaking"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "patches"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_status"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "integrity"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_step"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pumped"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable interior",
+          "color": "#253440"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#111C26"
+        },
+        {
+          "value": 2,
+          "meaning": "Door or gate tile; passability follows its actual state",
+          "color": "#526B78"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Equipment role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "oxygen"
+          ],
+          "meaning": "Breathing oxygen",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "room_id"
+          ],
+          "meaning": "Current room index",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Number of carried artifacts",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "last_action"
+          ],
+          "meaning": "Latest sanitized action",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "panels",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "room_pos"
+      ],
+      "active": [
+        "room_active"
+      ],
+      "visibility": [
+        "room_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pressure"
+          ],
+          "meaning": "Pressure of this room",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "doors",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "door_pos"
+      ],
+      "active": [
+        "door_active"
+      ],
+      "visibility": [
+        "door_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "door_open"
+          ],
+          "meaning": "Open and passable",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "flow"
+          ],
+          "meaning": "Latest signed eastward air transfer",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "door_changed"
+          ],
+          "meaning": "Changed this transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "leak",
+      "kind": "hazard",
+      "count": 1,
+      "position": [
+        "leak_pos"
+      ],
+      "active": [
+        "leak_active"
+      ],
+      "visibility": [
+        "leak_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "leaking"
+          ],
+          "meaning": "Active leak",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "reservoir"
+          ],
+          "meaning": "Shared air reservoir",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "artifacts",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "meaning": "Carrier ID or minus one",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo_status"
+          ],
+          "meaning": "Artifact status",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "integrity"
+          ],
+          "meaning": "Remaining integrity",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "shock"
+          ],
+          "meaning": "Latest pressure shock",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "door_changed"
+      ],
+      "meaning": "Door state changed on latest transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shock"
+      ],
+      "meaning": "Artifact shocked on latest transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_step"
+      ],
+      "meaning": "Artifact delivered on latest transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "flow"
+      ],
+      "meaning": "Signed door air flux on latest transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "air_given"
+      ],
+      "meaning": "Donated oxygen on latest transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "pumped"
+      ],
+      "meaning": "Air pumped on latest transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "patches"
+      ],
+      "meaning": "Remaining engineer patches",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer role one-hot in fixed agent order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        94
+      ],
+      "meaning": "Public room walls and door tiles, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        100
+      ],
+      "meaning": "All crew positions in agent order, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        103
+      ],
+      "meaning": "Crew breathing reserves, zero to twenty-four",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        106
+      ],
+      "meaning": "Equipment roles: engineer, operator, porter",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        109
+      ],
+      "meaning": "Room air pressure: west, middle, east",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        109,
+        115
+      ],
+      "meaning": "Room pump-panel positions, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        115,
+        119
+      ],
+      "meaning": "Door positions, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        121
+      ],
+      "meaning": "Current door passability",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        122
+      ],
+      "meaning": "Shared air stock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        123
+      ],
+      "meaning": "East-room leak still open",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        124
+      ],
+      "meaning": "Engineer patches remaining",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        126
+      ],
+      "meaning": "Actual patch location",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        128
+      ],
+      "meaning": "Delivery dock location",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        132
+      ],
+      "meaning": "Artifact physical positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        134
+      ],
+      "meaning": "Artifact holder ID or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        136
+      ],
+      "meaning": "Artifact status: floor zero, carried one, delivered two, shattered three",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        138
+      ],
+      "meaning": "Artifact integrity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        141
+      ],
+      "meaning": "Latest sanitized crew commands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        144
+      ],
+      "meaning": "Oxygen donated on latest transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        146
+      ],
+      "meaning": "Door changed on latest transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        148
+      ],
+      "meaning": "Latest signed air transfer across each door, positive eastward",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        150
+      ],
+      "meaning": "Latest pressure shock to each artifact",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        152
+      ],
+      "meaning": "Latest artifact deliveries",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        155
+      ],
+      "meaning": "Clock, joint done flag, and air pumped on latest transition",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Bring both fragile artifacts to the west dock while keeping every crew member breathing.",
+    "natural_termination": "Both artifacts delivered; otherwise any zero oxygen or shattered artifact ends in failure. Success has priority on a coincident frame.",
+    "interaction": "Door and vent actions redistribute room pressure; pumping and refilling compete for one finite reservoir; gifts and handoffs transfer scarce resources and artifact risk.",
+    "observation_access": "Fully observable public map, crew, equipment, room pressure, object and event state. All active entities are visible to all three roles. The leading one-hot identifies the observing role."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pressure"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "oxygen"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "reservoir"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "patches"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "integrity"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cargo_status"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

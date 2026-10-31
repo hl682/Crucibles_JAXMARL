@@ -1,0 +1,249 @@
+{
+  "schema": "cr01-spatial-game-playthrough-v3",
+  "candidate_id": "game-v3-00144",
+  "source_sha256": "4269d24c4659c474d5734959cd66e5504a11a772055437cc79b399d6c41b5768",
+  "status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "seed": 0,
+  "scripts": [
+    {
+      "id": "upper_relay_delivery",
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "single_cargo_delivery_hypothesis",
+      "intended_objective": "Operator 1 reopens the first gate as courier 0 enters; operator 2 opens the second on its entry call. Cargo 0 delivery is intended; cargo 1 remains.",
+      "actions": [
+        [
+          5,
+          6,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          6,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          6
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "lower_relay_delivery",
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "alternate_corridor_hypothesis",
+      "intended_objective": "Move both operators to their lower stations and courier 0 to cargo 1, then use the corresponding two lower gates. Only cargo 1 delivery is intended.",
+      "actions": [
+        [
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          5,
+          6,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          6,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          6
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ]
+    }
+  ],
+  "paired_intervention_hypotheses": [
+    {
+      "id": "operator_commitment_opens_partner_entry",
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "prospective_multistep_paired_intervention",
+      "prefix": [
+        [
+          5,
+          6,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          2,
+          6,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "intended_difference": "At t=3 courier 0 is intended at (3,1), and operator 1 is free at (2,2). Hold versus Wait should open versus close entry into (4,1) at t=4, changing courier and cargo positions while creating an operator lock_timer of two.",
+      "comparison_rule": "Same reset key and identical prefix; compare named actual state leaves and legal masks after each suffix transition. No candidate outcome was supplied to the author."
+    },
+    {
+      "id": "phase_shift_and_safe_gate_exit",
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "prospective_multistep_paired_intervention",
+      "prefix": [
+        [
+          5,
+          6,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          2,
+          7,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "intended_difference": "Shift versus Wait should make phase 1 versus phase 4 on the first suffix call. The shifted gate may close on the next call while the courier exits to (5,1); compare persistent gate_offset/phase, lock_timer and actual cargo position. Closed-gate exit is explicitly legal in the rules.",
+      "comparison_rule": "Same reset key and identical prefix; compare named actual state leaves and legal masks after each suffix transition. No candidate outcome was supplied to the author."
+    }
+  ],
+  "no_execution_receipt": true,
+  "limitations": "Literal actions are prospectively derived from source rules. Author did not run reset, step, legal masks, JAX, NumPy, training, a replay or a renderer. Actual legality/events/termination remain for independent sealed execution."
+}

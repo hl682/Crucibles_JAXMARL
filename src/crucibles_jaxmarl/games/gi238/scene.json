@@ -1,0 +1,383 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "c491d2ff054fbe8ac13430c940bb2c1e84719e3d6fe2d8d7cbb2fe5d69cbb491",
+  "manifest_sha256": "af1de010c52cad0624e40c1047c77a11464cad0f2b0244d3816ccae7308c1872",
+  "title": "Railway Commons Republics",
+  "rules": [
+    "Sixteen republics each control sixteen people. Towns share 24 rail links and eight autonomous four-unit trains; trains are not agent rows.",
+    "Ore builds track and repairs bridges. Horizontal links start unfinished; vertical links are open alternatives. Walking crews must reach actual work sites.",
+    "A switch chooses a cardinal link and commits for six ticks. Departures spend power. Red signals brake approaching trains over real remaining distance.",
+    "Passage is public or home-origin only. Visitors at the station may declare it public; home actors may reclaim it. Physical presence matters.",
+    "Trains need clear links, valid destination passage, bridges and power. Load/unload at parked trains; foreign cargo replenishes physical town stock.",
+    "Weather damages bridges every 32 ticks. Crews can repair carriers; pantry grain is consumed every sixteen ticks. Accounting ends at 1024."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      63,
+      31
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Republic land and footpaths",
+          "color": "#C6C48F"
+        },
+        {
+          "value": 1,
+          "meaning": "Surveyed rail corridor; actual built state is at link center",
+          "color": "#80745A"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "worker",
+      "label": "Actors",
+      "color": "#AB7348",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Home republic"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 mine,1 track,2 signal,3 courier,4 farm,5 repair"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "0 empty,1 ore,2 grain"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "Decaying local route/signal bulletin"
+        }
+      ]
+    },
+    {
+      "id": "sites",
+      "glyph": "flag",
+      "label": "Sites",
+      "color": "#D7B450",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "site_kind"
+          ],
+          "label": "0 station/substation,1 mine,2 farm"
+        },
+        {
+          "state_path": [
+            "site_stock"
+          ],
+          "label": "Station power or producer stock"
+        },
+        {
+          "state_path": [
+            "site_route"
+          ],
+          "label": "0 east,1 south,2 west,3 north at station"
+        },
+        {
+          "state_path": [
+            "site_permit"
+          ],
+          "label": "0 public, otherwise allowed origin republic plus one"
+        },
+        {
+          "state_path": [
+            "site_red"
+          ],
+          "label": "Red station signal"
+        },
+        {
+          "state_path": [
+            "site_timer"
+          ],
+          "label": "Switch commitment remaining"
+        }
+      ]
+    },
+    {
+      "id": "track_links",
+      "glyph": "gate",
+      "label": "Track Links",
+      "color": "#657F91",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "edge_a"
+          ],
+          "label": "First endpoint republic"
+        },
+        {
+          "state_path": [
+            "edge_b"
+          ],
+          "label": "Second endpoint republic"
+        },
+        {
+          "state_path": [
+            "track"
+          ],
+          "label": "Construction level; at least two opens link"
+        },
+        {
+          "state_path": [
+            "bridge"
+          ],
+          "label": "Bridge integrity"
+        },
+        {
+          "state_path": [
+            "edge_builder"
+          ],
+          "label": "Last material contributor, minus one if none"
+        }
+      ]
+    },
+    {
+      "id": "trains",
+      "glyph": "crate",
+      "label": "Trains",
+      "color": "#A4474A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "train_kind"
+          ],
+          "label": "1 ore or 2 grain"
+        },
+        {
+          "state_path": [
+            "train_load"
+          ],
+          "label": "Units in four-unit carrier"
+        },
+        {
+          "state_path": [
+            "train_owner"
+          ],
+          "label": "Cargo origin republic"
+        },
+        {
+          "state_path": [
+            "train_health"
+          ],
+          "label": "Carrier health; zero needs repair"
+        },
+        {
+          "state_path": [
+            "speed"
+          ],
+          "label": "Cells advanced this tick"
+        },
+        {
+          "state_path": [
+            "train_dest"
+          ],
+          "label": "Destination republic"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "label": "Cells along current link"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event"
+      ],
+      "meaning": "Actor:0 none,1 gather,2 build,3 switch/signal,4 load,5 unload,6 passage,7 power,8 handoff/tools,9 pantry,10 train repair",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "edge_event"
+      ],
+      "meaning": "0 none,1 material work,2 weather damage",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "train_event"
+      ],
+      "meaning": "0 none,1 departure,2 braking stop,3 arrival,4 failed bridge,5 red overrun",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "received"
+      ],
+      "meaning": "Foreign units received by town",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Gather ore at mine or grain at farm with matching tool"
+    },
+    {
+      "id": 6,
+      "label": "Spend ore on nearby track and bridge"
+    },
+    {
+      "id": 7,
+      "label": "Rotate station switch east/south/west/north with signal tool"
+    },
+    {
+      "id": 8,
+      "label": "Toggle station red signal with signal tool"
+    },
+    {
+      "id": 9,
+      "label": "Load matching cargo into adjacent parked train"
+    },
+    {
+      "id": 10,
+      "label": "Unload foreign cargo at staffed station"
+    },
+    {
+      "id": 11,
+      "label": "Declare local passage public"
+    },
+    {
+      "id": 12,
+      "label": "Claim home-town passage for home freight"
+    },
+    {
+      "id": 13,
+      "label": "Fuel local power substation with ore"
+    },
+    {
+      "id": 14,
+      "label": "Hand cargo to adjacent waiting empty actor"
+    },
+    {
+      "id": 15,
+      "label": "Exchange tools with adjacent waiting actor"
+    },
+    {
+      "id": 16,
+      "label": "Relay station route and signal locally"
+    },
+    {
+      "id": 17,
+      "label": "Stock station pantry with grain"
+    },
+    {
+      "id": 18,
+      "label": "Repair adjacent train with ore and repair tool"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        10
+      ],
+      "meaning": "Self x/63,y/31,town/15,tool/5,cargo/2,message/6,event/10,id/255,t/1024,storm phase/31",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        74
+      ],
+      "meaning": "8 nearest agents within Manhattan 4: x/63,y/31,town/15,tool/5,cargo/2,message/6,id/255,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        74,
+        134
+      ],
+      "meaning": "6 nearest sites within Manhattan 6: x/63,y/31,kind/2,stock/24,route/3,permit-code/16,red,commit/6,town/15,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        134,
+        166
+      ],
+      "meaning": "4 nearest link centers within Manhattan 9: x/63,y/31,endpoint-a/15,endpoint-b/15,track/3,bridge/6,(builder+1)/256,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        166,
+        186
+      ],
+      "meaning": "2 nearest trains within Manhattan 6: x/63,y/31,kind/2,load/4,origin/15,health/4,speed/2,destination/15,progress/16,presence",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        186,
+        205
+      ],
+      "meaning": "Legal intent mask actions 0..18",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        205,
+        231
+      ],
+      "meaning": "Explicit zero padding",
+      "visibility": "padding"
+    }
+  ]
+}

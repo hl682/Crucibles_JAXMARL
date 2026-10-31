@@ -1,0 +1,282 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "338682ead446d6010c428c97ad959472aef964a88c505928d2a51bb3067efed8",
+  "manifest_sha256": "033bada94309feb1cced5db9d31904a1145c7c1c2a8e4b9e455e13c2b935af64",
+  "title": "Twin-Grip Lockway / 双人牵引闸道",
+  "rules": [
+    "Three workers must bring the one real pallet to its berth and all cross into the east chamber.",
+    "Two workers on opposite flanks must choose the same HAUL direction. The two workers and pallet then translate together by one cell.",
+    "Standing on either associated pressure plate opens a gate for the next action. Occupied apertures remain open until empty.",
+    "Walking reads old occupancy: no swaps or following. Conflicting free-cell targets fail; accepted hauling reserves its destinations.",
+    "Animate only changes in actual positions, plate occupancy, gate state and recorded events. An unexecuted script is never gameplay evidence.",
+    "The map and active entities are public. Event and action-outcome annotations are debug diagnostics; the policy still receives only the declared 1876 columns.",
+    "Natural completion precedes the 192-step limit. Already-ended raw states are absorbing and must not replay their last event as new motion."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      16.5,
+      10.5
+    ],
+    "map": {
+      "state_path": [
+        "tile_map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#D9D4C7"
+        },
+        {
+          "value": 1,
+          "meaning": "Static wall",
+          "color": "#303844"
+        },
+        {
+          "value": 2,
+          "meaning": "Closed physical gate aperture",
+          "color": "#B44B4B"
+        },
+        {
+          "value": 3,
+          "meaning": "Open physical gate aperture",
+          "color": "#80C8AD"
+        },
+        {
+          "value": 4,
+          "meaning": "Gate 0 pressure plate",
+          "color": "#E9B44C"
+        },
+        {
+          "value": 5,
+          "meaning": "Gate 1 pressure plate",
+          "color": "#8E7CC3"
+        },
+        {
+          "value": 6,
+          "meaning": "Pallet berth",
+          "color": "#62B6CB"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Workers",
+      "color": "#386CB0",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "event_agent_outcome"
+          ],
+          "label": "Latest action outcome (debug diagnostic)"
+        },
+        {
+          "state_path": [
+            "event_haul_agents"
+          ],
+          "label": "Participated in latest haul (debug diagnostic)"
+        }
+      ]
+    },
+    {
+      "id": "pallet",
+      "glyph": "crate",
+      "label": "Shared heavy pallet",
+      "color": "#A36D3E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pallet_on_berth"
+          ],
+          "label": "Pallet is on berth"
+        }
+      ]
+    },
+    {
+      "id": "plates",
+      "glyph": "beacon",
+      "label": "Pressure plates",
+      "color": "#E9B44C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "plate_gate"
+          ],
+          "label": "Controlled gate"
+        },
+        {
+          "state_path": [
+            "plate_occupied"
+          ],
+          "label": "Currently occupied"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Three-cell lock gates",
+      "color": "#825BA7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Actual aperture open"
+        },
+        {
+          "state_path": [
+            "gate_requested_open"
+          ],
+          "label": "Pressure plate requests opening"
+        },
+        {
+          "state_path": [
+            "gate_plate_count"
+          ],
+          "label": "Occupied plates"
+        }
+      ]
+    },
+    {
+      "id": "berth",
+      "glyph": "flag",
+      "label": "Pallet berth",
+      "color": "#349E8D",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_agent_outcome"
+      ],
+      "meaning": "0=wait/no motion, 1=ordinary step accepted, 2=joint haul accepted, 3=ordinary step rejected, 4=haul rejected.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_invalid_action"
+      ],
+      "meaning": "True when an input outside 0..8 was replaced with WAIT.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_haul_agents"
+      ],
+      "meaning": "Exactly two true values for an accepted haul, otherwise all false.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_haul_direction"
+      ],
+      "meaning": "-1 if no haul, otherwise 0=north, 1=east, 2=south, 3=west.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_gate_delta"
+      ],
+      "meaning": "-1=closed this transition, 0=unchanged, +1=opened this transition.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_success"
+      ],
+      "meaning": "True only on the transition first satisfying natural success.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "WAIT — Remain in place."
+    },
+    {
+      "id": 1,
+      "label": "MOVE_N — Propose [0,-1] ordinary movement."
+    },
+    {
+      "id": 2,
+      "label": "MOVE_E — Propose [1,0] ordinary movement."
+    },
+    {
+      "id": 3,
+      "label": "MOVE_S — Propose [0,1] ordinary movement."
+    },
+    {
+      "id": 4,
+      "label": "MOVE_W — Propose [-1,0] ordinary movement."
+    },
+    {
+      "id": 5,
+      "label": "HAUL_N — Request a joint pallet translation [0,-1]."
+    },
+    {
+      "id": 6,
+      "label": "HAUL_E — Request a joint pallet translation [1,0]."
+    },
+    {
+      "id": 7,
+      "label": "HAUL_S — Request a joint pallet translation [0,1]."
+    },
+    {
+      "id": 8,
+      "label": "HAUL_W — Request a joint pallet translation [-1,0]."
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1870
+      ],
+      "meaning": "Row-major [11,17,10] public grid. Channels: static wall; open gate; closed gate; gate-0 plate; gate-1 plate; pallet; berth; agent 0; agent 1; agent 2.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1870,
+        1873
+      ],
+      "meaning": "Observer's one-hot identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1873,
+        1874
+      ],
+      "meaning": "Public completed-step clock t/192.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1874,
+        1876
+      ],
+      "meaning": "Actual occupied plate counts for gates 0 and 1, each divided by two.",
+      "visibility": "public"
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "22d1dc5fbcc3633ea3cf707b9815b2aac03c8aced58f88d5177a7e0d6c0d0e6f",
+  "manifest_sha256": "c10e41fa526d27c43ee85f21af08e3bff02c0a48f0b1e4844af009f5771ada3a",
+  "title": "Tide Ledger: Salvage Claims",
+  "rules": [
+    "Three two-tick auctions happen before movement. A bid can only rise to 1, 2 or 3 within the bidder's private remaining budget.",
+    "The highest positive bid wins at closure and only the winner pays. Equal bids rotate priority by lot: 0,1,2 then 1,2,0 then 2,0,1.",
+    "Carry one lot, respect its unexpired exclusive claim, and bring it physically to the depot. Walls and other salvagers obstruct routes.",
+    "Uncollected claims expire at clocks 28, 32 and 36. A carrier keeps possession. Release a ground claim without refund or drop cargo for a later handoff.",
+    "Delivery pays the deliverer's private value and gives everyone 1. Finishing all lots gives everyone 2. Auction payment is a negative reward to its payer.",
+    "Only your own purse and value card are visible in role view. Public commitments, claim markers and physical positions are native game state."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tilemap"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable yard",
+          "color": "#D8C6A4"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable breakwater",
+          "color": "#34495E"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "salvagers",
+      "glyph": "worker",
+      "label": "Salvager and public bids",
+      "color": "#D2691E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carried lot: -1 means empty"
+        },
+        {
+          "state_path": [
+            "bids"
+          ],
+          "label": "Public commitments by lot, 0 means none"
+        }
+      ]
+    },
+    {
+      "id": "private_cards",
+      "glyph": "tool",
+      "label": "Private valuation and purse card",
+      "color": "#805AD5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "budget"
+          ],
+          "label": "Own unspent tokens, private"
+        },
+        {
+          "state_path": [
+            "values"
+          ],
+          "label": "Own delivery values for lots 0,1,2, private"
+        }
+      ]
+    },
+    {
+      "id": "salvage",
+      "glyph": "crate",
+      "label": "Salvage lot and exclusive claim",
+      "color": "#E9B44C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "Exclusive claimant: -1 is open access"
+        },
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "label": "Physical carrier: -1 is on ground"
+        },
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "label": "Exclusive claim expiry clock"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "glyph": "flag",
+      "label": "Shared delivery depot",
+      "color": "#278A70",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "auction_closed"
+      ],
+      "meaning": "Current two-tick auction closed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Lots physically picked up this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "released"
+      ],
+      "meaning": "Claims released or expired this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Lots delivered this transition",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up eligible salvage here; deliver carried salvage at depot"
+    },
+    {
+      "id": 6,
+      "label": "Commit bid 1 on current lot"
+    },
+    {
+      "id": 7,
+      "label": "Commit bid 2 on current lot"
+    },
+    {
+      "id": 8,
+      "label": "Commit bid 3 on current lot"
+    },
+    {
+      "id": 9,
+      "label": "Release lowest-index owned uncarried claim without refund"
+    },
+    {
+      "id": 10,
+      "label": "Drop carried salvage here"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Clock t/64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Auction-phase flag: t<6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Clipped lot index min(t//2,2)/2; remains 1 after auction phase",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Public treasury /9",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        10
+      ],
+      "meaning": "All agent x,y positions in role order /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "Each agent carried lot encoded (lot+1)/3, zero empty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        22
+      ],
+      "meaning": "Public bid matrix, agent-major then lot /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        28
+      ],
+      "meaning": "All physical salvage x,y positions /8, including delivered last positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        31
+      ],
+      "meaning": "Lot claimant encoded (owner+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        34
+      ],
+      "meaning": "Lot carrier encoded (carrier+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Delivered flags by lot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Exclusive-claim deadlines /64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "meaning": "Own private unspent budget /7",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        41,
+        44
+      ],
+      "meaning": "Own private lot valuations /8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        44,
+        47
+      ],
+      "meaning": "Own role one-hot identity",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        47,
+        50
+      ],
+      "meaning": "Claim release/expiry flags for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        53
+      ],
+      "meaning": "Pickup flags for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        56
+      ],
+      "meaning": "Delivery flags for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "meaning": "Auction closure flag for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        64
+      ],
+      "meaning": "Zero padding; no policy information",
+      "visibility": "padding"
+    }
+  ]
+}

@@ -1,0 +1,333 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "c65118d8ecf1e89844561a43cfb4963d4f32076e80d6592c0d43c0df8e652f47",
+  "manifest_sha256": "91fa229fbcac68506f3eb2eb77f7d5216f58f099307ae1d1e668974280d1aeb0",
+  "title": "Crossbar Couriers: Pass Before Expiry",
+  "rules": [
+    "Each courier has exactly one packet slot. Pick-up requires the same cell; an offer requires an empty adjacent role choosing Accept on that tick.",
+    "An opposite-side destination is sampled privately at reset. Packet attributes are visible only locally or to their carrier.",
+    "Reserve one neighboring road cell for three decision frames. Other roles cannot enter an active reservation, including during its creation tick.",
+    "Old occupied courier cells cannot be entered this tick: no swaps or following into a cell just vacated. Shared target conflicts use rotating priority.",
+    "Packets keep their identity through drops and handoffs. Arrival wins over expiry on the same tick; resolved packets release the slot.",
+    "Delivery gives a shared quarter-point plus one point each to sponsor and final carrier. Expiry penalizes the team and sponsor.",
+    "The scene's packet and courier visibility comes from the same masks used in observations. Only public delivery and expiry receipts appear as global events."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Road or gate opening",
+          "color": "#C8C9B2"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable separator",
+          "color": "#52606D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "glyph": "robot",
+      "label": "couriers",
+      "color": "#3378B8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_load"
+          ],
+          "label": "One-slot buffer occupied"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "glyph": "flag",
+      "label": "depots",
+      "color": "#5AA45E",
+      "attribute_labels": []
+    },
+    {
+      "id": "packets",
+      "glyph": "crate",
+      "label": "packets",
+      "color": "#DEAB40",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "packet_status"
+          ],
+          "label": "0 ground; 1 carried; 2 delivered; 3 expired"
+        },
+        {
+          "state_path": [
+            "packet_carrier"
+          ],
+          "label": "Carrier role; -1 none"
+        },
+        {
+          "state_path": [
+            "packet_destination"
+          ],
+          "label": "Destination depot index, locally visible"
+        },
+        {
+          "state_path": [
+            "packet_ttl"
+          ],
+          "label": "Remaining ticks, locally visible"
+        },
+        {
+          "state_path": [
+            "packet_sponsor"
+          ],
+          "label": "Sponsor role, locally visible"
+        }
+      ]
+    },
+    {
+      "id": "route_reservations",
+      "glyph": "beacon",
+      "label": "route reservations",
+      "color": "#AD6DCC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "reservation_ttl"
+          ],
+          "label": "Ticks remaining including current frame"
+        },
+        {
+          "state_path": [
+            "reservation_owner"
+          ],
+          "label": "Only this role may enter the reserved cell"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public radio receipt for each packet newly delivered this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expiry_event"
+      ],
+      "meaning": "Public radio receipt for each packet newly expired this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up packet at own cell"
+    },
+    {
+      "id": 6,
+      "label": "Offer carried packet to adjacent accepting role"
+    },
+    {
+      "id": 7,
+      "label": "Accept an adjacent offered packet"
+    },
+    {
+      "id": 8,
+      "label": "Reserve north cell"
+    },
+    {
+      "id": 9,
+      "label": "Reserve east cell"
+    },
+    {
+      "id": 10,
+      "label": "Reserve south cell"
+    },
+    {
+      "id": 11,
+      "label": "Reserve west cell"
+    },
+    {
+      "id": 12,
+      "label": "Drop carried packet"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Role one-hot in role index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Own [x,y] divided by 8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own one-slot buffer occupancy",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own movement request blocked on latest step",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        19
+      ],
+      "meaning": "Three couriers in index order, each [visible, x/8, y/8, load]; visible iff Manhattan distance <=3; hidden attributes zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        19,
+        51
+      ],
+      "meaning": "Four packet identities in index order, each [visible, x/8, y/8, destination/4, ttl/64, status/4, carrier/4, sponsor/4]; hidden attributes zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        51,
+        59
+      ],
+      "meaning": "Four depot [x,y] pairs divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        65
+      ],
+      "meaning": "Three current or historical reservation [x,y] pairs divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        68
+      ],
+      "meaning": "Reservation timers divided by 4, in owner role order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        68,
+        71
+      ],
+      "meaning": "Reservation active flags in owner role order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        75
+      ],
+      "meaning": "Per-packet public delivery receipt flags for latest step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        79
+      ],
+      "meaning": "Per-packet public expiry receipt flags for latest step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "meaning": "Clock t divided by 64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "meaning": "Total delivered packet count divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "meaning": "Total expired packet count divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        83
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public"
+    }
+  ]
+}

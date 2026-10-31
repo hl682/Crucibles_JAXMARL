@@ -1,0 +1,413 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>系绳转运 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI122 / SPATIAL</p><h1>系绳转运</h1><p class="lead">三名搬运者连接各自接口，以同步拉动或转向搬运大件，绳长、空间与磨损约束动作。</p><div class="stats"><span>3 agents</span><span>9 actions</span><span>171 observation columns</span><span>96 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi122.gif" alt="Original saved demonstration gi122"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi122.gif" alt="Actual verification episode gi122"></section><section><h2>Run this game</h2><pre>crucibles play --game 122</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Cooperatively deliver the three-cell load to center (10,5) with horizontal footprint.&quot;,
+  &quot;natural_termination&quot;: &quot;Shared success when center equals goal and orientation is even; shared failure at wear &gt;= 6. Natural completion takes priority over H=96.&quot;,
+  &quot;interaction&quot;: &quot;Attached joint action sums determine translation and torque; every tether length and every body can veto a collective proposal. Detachment changes both available force and geometric access.&quot;,
+  &quot;observation_access&quot;: &quot;Fully public physical world; observations expose all positions, ropes, load orientation/wear, static walls, goal, clock and displayed event flags. Own port identity is explicitly encoded.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.1 to 1.1. Observability: fully_observable.</p></section><section><h2>Rules</h2><ol><li>Three haulers attach only to their own oriented ports within Manhattan distance two.</li><li>Two matching attached directional commands create one-cell load motion; attached commands also attempt body movement.</li><li>Any attached brace stops collective translation and turning. Two simultaneous bracers remove one wear.</li><li>Two matching turn votes propose a quarter-turn; load footprint, bodies, walls and all attached ropes must fit.</li><li>Agent destinations occupied at the start of a step and contested destinations are blocked. Swaps are blocked.</li><li>The north wall opening fits a horizontal load; the wider south route permits other orientations.</li><li>Conflicting pulls and rejected collective moves increase wear. Wear six ends the task.</li><li>Deliver the load center to the flag in a horizontal orientation. The horizon is 96 live transitions.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Tether Turn — three ports and a shared bulky load
+
+Status: AUTHORED_NOT_EXECUTED. This initial train-only source was written for game-v3-00122, ordinal 122, attempt 00. No candidate import, compilation, transition, rollout, JIT, vmap, numerical parity check, rendering, training or test-set use occurred. Source SHA256: 31bc46089b1cd28acd11e0749f7a2d9f2f2460bf9d7fb1023255ce684d3af220.
+
+## Boundary and lifecycle
+
+A=3, O=171, U=9, H=96. All state leaves have a fixed declared key, shape and int32/bool dtype; observations and rewards are float32. Reset consumes only its supplied key; no external state, time, cache, file or network is part of the kernel. The scalar t starts at zero. A nonterminal call advances it once. Natural termination takes precedence over the horizon. An already-terminal call preserves every leaf and observation, preserves its terminal cause and clock, and returns zero rewards and all dones true. There is no raw auto-reset. The final tree operation preserves each reset leaf&#x27;s dtype explicitly.
+
+Every in-range action is a legal command attempt while the episode is live. A blocked movement, absent resource, wrong recipe, unavailable object or cooldown causes the specified deterministic wait/no-effect outcome. Out-of-range integers map to action 0. At joint termination only action 0 is legal. No role is removed independently; completed contributors can still help until joint completion. The role adapter must preserve these masks and semantics.
+
+- reset: candidate.py:42
+- observe: candidate.py:83
+- legal_actions: candidate.py:80
+- raw_step: candidate.py:102
+
+## Actual mechanism and timing
+
+The world is a 13 by 11 grid, with interior coordinates x=1..11 and y=1..9. A vertical partition at x=6 has a one-row north opening at y=2 and a wider opening at y=7..9. The actual load occupies center minus axis, center, and center plus axis. Orientation has four values; although opposite orientations share a footprint, they reverse port assignments. Port 0 is the positive endpoint, port 1 the negative endpoint, and port 2 the perpendicular flank. Geometry is implemented at candidate.py:14; the wall layout is at candidate.py:46.
+
+A toggle detaches an attached hauler or attaches a detached hauler only within distance two of its own current port. A hauler cannot choose another role&#x27;s port. Each attached cardinal command contributes its unit direction to the shared force; axis ties choose x through the first argmax. A component magnitude of at least two proposes one load-cell displacement. Two equal-sign turn votes propose one quarter-turn, with turning taking priority over translation. An attached brace vetoes both. These are commands transmitted through a tether, so a blocked individual body can still exert traction; the resulting load/body configuration must satisfy all collision and rope constraints. Causal aggregation and priorities are at candidate.py:115, candidate.py:119 and candidate.py:121.
+
+First the kernel tests the proposed load footprint and resolves each agent&#x27;s cardinal move against map, proposed footprint, old occupied cells and contested targets. No swaps or follow-through into another agent&#x27;s just-vacated cell occur. All attached ropes must then be at most two Manhattan units and the final load must not cover an agent. A rejected collective proposal retains the previous load pose and resolves safe individual movements against the previous footprint and anchors. That fallback lets partners reposition without silently moving the payload; see candidate.py:126, candidate.py:129 and candidate.py:130.
+
+Wear is persistent. Two or more opposing attached pulls with no sufficient force, or a rejected collective move/turn, add one wear. Two attached brace commands remove one wear, clipped to 0..6. Brace coordination therefore trades time for risk reduction and may prevent another partner&#x27;s desired translation. The reward shared by all three roles is 0.01 times the reduction in Manhattan distance to the goal, minus 0.02 for a jam, plus one for success and minus one for failure. Reward shaping telescopes with goal distance; no claimed learning gain follows. Wear and rewards are at candidate.py:138, candidate.py:140 and candidate.py:154.
+
+The side port can obstruct the narrow north passage even when the load itself fits. One plausible plan is to detach and relocate the stabilizer while the endpoint haulers use the horizontal passage. Another is to travel through the wider south route with a different orientation and retained third tether. Neither plan has been numerically attempted. A partner may need to wait, brace, release or reposition instead of copying the leader&#x27;s movement. A rotation without enough space or rope slack can be harmful; turning is an actual constrained configuration change, not a sprite rotation.
+
+The scene binds both the real three-cell footprint and the three physical anchor coordinates. Active tether markers and the haulers&#x27; attachment/length attributes describe the actual connections; they are not invented line animation. A future renderer may connect a hauler to its assigned anchor using these exact endpoints. The current declarative glyph scheme does not itself prove that such replay animation has been reviewed.
+
+Declared logical invariants additionally include: each attached rope length &lt;=2, no agent/load overlap, three collinear adjacent load cells determined by orientation, unchanged map, and no external reset. Future R0 must check these against actual trajectories. Changing opening geometry, port assignment, allowed rope length or the brace rule could change useful coordination; such variants are proposed scientific factors, not implemented or tested generalization results.
+
+## Observation contract
+
+- Columns 0 through 5 (public): All agent xy coordinates, agent order then xy; divided by 12
+- Columns 6 through 8 (public): Per-agent tether attachment flags
+- Columns 9 through 11 (public): Per-agent Manhattan tether length, divided by 2; zero when detached
+- Columns 12 through 13 (public): Shared load center xy divided by 12
+- Columns 14 through 17 (public): Load orientation one-hot: east, south, west, north
+- Columns 18 through 18 (public): Load wear divided by 6
+- Columns 19 through 20 (public): Goal center xy divided by 12
+- Columns 21 through 23 (self): Own role identity one-hot
+- Columns 24 through 166 (public): Public 11 by 13 static tile map flattened in yx order
+- Columns 167 through 167 (public): Clock divided by 96
+- Columns 168 through 170 (public): Latest accepted load translation, accepted turn, and jam flags
+
+The returned observation is the policy information boundary. Entity visibility and declared attributes refer to the same actual state and access rules. The complete static tile layout is public; a debug/full-state display must be labelled separately from a role view. Undeclared internal leaves are not an invitation to expose private values in a role renderer.
+
+## Fixed author scripts and paired interventions
+
+playthrough.json contains fixed joint integer commands, an explicit seed and UNEXECUTED_AUTHOR_HYPOTHESIS status for each script. Stop at the first done. These scripts were constructed from the written rules without local execution, simulation, numerical action search or feedback from other candidates. Prefix/branch comparisons state predicted causal differences only; there is no observed trace, successful episode, solvability certificate, ranking or learned policy.
+
+## Community provenance and delivery boundary
+
+Only this batch&#x27;s hash-verified design/request, 20 listed inputs and copied public references were used. JaxMARL&#x27;s README supplies multi-agent integration context, including agent-keyed public APIs; Pgx supplies JAX-native game-state and legal-action-mask design context. Craftax supplies an example of spatial compositional game mechanics. PureJaxRL and the Craftax PPO RNN baseline are algorithm/integration references, not a game library, copied environment, or replacement learner. No upstream source lines, layouts or benchmark rules were copied into this original kernel. Exact copied-input hashes and original official URLs are retained in generation_record.json.
+
+The coordinator owns the separate public JaxMARL adapter, sealed runtime validation, actual state replay, RGB/animated presentation, playback controls and community review. This authored kernel and declarative scene do not establish those acceptance outcomes. Structural/AST screening is separate from numerical validation. Passing future interaction or interface checks would not by itself establish strategic richness, reward learning, meta-learning, non-isomorphism or transfer. No new scientific performance gate is added.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Pull or move north</span></div><div class="action"><b>2</b><span>Pull or move east</span></div><div class="action"><b>3</b><span>Pull or move south</span></div><div class="action"><b>4</b><span>Pull or move west</span></div><div class="action"><b>5</b><span>Toggle own tether when within reach</span></div><div class="action"><b>6</b><span>Brace; two bracers repair one wear</span></div><div class="action"><b>7</b><span>Vote clockwise quarter-turn</span></div><div class="action"><b>8</b><span>Vote counterclockwise quarter-turn</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Fore-port hauler: attachment at the oriented forward endpoint</p><p><b>agent_1</b> Aft-port hauler: attachment at the opposite endpoint</p><p><b>agent_2</b> Side-port stabilizer: attachment on the clockwise-relative upper flank</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      6
+    ],
+    &quot;meaning&quot;: &quot;All agent xy coordinates, agent order then xy; divided by 12&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      9
+    ],
+    &quot;meaning&quot;: &quot;Per-agent tether attachment flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      12
+    ],
+    &quot;meaning&quot;: &quot;Per-agent Manhattan tether length, divided by 2; zero when detached&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      14
+    ],
+    &quot;meaning&quot;: &quot;Shared load center xy divided by 12&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      18
+    ],
+    &quot;meaning&quot;: &quot;Load orientation one-hot: east, south, west, north&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      19
+    ],
+    &quot;meaning&quot;: &quot;Load wear divided by 6&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      19,
+      21
+    ],
+    &quot;meaning&quot;: &quot;Goal center xy divided by 12&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      21,
+      24
+    ],
+    &quot;meaning&quot;: &quot;Own role identity one-hot&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      24,
+      167
+    ],
+    &quot;meaning&quot;: &quot;Public 11 by 13 static tile map flattened in yx order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      167,
+      168
+    ],
+    &quot;meaning&quot;: &quot;Clock divided by 96&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      168,
+      171
+    ],
+    &quot;meaning&quot;: &quot;Latest accepted load translation, accepted turn, and jam flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;haulers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_xy&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;attached&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tether attached&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tension&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tether length (0-2)&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;load&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;load_xy&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;load_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;load_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;load_orientation&quot;
+        ],
+        &quot;meaning&quot;: &quot;Orientation (E,S,W,N)&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wear&quot;
+        ],
+        &quot;meaning&quot;: &quot;Accumulated wear (0-6)&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;footprint&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;load_cells&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cell_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cell_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;tethers&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;anchor_xy&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;anchor_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;anchor_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;tension&quot;
+        ],
+        &quot;meaning&quot;: &quot;Attached Manhattan rope length&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;goal&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;goal_xy&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;goal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;goal_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi122&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;31bc46089b1cd28acd11e0749f7a2d9f2f2460bf9d7fb1023255ce684d3af220&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 171,
+    &quot;num_actions&quot;: 9,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.4886903762817383
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.22107434272766113
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.9878380298614502
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1276257038116455
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7272543907165527
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.00099945068359375
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1356801986694336
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.49660658836364746
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.638512134552002
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7267382144927979
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 7.062658309936523,
+  &quot;float_parity_max_abs&quot;: 5.960464477539063e-08,
+  &quot;numerical_parity&quot;: &quot;UNDETERMINED_NONZERO_FLOAT_DIFFERENCE&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 96,
+  &quot;scripted_random_returns&quot;: [
+    -0.019999999552965164,
+    -0.019999999552965164,
+    -0.019999999552965164
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi122&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 3.8659214973449707
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 122,
+  &quot;key&quot;: &quot;gi122&quot;,
+  &quot;title&quot;: &quot;系绳转运&quot;,
+  &quot;summary&quot;: &quot;三名搬运者连接各自接口，以同步拉动或转向搬运大件，绳长、空间与磨损约束动作。&quot;,
+  &quot;tags&quot;: [
+    &quot;协同搬运&quot;,
+    &quot;几何约束&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 171,
+    &quot;num_actions&quot;: 9,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;source_sha256&quot;: &quot;31bc46089b1cd28acd11e0749f7a2d9f2f2460bf9d7fb1023255ce684d3af220&quot;,
+  &quot;manifest_sha256&quot;: &quot;94fd003f4f792f3119178c36b0976b3a0e69e352b78812d801eb3b1b65085f04&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;31bc46089b1cd28acd11e0749f7a2d9f2f2460bf9d7fb1023255ce684d3af220&quot;,
+      &quot;bytes&quot;: 9536,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00122/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;94fd003f4f792f3119178c36b0976b3a0e69e352b78812d801eb3b1b65085f04&quot;,
+      &quot;bytes&quot;: 11702,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00122/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;91d32864640035b94d970c323e496a98711419e5d74a046a03c681caebf53dfd&quot;,
+      &quot;bytes&quot;: 6126,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00122/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;2d9db15856335bd1f1f1a24b44927bf6fc852c968a8b2016515b13b4e9788ebf&quot;,
+      &quot;bytes&quot;: 8710,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00122/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;1e0d9075eed3b5f9f50d0de29130ea33c500155adca03396f5b82468de43db7b&quot;,
+      &quot;bytes&quot;: 3982,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00122/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi122">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

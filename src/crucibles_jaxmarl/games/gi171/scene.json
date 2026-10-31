@@ -1,0 +1,366 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "52f6a3b16a2849b73cb1afdfb3f68f9d27e4295944a576b1478ab16aaad6049a",
+  "manifest_sha256": "0797cc5e88ed25a14e3fb32d805b4a3684df2b193f0caf05ac9a022ac9702dfd",
+  "title": "Shared Firebreak",
+  "rules": [
+    "Move, spray, clear own non-burning fuel, refill near the shared reservoir, or give water to an adjacent crew.",
+    "Each active action costs one labor except clearing costs two. Rest restores two up to eight.",
+    "Spray consumes one water. Capacity is four. Shared refills and gifts settle in rotating role order.",
+    "Every third transition, burning fuel decreases and surviving fire spreads one cell downwind into remaining fuel. Wind rotates every six ticks.",
+    "Clearing permanently removes fuel. Burning assets lose one health per transition. Priority-weighted penalties and extinction rewards create different valuations.",
+    "Extinction, all assets lost, or horizon 72 ends the episode. Cells and crew state are local; private priorities remain hidden."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_visible"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Bare exhausted ground",
+          "color": "#B6A087"
+        },
+        {
+          "value": 1,
+          "meaning": "Remaining combustible vegetation",
+          "color": "#83A96A"
+        },
+        {
+          "value": 2,
+          "meaning": "Burning cell",
+          "color": "#E36C37"
+        },
+        {
+          "value": 3,
+          "meaning": "Crew-cleared firebreak",
+          "color": "#D7CDBE"
+        },
+        {
+          "value": 4,
+          "meaning": "Reservoir footprint; no fuel",
+          "color": "#53A9D8"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Fire crew",
+      "color": "#3A84AD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried water"
+        },
+        {
+          "state_path": [
+            "labor"
+          ],
+          "label": "Labor reserve"
+        }
+      ]
+    },
+    {
+      "id": "cell",
+      "glyph": "hazard",
+      "label": "Native fuel and fire cells",
+      "color": "#E17A38",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Remaining combustible fuel"
+        },
+        {
+          "state_path": [
+            "fire"
+          ],
+          "label": "Currently burning"
+        },
+        {
+          "state_path": [
+            "cleared"
+          ],
+          "label": "Permanent crew-built firebreak"
+        }
+      ]
+    },
+    {
+      "id": "reservoir",
+      "glyph": "water",
+      "label": "Shared reservoir",
+      "color": "#469FCC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tank"
+          ],
+          "label": "Public shared water supply"
+        }
+      ]
+    },
+    {
+      "id": "zone",
+      "glyph": "plant",
+      "label": "Protected asset",
+      "color": "#60A16D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "zone_health"
+          ],
+          "label": "Public asset health"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "zone_damage"
+      ],
+      "meaning": "Public asset damage this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "zone_health"
+      ],
+      "meaning": "Remaining public asset health",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "wind"
+      ],
+      "meaning": "Public wind phase: east south west north",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "tank"
+      ],
+      "meaning": "Shared reservoir water level",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest: recover two labor"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Spray north adjacent cell"
+    },
+    {
+      "id": 6,
+      "label": "Spray east adjacent cell"
+    },
+    {
+      "id": 7,
+      "label": "Spray south adjacent cell"
+    },
+    {
+      "id": 8,
+      "label": "Spray west adjacent cell"
+    },
+    {
+      "id": 9,
+      "label": "Clear own non-burning fuel into permanent firebreak"
+    },
+    {
+      "id": 10,
+      "label": "Refill up to two water near shared reservoir"
+    },
+    {
+      "id": 11,
+      "label": "Give one water to adjacent crew 0"
+    },
+    {
+      "id": 12,
+      "label": "Give one water to adjacent crew 1"
+    },
+    {
+      "id": 13,
+      "label": "Give one water to adjacent crew 2"
+    },
+    {
+      "id": 14,
+      "label": "Spray own burning cell"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own crew ID one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Own xy",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own water",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own labor",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        10
+      ],
+      "meaning": "Own private priority-zone one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "meaning": "Wind 0 east, 1 south, 2 west, 3 north",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        13
+      ],
+      "meaning": "Shared tank stock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public reservoir xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        21
+      ],
+      "meaning": "Public zone xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "Public zone health",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        30
+      ],
+      "meaning": "Crew positions within Manhattan radius three; otherwise -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        30,
+        33
+      ],
+      "meaning": "Crew water within radius three; otherwise -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        33,
+        36
+      ],
+      "meaning": "Crew labor within radius three; otherwise -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        36,
+        39
+      ],
+      "meaning": "Crew visibility bits",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        39,
+        291
+      ],
+      "meaning": "63 yx-ordered cell records: visible, fuel, fire, cleared; hidden values -1",
+      "visibility": "local"
+    }
+  ]
+}

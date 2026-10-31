@@ -1,0 +1,434 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "d6baaac961ca553548949155772644b36a833f04e626572085029c1467bff53d",
+  "manifest_sha256": "7ce4165329552b5a601c7040dc859897020422d6abe61919ef9f740c07202467",
+  "title": "Canal Kitchen",
+  "rules": [
+    "Two kitchen banks share one timed footbridge and one four-tick cargo ferry. Three cooks can change roles freely.",
+    "Left vegetables need two-tick chopping; right broth needs three-tick cooking. Both go into the right assembly tray.",
+    "A clean bowl turns both prepared ingredients into a meal. Delivery returns that same bowl dirty.",
+    "Only two bowls exist. Send them back to the left sink, wash for two ticks, and circulate them again.",
+    "The bridge permits entry during the first four ticks of each eight-tick cycle. A cook on it can always leave.",
+    "The ferry carries exactly one real item; it travels with food age and cannot be unloaded mid-channel.",
+    "Cooked broth and meals spoil at age 12, while an unattended ready pot burns at age eight.",
+    "Serve before each order deadline. Serving pays all cooks; unresolved deadlines cost the whole team.",
+    "Use aproned characters, visible ingredients, bowls, steaming cookware and a wooden skiff on the actual canal geometry."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Kitchen paving / landing",
+          "color": "#DAC9A5"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid rim or canal water; row-three bridge is separate",
+          "color": "#416A8A"
+        },
+        {
+          "value": 2,
+          "meaning": "Vegetable pantry",
+          "color": "#779553"
+        },
+        {
+          "value": 3,
+          "meaning": "Broth pantry",
+          "color": "#A8734D"
+        },
+        {
+          "value": 4,
+          "meaning": "Chopping board counter",
+          "color": "#C19863"
+        },
+        {
+          "value": 5,
+          "meaning": "Cooking pot counter",
+          "color": "#AD6348"
+        },
+        {
+          "value": 6,
+          "meaning": "Bowl washing sink",
+          "color": "#8EB7B9"
+        },
+        {
+          "value": 7,
+          "meaning": "Assembly counter",
+          "color": "#C1AA8A"
+        },
+        {
+          "value": 8,
+          "meaning": "Service counter",
+          "color": "#D5B766"
+        },
+        {
+          "value": 9,
+          "meaning": "Timed bridge deck",
+          "color": "#7F7057"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "cooks",
+      "glyph": "worker",
+      "label": "Aproned cooks carrying real food and bowls",
+      "color": "#DC866A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "Held item"
+        },
+        {
+          "state_path": [
+            "food_age"
+          ],
+          "label": "Food age"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "food",
+      "label": "Pantries, board, pot, sink, assembly and service",
+      "color": "#B99569",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_status"
+          ],
+          "label": "Station processing / contents"
+        }
+      ]
+    },
+    {
+      "id": "cargo_ferry",
+      "glyph": "crate",
+      "label": "Wooden food-and-bowl cargo skiff",
+      "color": "#B88B57",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ferry_cargo"
+          ],
+          "label": "Cargo"
+        },
+        {
+          "state_path": [
+            "ferry_timer"
+          ],
+          "label": "Travel ticks"
+        },
+        {
+          "state_path": [
+            "ferry_age"
+          ],
+          "label": "Food age"
+        },
+        {
+          "state_path": [
+            "ferry_bank"
+          ],
+          "label": "Destination bank"
+        }
+      ]
+    },
+    {
+      "id": "timed_bridge",
+      "glyph": "gate",
+      "label": "Raising pedestrian bridge",
+      "color": "#8C7757",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge_open"
+          ],
+          "label": "Entry open"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices: 0 raw picked; 1 station loaded/collected; 2 tray filled/meal plated; 3 served; 4 ferry load/launch/unload; 5 bowl taken/washed; 6 handoff; 7 discarded/burnt/spoiled; 8 order expired.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "order"
+      ],
+      "meaning": "Four order statuses: 0 open, 1 served, 2 expired",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Meals successfully served",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Discarded/spoiled food units by vegetable and broth",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Take raw ingredient"
+    },
+    {
+      "id": 6,
+      "label": "Load preparation station"
+    },
+    {
+      "id": 7,
+      "label": "Collect prepared ingredient"
+    },
+    {
+      "id": 8,
+      "label": "Put ingredient on assembly tray"
+    },
+    {
+      "id": 9,
+      "label": "Plate meal in clean bowl"
+    },
+    {
+      "id": 10,
+      "label": "Serve meal"
+    },
+    {
+      "id": 11,
+      "label": "Load cargo ferry"
+    },
+    {
+      "id": 12,
+      "label": "Launch loaded ferry"
+    },
+    {
+      "id": 13,
+      "label": "Unload landed ferry"
+    },
+    {
+      "id": 14,
+      "label": "Take clean bowl at sink"
+    },
+    {
+      "id": 15,
+      "label": "Wash dirty bowl"
+    },
+    {
+      "id": 16,
+      "label": "Hand item to neighbor"
+    },
+    {
+      "id": 17,
+      "label": "Discard food"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t / 132",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Bridge admits entry now",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        65
+      ],
+      "meaning": "Actual public map codes / 9, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        71
+      ],
+      "meaning": "All cook xy / 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        74
+      ],
+      "meaning": "All carried item codes / 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        77
+      ],
+      "meaning": "All held-food ages / 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        77,
+        86
+      ],
+      "meaning": "Board, pot, sink state rows [timer,item-or-clean,age] / 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        89
+      ],
+      "meaning": "Assembly [chopped-present,broth-present,broth-age] / 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        91
+      ],
+      "meaning": "Raw vegetable and broth stock / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        95
+      ],
+      "meaning": "Order status / 2 in queue order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        99
+      ],
+      "meaning": "Order deadline / 132",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        99,
+        101
+      ],
+      "meaning": "Ferry actual xy / 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        102
+      ],
+      "meaning": "Ferry cargo code / 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        103
+      ],
+      "meaning": "Ferry travel ticks / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        104
+      ],
+      "meaning": "Ferry destination bank",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        105
+      ],
+      "meaning": "Ferry food age / 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        106
+      ],
+      "meaning": "Served meals / 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        115
+      ],
+      "meaning": "Current transition flags in manifest order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        115,
+        118
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

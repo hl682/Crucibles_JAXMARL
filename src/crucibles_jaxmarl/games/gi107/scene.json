@@ -1,0 +1,342 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "63b301253ce3f34f76e2c211b43aa64c3eb25074ced0ce39f27936f8fbfe06c1",
+  "manifest_sha256": "ad754fa02623536063a4543352253070e8a7eb44010435de597bf3d9cbab501c",
+  "title": "Counterweight Crossing",
+  "rules": [
+    "The river column can be crossed only at north and south bridge sites. Entry requires the bridge's recorded open flag.",
+    "The heavier west plate opens the north bridge; the heavier east plate opens the south bridge. Equal loads close both unless braced.",
+    "An agent weighs one, an evacuee one, and ballast two. Carried mass and dropped objects contribute at their actual positions.",
+    "Carry at most one object. The porter moves ballast every tick; the escort moves evacuees every tick; other loaded workers move on even input ticks.",
+    "Brace an adjacent bridge using one energy. The engineer holds it for three ticks, other workers for one. Waiting recovers energy.",
+    "Bridge configurations update after movement, so lifting or leaving a plate changes the next tick's access. A closed span never crushes its occupant; exit remains possible.",
+    "Deliver four evacuees, then each empty worker may evacuate at shelter. An evacuated worker cannot return to maintain a plate."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable bank",
+          "color": "#D6D3D1"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable water channel",
+          "color": "#38BDF8"
+        },
+        {
+          "value": 2,
+          "meaning": "Bridge site; actual entry permission is bridge_open",
+          "color": "#A16207"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "responders",
+      "glyph": "worker",
+      "label": "Evacuation workers",
+      "color": "#3B82F6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "0 bridge engineer; 1 ballast porter; 2 evacuation escort"
+        },
+        {
+          "state_path": [
+            "brace_energy"
+          ],
+          "label": "Brace actions available, replenished by wait"
+        },
+        {
+          "state_path": [
+            "evacuated"
+          ],
+          "label": "Has irrevocably left the active world"
+        }
+      ]
+    },
+    {
+      "id": "evacuees",
+      "glyph": "agent",
+      "label": "People awaiting evacuation",
+      "color": "#F59E0B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "victim_status"
+          ],
+          "label": "0 waiting; 1 carried; 2 delivered"
+        },
+        {
+          "state_path": [
+            "victim_owner"
+          ],
+          "label": "Carrier id or -1"
+        }
+      ]
+    },
+    {
+      "id": "ballast",
+      "glyph": "crate",
+      "label": "Movable ballast blocks",
+      "color": "#A16207",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "weight_owner"
+          ],
+          "label": "Carrier id or -1; each ballast mass is two"
+        }
+      ]
+    },
+    {
+      "id": "plates",
+      "glyph": "square",
+      "label": "Counterweight load plates",
+      "color": "#A855F7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "plate_load"
+          ],
+          "label": "Actual mass resting on each load plate"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "glyph": "gate",
+      "label": "Reversible bridge spans",
+      "color": "#14B8A6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge_open"
+          ],
+          "label": "Permits entry during the next transition"
+        },
+        {
+          "state_path": [
+            "brace_timer"
+          ],
+          "label": "Remaining temporary brace ticks"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "glyph": "flag",
+      "label": "East-bank shelter",
+      "color": "#22C55E",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "bridge_changes"
+      ],
+      "meaning": "Number of bridge entry flags changed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transfers"
+      ],
+      "meaning": "Cargo pickup or putdown operations this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Evacuees delivered to shelter",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "departed"
+      ],
+      "meaning": "Responders who have evacuated",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait and recover brace energy"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "pick up or put down evacuee; deliver at shelter"
+    },
+    {
+      "id": 6,
+      "label": "pick up or put down ballast"
+    },
+    {
+      "id": 7,
+      "label": "brace adjacent bridge"
+    },
+    {
+      "id": 8,
+      "label": "evacuate self at shelter if empty"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role one-hot: engineer, porter, escort",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "Responder x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Responder activity flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Brace energy/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        23
+      ],
+      "meaning": "Evacuee x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Evacuee carrier shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        31
+      ],
+      "meaning": "Evacuee status/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        35
+      ],
+      "meaning": "Ballast x,y positions/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        37
+      ],
+      "meaning": "Ballast carrier shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        39
+      ],
+      "meaning": "Plate loads/11",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        41
+      ],
+      "meaning": "Bridge open flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        43
+      ],
+      "meaning": "Brace timers/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        46
+      ],
+      "meaning": "Clock/120; delivered/4; departed/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        109
+      ],
+      "meaning": "Row-major terrain/2",
+      "visibility": "public"
+    }
+  ]
+}

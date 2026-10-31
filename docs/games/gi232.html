@@ -1,0 +1,457 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Basalt Archipelago Rescue · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI232 / SPATIAL</p><h1>Basalt Archipelago Rescue</h1><p class="lead"></p><div class="stats"><span>256 agents</span><span>20 actions</span><span>686 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 232</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Rescue 32 stranded residents while crews choose how to allocate finite basalt among local shelters, causeways and boat capacity.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion occurs exactly when all 32 resident saved flags are true. Otherwise H=896 truncates the ongoing world; no reward target is a release condition.&quot;,
+  &quot;interaction&quot;: &quot;Nearby bracing enables another actor to take and move a stretcher; finite stone supports communal crossings or private protection; boat cargo displaces passenger capacity and gate state changes physical reachability.&quot;,
+  &quot;observation_access&quot;: &quot;Actor entities use four nearest rows within L1 radius 6 plus self. Every non-agent group is visible within L1 radius 6. Home shelter/rescue ledger and deterministic clock/tide are known to that crew. There is no remote ash/boat/route state in a role&#x27;s flat observation.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 3. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Move with actions 1–4; identical codes pilot a boat when an equipped pilot is aboard.</li><li>Pick tools quarry stone. Hammer tools spend it on shelters or causeways; exchange tools and stone with adjacent workers.</li><li>Causeways need level 2 and an open lift gate. Shoals are passable only during the low-tide half-cycle.</li><li>A rescue-kit carrier needs another nearby actor choosing Brace to pick up or move a stretcher.</li><li>Boats carry at most eight actors minus stone cargo; boarded actors follow the selected pilot&#x27;s real movement.</li><li>Ash grows every 32 steps. Hammer clearing takes three subsequent ticks; strong shelters protect nearby workers and routes.</li><li>Bring a resident within one tile of any shelter and choose Deliver. All residents saved ends the episode.</li><li>Role views expose local objects and four nearby actors. These rules and scene are authored; no replay has been executed.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Basalt Archipelago Rescue
+
+Status: **AUTHORED_NOT_EXECUTED**. Candidate identity: game-v3-00232. Source split: train. No final test or previous candidate outcome was an input.
+
+## Native contract and human controls
+
+A=256, O=686, U=20, H=896. Every one of the 256 actor rows is independently controllable through one scalar int32 action. Ambient entities are not counted as agents. A human/AI/group assignment chooses the same native joint-action vector; no alternative UI dynamics are supplied. The source is the complete native kernel, and scene.json is complete declarative presentation data. JaxMARL adapter integration, actual keyboard/click controls, replay, animation, JIT/vmap, throughput, training and transfer remain unexecuted and unaccepted.
+
+Movement is a cardinal one-cell proposal with boundary clipping. Multiple people may occupy a tile; this is an explicit broad-walkway abstraction. Visible objects and terrain govern interaction conditions. Masks describe capability/inventory permissions, not a promise that a distant or blocked operation succeeds. Out-of-range or mask-invalid codes become no-op deterministically. Spatially inapplicable legal attempts cost the stated work cost and change no targeted object. Joint actions are captured together; movement precedes ordered work, and work resolves actor IDs in ascending order. This tie rule is fixed before any execution and can affect scarce-resource competition.
+
+Sixteen 16-person crews occupy a bounded 4 by 4 archipelago. Quarry, hammer, sail and rescue tools are transferable, so current equipment—not decorative character type—controls specialized actions. The fixed basalt map contains two-cell channels and shoal corridors; 24 raised causeway/lift gates connect neighboring islands. Causeway levels 2–3 plus an open lift gate allow channel crossing at either tide. Low tide alternates every 16 steps. Route damage removes one level every 64 steps unless a level-2 shelter lies within L1 distance 10. Shelters also protect workers within radius 4 from intense ash. Ash increases every 32 steps, blocks movement within radius 2 at intensity 3, and a hammer action within radius 4 starts a timer of 3; expiry removes two intensity units. These are persistent world changes, not visual substitutes.
+
+A boat begins alongside each island. A single lowest-ID equipped pilot proposing movement controls each boat that step; other passengers follow. Boats move only over non-island tiles. Boarding, one-step adjacent-land disembarking and stone loading are physical operations. Passenger count never exceeds 8 minus cargo. Nearby support action 6 is necessary both to take a resident and to move while carrying one; the helper may belong to any crew. A stretcher follows its carrier&#x27;s position. Delivery can use any shelter, so resources and assistance can cross crew boundaries. Signals are short-lived visible intention markers; they do not reveal remote world state.
+
+## Action legend
+
+- 0: Wait.
+- 1: Walk or pilot north.
+- 2: Walk or pilot east.
+- 3: Walk or pilot south.
+- 4: Walk or pilot west.
+- 5: Quarry nearby stone with pick.
+- 6: Brace a nearby stretcher carrier.
+- 7: Build nearest causeway with hammer and stone.
+- 8: Improve nearest shelter with hammer and stone.
+- 9: Toggle nearby causeway lift gate.
+- 10: Take nearby stretcher with rescue kit and a bracing partner.
+- 11: Deliver carried resident at shelter.
+- 12: Board nearby boat if capacity remains.
+- 13: Leave boat onto adjacent island floor.
+- 14: Give one stone to nearest adjacent actor.
+- 15: Exchange tools with nearest adjacent actor.
+- 16: Start delayed ash clearing with hammer.
+- 17: Raise a visible three-step signal.
+- 18: Load one stone into nearby boat.
+- 19: Unload one boat stone into own inventory.
+
+## Observation and role-view contract
+
+Actor entities use four nearest rows within L1 radius 6 plus self. Every non-agent group is visible within L1 radius 6. Home shelter/rescue ledger and deterministic clock/tide are known to that crew. There is no remote ash/boat/route state in a role&#x27;s flat observation.
+
+The first scalar of the self block is actor ID/(A-1). Each nearest-actor slot begins with visibility then actor ID/(A-1); absent slots are all zero. Actor slots use the four smallest L1 distances with ID tie breaking; self is always visible through its self block. All other entity blocks use original entity order, visibility flag, normalized absolute x/y, then the listed attributes; hidden rows are zero. Terrain layout is fixed public knowledge, while changing object states use declared local visibility. The renderer must filter entity and event displays by role visibility; full-state diagnostics are a separate labeled view. Public scene metadata does not add policy input.
+
+- [0, 13): Self: actor ID/255, x/63, y/63, crew/15, tool/3, stone/4, (boat+1)/16, carrying flag, signal/3, t/896, tidal phase 0/1, own-home rescued/32, own shelter level/3 (self).
+- [13, 53): Four nearest visible actor slots, 10 each: visible, ID/255, x/63, y/63, crew/15, tool/3, stone/4, (boat+1)/16, carrying, signal/3 (local).
+- [53, 117): 16 quarry rows, 4 each: visible, x/63, y/63, stock/32 (local).
+- [117, 261): 24 route rows, 6 each: visible, x/63, y/63, level/3, gate open, current damage (local).
+- [261, 341): 16 shelter rows, 5 each: visible, x/63, y/63, level/3, rescued/32 (local).
+- [341, 421): 16 boat rows, 5 each: visible, x/63, y/63, cargo/4, passengers/8 (local).
+- [421, 581): 32 resident rows, 5 each: visible, x/63, y/63, (carrier+1)/256, saved (local).
+- [581, 661): 16 ash rows, 5 each: visible, x/63, y/63, intensity/3, clearing timer/3 (local).
+- [661, 686): Row-major 5 by 5 terrain patch centered on actor, edge-clamped; tile code/2 (local).
+
+## Rewards, bounds and persistent consequences
+
+Every legal attempted work action (code &gt;=5) costs its actor 0.01. A carrying movement attempt costs 0.005. A proposed position in unprotected intense ash costs 0.03. Each route damage event contributes a common loss of 0.02/24 to every actor that step. Delivering a resident pays the carrier 1 and distributes another 0.5 equally to the carrier&#x27;s 16-person crew. Each actual stone-funded route/shelter increment distributes 0.05 equally to the builder&#x27;s crew. Transfers, boarding, unloading and repeated toggles have no positive shaping reward. At most one resident can be carried/delivered by an actor and at most one funded construction increment can be performed by that actor per step; these facts contain the declared range. A shelter&#x27;s rescued counter belongs to the delivery location; reward crew belongs to the delivering actor.
+
+Rewards are float32[A]. Observations are explicitly float32[A,O]; normalized bounds are [0.0,1]. Declared reward bounds are [-2, 3], analytical containment bounds rather than empirical results or performance gates. Actor/group identity, positions, tool changes and real object levels bind to native state in manifest.json and scene.json; no scripted display transition substitutes for a kernel transition.
+
+## Termination and declared source invariants
+
+Natural completion occurs exactly when all 32 resident saved flags are true. Otherwise H=896 truncates the ongoing world; no reward target is a release condition. A live call advances t exactly once. Natural termination has priority at H. A terminal call is absorbing: all state and observation leaves, clock and terminal cause are preserved; reward is zero and every done row is true. There is no raw auto-reset.
+
+All 256 actors remain independently active until joint termination. Positions stay in [0,63]^2. Quarry stock is 0..32, held stone 0..4, route/shelter/ash levels 0..3, clear/signal timers 0..3, boat cargo 0..4 and boat occupancy &lt;=8-cargo. Each resident has at most one carrier and each actor at most one stretcher. Saved residents are inactive scene objects. Repeated stone transfers conserve stone outside quarry extraction and funded construction; no automatic resource reset occurs. People may share tiles; boats and stretchers use actual transition positions.
+
+The manifest declares the complete fixed-key state tree. Numeric/bool state leaves use int32/float32/bool. PRNG keys remain external trajectory provenance and are not duplicated in state. The source&#x27;s reset randomness is only the 16 reset ash intensities, each drawn as integer 0 or 1 from the supplied key; raw_step consumes no additional random draws. No signed-int or PRNG distribution substitution is made. Human-readable invariants above have not been numerically checked; the optional machine invariant list is empty to avoid inventing an unsupported invariant-check dialect.
+
+## Prospective strategies and fixed diagnostics
+
+Crews may build a durable raised route and protect it with shelter investment, or reserve stone for local ash protection and use tide windows/boats. Loading stone onto a boat trades transport inventory against room for other crews. Rescue teams can alternate leader movement and helper repositioning, while other workers maintain routes. The first script is a short source-reasoned rescue relay for actors 14 and 15; the second moves quarry stone from actor 0 to builder 1 and constructs a crossing. The pair removes only actor 14&#x27;s first brace while preserving actor 15&#x27;s pickup and the remaining literal movement prefix. The intended difference is resident ownership followed by coupled resident movement, not just the helper&#x27;s action cost.
+
+playthrough.json contains two complete literal joint-action arrays at seed 23207, plus one pair whose entire continuation differs in exactly one actor action at one step. All are UNEXECUTED_AUTHOR_HYPOTHESIS. Their finite lengths are diagnostic scopes, not claims of finishing the game. Conditions, delays and intended state changes are source reasoning; legality during rollout, effects, rewards, solvability and human usability remain unverified. There is no adaptive policy, seed search, measured effect size or expected-success threshold.
+
+## Literal source evidence
+
+- Crew topology and exact state: candidate.py:61 — `s = {&#x27;t&#x27;: jnp.array(0, jnp.int32), &#x27;done&#x27;: jnp.array(False), &#x27;terminated&#x27;: jnp.array(False), &#x27;terrain&#x27;: terrain, &#x27;pos&#x27;: pos, &#x27;active&#x27;: jnp.ones((256,), jnp.bool_), &#x27;tool&#x27;: ids % 4, &#x27;stone&#x27;: jnp.zeros((256,), jnp.int32), &#x27;aboard&#x27;: jnp.full((256,), -1, jnp.int32), &#x27;signal&#x27;: jnp.zeros((256,), jnp.int32), &#x27;carrying&#x27;: jnp.zeros((256,), jnp.bool_), &#x27;seen&#x27;: jnp.zeros((256, 4), jnp.int32), &#x27;agent_vis&#x27;: jnp.zeros((256, 256), jnp.bool_), &#x27;quarry_pos&#x27;: center + jnp.array([-3, 0], dtype=jnp.int32), &#x27;quarry_stock&#x27;: jnp.full((16,), 32, jnp.int32), &#x27;quarry_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;quarry_vis&#x27;: jnp.zeros((256, 16), jnp.bool_), &#x27;route_pos&#x27;: routes, &#x27;route_level&#x27;: jnp.zeros((24,), jnp.int32), &#x27;route_open&#x27;: jnp.zeros((24,), jnp.bool_), &#x27;route_damage&#x27;: jnp.zeros((24,), jnp.bool_), &#x27;route_active&#x27;: jnp.ones((24,), jnp.bool_), &#x27;route_vis&#x27;: jnp.zeros((256, 24), jnp.bool_), &#x27;shelter_pos&#x27;: center + jnp.array([0, -3], dtype=jnp.int32), &#x27;shelter_level&#x27;: jnp.zeros((16,), jnp.int32), &#x27;shelter_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;shelter_vis&#x27;: jnp.zeros((256, 16), jnp.bool_), &#x27;rescued&#x27;: jnp.zeros((16,), jnp.int32), &#x27;boat_pos&#x27;: center + jnp.array([7, 0], dtype=jnp.int32), &#x27;boat_cargo&#x27;: jnp.zeros((16,), jnp.int32), &#x27;boat_load&#x27;: jnp.zeros((16,), jnp.int32), &#x27;boat_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;boat_vis&#x27;: jnp.zeros((256, 16), jnp.bool_), &#x27;victim_pos&#x27;: jnp.repeat(center, 2, axis=0) + jnp.tile(jnp.array([[2, 1], [3, 2]], jnp.int32), (16, 1)), &#x27;victim_carrier&#x27;: jnp.full((32,), -1, jnp.int32), &#x27;victim_saved&#x27;: jnp.zeros((32,), jnp.bool_), &#x27;victim_active&#x27;: jnp.ones((32,), jnp.bool_), &#x27;victim_vis&#x27;: jnp.zeros((256, 32), jnp.bool_), &#x27;ash_pos&#x27;: center + jnp.array([4, -4], dtype=jnp.int32), &#x27;ash_level&#x27;: jax.random.randint(key, (16,), 0, 2).astype(jnp.int32), &#x27;ash_clear&#x27;: jnp.zeros((16,), jnp.int32), &#x27;ash_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;ash_vis&#x27;: jnp.zeros((256, 16), jnp.bool_), &#x27;event_rescue&#x27;: jnp.zeros((256,), jnp.bool_), &#x27;event_build&#x27;: jnp.zeros((256,), jnp.bool_), &#x27;event_transfer&#x27;: jnp.zeros((256,), jnp.bool_)}`
+- Local visibility and actual carrying flag: candidate.py:23 — `s[&#x27;carrying&#x27;] = jnp.any(s[&#x27;victim_carrier&#x27;][None, :] == jnp.arange(256, dtype=jnp.int32)[:, None], axis=1)`
+- Tide, construction and lift reachability: candidate.py:104 — `passable = (tile == 1) | (tile == 2) &amp; (s[&#x27;t&#x27;] // 16 % 2 == 0) | bridge`
+- Partner-dependent carrying: candidate.py:108 — `helpers = jnp.any((self.distance(s[&#x27;pos&#x27;], s[&#x27;pos&#x27;]) &lt;= 1) &amp; (a[None, :] == 6) &amp; (jnp.arange(256, dtype=jnp.int32)[:, None] != jnp.arange(256, dtype=jnp.int32)[None, :]), axis=1)`
+- Finite boat capacity: candidate.py:152 — `board = (a[i] == 12) &amp; (bd[b] &lt;= 1) &amp; (load &lt; 8 - z[&#x27;boat_cargo&#x27;][b])`
+- Physical rescue pickup: candidate.py:142 — `pickup = (a[i] == 10) &amp; (vd[v] &lt;= 1) &amp; eligible[v] &amp; helpers[i]`
+- Delayed ash clearing: candidate.py:169 — `clear = (a[i] == 16) &amp; (ad[island] &lt;= 4) &amp; (z[&#x27;ash_clear&#x27;][island] == 0)`
+- Recipient-specific rewards: candidate.py:180 — `rew = rew.at[i].add(deliver.astype(jnp.float32))`
+- Absorbing terminal state: candidate.py:191 — `n = jax.tree.map(lambda new, old: jnp.where(s[&#x27;done&#x27;], old, new), n, s)`
+
+## Provenance and limits
+
+Only the 21 actual authorized input files in author_input_freeze.json were read. The controlling population/family237 input sets A and H. Older copied population notes were not read. No old source, result, IR, training/selection/heldout file, memory file, network, local model, remote model API or other author feedback was used. The inherited genre direction comes from this batch&#x27;s independent_family_principles.json and design brief. No supplied upstream reference snapshot or upstream code was read or copied: Craftax mechanics and Pgx board APIs are not claimed as implementations, and PureJaxRL/Craftax PPO baselines are neither new game libraries nor replacements for the frozen learner.
+
+Author-side checks are standard-library AST parsing, literal schema/shape declarations, JSON, byte lengths and SHA256 only. Supplied validator modules were read as input text and were not executed. No import of candidate.py, JAX, NumPy, reset, raw_step, observe or legal_actions occurred. This package establishes authored source/data identity only, not accepted R0/M0, numerical parity, learnability, strategic non-isomorphism, animation acceptance, scientific benefit or transfer.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Walk or pilot north</span></div><div class="action"><b>2</b><span>Walk or pilot east</span></div><div class="action"><b>3</b><span>Walk or pilot south</span></div><div class="action"><b>4</b><span>Walk or pilot west</span></div><div class="action"><b>5</b><span>Quarry nearby stone with pick</span></div><div class="action"><b>6</b><span>Brace a nearby stretcher carrier</span></div><div class="action"><b>7</b><span>Build nearest causeway with hammer and stone</span></div><div class="action"><b>8</b><span>Improve nearest shelter with hammer and stone</span></div><div class="action"><b>9</b><span>Toggle nearby causeway lift gate</span></div><div class="action"><b>10</b><span>Take nearby stretcher with rescue kit and a bracing partner</span></div><div class="action"><b>11</b><span>Deliver carried resident at shelter</span></div><div class="action"><b>12</b><span>Board nearby boat if capacity remains</span></div><div class="action"><b>13</b><span>Leave boat onto adjacent island floor</span></div><div class="action"><b>14</b><span>Give one stone to nearest adjacent actor</span></div><div class="action"><b>15</b><span>Exchange tools with nearest adjacent actor</span></div><div class="action"><b>16</b><span>Start delayed ash clearing with hammer</span></div><div class="action"><b>17</b><span>Raise a visible three-step signal</span></div><div class="action"><b>18</b><span>Load one stone into nearby boat</span></div><div class="action"><b>19</b><span>Unload one boat stone into own inventory</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Crew 00; actor 000; initial quarry pick; individually controllable</p><p><b>agent_1</b> Crew 00; actor 001; initial construction hammer; individually controllable</p><p><b>agent_2</b> Crew 00; actor 002; initial pilot sail; individually controllable</p><p><b>agent_3</b> Crew 00; actor 003; initial rescue kit; individually controllable</p><p><b>agent_4</b> Crew 00; actor 004; initial quarry pick; individually controllable</p><p><b>agent_5</b> Crew 00; actor 005; initial construction hammer; individually controllable</p><p><b>agent_6</b> Crew 00; actor 006; initial pilot sail; individually controllable</p><p><b>agent_7</b> Crew 00; actor 007; initial rescue kit; individually controllable</p><p><b>agent_8</b> Crew 00; actor 008; initial quarry pick; individually controllable</p><p><b>agent_9</b> Crew 00; actor 009; initial construction hammer; individually controllable</p><p><b>agent_10</b> Crew 00; actor 010; initial pilot sail; individually controllable</p><p><b>agent_11</b> Crew 00; actor 011; initial rescue kit; individually controllable</p><p><b>agent_12</b> Crew 00; actor 012; initial quarry pick; individually controllable</p><p><b>agent_13</b> Crew 00; actor 013; initial construction hammer; individually controllable</p><p><b>agent_14</b> Crew 00; actor 014; initial pilot sail; individually controllable</p><p><b>agent_15</b> Crew 00; actor 015; initial rescue kit; individually controllable</p><p><b>agent_16</b> Crew 01; actor 016; initial quarry pick; individually controllable</p><p><b>agent_17</b> Crew 01; actor 017; initial construction hammer; individually controllable</p><p><b>agent_18</b> Crew 01; actor 018; initial pilot sail; individually controllable</p><p><b>agent_19</b> Crew 01; actor 019; initial rescue kit; individually controllable</p><p><b>agent_20</b> Crew 01; actor 020; initial quarry pick; individually controllable</p><p><b>agent_21</b> Crew 01; actor 021; initial construction hammer; individually controllable</p><p><b>agent_22</b> Crew 01; actor 022; initial pilot sail; individually controllable</p><p><b>agent_23</b> Crew 01; actor 023; initial rescue kit; individually controllable</p><p><b>agent_24</b> Crew 01; actor 024; initial quarry pick; individually controllable</p><p><b>agent_25</b> Crew 01; actor 025; initial construction hammer; individually controllable</p><p><b>agent_26</b> Crew 01; actor 026; initial pilot sail; individually controllable</p><p><b>agent_27</b> Crew 01; actor 027; initial rescue kit; individually controllable</p><p><b>agent_28</b> Crew 01; actor 028; initial quarry pick; individually controllable</p><p><b>agent_29</b> Crew 01; actor 029; initial construction hammer; individually controllable</p><p><b>agent_30</b> Crew 01; actor 030; initial pilot sail; individually controllable</p><p><b>agent_31</b> Crew 01; actor 031; initial rescue kit; individually controllable</p><p><b>agent_32</b> Crew 02; actor 032; initial quarry pick; individually controllable</p><p><b>agent_33</b> Crew 02; actor 033; initial construction hammer; individually controllable</p><p><b>agent_34</b> Crew 02; actor 034; initial pilot sail; individually controllable</p><p><b>agent_35</b> Crew 02; actor 035; initial rescue kit; individually controllable</p><p><b>agent_36</b> Crew 02; actor 036; initial quarry pick; individually controllable</p><p><b>agent_37</b> Crew 02; actor 037; initial construction hammer; individually controllable</p><p><b>agent_38</b> Crew 02; actor 038; initial pilot sail; individually controllable</p><p><b>agent_39</b> Crew 02; actor 039; initial rescue kit; individually controllable</p><p><b>agent_40</b> Crew 02; actor 040; initial quarry pick; individually controllable</p><p><b>agent_41</b> Crew 02; actor 041; initial construction hammer; individually controllable</p><p><b>agent_42</b> Crew 02; actor 042; initial pilot sail; individually controllable</p><p><b>agent_43</b> Crew 02; actor 043; initial rescue kit; individually controllable</p><p><b>agent_44</b> Crew 02; actor 044; initial quarry pick; individually controllable</p><p><b>agent_45</b> Crew 02; actor 045; initial construction hammer; individually controllable</p><p><b>agent_46</b> Crew 02; actor 046; initial pilot sail; individually controllable</p><p><b>agent_47</b> Crew 02; actor 047; initial rescue kit; individually controllable</p><p><b>agent_48</b> Crew 03; actor 048; initial quarry pick; individually controllable</p><p><b>agent_49</b> Crew 03; actor 049; initial construction hammer; individually controllable</p><p><b>agent_50</b> Crew 03; actor 050; initial pilot sail; individually controllable</p><p><b>agent_51</b> Crew 03; actor 051; initial rescue kit; individually controllable</p><p><b>agent_52</b> Crew 03; actor 052; initial quarry pick; individually controllable</p><p><b>agent_53</b> Crew 03; actor 053; initial construction hammer; individually controllable</p><p><b>agent_54</b> Crew 03; actor 054; initial pilot sail; individually controllable</p><p><b>agent_55</b> Crew 03; actor 055; initial rescue kit; individually controllable</p><p><b>agent_56</b> Crew 03; actor 056; initial quarry pick; individually controllable</p><p><b>agent_57</b> Crew 03; actor 057; initial construction hammer; individually controllable</p><p><b>agent_58</b> Crew 03; actor 058; initial pilot sail; individually controllable</p><p><b>agent_59</b> Crew 03; actor 059; initial rescue kit; individually controllable</p><p><b>agent_60</b> Crew 03; actor 060; initial quarry pick; individually controllable</p><p><b>agent_61</b> Crew 03; actor 061; initial construction hammer; individually controllable</p><p><b>agent_62</b> Crew 03; actor 062; initial pilot sail; individually controllable</p><p><b>agent_63</b> Crew 03; actor 063; initial rescue kit; individually controllable</p><p><b>agent_64</b> Crew 04; actor 064; initial quarry pick; individually controllable</p><p><b>agent_65</b> Crew 04; actor 065; initial construction hammer; individually controllable</p><p><b>agent_66</b> Crew 04; actor 066; initial pilot sail; individually controllable</p><p><b>agent_67</b> Crew 04; actor 067; initial rescue kit; individually controllable</p><p><b>agent_68</b> Crew 04; actor 068; initial quarry pick; individually controllable</p><p><b>agent_69</b> Crew 04; actor 069; initial construction hammer; individually controllable</p><p><b>agent_70</b> Crew 04; actor 070; initial pilot sail; individually controllable</p><p><b>agent_71</b> Crew 04; actor 071; initial rescue kit; individually controllable</p><p><b>agent_72</b> Crew 04; actor 072; initial quarry pick; individually controllable</p><p><b>agent_73</b> Crew 04; actor 073; initial construction hammer; individually controllable</p><p><b>agent_74</b> Crew 04; actor 074; initial pilot sail; individually controllable</p><p><b>agent_75</b> Crew 04; actor 075; initial rescue kit; individually controllable</p><p><b>agent_76</b> Crew 04; actor 076; initial quarry pick; individually controllable</p><p><b>agent_77</b> Crew 04; actor 077; initial construction hammer; individually controllable</p><p><b>agent_78</b> Crew 04; actor 078; initial pilot sail; individually controllable</p><p><b>agent_79</b> Crew 04; actor 079; initial rescue kit; individually controllable</p><p><b>agent_80</b> Crew 05; actor 080; initial quarry pick; individually controllable</p><p><b>agent_81</b> Crew 05; actor 081; initial construction hammer; individually controllable</p><p><b>agent_82</b> Crew 05; actor 082; initial pilot sail; individually controllable</p><p><b>agent_83</b> Crew 05; actor 083; initial rescue kit; individually controllable</p><p><b>agent_84</b> Crew 05; actor 084; initial quarry pick; individually controllable</p><p><b>agent_85</b> Crew 05; actor 085; initial construction hammer; individually controllable</p><p><b>agent_86</b> Crew 05; actor 086; initial pilot sail; individually controllable</p><p><b>agent_87</b> Crew 05; actor 087; initial rescue kit; individually controllable</p><p><b>agent_88</b> Crew 05; actor 088; initial quarry pick; individually controllable</p><p><b>agent_89</b> Crew 05; actor 089; initial construction hammer; individually controllable</p><p><b>agent_90</b> Crew 05; actor 090; initial pilot sail; individually controllable</p><p><b>agent_91</b> Crew 05; actor 091; initial rescue kit; individually controllable</p><p><b>agent_92</b> Crew 05; actor 092; initial quarry pick; individually controllable</p><p><b>agent_93</b> Crew 05; actor 093; initial construction hammer; individually controllable</p><p><b>agent_94</b> Crew 05; actor 094; initial pilot sail; individually controllable</p><p><b>agent_95</b> Crew 05; actor 095; initial rescue kit; individually controllable</p><p><b>agent_96</b> Crew 06; actor 096; initial quarry pick; individually controllable</p><p><b>agent_97</b> Crew 06; actor 097; initial construction hammer; individually controllable</p><p><b>agent_98</b> Crew 06; actor 098; initial pilot sail; individually controllable</p><p><b>agent_99</b> Crew 06; actor 099; initial rescue kit; individually controllable</p><p><b>agent_100</b> Crew 06; actor 100; initial quarry pick; individually controllable</p><p><b>agent_101</b> Crew 06; actor 101; initial construction hammer; individually controllable</p><p><b>agent_102</b> Crew 06; actor 102; initial pilot sail; individually controllable</p><p><b>agent_103</b> Crew 06; actor 103; initial rescue kit; individually controllable</p><p><b>agent_104</b> Crew 06; actor 104; initial quarry pick; individually controllable</p><p><b>agent_105</b> Crew 06; actor 105; initial construction hammer; individually controllable</p><p><b>agent_106</b> Crew 06; actor 106; initial pilot sail; individually controllable</p><p><b>agent_107</b> Crew 06; actor 107; initial rescue kit; individually controllable</p><p><b>agent_108</b> Crew 06; actor 108; initial quarry pick; individually controllable</p><p><b>agent_109</b> Crew 06; actor 109; initial construction hammer; individually controllable</p><p><b>agent_110</b> Crew 06; actor 110; initial pilot sail; individually controllable</p><p><b>agent_111</b> Crew 06; actor 111; initial rescue kit; individually controllable</p><p><b>agent_112</b> Crew 07; actor 112; initial quarry pick; individually controllable</p><p><b>agent_113</b> Crew 07; actor 113; initial construction hammer; individually controllable</p><p><b>agent_114</b> Crew 07; actor 114; initial pilot sail; individually controllable</p><p><b>agent_115</b> Crew 07; actor 115; initial rescue kit; individually controllable</p><p><b>agent_116</b> Crew 07; actor 116; initial quarry pick; individually controllable</p><p><b>agent_117</b> Crew 07; actor 117; initial construction hammer; individually controllable</p><p><b>agent_118</b> Crew 07; actor 118; initial pilot sail; individually controllable</p><p><b>agent_119</b> Crew 07; actor 119; initial rescue kit; individually controllable</p><p><b>agent_120</b> Crew 07; actor 120; initial quarry pick; individually controllable</p><p><b>agent_121</b> Crew 07; actor 121; initial construction hammer; individually controllable</p><p><b>agent_122</b> Crew 07; actor 122; initial pilot sail; individually controllable</p><p><b>agent_123</b> Crew 07; actor 123; initial rescue kit; individually controllable</p><p><b>agent_124</b> Crew 07; actor 124; initial quarry pick; individually controllable</p><p><b>agent_125</b> Crew 07; actor 125; initial construction hammer; individually controllable</p><p><b>agent_126</b> Crew 07; actor 126; initial pilot sail; individually controllable</p><p><b>agent_127</b> Crew 07; actor 127; initial rescue kit; individually controllable</p><p><b>agent_128</b> Crew 08; actor 128; initial quarry pick; individually controllable</p><p><b>agent_129</b> Crew 08; actor 129; initial construction hammer; individually controllable</p><p><b>agent_130</b> Crew 08; actor 130; initial pilot sail; individually controllable</p><p><b>agent_131</b> Crew 08; actor 131; initial rescue kit; individually controllable</p><p><b>agent_132</b> Crew 08; actor 132; initial quarry pick; individually controllable</p><p><b>agent_133</b> Crew 08; actor 133; initial construction hammer; individually controllable</p><p><b>agent_134</b> Crew 08; actor 134; initial pilot sail; individually controllable</p><p><b>agent_135</b> Crew 08; actor 135; initial rescue kit; individually controllable</p><p><b>agent_136</b> Crew 08; actor 136; initial quarry pick; individually controllable</p><p><b>agent_137</b> Crew 08; actor 137; initial construction hammer; individually controllable</p><p><b>agent_138</b> Crew 08; actor 138; initial pilot sail; individually controllable</p><p><b>agent_139</b> Crew 08; actor 139; initial rescue kit; individually controllable</p><p><b>agent_140</b> Crew 08; actor 140; initial quarry pick; individually controllable</p><p><b>agent_141</b> Crew 08; actor 141; initial construction hammer; individually controllable</p><p><b>agent_142</b> Crew 08; actor 142; initial pilot sail; individually controllable</p><p><b>agent_143</b> Crew 08; actor 143; initial rescue kit; individually controllable</p><p><b>agent_144</b> Crew 09; actor 144; initial quarry pick; individually controllable</p><p><b>agent_145</b> Crew 09; actor 145; initial construction hammer; individually controllable</p><p><b>agent_146</b> Crew 09; actor 146; initial pilot sail; individually controllable</p><p><b>agent_147</b> Crew 09; actor 147; initial rescue kit; individually controllable</p><p><b>agent_148</b> Crew 09; actor 148; initial quarry pick; individually controllable</p><p><b>agent_149</b> Crew 09; actor 149; initial construction hammer; individually controllable</p><p><b>agent_150</b> Crew 09; actor 150; initial pilot sail; individually controllable</p><p><b>agent_151</b> Crew 09; actor 151; initial rescue kit; individually controllable</p><p><b>agent_152</b> Crew 09; actor 152; initial quarry pick; individually controllable</p><p><b>agent_153</b> Crew 09; actor 153; initial construction hammer; individually controllable</p><p><b>agent_154</b> Crew 09; actor 154; initial pilot sail; individually controllable</p><p><b>agent_155</b> Crew 09; actor 155; initial rescue kit; individually controllable</p><p><b>agent_156</b> Crew 09; actor 156; initial quarry pick; individually controllable</p><p><b>agent_157</b> Crew 09; actor 157; initial construction hammer; individually controllable</p><p><b>agent_158</b> Crew 09; actor 158; initial pilot sail; individually controllable</p><p><b>agent_159</b> Crew 09; actor 159; initial rescue kit; individually controllable</p><p><b>agent_160</b> Crew 10; actor 160; initial quarry pick; individually controllable</p><p><b>agent_161</b> Crew 10; actor 161; initial construction hammer; individually controllable</p><p><b>agent_162</b> Crew 10; actor 162; initial pilot sail; individually controllable</p><p><b>agent_163</b> Crew 10; actor 163; initial rescue kit; individually controllable</p><p><b>agent_164</b> Crew 10; actor 164; initial quarry pick; individually controllable</p><p><b>agent_165</b> Crew 10; actor 165; initial construction hammer; individually controllable</p><p><b>agent_166</b> Crew 10; actor 166; initial pilot sail; individually controllable</p><p><b>agent_167</b> Crew 10; actor 167; initial rescue kit; individually controllable</p><p><b>agent_168</b> Crew 10; actor 168; initial quarry pick; individually controllable</p><p><b>agent_169</b> Crew 10; actor 169; initial construction hammer; individually controllable</p><p><b>agent_170</b> Crew 10; actor 170; initial pilot sail; individually controllable</p><p><b>agent_171</b> Crew 10; actor 171; initial rescue kit; individually controllable</p><p><b>agent_172</b> Crew 10; actor 172; initial quarry pick; individually controllable</p><p><b>agent_173</b> Crew 10; actor 173; initial construction hammer; individually controllable</p><p><b>agent_174</b> Crew 10; actor 174; initial pilot sail; individually controllable</p><p><b>agent_175</b> Crew 10; actor 175; initial rescue kit; individually controllable</p><p><b>agent_176</b> Crew 11; actor 176; initial quarry pick; individually controllable</p><p><b>agent_177</b> Crew 11; actor 177; initial construction hammer; individually controllable</p><p><b>agent_178</b> Crew 11; actor 178; initial pilot sail; individually controllable</p><p><b>agent_179</b> Crew 11; actor 179; initial rescue kit; individually controllable</p><p><b>agent_180</b> Crew 11; actor 180; initial quarry pick; individually controllable</p><p><b>agent_181</b> Crew 11; actor 181; initial construction hammer; individually controllable</p><p><b>agent_182</b> Crew 11; actor 182; initial pilot sail; individually controllable</p><p><b>agent_183</b> Crew 11; actor 183; initial rescue kit; individually controllable</p><p><b>agent_184</b> Crew 11; actor 184; initial quarry pick; individually controllable</p><p><b>agent_185</b> Crew 11; actor 185; initial construction hammer; individually controllable</p><p><b>agent_186</b> Crew 11; actor 186; initial pilot sail; individually controllable</p><p><b>agent_187</b> Crew 11; actor 187; initial rescue kit; individually controllable</p><p><b>agent_188</b> Crew 11; actor 188; initial quarry pick; individually controllable</p><p><b>agent_189</b> Crew 11; actor 189; initial construction hammer; individually controllable</p><p><b>agent_190</b> Crew 11; actor 190; initial pilot sail; individually controllable</p><p><b>agent_191</b> Crew 11; actor 191; initial rescue kit; individually controllable</p><p><b>agent_192</b> Crew 12; actor 192; initial quarry pick; individually controllable</p><p><b>agent_193</b> Crew 12; actor 193; initial construction hammer; individually controllable</p><p><b>agent_194</b> Crew 12; actor 194; initial pilot sail; individually controllable</p><p><b>agent_195</b> Crew 12; actor 195; initial rescue kit; individually controllable</p><p><b>agent_196</b> Crew 12; actor 196; initial quarry pick; individually controllable</p><p><b>agent_197</b> Crew 12; actor 197; initial construction hammer; individually controllable</p><p><b>agent_198</b> Crew 12; actor 198; initial pilot sail; individually controllable</p><p><b>agent_199</b> Crew 12; actor 199; initial rescue kit; individually controllable</p><p><b>agent_200</b> Crew 12; actor 200; initial quarry pick; individually controllable</p><p><b>agent_201</b> Crew 12; actor 201; initial construction hammer; individually controllable</p><p><b>agent_202</b> Crew 12; actor 202; initial pilot sail; individually controllable</p><p><b>agent_203</b> Crew 12; actor 203; initial rescue kit; individually controllable</p><p><b>agent_204</b> Crew 12; actor 204; initial quarry pick; individually controllable</p><p><b>agent_205</b> Crew 12; actor 205; initial construction hammer; individually controllable</p><p><b>agent_206</b> Crew 12; actor 206; initial pilot sail; individually controllable</p><p><b>agent_207</b> Crew 12; actor 207; initial rescue kit; individually controllable</p><p><b>agent_208</b> Crew 13; actor 208; initial quarry pick; individually controllable</p><p><b>agent_209</b> Crew 13; actor 209; initial construction hammer; individually controllable</p><p><b>agent_210</b> Crew 13; actor 210; initial pilot sail; individually controllable</p><p><b>agent_211</b> Crew 13; actor 211; initial rescue kit; individually controllable</p><p><b>agent_212</b> Crew 13; actor 212; initial quarry pick; individually controllable</p><p><b>agent_213</b> Crew 13; actor 213; initial construction hammer; individually controllable</p><p><b>agent_214</b> Crew 13; actor 214; initial pilot sail; individually controllable</p><p><b>agent_215</b> Crew 13; actor 215; initial rescue kit; individually controllable</p><p><b>agent_216</b> Crew 13; actor 216; initial quarry pick; individually controllable</p><p><b>agent_217</b> Crew 13; actor 217; initial construction hammer; individually controllable</p><p><b>agent_218</b> Crew 13; actor 218; initial pilot sail; individually controllable</p><p><b>agent_219</b> Crew 13; actor 219; initial rescue kit; individually controllable</p><p><b>agent_220</b> Crew 13; actor 220; initial quarry pick; individually controllable</p><p><b>agent_221</b> Crew 13; actor 221; initial construction hammer; individually controllable</p><p><b>agent_222</b> Crew 13; actor 222; initial pilot sail; individually controllable</p><p><b>agent_223</b> Crew 13; actor 223; initial rescue kit; individually controllable</p><p><b>agent_224</b> Crew 14; actor 224; initial quarry pick; individually controllable</p><p><b>agent_225</b> Crew 14; actor 225; initial construction hammer; individually controllable</p><p><b>agent_226</b> Crew 14; actor 226; initial pilot sail; individually controllable</p><p><b>agent_227</b> Crew 14; actor 227; initial rescue kit; individually controllable</p><p><b>agent_228</b> Crew 14; actor 228; initial quarry pick; individually controllable</p><p><b>agent_229</b> Crew 14; actor 229; initial construction hammer; individually controllable</p><p><b>agent_230</b> Crew 14; actor 230; initial pilot sail; individually controllable</p><p><b>agent_231</b> Crew 14; actor 231; initial rescue kit; individually controllable</p><p><b>agent_232</b> Crew 14; actor 232; initial quarry pick; individually controllable</p><p><b>agent_233</b> Crew 14; actor 233; initial construction hammer; individually controllable</p><p><b>agent_234</b> Crew 14; actor 234; initial pilot sail; individually controllable</p><p><b>agent_235</b> Crew 14; actor 235; initial rescue kit; individually controllable</p><p><b>agent_236</b> Crew 14; actor 236; initial quarry pick; individually controllable</p><p><b>agent_237</b> Crew 14; actor 237; initial construction hammer; individually controllable</p><p><b>agent_238</b> Crew 14; actor 238; initial pilot sail; individually controllable</p><p><b>agent_239</b> Crew 14; actor 239; initial rescue kit; individually controllable</p><p><b>agent_240</b> Crew 15; actor 240; initial quarry pick; individually controllable</p><p><b>agent_241</b> Crew 15; actor 241; initial construction hammer; individually controllable</p><p><b>agent_242</b> Crew 15; actor 242; initial pilot sail; individually controllable</p><p><b>agent_243</b> Crew 15; actor 243; initial rescue kit; individually controllable</p><p><b>agent_244</b> Crew 15; actor 244; initial quarry pick; individually controllable</p><p><b>agent_245</b> Crew 15; actor 245; initial construction hammer; individually controllable</p><p><b>agent_246</b> Crew 15; actor 246; initial pilot sail; individually controllable</p><p><b>agent_247</b> Crew 15; actor 247; initial rescue kit; individually controllable</p><p><b>agent_248</b> Crew 15; actor 248; initial quarry pick; individually controllable</p><p><b>agent_249</b> Crew 15; actor 249; initial construction hammer; individually controllable</p><p><b>agent_250</b> Crew 15; actor 250; initial pilot sail; individually controllable</p><p><b>agent_251</b> Crew 15; actor 251; initial rescue kit; individually controllable</p><p><b>agent_252</b> Crew 15; actor 252; initial quarry pick; individually controllable</p><p><b>agent_253</b> Crew 15; actor 253; initial construction hammer; individually controllable</p><p><b>agent_254</b> Crew 15; actor 254; initial pilot sail; individually controllable</p><p><b>agent_255</b> Crew 15; actor 255; initial rescue kit; individually controllable</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      13
+    ],
+    &quot;meaning&quot;: &quot;Self: actor ID/255, x/63, y/63, crew/15, tool/3, stone/4, (boat+1)/16, carrying flag, signal/3, t/896, tidal phase 0/1, own-home rescued/32, own shelter level/3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      53
+    ],
+    &quot;meaning&quot;: &quot;Four nearest visible actor slots, 10 each: visible, ID/255, x/63, y/63, crew/15, tool/3, stone/4, (boat+1)/16, carrying, signal/3&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      117
+    ],
+    &quot;meaning&quot;: &quot;16 quarry rows, 4 each: visible, x/63, y/63, stock/32&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      117,
+      261
+    ],
+    &quot;meaning&quot;: &quot;24 route rows, 6 each: visible, x/63, y/63, level/3, gate open, current damage&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      261,
+      341
+    ],
+    &quot;meaning&quot;: &quot;16 shelter rows, 5 each: visible, x/63, y/63, level/3, rescued/32&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      341,
+      421
+    ],
+    &quot;meaning&quot;: &quot;16 boat rows, 5 each: visible, x/63, y/63, cargo/4, passengers/8&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      421,
+      581
+    ],
+    &quot;meaning&quot;: &quot;32 resident rows, 5 each: visible, x/63, y/63, (carrier+1)/256, saved&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      581,
+      661
+    ],
+    &quot;meaning&quot;: &quot;16 ash rows, 5 each: visible, x/63, y/63, intensity/3, clearing timer/3&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      661,
+      686
+    ],
+    &quot;meaning&quot;: &quot;Row-major 5 by 5 terrain patch centered on actor, edge-clamped; tile code/2&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agents&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 256,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tool: pick 0, hammer 1, sail 2, rescue kit 3&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stone&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried stone, capacity 4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;aboard&quot;
+        ],
+        &quot;meaning&quot;: &quot;Boat ID, -1 when on foot&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;signal&quot;
+        ],
+        &quot;meaning&quot;: &quot;Visible signal lifetime, 0 to 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carrying&quot;
+        ],
+        &quot;meaning&quot;: &quot;Leading an occupied rescue stretcher&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;quarry&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;quarry_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;quarry_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;quarry_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;quarry_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining stone, at most 32&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;route&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;route_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;route_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;route_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;route_level&quot;
+        ],
+        &quot;meaning&quot;: &quot;Construction level; at least 2 supports crossing&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;route_open&quot;
+        ],
+        &quot;meaning&quot;: &quot;Raised lift gate permits passage&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;route_damage&quot;
+        ],
+        &quot;meaning&quot;: &quot;Route lost one level this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;shelter&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;shelter_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;shelter_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;shelter_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;shelter_level&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shelter protection level, 0 to 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rescued&quot;
+        ],
+        &quot;meaning&quot;: &quot;Residents delivered here&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;boat&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;boat_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;boat_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;boat_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;boat_cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stone cargo; each unit removes a passenger place&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;boat_load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Actual boarded actors&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;victim&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;victim_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;victim_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;victim_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;victim_carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;Controlling carrier actor ID, -1 if uncarried&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;victim_saved&quot;
+        ],
+        &quot;meaning&quot;: &quot;Delivered resident&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;ash&quot;,
+    &quot;kind&quot;: &quot;hazard&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;ash_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;ash_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;ash_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;ash_level&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ash intensity, 0 to 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;ash_clear&quot;
+        ],
+        &quot;meaning&quot;: &quot;Clearing countdown; effect occurs at expiry&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 232,
+  &quot;key&quot;: &quot;gi232&quot;,
+  &quot;title&quot;: &quot;Basalt Archipelago Rescue&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 256,
+    &quot;observation_size&quot;: 686,
+    &quot;num_actions&quot;: 20,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;ef62b757a0b636495f58b3c674af5a9f4b6626dee03552d9f9bcfab9b334fe5e&quot;,
+  &quot;manifest_sha256&quot;: &quot;9229a270f414c647a337c6902a35ee83b6b2860463a492eb840854c0d0a0992f&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;ef62b757a0b636495f58b3c674af5a9f4b6626dee03552d9f9bcfab9b334fe5e&quot;,
+      &quot;bytes&quot;: 15671,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00232/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;9229a270f414c647a337c6902a35ee83b6b2860463a492eb840854c0d0a0992f&quot;,
+      &quot;bytes&quot;: 48023,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00232/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;09452b5ac37d83b31cf1151a7576fd9f83ea82e931970828eee122b26adc8dc9&quot;,
+      &quot;bytes&quot;: 9654,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00232/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;69388abbf6ca335e7eb005a67f775671356d4530c2310f09bc5446a20f713b69&quot;,
+      &quot;bytes&quot;: 14420,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00232/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;472c3fc008a45199e973eb407cf24db9ce6cb9333a903ac8157ed14e6c728a55&quot;,
+      &quot;bytes&quot;: 149546,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00232/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi232">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

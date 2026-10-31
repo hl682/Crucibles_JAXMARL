@@ -1,0 +1,446 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "eeafa7f9a76b6a316579c22b3bed2abd8a4f116535dcec68bbc85e5bb1b7d9e3",
+  "manifest_sha256": "1450f7af9cc512e487b9aa85f070daf4c4941a6b909722ee26020350c3d5e713",
+  "title": "Signal Veil Relay",
+  "rules": [
+    "Teams (0,1) and (2,3) capture and return the enemy beacon while their own beacon is home.",
+    "Scouts have radius-four radar; couriers radius two. Walls constrain movement, not radar.",
+    "Transmit shares the sender radar with its teammate for three ticks and publicly reveals the sender.",
+    "Each role can deploy one four-tick physical decoy. It hides nearby bodies/cargo from distant hostile radar and absorbs a nearest tag beam.",
+    "Tags travel along a clear row or column at most two tiles, stun for two future ticks, and drop carried cargo. A fired tag has three-tick cooldown.",
+    "Interact within one tile to recover your grounded beacon or pick up the enemy beacon.",
+    "Offer plus an adjacent teammate receive action transfers a carried beacon; a unilateral offer does not.",
+    "Same destination and previously occupied-cell movement attempts are blocked. Tags resolve simultaneously; object contests use role id order.",
+    "The first capture ends play: +1 to each winner, -1 to each opponent. Otherwise step 96 truncates.",
+    "Map, home coordinates, scores and event identities are public. Positions and attributes obey the actual role visibility masks."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "Team 0 return base",
+          "color": "#2563EB"
+        },
+        {
+          "value": 3,
+          "meaning": "Team 1 return base",
+          "color": "#EA580C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "agent",
+      "label": "Scouts and couriers",
+      "color": "#475569",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "label": "Team: 0 blue, 1 orange"
+        },
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "label": "Role: 0 scout, 1 courier"
+        },
+        {
+          "state_path": [
+            "agent_stun"
+          ],
+          "label": "Remaining forced-wait ticks"
+        },
+        {
+          "state_path": [
+            "agent_cooldown"
+          ],
+          "label": "Remaining tag cooldown ticks"
+        },
+        {
+          "state_path": [
+            "agent_stock"
+          ],
+          "label": "Remaining one-use decoy"
+        },
+        {
+          "state_path": [
+            "agent_signal"
+          ],
+          "label": "Remaining public signal ticks"
+        },
+        {
+          "state_path": [
+            "agent_carry"
+          ],
+          "label": "Carried beacon owner; -1 means empty"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "glyph": "beacon",
+      "label": "Physical team beacons",
+      "color": "#FACC15",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_owner"
+          ],
+          "label": "Original owning team"
+        },
+        {
+          "state_path": [
+            "beacon_carrier"
+          ],
+          "label": "Carrier role id; -1 means ground"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "glyph": "flag",
+      "label": "Return bases",
+      "color": "#6366F1",
+      "attribute_labels": []
+    },
+    {
+      "id": "decoys",
+      "glyph": "beacon",
+      "label": "One-use reflector decoys",
+      "color": "#A855F7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "decoy_team"
+          ],
+          "label": "Deploying team"
+        },
+        {
+          "state_path": [
+            "decoy_ttl"
+          ],
+          "label": "Remaining reflector lifetime"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Number of actual beacon captures by team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "event_hit"
+      ],
+      "meaning": "Public announcer: roles hit by a tag this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_deploy"
+      ],
+      "meaning": "Public announcer: roles deploying a reflector this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_signal"
+      ],
+      "meaning": "Public announcer: roles initiating a signal this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pickup"
+      ],
+      "meaning": "Public announcer: beacon ids picked up this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pass"
+      ],
+      "meaning": "Public announcer: beacon ids passed between teammates this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_return"
+      ],
+      "meaning": "Public announcer: beacon ids returned to their home this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_capture"
+      ],
+      "meaning": "Public announcer: teams capturing an enemy beacon this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Interact with adjacent beacon: recover own or pick up enemy"
+    },
+    {
+      "id": 6,
+      "label": "Fire nearest hostile axial tag beam"
+    },
+    {
+      "id": 7,
+      "label": "Transmit own radar for three ticks"
+    },
+    {
+      "id": 8,
+      "label": "Deploy one-use physical reflector decoy"
+    },
+    {
+      "id": 9,
+      "label": "Offer carried enemy beacon to teammate"
+    },
+    {
+      "id": 10,
+      "label": "Receive adjacent teammate beacon"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self role one-hot in fixed agent order, divided by 128",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        8
+      ],
+      "meaning": "Public [t, episode_done, terminated, truncated], each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        18
+      ],
+      "meaning": "Agent 0: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        18,
+        28
+      ],
+      "meaning": "Agent 1: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        28,
+        38
+      ],
+      "meaning": "Agent 2: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        38,
+        48
+      ],
+      "meaning": "Agent 3: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        48,
+        53
+      ],
+      "meaning": "Beacon 0: [visible,x,y,owner,carrier]; hidden values 0, ground carrier -1. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        58
+      ],
+      "meaning": "Beacon 1: [visible,x,y,owner,carrier]; hidden values 0, ground carrier -1. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        58,
+        63
+      ],
+      "meaning": "Decoy 0: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        63,
+        68
+      ],
+      "meaning": "Decoy 1: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        68,
+        73
+      ],
+      "meaning": "Decoy 2: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        73,
+        78
+      ],
+      "meaning": "Decoy 3: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        78,
+        82
+      ],
+      "meaning": "Public base coordinates flattened in team order [x0,y0,x1,y1], divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        159
+      ],
+      "meaning": "Public 7x11 map flattened y then x, tile values divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        161
+      ],
+      "meaning": "Public capture counts in team order, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        161,
+        165
+      ],
+      "meaning": "Public announcer tag-hit role flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        165,
+        169
+      ],
+      "meaning": "Public announcer decoy-deployment role flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        169,
+        173
+      ],
+      "meaning": "Public announcer signal-start role flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        173,
+        175
+      ],
+      "meaning": "Public announcer beacon-pickup flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        175,
+        177
+      ],
+      "meaning": "Public announcer beacon-handoff flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        177,
+        179
+      ],
+      "meaning": "Public announcer beacon-home-return flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        179,
+        181
+      ],
+      "meaning": "Public announcer team-capture flags, each divided by 128",
+      "visibility": "public"
+    }
+  ]
+}

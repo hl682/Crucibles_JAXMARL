@@ -1,0 +1,339 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "4ba373dc6b71975fd04946468ce0199e683f036d3f31f535e51e16728ffb8f03",
+  "manifest_sha256": "ca1b7c86578235df882a386f1523536102fc810b67f31e05bc2409349d7bc0fa",
+  "title": "Rotating Keep",
+  "rules": [
+    "A north and south threshold share one phase. Phase 0 desires north open; phase 1 desires south open.",
+    "Matching amber or azure keys operate their corresponding consoles. Each console has three finite charges.",
+    "One request can be pending. It matures after two later transitions, after that transition's movement.",
+    "A closing threshold stays open while occupied, then closes when vacated. No actor is teleported.",
+    "Keys may be picked up, dropped and passed to adjacent waiting keyless peers without duplication.",
+    "Actors claim one destination each, then may keep helping. Private destination preferences are not public scene attributes.",
+    "Conflicting empty destinations and requests use cyclic clock-based priority; old occupied cells block entry.",
+    "Door states, pending phase/countdown and charge are actual source state. Replay and animation remain unexecuted."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "public": true,
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#DCE5E5"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "Switchable threshold; door_open controls traversal",
+          "color": "#C4B5FD"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "glyph": "agent",
+      "label": "couriers",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Completed delivery/claim count"
+        }
+      ]
+    },
+    {
+      "id": "doors",
+      "glyph": "door",
+      "label": "doors",
+      "color": "#7C3AED",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "door_open"
+          ],
+          "label": "Actual open state"
+        },
+        {
+          "state_path": [
+            "door_target"
+          ],
+          "label": "Desired open state"
+        },
+        {
+          "state_path": [
+            "door_jammed"
+          ],
+          "label": "Occupied closure deferred"
+        }
+      ]
+    },
+    {
+      "id": "switches",
+      "glyph": "tool",
+      "label": "switches",
+      "color": "#0D9488",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "switch_charge"
+          ],
+          "label": "Remaining switch charges"
+        },
+        {
+          "state_path": [
+            "switch_key"
+          ],
+          "label": "Required key identity"
+        }
+      ]
+    },
+    {
+      "id": "keys",
+      "glyph": "key",
+      "label": "keys",
+      "color": "#D97706",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "key_holder"
+          ],
+          "label": "Carrier or ground"
+        },
+        {
+          "state_path": [
+            "key_color"
+          ],
+          "label": "Key identity"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "glyph": "flag",
+      "label": "goals",
+      "color": "#16A34A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goal_color"
+          ],
+          "label": "Destination identity"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "gate_event"
+      ],
+      "meaning": "Actual doorway openness changed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "request_event"
+      ],
+      "meaning": "This console accepted one request and spent one charge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "claim_event"
+      ],
+      "meaning": "A courier claimed its first destination this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pending"
+      ],
+      "meaning": "Requested phase or -1 for no pending request",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "timer"
+      ],
+      "meaning": "Remaining transitions before pending rotation matures",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive key"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Request delayed rotation at matching keyed console"
+    },
+    {
+      "id": 6,
+      "label": "Take a ground key underfoot"
+    },
+    {
+      "id": 7,
+      "label": "Claim destination pad once"
+    },
+    {
+      "id": 8,
+      "label": "Drop held key underfoot"
+    },
+    {
+      "id": 9,
+      "label": "Pass key to adjacent waiting keyless actor"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        63
+      ],
+      "meaning": "Public 7 by 9 fortress map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        63,
+        69
+      ],
+      "meaning": "Actor xy coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        69,
+        72
+      ],
+      "meaning": "Public destination-claim flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        72,
+        76
+      ],
+      "meaning": "Key xy coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        78
+      ],
+      "meaning": "Key holders, -1 means ground",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        78,
+        80
+      ],
+      "meaning": "Actual north/south door openness",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "meaning": "Current phase: 0 north, 1 south",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "meaning": "Pending phase or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        83
+      ],
+      "meaning": "Pending countdown",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        85
+      ],
+      "meaning": "West/east console charges",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        86
+      ],
+      "meaning": "Transition clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        87
+      ],
+      "meaning": "Own preferred destination pad",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        87,
+        88
+      ],
+      "meaning": "Own actor index",
+      "visibility": "self"
+    }
+  ]
+}

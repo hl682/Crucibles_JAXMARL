@@ -1,0 +1,699 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00089",
+  "source_sha256": "0eb71ead2afbbe9f80e84fd2b382a2431f9a87610211f6ef2c2540ea1d88a7fb",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 63,
+  "num_actions": 11,
+  "max_steps": 100,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -7.0,
+  "reward_high": 7.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "team 0 scout: long range scan, public lantern, slowed when carrying"
+    },
+    {
+      "id": "agent_1",
+      "role": "team 0 runner: short range relic recognition, extraction carrier"
+    },
+    {
+      "id": "agent_2",
+      "role": "team 1 scout: long range scan, public lantern, slowed when carrying"
+    },
+    {
+      "id": "agent_3",
+      "role": "team 1 runner: short range relic recognition, extraction carrier"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "WAIT and recover one energy"
+    },
+    {
+      "id": 1,
+      "label": "NORTH intent"
+    },
+    {
+      "id": 2,
+      "label": "EAST intent"
+    },
+    {
+      "id": 3,
+      "label": "SOUTH intent"
+    },
+    {
+      "id": 4,
+      "label": "WEST intent"
+    },
+    {
+      "id": 5,
+      "label": "FLASH public four-turn lantern, scout only"
+    },
+    {
+      "id": 6,
+      "label": "PICK UP uncarried relic within reach one"
+    },
+    {
+      "id": 7,
+      "label": "JOINT HANDOFF with adjacent teammate"
+    },
+    {
+      "id": 8,
+      "label": "TAG adjacent enemy"
+    },
+    {
+      "id": 9,
+      "label": "SCREEN adjacent teammate from tags this turn"
+    },
+    {
+      "id": 10,
+      "label": "CO-SIGN extraction near own base"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "dtype": "int32",
+      "shape": [
+        11,
+        11
+      ]
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        2
+      ]
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        4
+      ]
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "stun"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "tag_cooldown"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "relic_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "relic_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "relic_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        1
+      ]
+    },
+    {
+      "path": [
+        "relic_carrier"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2,
+        2
+      ]
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "beacon_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        2
+      ]
+    },
+    {
+      "path": [
+        "beacon_ttl"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "base_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2,
+        2
+      ]
+    },
+    {
+      "path": [
+        "base_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "base_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        2
+      ]
+    },
+    {
+      "path": [
+        "pickup_notice"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "tag_notice"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "claim_once"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "delivery_notice"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "winner"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable alley",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "solid wall or center ridge",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "team 0 extraction tile",
+          "color": "#93C5FD"
+        },
+        {
+          "value": 3,
+          "meaning": "team 1 extraction tile",
+          "color": "#FCA5A5"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Team identity, 0 or 1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Role: scout 0, runner 1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "meaning": "Energy, capacity 3",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "meaning": "Forced WAIT turns remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "tag_cooldown"
+          ],
+          "meaning": "Turns until a further tag is legal",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "relic",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "relic_pos"
+      ],
+      "active": [
+        "relic_active"
+      ],
+      "visibility": [
+        "relic_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "relic_carrier"
+          ],
+          "meaning": "Carrier identity; -1 means on ground",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "lanterns",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "meaning": "Public light lifetime remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "base_pos"
+      ],
+      "active": [
+        "base_active"
+      ],
+      "visibility": [
+        "base_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pickup_notice"
+      ],
+      "meaning": "Public per-team notice that a pickup occurred this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tag_notice"
+      ],
+      "meaning": "Public per-team number of agents actually stunned this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "claim_once"
+      ],
+      "meaning": "Public teams that have ever held the relic; at most once per team",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "delivery_notice"
+      ],
+      "meaning": "Jointly co-signed extraction on the final live transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "winner"
+      ],
+      "meaning": "Winner identity; -1 until natural extraction",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        7
+      ],
+      "meaning": "Public t/100, done, (winner+1)/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        9
+      ],
+      "meaning": "Public pickup notices for teams 0 and 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Public per-team newly stunned agent count /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        13
+      ],
+      "meaning": "Public ever-held-relic bits for teams 0 and 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public final extraction notices for teams 0 and 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        19
+      ],
+      "meaning": "Public team 0/team 1 base [x/10,y/10] positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        27
+      ],
+      "meaning": "Public two lantern slots [x/10,y/10,ttl/4,active]; inactive lantern data is zero",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        59
+      ],
+      "meaning": "Four agent slots [x/10,y/10,energy/3,stun/2,tag_cooldown/3,role,team,visible]; all fields zero if not locally visible or lit",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        59,
+        63
+      ],
+      "meaning": "Relic [x/10,y/10,(carrier+1)/4,visible]; zero unless recognized locally or illuminated and active",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Bring the single relic to your team base with your runner carrying and your scout simultaneously co-signing nearby, while the other team can intercept.",
+    "natural_termination": "One team natural-completes when its runner stands exactly on its base holding the relic and its adjacent scout also chooses CO-SIGN, with neither hit by an unprotected tag that turn.",
+    "interaction": "A scout public lantern reveals information to both teams; coordinated screens prevent enemy tags, tags stun and drop carried relics, paired handoffs exchange cargo, and extraction needs both teammates in space and time.",
+    "observation_access": "Public fixed map, bases, active lantern positions/lifetimes and alarm/claim/extraction announcements. Scouts see agents and relic within Manhattan radius 4; runners see agents within 2 and recognize relic within 1. Any active lantern makes agents/relic within 3 visible to everyone, through walls by the stated radio-scan rule."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "team"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "role"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "energy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stun"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tag_cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "beacon_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tag_notice"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

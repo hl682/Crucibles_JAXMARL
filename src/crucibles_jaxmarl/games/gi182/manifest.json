@@ -1,0 +1,728 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00182",
+  "source_sha256": "8c9beba61f017e424ca0bbb3ddf9226c0fc799abb104a754d725dbbae29b913e",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 78,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 96,
+  "reward_low": 0,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Worker with private north/south order"
+    },
+    {
+      "id": "agent_1",
+      "role": "Worker with private north/south order"
+    },
+    {
+      "id": "agent_2",
+      "role": "Worker with private north/south order"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait / receive handoff"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Take from bin underfoot or adjacent finished furnace"
+    },
+    {
+      "id": 6,
+      "label": "Deposit carried ore or flux into adjacent idle furnace"
+    },
+    {
+      "id": 7,
+      "label": "Fire an adjacent furnace containing ore"
+    },
+    {
+      "id": 8,
+      "label": "Quench adjacent cooling furnace using its water"
+    },
+    {
+      "id": 9,
+      "label": "Hand carried lot to an adjacent waiting empty worker"
+    },
+    {
+      "id": 10,
+      "label": "Sell good by shipping dock or discard lot by waste dock"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "natural"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        7
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carry"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bin_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bin_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bin_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "furnace_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "furnace_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "furnace_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ore"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flux"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stage"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_kind"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "waste"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "sale_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stage_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      6,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "public": true,
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#DCE5E5"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#334155"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "active"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carry"
+          ],
+          "meaning": "Lot: 0 empty, 1 ore, 2 flux, 3 north good, 4 south good, 5 ore slag, 6 ore-plus-flux slag",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Public cumulative units shipped by worker",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "bins",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "bin_pos"
+      ],
+      "active": [
+        "bin_active"
+      ],
+      "visibility": [
+        "bin_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Remaining units; bin 0 ore, bin 1 flux",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "furnaces",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "furnace_pos"
+      ],
+      "active": [
+        "furnace_active"
+      ],
+      "visibility": [
+        "furnace_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "ore"
+          ],
+          "meaning": "Ore atom retained in the current lot",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "flux"
+          ],
+          "meaning": "Flux atom retained in the current lot",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "meaning": "0 idle, 1 heating, 2 cooling window, 3 good, 4 slag",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "timer"
+          ],
+          "meaning": "Remaining heating/cooling transitions",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "meaning": "Finite quench charges",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "dock_kind"
+          ],
+          "meaning": "0 shipping, 1 waste",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "sale_event"
+      ],
+      "meaning": "A worker shipped a physical good this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "stage_event"
+      ],
+      "meaning": "A furnace stage changed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Cumulative discarded ore and flux atoms",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        49
+      ],
+      "meaning": "Public 7 by 7 floor map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        55
+      ],
+      "meaning": "All worker xy coordinates in actor order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        55,
+        58
+      ],
+      "meaning": "Public carried-lot codes",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        60
+      ],
+      "meaning": "Furnace ore atoms",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        62
+      ],
+      "meaning": "Furnace flux atoms",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        64
+      ],
+      "meaning": "Furnace stages",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        66
+      ],
+      "meaning": "Furnace timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        68
+      ],
+      "meaning": "Furnace water",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        68,
+        70
+      ],
+      "meaning": "Ore/flux bin stocks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        73
+      ],
+      "meaning": "Worker shipment counters",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        75
+      ],
+      "meaning": "Discarded ore/flux atoms",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        76
+      ],
+      "meaning": "Raw transition clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        77
+      ],
+      "meaning": "Own preferred furnace: 0 north, 1 south",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        77,
+        78
+      ],
+      "meaning": "Own actor index",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Process finite ingredients and ship physical goods; each worker values its private preferred furnace more and shares each shipment bonus.",
+    "natural_termination": "All source bins empty, all workers empty-handed, and no ore or flux remains in either furnace. Exhausting material through waste is also natural completion; no reward threshold.",
+    "interaction": "Workers compete for finite ingredients, exchange lots, load complementary materials, control shared timed furnaces and spend their water. A missing flux or missed quench irreversibly converts material to slag.",
+    "observation_access": "All physical geometry, materials, stocks, stages and shipment/waste events are public. Each row alone includes that worker's preferred furnace. No private order value is a scene attribute or public event. All static object coordinates and dock/bin identities are public rules."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "carry"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "ore"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "flux"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stage"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "waste"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

@@ -1,0 +1,772 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00175",
+  "source_sha256": "57c802dfeaad65e5f760a9ebeb08cb53a8704c8a8c65c045b2a6e3900db527a7",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 184,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -10.0,
+  "reward_high": 10.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "explorer prioritizing cargo 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "explorer prioritizing cargo 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "explorer prioritizing cargo 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "toggle lantern"
+    },
+    {
+      "id": 6,
+      "label": "pass lantern and charge"
+    },
+    {
+      "id": 7,
+      "label": "pickup or drop cargo"
+    },
+    {
+      "id": 8,
+      "label": "pass cargo"
+    },
+    {
+      "id": 9,
+      "label": "deliver held cargo"
+    },
+    {
+      "id": 10,
+      "label": "relay timestamped samples"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_visibility"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "battery"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "private_priority"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "holder"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "integrity"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_phase"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "memory_stamp"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lantern"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lamp_on"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "glow"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "relay_received"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lamp_passed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_passed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "contact"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "broken_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "armed"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "memory_armed"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Public walkable floor",
+          "color": "#D9D1B4"
+        },
+        {
+          "value": 1,
+          "meaning": "Public wall; no movement through cell",
+          "color": "#53606B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "explorers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "lantern"
+          ],
+          "meaning": "Holds a lantern",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "battery"
+          ],
+          "meaning": "Remaining battery units",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "lamp_on"
+          ],
+          "meaning": "Switch remains on",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "glow"
+          ],
+          "meaning": "Paid illumination this tick",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "integrity"
+          ],
+          "meaning": "Fragile cargo integrity",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "meaning": "Holder index; -1 means unheld",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Delivered cargo",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visibility"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "hazards",
+      "kind": "hazard",
+      "count": 4,
+      "position": [
+        "hazard_pos"
+      ],
+      "active": [
+        "hazard_active"
+      ],
+      "visibility": [
+        "hazard_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "armed"
+          ],
+          "meaning": "Currently armed pulse, visible only when sensed",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "lamp_passed"
+      ],
+      "meaning": "Explorer handed its lantern and remaining charge to a peer this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_passed"
+      ],
+      "meaning": "Explorer handed its held cargo to a peer this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_event"
+      ],
+      "meaning": "Cargo delivered at its matching destination this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "broken_event"
+      ],
+      "meaning": "Cargo integrity reached zero this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "glow"
+      ],
+      "meaning": "Paid light is active for this snapshot",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "battery"
+      ],
+      "meaning": "Public remaining battery units",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        6
+      ],
+      "meaning": "Own three cargo priorities / 3; no peer priorities",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "Own cargo possession bits",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Own lantern possession",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Own charge / 8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "meaning": "Own switch-on state",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        13
+      ],
+      "meaning": "Own paid glow snapshot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        14
+      ],
+      "meaning": "Clock / 96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        91
+      ],
+      "meaning": "Public topology map, row-major 7 by 11, floor=0 wall=1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        94
+      ],
+      "meaning": "Public delivered flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "Public destroyed flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        103
+      ],
+      "meaning": "Destination-major [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        106
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        130
+      ],
+      "meaning": "Three public explorer tuples: visible=1,x/10,y/6,lantern,charge/8,switch,glow,carried-cargo-code/3; code 0 none, 1..3 cargo",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        148
+      ],
+      "meaning": "Three public cargo tuples: visible=1,x/10,y/6,integrity/3,(holder+1)/3,active",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        164
+      ],
+      "meaning": "Four direct hazard tuples: visible,x/10,y/6,armed; all payload fields zero when invisible",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        164,
+        184
+      ],
+      "meaning": "Four memory tuples: known,x/10,y/6,armed-at-capture,age/96; unknown payload zero. Relay preserves capture timestamp.",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Transport fragile cargo to its matching destination while choosing who carries cargo, who pays finite illumination and which stale reports to share.",
+    "natural_termination": "All cargo is delivered or destroyed; these outcomes are distinguished in state. H=96 otherwise truncates.",
+    "interaction": "Two transferable lanterns expand actual peer hazard observations. One-cargo carrying capacity and adjacent handoffs change peer opportunities; report relays copy aged hazard samples without refreshing timestamps.",
+    "observation_access": "Fixed walls, all explorer/cargo positions, possession, battery and delivery status are public telemetry. Hazard positions/current pulses are visible only within Manhattan 1, or within observer distance 4 when some glowing lantern is within hazard distance 3. Walls do not occlude this abstract light. Private cargo priorities and peer memories are absent. A role may receive a timestamped one-hop report from an adjacent acting sender."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "battery"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "integrity"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "status": "AUTHORED_NOT_EXECUTED",
+  "action_resolution": "Simultaneous joint actions. Invalid, out-of-range or masked actions become wait. Per-game conflicts are specified in mechanism.md.",
+  "execution_claim": "No candidate import, JAX/NumPy evaluation, replay, rendering, training or numerical validation by author."
+}

@@ -1,0 +1,392 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "994910a436c59589c5c58c73badc570d3df80fc880e10b527c42dca5d2c55e7f",
+  "manifest_sha256": "fbfdbaead6909523a543c873b9b7c6948e411377b6609665a8b63de60e9ec019",
+  "title": "Two-Stride Relay Arena",
+  "rules": [
+    "Teams (0,1) and (2,3) carry a physical relay token to the opposite marked goal zone.",
+    "An in-flight catch from your teammate arms a goal. Loose pickups, interceptions and tackles clear arming.",
+    "Each possession permits two successful carrier moves. Four held ticks force a drop.",
+    "Cardinal throws travel one real cell per transition for up to six cells; walls stop the token.",
+    "Direct cell contact catches automatically when unlocked. Receive reaches one tile for allied tokens; guard reaches one tile for hostile tokens.",
+    "Contact resolves by distance, then hostile guard, then rotating role priority.",
+    "A guard can steal from an adjacent opposing held carrier; newly caught tokens are protected for that tick.",
+    "Same-cell destinations and entry into another player start cell are blocked, even if that player moves away.",
+    "A carried armed token on the target goal ends play with +1 per winner and -1 per opponent; otherwise step 96 truncates.",
+    "All players, token trajectory state, possession timers, map and events are public and bound to actual state."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable arena court",
+          "color": "#E0F2FE"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable arena wall",
+          "color": "#1E293B"
+        },
+        {
+          "value": 2,
+          "meaning": "Team 0 target goal cells at x=11, y=3..5",
+          "color": "#2563EB"
+        },
+        {
+          "value": 3,
+          "meaning": "Team 1 target goal cells at x=1, y=3..5",
+          "color": "#EA580C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "glyph": "agent",
+      "label": "Two relay teams",
+      "color": "#475569",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "label": "Team: 0 blue, 1 orange"
+        },
+        {
+          "state_path": [
+            "agent_cooldown"
+          ],
+          "label": "Remaining pickup lock after throw or forced drop"
+        }
+      ]
+    },
+    {
+      "id": "token",
+      "glyph": "circle",
+      "label": "Actual relay token",
+      "color": "#EAB308",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ball_carrier"
+          ],
+          "label": "Carrier role id; -1 means loose or airborne"
+        },
+        {
+          "state_path": [
+            "ball_velocity"
+          ],
+          "label": "Current flight velocity in [x,y]"
+        },
+        {
+          "state_path": [
+            "ball_flight"
+          ],
+          "label": "Remaining single-tile flight steps"
+        },
+        {
+          "state_path": [
+            "ball_relay"
+          ],
+          "label": "Goal armed by an allied in-flight catch"
+        },
+        {
+          "state_path": [
+            "ball_age"
+          ],
+          "label": "Completed held ticks since latest acquisition"
+        },
+        {
+          "state_path": [
+            "ball_travel"
+          ],
+          "label": "Successful carrier moves since acquisition"
+        },
+        {
+          "state_path": [
+            "ball_last_thrower"
+          ],
+          "label": "Last throwing role; -1 means no throw yet"
+        },
+        {
+          "state_path": [
+            "ball_last_team"
+          ],
+          "label": "Last throwing team; -1 means no throw yet"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "glyph": "flag",
+      "label": "Centers of three-cell target goal zones",
+      "color": "#6366F1",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goal_team"
+          ],
+          "label": "Team that scores at this goal zone"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Actual scored goals in team order",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "event_throw"
+      ],
+      "meaning": "Roles that actually threw the held token this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_catch"
+      ],
+      "meaning": "Roles that actually caught an airborne or loose token this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_intercept"
+      ],
+      "meaning": "Roles that caught an opposing in-flight pass this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_tackle"
+      ],
+      "meaning": "Roles that stole an adjacent held token this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_drop"
+      ],
+      "meaning": "Roles forced to drop by the four-tick holding limit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_goal"
+      ],
+      "meaning": "Teams that actually scored an armed-token goal this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Throw held token north"
+    },
+    {
+      "id": 6,
+      "label": "Throw held token east"
+    },
+    {
+      "id": 7,
+      "label": "Throw held token south"
+    },
+    {
+      "id": 8,
+      "label": "Throw held token west"
+    },
+    {
+      "id": 9,
+      "label": "Guard: reach for hostile token or tackle adjacent carrier"
+    },
+    {
+      "id": 10,
+      "label": "Receive: reach for allied or neutral loose token"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self role one-hot, divided by 128",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        8
+      ],
+      "meaning": "Public [t,episode_done,terminated,truncated], divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "Player 0: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        16
+      ],
+      "meaning": "Player 1: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        20
+      ],
+      "meaning": "Player 2: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        24
+      ],
+      "meaning": "Player 3: [x,y,team,pickup_cooldown], divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        35
+      ],
+      "meaning": "Token [x,y,carrier,vx,vy,flight_remaining,relay_armed,held_age,carrier_moves,last_thrower,last_throw_team]. -1 carrier/throw sentinels are literal; all divided by 128.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        38
+      ],
+      "meaning": "Goal 0: [center_x,center_y,scoring_team], divided by 128. Its three cells are also in the map.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        41
+      ],
+      "meaning": "Goal 1: [center_x,center_y,scoring_team], divided by 128. Its three cells are also in the map.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        158
+      ],
+      "meaning": "Public 9x13 court map flattened y then x, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        160
+      ],
+      "meaning": "Public team goal counts, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        160,
+        164
+      ],
+      "meaning": "Public actual throw role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        168
+      ],
+      "meaning": "Public actual catch role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        172
+      ],
+      "meaning": "Public actual intercept role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        172,
+        176
+      ],
+      "meaning": "Public actual tackle role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        176,
+        180
+      ],
+      "meaning": "Public actual forced-drop role flags, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        180,
+        182
+      ],
+      "meaning": "Public actual scoring-team flags, divided by 128",
+      "visibility": "public"
+    }
+  ]
+}

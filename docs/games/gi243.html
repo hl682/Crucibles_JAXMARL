@@ -1,0 +1,499 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mountain Orchard Neighbours · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI243 / SPATIAL</p><h1>Mountain Orchard Neighbours</h1><p class="lead"></p><div class="stats"><span>128 agents</span><span>23 actions</span><span>858 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 243</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Deliver 64 orchard fruit cargos while maintaining cross-household pollination, water, shared hives and footbridges before H=896.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion at 64 delivered fruit cargos; otherwise horizon truncation at 896.&quot;,
+  &quot;interaction&quot;: &quot;Compatible nearby trees exchange pollen through a two-step wind queue only with live nearby pollinators. Spray protects local fruit growth but suppresses neighboring pollen and hive health. Hive care and bridge repair require complementary actors. Water, compost, hives and tools can be physically moved between households.&quot;,
+  &quot;observation_access&quot;: &quot;Only own prefix and radius-two Chebyshev 5x5 patch with exact listed channels enter the policy. Visible actor identity, role, crew, tools, cargo, stamina and message are in the patch. Each object attribute is in its group channels. Hidden cells and entities remain hidden; global debugger must be labeled. Clock alone is public.&quot;
+}</pre></details><p>Declared per-step reward bounds: -8.0 to 8.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Thirty-two households each provide four independently controllable people. Bees and herds are environmental entities.</li><li>Flowering compatible trees send wind pollen through a two-step queue. A healthy local hive and nearby visible bee are required.</li><li>Spray removes local pests but poisons neighboring trees and hurts nearby hives. Compost and carried water support delayed growth.</li><li>Hive care needs a beekeeper plus a partner shading the same hive. A beekeeper can carry a hive as a backpack to another terrace.</li><li>Bridge repair needs a mason with material and a nearby bracing partner. Erosion closes neglected crossings.</li><li>Harvest fruit and deliver it to village stores; quality travels with the carried cargo. Native human interaction remains unverified.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Mountain Orchard Neighbours
+
+Status: AUTHORED_NOT_EXECUTED. All gameplay, scripts and causal predictions below are source-derived author hypotheses, not measured results.
+
+## Orchard ecology and embodied work
+
+Thirty-two four-person households occupy connected terraces in a 64 by 40 map. Each has two compatible tree species, a movable hive, bridge, supply depot, water basin, store, pollinator swarm and roaming herd animal. Actors begin with gardener compost, steward water and mason materials; beekeepers begin empty. Tools 1/2/3/4 enable pruning/shading, hive work, herding/bracing and masonry. Bees and livestock have native positions and dynamics but no controllable agent rows.
+
+Pruning (6) restores a mature fruitless tree to flowering stage four. Spray (7) removes three pest units at its target but deposits persistent residue on every tree within six cells; nearby hives lose health while residue remains within five cells. Carried water (8) and compost (9) change local moisture and growth. Supply pickup (5) gives one mason kit to a tool-4 actor or compost to others. Basin pickup (17) creates a carried water unit. Empty trees can be replanted with compost (22). Rain arrives every 24 ticks and bridge erosion/wind changes every 32; seasonal time is encoded by the native clock, without external weather data.
+
+Wind transport requires a flowering unpoisoned source, a healthy hive within five cells and a live swarm within one cell. Sources send pollen to the opposite species downwind within eight horizontal cells and two vertical cells. The queue has two native delay slots: newly emitted pollen first enters pollen_next, then pollen_queue, then the receiving tree, and residue can suppress receipt. This links neighboring households instead of assigning independent crop games. Swarms physically move one cardinal cell toward a blossom class selected every eight ticks. They wait when another swarm occupies the destination, and lower swarm index resolves simultaneous empty-cell claims, keeping their observed entity attributes distinct. Their native target is chosen near their hive, so transporting that hive changes ecology.
+
+Hives require a tool-2 caregiver (11), a different tool-1 shading actor (12), and nectar to gain two health. One actor cannot provide both simultaneous actions. A beekeeper can lift a hive (15) as a backpack, move it, and set it down (16); this backpack is separate from ordinary cargo. Hive cells block normal entry to avoid overlap. Nectar regenerates near mature trees every sixteen ticks. Health and care costs are tied to the real hive, not an independent reward token.
+
+Bridges need a tool-4 mason spending material (13) and a different tool-3 bracing actor (14) to gain two integrity. Zero integrity closes the actual ravine crossing. Roaming herds damage seedlings only when their actual old position is within one cell; guiding (18) with a tool-3 actor prevents that herd&#x27;s damage this tick and moves it to a refuge. Animals do not act as extra policies.
+
+Wet trees gain maturity every fourth tick. Pests and trampling can reduce it. At maturity at least six with received pollen, a tree creates one fruit and returns to stage two, consuming its accumulated pollen. Harvest (10) loads a fruit; delivery (19) physically transfers it to a village store. Cargo handoff (21) preserves the carried quality code and tool exchange (20) is reciprocal. The current simplified quality code is the observed pollen at harvest, with a minimum of one; it is not a persistent biochemical property of each fruit.
+
+## Incentives and alternatives
+
+Households can keep shared pollination healthy, relocate a hive, or spray for immediate local pest protection despite harm to others. Water/compost labor competes with bridge maintenance, herd management and delivery. A bridge repair requires complementary staffing; hives can make distant households more or less productive after travel and pollen delays. These mechanisms have not been evaluated for optimal strategies or learning.
+
+Each nonrest action costs 0.01. Spray costs another 0.03; compost, successful repair and planting another 0.02. Pruning and spraying each consume an extra stamina unit. A fruit sale pays its actor 1 plus 0.1 times its carried quality code, and each resident of the receiving store&#x27;s household 0.04. Paired hive care pays that hive household 0.01 per resident; poisoned hives cost their household residents 0.02 each step. Sixty-four total delivered fruit cargos ends naturally; otherwise H=896 truncates.
+
+## Literal diagnostics
+
+Script one moves gardener 0 south three times to shade hive 0 while beekeeper 1 cares, then rests. Script two sprays the nearby tree and follows the residue with idle steps. The paired intervention repeats the approach, then changes only gardener 0&#x27;s shade action versus rest while beekeeper 1 cares; identical suffixes test intended shared hive-health/nectar consequences. All are unexecuted source hypotheses.
+
+
+## Native boundary and local information
+
+Every listed actor is an independently selectable row of the same int32 action vector. Human or AI control uses that unchanged row; a frontend, keyboard binding, animation, camera, agent-keyed adapter and human usability have not been implemented or verified by this author. All actors remain active. Rest restores one stamina unit; exertion consumes one, with documented game-specific additions. Movement is cardinal; destinations occupied at the start of a step cannot be entered. Simultaneous claims for an empty destination favor the lowest actor index. Spatial interactions use start-of-step positions and Manhattan distance at most one to the nearest relevant object, unless a specific rule says otherwise. Tool exchange requires both adjacent actors to choose exchange and mutually select each other. Invalid or out-of-range actions become rest deterministically.
+
+Each role receives the own-state prefix plus a 5x5 radius-two patch. The manifest lists every channel and normalization; the renderer&#x27;s entity masks and map mask are derived from the same radius. Out-of-world patch cells are all -1. There is no omniscient policy feed. Agent IDs, fixed role and home crew are public metadata; current tools, cargo, stamina, messages and world attributes are visible only in the patch. Entity positions are used by movement, proximity, ecology or construction; none are layout-only proxies.
+
+A nonterminal call advances the int32 clock once. Natural completion has priority over horizon truncation. A terminal raw call preserves every state leaf, observation and terminal cause, returns zero reward and all dones true, and does not reset. All boundary/state integers are int32; the supplied uint32 key is used only through JAX randomness and is not copied into state. State keys/shapes remain fixed. Rewards declare conservative [-8,8] bounds and observations [-1,1]; these are interface ranges, not scientific performance gates. Concurrency, bounds, terminal absorption, JIT/vmap, causal effects, throughput and numerical parity remain unverified.
+
+## Source-line evidence
+
+- candidate.py:116 &#x27;cared =&#x27;: hive care requires complementary simultaneous roles
+- candidate.py:168 &#x27;incoming =&#x27;: spatial compatible wind pollen enters delayed queue
+- candidate.py:131 &#x27;poison =&#x27;: spray harms nearby trees beyond its source
+- candidate.py:118 &#x27;repaired =&#x27;: bridge repair requires a separate brace action
+- candidate.py:127 &#x27;n[&quot;hive_pos&quot;]&#x27;: carried hive position follows a real actor
+- candidate.py:187 &#x27;trampled =&#x27;: roaming animals alter young tree growth
+
+## Provenance and limits
+
+The source is original for this batch and train split. Only current batch authority, four assigned design/request pairs, population/family direction, human-playability addendum and copied interface contracts/templates were read. No prior candidate, IR, result, training, heldout or memory was read; no remote query was made. Official repository references were allowed but not read or copied. The family inspiration comes solely from the supplied design direction: no commercial assets or upstream game implementation is included. PureJaxRL/Craftax baseline code is not used as a game or learner replacement.
+
+The two literal scripts and the paired single-action hypothesis in playthrough.json are unexecuted diagnostics, not a controller restriction or proof of task success. Source-authored invariants and bounds await the independent sealed validator. No candidate import, Python candidate execution, JAX/NumPy computation, validator, training, replay, browser session, human play, accepted R0/M0, solvability, learning, strategic richness, non-isomorphism or transfer result is claimed. Zero, negative, failed, missing and indeterminate outcomes remain admissible.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Rest</span></div><div class="action"><b>1</b><span>East</span></div><div class="action"><b>2</b><span>West</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>North</span></div><div class="action"><b>5</b><span>Collect compost or mason kit</span></div><div class="action"><b>6</b><span>Prune flowering tree</span></div><div class="action"><b>7</b><span>Spray pests</span></div><div class="action"><b>8</b><span>Water tree with carried flask</span></div><div class="action"><b>9</b><span>Add carried compost</span></div><div class="action"><b>10</b><span>Harvest fruit</span></div><div class="action"><b>11</b><span>Care for hive</span></div><div class="action"><b>12</b><span>Shade hive during partner care</span></div><div class="action"><b>13</b><span>Repair bridge with mason kit</span></div><div class="action"><b>14</b><span>Brace bridge for mason</span></div><div class="action"><b>15</b><span>Lift hive backpack</span></div><div class="action"><b>16</b><span>Set down hive backpack</span></div><div class="action"><b>17</b><span>Fill water flask</span></div><div class="action"><b>18</b><span>Guide nearby herd</span></div><div class="action"><b>19</b><span>Deliver fruit to village store</span></div><div class="action"><b>20</b><span>Exchange tools</span></div><div class="action"><b>21</b><span>Handoff cargo and fruit quality</span></div><div class="action"><b>22</b><span>Plant sapling with compost</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> orchard keeper of household 0</p><p><b>agent_1</b> beekeeper of household 0</p><p><b>agent_2</b> water and herd steward of household 0</p><p><b>agent_3</b> bridge mason of household 0</p><p><b>agent_4</b> orchard keeper of household 1</p><p><b>agent_5</b> beekeeper of household 1</p><p><b>agent_6</b> water and herd steward of household 1</p><p><b>agent_7</b> bridge mason of household 1</p><p><b>agent_8</b> orchard keeper of household 2</p><p><b>agent_9</b> beekeeper of household 2</p><p><b>agent_10</b> water and herd steward of household 2</p><p><b>agent_11</b> bridge mason of household 2</p><p><b>agent_12</b> orchard keeper of household 3</p><p><b>agent_13</b> beekeeper of household 3</p><p><b>agent_14</b> water and herd steward of household 3</p><p><b>agent_15</b> bridge mason of household 3</p><p><b>agent_16</b> orchard keeper of household 4</p><p><b>agent_17</b> beekeeper of household 4</p><p><b>agent_18</b> water and herd steward of household 4</p><p><b>agent_19</b> bridge mason of household 4</p><p><b>agent_20</b> orchard keeper of household 5</p><p><b>agent_21</b> beekeeper of household 5</p><p><b>agent_22</b> water and herd steward of household 5</p><p><b>agent_23</b> bridge mason of household 5</p><p><b>agent_24</b> orchard keeper of household 6</p><p><b>agent_25</b> beekeeper of household 6</p><p><b>agent_26</b> water and herd steward of household 6</p><p><b>agent_27</b> bridge mason of household 6</p><p><b>agent_28</b> orchard keeper of household 7</p><p><b>agent_29</b> beekeeper of household 7</p><p><b>agent_30</b> water and herd steward of household 7</p><p><b>agent_31</b> bridge mason of household 7</p><p><b>agent_32</b> orchard keeper of household 8</p><p><b>agent_33</b> beekeeper of household 8</p><p><b>agent_34</b> water and herd steward of household 8</p><p><b>agent_35</b> bridge mason of household 8</p><p><b>agent_36</b> orchard keeper of household 9</p><p><b>agent_37</b> beekeeper of household 9</p><p><b>agent_38</b> water and herd steward of household 9</p><p><b>agent_39</b> bridge mason of household 9</p><p><b>agent_40</b> orchard keeper of household 10</p><p><b>agent_41</b> beekeeper of household 10</p><p><b>agent_42</b> water and herd steward of household 10</p><p><b>agent_43</b> bridge mason of household 10</p><p><b>agent_44</b> orchard keeper of household 11</p><p><b>agent_45</b> beekeeper of household 11</p><p><b>agent_46</b> water and herd steward of household 11</p><p><b>agent_47</b> bridge mason of household 11</p><p><b>agent_48</b> orchard keeper of household 12</p><p><b>agent_49</b> beekeeper of household 12</p><p><b>agent_50</b> water and herd steward of household 12</p><p><b>agent_51</b> bridge mason of household 12</p><p><b>agent_52</b> orchard keeper of household 13</p><p><b>agent_53</b> beekeeper of household 13</p><p><b>agent_54</b> water and herd steward of household 13</p><p><b>agent_55</b> bridge mason of household 13</p><p><b>agent_56</b> orchard keeper of household 14</p><p><b>agent_57</b> beekeeper of household 14</p><p><b>agent_58</b> water and herd steward of household 14</p><p><b>agent_59</b> bridge mason of household 14</p><p><b>agent_60</b> orchard keeper of household 15</p><p><b>agent_61</b> beekeeper of household 15</p><p><b>agent_62</b> water and herd steward of household 15</p><p><b>agent_63</b> bridge mason of household 15</p><p><b>agent_64</b> orchard keeper of household 16</p><p><b>agent_65</b> beekeeper of household 16</p><p><b>agent_66</b> water and herd steward of household 16</p><p><b>agent_67</b> bridge mason of household 16</p><p><b>agent_68</b> orchard keeper of household 17</p><p><b>agent_69</b> beekeeper of household 17</p><p><b>agent_70</b> water and herd steward of household 17</p><p><b>agent_71</b> bridge mason of household 17</p><p><b>agent_72</b> orchard keeper of household 18</p><p><b>agent_73</b> beekeeper of household 18</p><p><b>agent_74</b> water and herd steward of household 18</p><p><b>agent_75</b> bridge mason of household 18</p><p><b>agent_76</b> orchard keeper of household 19</p><p><b>agent_77</b> beekeeper of household 19</p><p><b>agent_78</b> water and herd steward of household 19</p><p><b>agent_79</b> bridge mason of household 19</p><p><b>agent_80</b> orchard keeper of household 20</p><p><b>agent_81</b> beekeeper of household 20</p><p><b>agent_82</b> water and herd steward of household 20</p><p><b>agent_83</b> bridge mason of household 20</p><p><b>agent_84</b> orchard keeper of household 21</p><p><b>agent_85</b> beekeeper of household 21</p><p><b>agent_86</b> water and herd steward of household 21</p><p><b>agent_87</b> bridge mason of household 21</p><p><b>agent_88</b> orchard keeper of household 22</p><p><b>agent_89</b> beekeeper of household 22</p><p><b>agent_90</b> water and herd steward of household 22</p><p><b>agent_91</b> bridge mason of household 22</p><p><b>agent_92</b> orchard keeper of household 23</p><p><b>agent_93</b> beekeeper of household 23</p><p><b>agent_94</b> water and herd steward of household 23</p><p><b>agent_95</b> bridge mason of household 23</p><p><b>agent_96</b> orchard keeper of household 24</p><p><b>agent_97</b> beekeeper of household 24</p><p><b>agent_98</b> water and herd steward of household 24</p><p><b>agent_99</b> bridge mason of household 24</p><p><b>agent_100</b> orchard keeper of household 25</p><p><b>agent_101</b> beekeeper of household 25</p><p><b>agent_102</b> water and herd steward of household 25</p><p><b>agent_103</b> bridge mason of household 25</p><p><b>agent_104</b> orchard keeper of household 26</p><p><b>agent_105</b> beekeeper of household 26</p><p><b>agent_106</b> water and herd steward of household 26</p><p><b>agent_107</b> bridge mason of household 26</p><p><b>agent_108</b> orchard keeper of household 27</p><p><b>agent_109</b> beekeeper of household 27</p><p><b>agent_110</b> water and herd steward of household 27</p><p><b>agent_111</b> bridge mason of household 27</p><p><b>agent_112</b> orchard keeper of household 28</p><p><b>agent_113</b> beekeeper of household 28</p><p><b>agent_114</b> water and herd steward of household 28</p><p><b>agent_115</b> bridge mason of household 28</p><p><b>agent_116</b> orchard keeper of household 29</p><p><b>agent_117</b> beekeeper of household 29</p><p><b>agent_118</b> water and herd steward of household 29</p><p><b>agent_119</b> bridge mason of household 29</p><p><b>agent_120</b> orchard keeper of household 30</p><p><b>agent_121</b> beekeeper of household 30</p><p><b>agent_122</b> water and herd steward of household 30</p><p><b>agent_123</b> bridge mason of household 30</p><p><b>agent_124</b> orchard keeper of household 31</p><p><b>agent_125</b> beekeeper of household 31</p><p><b>agent_126</b> water and herd steward of household 31</p><p><b>agent_127</b> bridge mason of household 31</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;native clock / H&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;own x / (width - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;own y / (height - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;own stamina / 20&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;meaning&quot;: &quot;own tool / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;meaning&quot;: &quot;own cargo kind / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;meaning&quot;: &quot;own cargo units / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;meaning&quot;: &quot;own carried information / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      858
+    ],
+    &quot;meaning&quot;: &quot;5 by 5 local patch, dy then dx from -2 through +2, then channel; outside world all -1. Channels: 0=terrain value / 10; 1=actor identity (id + 1) / A; 2=role (role + 1) / R; 3=home crew (team + 1) / C; 4=held tool / 4; 5=cargo type / 4; 6=cargo amount / 4; 7=stamina / 20; 8=carried message / 4; 9=tree identity (index + 1) / capacity; 10=tree compatibility class / 1; 11=tree maturity / 8; 12=soil water / 4; 13=received compatible pollen / 4; 14=spray residue / 6; 15=pest burden / 4; 16=ripe fruit units / 3; 17=wind side / 1; 18=hive identity (index + 1) / capacity; 19=hive health / 4; 20=hive food / 4; 21=backpack carrier actor index plus one or zero / 128; 22=bridge identity (index + 1) / capacity; 23=bridge integrity / 3; 24=depot identity (index + 1) / capacity; 25=remaining depot units / 16; 26=well identity (index + 1) / capacity; 27=basin water / 8; 28=store identity (index + 1) / capacity; 29=delivered fruit cargos / 64; 30=bee identity (index + 1) / capacity; 31=current destination blossom class / 1; 32=herd identity (index + 1) / capacity; 33=animal guided this step / 1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 128,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;role&quot;
+        ],
+        &quot;meaning&quot;: &quot;fixed profession code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;home crew identifier&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;current exchangeable tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo kind&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;load&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;energy&quot;
+        ],
+        &quot;meaning&quot;: &quot;stamina, 0 to 20&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;memory&quot;
+        ],
+        &quot;meaning&quot;: &quot;physically carried information code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;tree&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 64,
+    &quot;position&quot;: [
+      &quot;tree_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;tree_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;tree_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;species&quot;
+        ],
+        &quot;meaning&quot;: &quot;tree compatibility class&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;tree maturity&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;moisture&quot;
+        ],
+        &quot;meaning&quot;: &quot;soil water&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pollen&quot;
+        ],
+        &quot;meaning&quot;: &quot;received compatible pollen&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;poison&quot;
+        ],
+        &quot;meaning&quot;: &quot;spray residue&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pests&quot;
+        ],
+        &quot;meaning&quot;: &quot;pest burden&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fruit&quot;
+        ],
+        &quot;meaning&quot;: &quot;ripe fruit units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tree_wind&quot;
+        ],
+        &quot;meaning&quot;: &quot;wind side&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;hive&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;hive_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;hive_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;hive_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;hive health&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;nectar&quot;
+        ],
+        &quot;meaning&quot;: &quot;hive food&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;backpack carrier actor index plus one or zero&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;bridge&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;bridge_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;bridge_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;bridge_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;bridge_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;bridge integrity&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;depot&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;depot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;depot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;depot_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;remaining depot units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;well&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;well_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;well_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;well_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;basin water&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;store&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;store_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;store_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;store_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;deliveries&quot;
+        ],
+        &quot;meaning&quot;: &quot;delivered fruit cargos&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;bee&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;bee_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;bee_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;bee_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;bee_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;current destination blossom class&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;herd&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;herd_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;herd_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;herd_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;guided&quot;
+        ],
+        &quot;meaning&quot;: &quot;animal guided this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 243,
+  &quot;key&quot;: &quot;gi243&quot;,
+  &quot;title&quot;: &quot;Mountain Orchard Neighbours&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 128,
+    &quot;observation_size&quot;: 858,
+    &quot;num_actions&quot;: 23,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;3766628b843e2db382cb1f6066699330f3f2abe742ac8e583054e42f0899523d&quot;,
+  &quot;manifest_sha256&quot;: &quot;eb7ced0be3ccea9d879a2858fe4f2c020c6eeb94e58e63406df163eb0474bfd9&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;3766628b843e2db382cb1f6066699330f3f2abe742ac8e583054e42f0899523d&quot;,
+      &quot;bytes&quot;: 21916,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00243/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;eb7ced0be3ccea9d879a2858fe4f2c020c6eeb94e58e63406df163eb0474bfd9&quot;,
+      &quot;bytes&quot;: 42383,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00243/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;b72a3acee0ea79f7bcd08642ed685aa1cb89f44e6236ac2dce60ba5417f9db47&quot;,
+      &quot;bytes&quot;: 10950,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00243/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;b8a1d1f169255c3194a00d3185f348264b4d07c1b38159afc698117cc0ab8a93&quot;,
+      &quot;bytes&quot;: 8759,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00243/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;b2da6531eaf7e15997390a55e2fe2e9674125066a56e18b4252ac067dcc650fb&quot;,
+      &quot;bytes&quot;: 33536,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00243/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi243">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

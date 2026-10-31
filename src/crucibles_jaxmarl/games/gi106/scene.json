@@ -1,0 +1,348 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "64ce2d3a6e079e38d310343749fe5efd8b0fcdf515ce8c255d0b5c172ffff282",
+  "manifest_sha256": "cbdcc730fc0d65de81e00b8b49e78e26215d1cd5abea8f8273724214617b6656",
+  "title": "Hose Relay: Firebreak Rescue",
+  "rules": [
+    "Move on the 9 by 7 world; intensity-2 or intensity-3 fire blocks entry. Multiple responders may share a tile.",
+    "Lay hose while stationary. The tender reaches four Manhattan cells; other endpoints reach three. Pump pressure propagates through connected laid hoses.",
+    "A nearby responder must crank the pump each supply tick. The mechanic doubles per-recipient flow; the finite reservoir is consumed in rotating recipient order.",
+    "Spraying consumes one stored water and reduces the hottest adjacent fire; cutting removes only nonburning fuel. The tender cuts a cross of five cells.",
+    "Every fourth transition adjacent fire may ignite fueled cells. Burning consumes fuel; three severe-fire exposures lose an uncarried evacuee.",
+    "Pick up at an evacuee tile and deliver at the shelter. Both adjacent responders must choose handoff to exchange a carried evacuee.",
+    "The rescue carrier moves every tick while carrying; the other two move on even input ticks. Rescue and loss affect all rewards."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Nonburnable clearing or completed firebreak",
+          "color": "#D1D5DB"
+        },
+        {
+          "value": 1,
+          "meaning": "Brush footprint; actual remaining fuel is separately represented",
+          "color": "#A3B18A"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "responders",
+      "glyph": "worker",
+      "label": "Emergency responders",
+      "color": "#3B82F6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "0 pump mechanic; 1 hose tender; 2 rescue carrier"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Stored water units"
+        },
+        {
+          "state_path": [
+            "coupled"
+          ],
+          "label": "Hose laid while stationary; actual movement disconnects"
+        },
+        {
+          "state_path": [
+            "connected"
+          ],
+          "label": "Pressure reached this responder during the last transition"
+        }
+      ]
+    },
+    {
+      "id": "firefront",
+      "glyph": "hazard",
+      "label": "Fire cells",
+      "color": "#EF4444",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fire"
+          ],
+          "label": "Current fire intensity 0 to 3"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Remaining burnable fuel"
+        }
+      ]
+    },
+    {
+      "id": "evacuees",
+      "glyph": "agent",
+      "label": "Evacuees",
+      "color": "#FBBF24",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "victim_status"
+          ],
+          "label": "0 waiting; 1 carried; 2 rescued; 3 lost"
+        },
+        {
+          "state_path": [
+            "victim_owner"
+          ],
+          "label": "Carrier id, or -1 when uncarried"
+        },
+        {
+          "state_path": [
+            "victim_distress"
+          ],
+          "label": "Accumulated severe-fire exposure, irreversible"
+        }
+      ]
+    },
+    {
+      "id": "pump",
+      "glyph": "water",
+      "label": "Shared pump",
+      "color": "#06B6D4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "reservoir"
+          ],
+          "label": "Water remaining at shared pump"
+        },
+        {
+          "state_path": [
+            "pump_on"
+          ],
+          "label": "Pump operated with available reserve during last transition"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "glyph": "flag",
+      "label": "Rescue shelter",
+      "color": "#22C55E",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "sprays"
+      ],
+      "meaning": "Water-consuming sprays performed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cuts"
+      ],
+      "meaning": "Previously fueled cells cut this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handoffs"
+      ],
+      "meaning": "Evacuee transfers this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Evacuees delivered alive",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost"
+      ],
+      "meaning": "Evacuees lost to accumulated fire exposure",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "lay or maintain hose"
+    },
+    {
+      "id": 6,
+      "label": "spray hottest adjacent fire"
+    },
+    {
+      "id": 7,
+      "label": "cut nonburning firebreak"
+    },
+    {
+      "id": 8,
+      "label": "crank nearby pump"
+    },
+    {
+      "id": 9,
+      "label": "pick up evacuee or deliver at shelter"
+    },
+    {
+      "id": 10,
+      "label": "consensual adjacent handoff"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role one-hot: mechanic, tender, carrier",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "All responder x,y positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "All stored water divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Laid hose flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Last-transition pressure connection flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        81
+      ],
+      "meaning": "Row-major fire intensity divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        144
+      ],
+      "meaning": "Row-major remaining fuel divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        207
+      ],
+      "meaning": "Row-major terrain: 0 clearing or cut; 1 brush",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        219
+      ],
+      "meaning": "Evacuee x,y positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        219,
+        225
+      ],
+      "meaning": "Evacuee status divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        225,
+        231
+      ],
+      "meaning": "Evacuee owner shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        231,
+        237
+      ],
+      "meaning": "Severe-fire exposure divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        237,
+        242
+      ],
+      "meaning": "Pump reserve/36; last pump-on flag; rescued/6; lost/6; clock/96",
+      "visibility": "public"
+    }
+  ]
+}

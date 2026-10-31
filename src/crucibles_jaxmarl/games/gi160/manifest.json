@@ -1,0 +1,865 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00160",
+  "source_sha256": "fe6b8849bb86e410ff28acff98c1ecff878dedfadbf1d240f0bc46e199c3c670",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 218,
+  "num_actions": 16,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 512,
+  "reward_low": -3,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West team point guard"
+    },
+    {
+      "id": "agent_1",
+      "role": "West team support guard"
+    },
+    {
+      "id": "agent_2",
+      "role": "East team point guard"
+    },
+    {
+      "id": "agent_3",
+      "role": "East team support guard"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Rest and recover two energy"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Push adjacent rail shield north"
+    },
+    {
+      "id": 6,
+      "label": "Push adjacent rail shield east"
+    },
+    {
+      "id": 7,
+      "label": "Push adjacent rail shield south"
+    },
+    {
+      "id": 8,
+      "label": "Push adjacent rail shield west"
+    },
+    {
+      "id": 9,
+      "label": "Fire north"
+    },
+    {
+      "id": 10,
+      "label": "Fire east"
+    },
+    {
+      "id": 11,
+      "label": "Fire south"
+    },
+    {
+      "id": 12,
+      "label": "Fire west"
+    },
+    {
+      "id": 13,
+      "label": "Reload one round at own base"
+    },
+    {
+      "id": 14,
+      "label": "Give one round to adjacent live teammate"
+    },
+    {
+      "id": 15,
+      "label": "Revive adjacent previously downed teammate"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tile"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ammo"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_action"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hit"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "revived"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cover_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cover_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cover_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cover_moved"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cover_votes"
+      ],
+      "shape": [
+        2,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "winner"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trace_pos"
+      ],
+      "shape": [
+        24,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trace_active"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "trace_vis"
+      ],
+      "shape": [
+        4,
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "trace_owner"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable interior",
+          "color": "#253440"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#111C26"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "guards",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Health",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "meaning": "Energy",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "ammo"
+          ],
+          "meaning": "Loaded rounds",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "meaning": "Fire cooldown",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "last_action"
+          ],
+          "meaning": "Latest sanitized action",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "hit"
+          ],
+          "meaning": "Hits this transition",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "revived"
+          ],
+          "meaning": "Revived this transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "shields",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "cover_pos"
+      ],
+      "active": [
+        "cover_active"
+      ],
+      "visibility": [
+        "cover_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cover_votes"
+          ],
+          "meaning": "North east south west push votes",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cover_moved"
+          ],
+          "meaning": "Moved this transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "base_pos"
+      ],
+      "active": [
+        "base_active"
+      ],
+      "visibility": [
+        "base_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Remaining reserve rounds",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "meaning": "Enemy incapacitations credited to this team",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "rays",
+      "kind": "object",
+      "count": 24,
+      "position": [
+        "trace_pos"
+      ],
+      "active": [
+        "trace_active"
+      ],
+      "visibility": [
+        "trace_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "trace_owner"
+          ],
+          "meaning": "Shooter ID",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "cover_moved"
+      ],
+      "meaning": "Rail shield moved this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cover_votes"
+      ],
+      "meaning": "Current transition push votes",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "hit"
+      ],
+      "meaning": "Enemy hits received this transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "revived"
+      ],
+      "meaning": "Guard revived this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "trace_active"
+      ],
+      "meaning": "Actual ray cells traversed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Enemy incapacitations credited to each team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "winner"
+      ],
+      "meaning": "Winner at natural termination; minus one otherwise or simultaneous draw",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Observer role one-hot in fixed agent order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        81
+      ],
+      "meaning": "Public arena walls, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        89
+      ],
+      "meaning": "All guard positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        93
+      ],
+      "meaning": "Team IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        97
+      ],
+      "meaning": "Health; zero means incapacitated",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        101
+      ],
+      "meaning": "Available energy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        105
+      ],
+      "meaning": "Loaded ammunition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        109
+      ],
+      "meaning": "Firing cooldown ticks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        109,
+        113
+      ],
+      "meaning": "Latest sanitized commands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        117
+      ],
+      "meaning": "Enemy ray hits this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        121
+      ],
+      "meaning": "Revived this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        125
+      ],
+      "meaning": "Rail-shield positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        127
+      ],
+      "meaning": "Shield moved this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        135
+      ],
+      "meaning": "North east south west push votes for each shield",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        139
+      ],
+      "meaning": "West and east supply bases",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        141
+      ],
+      "meaning": "Remaining team supply stock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        143
+      ],
+      "meaning": "Cumulative enemy incapacitations by team",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        191
+      ],
+      "meaning": "Latest four rays, six cells per shooter, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        191,
+        215
+      ],
+      "meaning": "Cells actually traversed by latest rays",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        215,
+        218
+      ],
+      "meaning": "Clock, joint done flag, winning team ID or minus one",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Your two-player team incapacitates both opponents while using shared shields, ammunition and rescues to remain active.",
+    "natural_termination": "Either team has both health values zero after simultaneous fire and eligible rescues. Simultaneous elimination is a draw. Otherwise horizon truncation.",
+    "interaction": "At least two adjacent identical push commands move a shield before fire; the move can expose a teammate. Bodies and shields block rays. Teammates can transfer ammunition or revive prior casualties.",
+    "observation_access": "Fully observable arena, all agents, shields, supplies and actual latest ray cells. All active entities are visible to all four roles. Leading observer one-hot and public team IDs identify teammates."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "energy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "ammo"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "hit"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cover_votes"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

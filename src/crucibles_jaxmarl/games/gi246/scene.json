@@ -1,0 +1,364 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "5a484b4b762a57e511b0360257fcd6de1fc7047eb2676f9511b587fd8ac1c1e5",
+  "manifest_sha256": "284a62b1cad230b2c9d08106cb4b785bb14a82edec722497720d70bc51e580d1",
+  "title": "Highland Treaty Roads",
+  "rules": [
+    "Each citizen has a native action. Builders quarry/brace, couriers issue seals, growers plant and representatives sign at their own city.",
+    "Carry stone and timber physically. Quarrying raises stress; its four-tick countdown can cause road collapse unless timber braces survive.",
+    "Work at the actual slope to add timber or spend stone clearing its rubble. Co-occupancy is allowed.",
+    "Carry an issuer seal to another city and present it while its representative signs; carry the signed seal to either city gate.",
+    "Ratification grants both cities 96 ticks of reciprocal bridge access. Foreign entry spends one traveler coin and credits the owner treasury.",
+    "Each sector southern edge has a long public ford route, trading travel time against tolls and treaty effort.",
+    "Survey local stress/countdown, then show it or hand carried cargo/seals to an adjacent waiting actor.",
+    "Gate boards, sites, actors and terrain are visible only within the selected role radius-three square."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      47,
+      23
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open terrain and long public ford",
+          "color": "#CEBD8D"
+        },
+        {
+          "value": 1,
+          "meaning": "Ravine outside crossing; impassable",
+          "color": "#697F93"
+        },
+        {
+          "value": 2,
+          "meaning": "Treaty-controlled bridge",
+          "color": "#B49A6C"
+        },
+        {
+          "value": 3,
+          "meaning": "Rockfall-blocked road",
+          "color": "#716759"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "citizens",
+      "glyph": "worker",
+      "color": "#CFB77C",
+      "label": "Individually controlled city members",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "City 0..11"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 builder;1 courier;2 grower;3 representative"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "0 empty;1 stone;2 timber;3 grain"
+        },
+        {
+          "state_path": [
+            "coins"
+          ],
+          "label": "Coins in carried purse"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Health 0..100"
+        },
+        {
+          "state_path": [
+            "seal_origin"
+          ],
+          "label": "Seal issuer city; -1 none"
+        },
+        {
+          "state_path": [
+            "seal_partner"
+          ],
+          "label": "Second signature city; -1 unsigned"
+        },
+        {
+          "state_path": [
+            "survey_site"
+          ],
+          "label": "Carried survey city; -1 none"
+        },
+        {
+          "state_path": [
+            "survey_stress"
+          ],
+          "label": "Recorded local quarry stress"
+        },
+        {
+          "state_path": [
+            "survey_timer"
+          ],
+          "label": "Recorded countdown"
+        }
+      ]
+    },
+    {
+      "id": "sites",
+      "glyph": "resource",
+      "color": "#9DA977",
+      "label": "Highland settlements and working sites",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "node_type"
+          ],
+          "label": "0 city;1 quarry;2 timber;3 terrace;4 separate gate;5 bridge;6 slope road"
+        },
+        {
+          "state_path": [
+            "node_owner"
+          ],
+          "label": "Owning city"
+        },
+        {
+          "state_path": [
+            "node_stock"
+          ],
+          "label": "Finite grain, stone or timber stock"
+        },
+        {
+          "state_path": [
+            "node_integrity"
+          ],
+          "label": "Slope timber brace reserve"
+        },
+        {
+          "state_path": [
+            "node_progress"
+          ],
+          "label": "Terrace growth 0..12"
+        },
+        {
+          "state_path": [
+            "node_stress"
+          ],
+          "label": "Quarry/slope stress 0..8"
+        },
+        {
+          "state_path": [
+            "node_timer"
+          ],
+          "label": "Rockfall countdown 0..4"
+        }
+      ]
+    },
+    {
+      "id": "toll_gates",
+      "glyph": "gate",
+      "color": "#AE785A",
+      "label": "Ratified toll-gate access boards",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_owner"
+          ],
+          "label": "Owning city"
+        },
+        {
+          "state_path": [
+            "treaty"
+          ],
+          "label": "Twelve visiting-city reciprocal-access TTLs"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "collapse"
+      ],
+      "meaning": "Per-city rockfall",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ratified"
+      ],
+      "meaning": "Per-actor signed-seal deposit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "traded"
+      ],
+      "meaning": "Per-actor cargo sale",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "repaired"
+      ],
+      "meaning": "Per-actor brace or road clearing",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "toll_paid"
+      ],
+      "meaning": "Per-actor foreign-entry coin toll",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "injury"
+      ],
+      "meaning": "Per-actor rockfall injury",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "received"
+      ],
+      "meaning": "Foreign cargo receipts per city",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / receive cargo or local report"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Collect city grain, ripe terrace grain, or builder quarry/timber resource"
+    },
+    {
+      "id": 6,
+      "label": "Sell carried cargo to foreign city with two treasury coins"
+    },
+    {
+      "id": 7,
+      "label": "Builder at slope: spend timber to brace or stone to clear"
+    },
+    {
+      "id": 8,
+      "label": "Courier at own city: obtain unsigned seal"
+    },
+    {
+      "id": 9,
+      "label": "Present unsigned carried seal at another city for local signature"
+    },
+    {
+      "id": 10,
+      "label": "Representative at own city: countersign locally presented seals"
+    },
+    {
+      "id": 11,
+      "label": "Ratify signed seal at issuer or partner gate for reciprocal access"
+    },
+    {
+      "id": 12,
+      "label": "Grower: spend grain to seed empty terrace"
+    },
+    {
+      "id": 13,
+      "label": "Record local quarry/slope stress and countdown on survey"
+    },
+    {
+      "id": 14,
+      "label": "Show survey to adjacent waiting actor"
+    },
+    {
+      "id": 15,
+      "label": "Hand cargo/seal and show survey to adjacent empty waiting actor"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "visibility": "self",
+      "meaning": "Time/896,ID/191,city/11,tool/3,x/47,y/23,cargo/3,coins/64,health/100,(seal origin+1)/12,(partner+1)/12,(survey city+1)/12,survey stress/8,survey countdown/4,survey timestamp/896,alive."
+    },
+    {
+      "slice": [
+        16,
+        2512
+      ],
+      "visibility": "local",
+      "meaning": "192 actor slots,13 fields: x/47,y/23,city/11,tool/3,cargo/3,coins/64,health/100,(seal origin+1)/12,(partner+1)/12,(survey site+1)/12,survey stress/8,survey countdown/4,alive/presence."
+    },
+    {
+      "slice": [
+        2512,
+        3352
+      ],
+      "visibility": "local",
+      "meaning": "84 site slots: x/47,y/23,type/6,owner/11,stock/64,brace/24,crop/12,stress/8,countdown/4,presence. Separate gate marker slots inactive and zero."
+    },
+    {
+      "slice": [
+        3352,
+        3544
+      ],
+      "visibility": "local",
+      "meaning": "12 gate slots,16 fields: x/47,y/23,owner/11,presence,then twelve visiting-city treaty TTLs /96."
+    },
+    {
+      "slice": [
+        3544,
+        3642
+      ],
+      "visibility": "local",
+      "meaning": "7x7 dy-major patch: tile/3 and in-bounds/alive. Other cells zero."
+    }
+  ]
+}

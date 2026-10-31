@@ -1,0 +1,445 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>轮转要塞 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI184 / SPATIAL</p><h1>轮转要塞</h1><p class="lead">钥匙控制共用门相位，有限控制台充能与角色通行次序决定同伴机会。</p><div class="stats"><span>3 agents</span><span>10 actions</span><span>88 observation columns</span><span>96 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi184.gif" alt="Original saved demonstration gi184"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi184.gif" alt="Actual verification episode gi184"></section><section><h2>Run this game</h2><pre>crucibles play --game 184</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Each actor claims one destination and may then keep helping. Matching its private preference yields the larger individual reward; every claim also benefits peers.&quot;,
+  &quot;natural_termination&quot;: &quot;All three actors have claimed one destination; otherwise the finite horizon ends the episode.&quot;,
+  &quot;interaction&quot;: &quot;Matching colored keys and console charges enable a delayed global route change. Closing a door waits for its occupant to leave. Actors can hand keys over, hold a threshold or redirect which crossing peers may use.&quot;,
+  &quot;observation_access&quot;: &quot;Fortress, actors, keys, charges, phase, pending countdown and claims are public. Door target/jam flags are deterministic from public phase and occupancy. Only each observation row&#x27;s preference is private. Preferences and realized private reward values are omitted from scene/HUD channels.&quot;
+}</pre></details><p>Declared per-step reward bounds: 0 to 3. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>A north and south threshold share one phase. Phase 0 desires north open; phase 1 desires south open.</li><li>Matching amber or azure keys operate their corresponding consoles. Each console has three finite charges.</li><li>One request can be pending. It matures after two later transitions, after that transition&#x27;s movement.</li><li>A closing threshold stays open while occupied, then closes when vacated. No actor is teleported.</li><li>Keys may be picked up, dropped and passed to adjacent waiting keyless peers without duplication.</li><li>Actors claim one destination each, then may keep helping. Private destination preferences are not public scene attributes.</li><li>Conflicting empty destinations and requests use cyclic clock-based priority; old occupied cells block entry.</li><li>Door states, pending phase/countdown and charge are actual source state. Replay and animation remain unexecuted.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Rotating Keep — original source-only mechanism
+
+Status: AUTHORED_NOT_EXECUTED. This is a source specification with original unexecuted scripts. Static source/data checks do not establish runtime correctness, successful gameplay, animation, causal validity or learning.
+
+Three mobile couriers occupy a 9 × 7 fortress separated by a wall at x=4. Its only crossings are the north threshold (4,2) and south threshold (4,4). Phase 0 desires north open and south closed; phase 1 desires the reverse. The initial phase is 1. Actors start at (2,3), (3,2), (6,3). No phase change moves a coordinate. The map&#x27;s threshold value is architectural metadata; actual traversal consults the corresponding door_open flag.
+
+The amber console at (2,3) requires key 0; the azure console at (6,3) requires key 1. Each has three finite request charges. Keys initially belong to actors 0 and 2, respectively. A key has exactly one carrier or a ground coordinate. An actor can carry at most one key. Ground pickup requires the same cell; dropping leaves the key underfoot; handoff requires an adjacent waiting keyless actor. Carried key positions track their owner&#x27;s actual position. Keys are never consumed or duplicated.
+
+Action 5 at a matching console requests the other phase. There is one shared pending slot. All requests are admitted from the old state, and cyclic actor priority picks at most one; only the selected console spends one charge. A new request sets timer 2. On each subsequent transition the existing timer decreases. When it reaches zero, the phase changes after movement. No request is accepted on a call whose input still has a pending request, including its maturity call. This avoids instant cascaded rotations and fixes the earliest peer-use time.
+
+A desired-closed threshold remains actually open while occupied by any actor. The door_jammed flag means occupancy defers closure. Movement cannot enter an input-state occupied threshold, so an occupancy hold does not let a second actor overlap its holder. Once the occupant exits, the end-of-transition openness becomes the desired state and the door closes. Actors can leave the threshold normally without teleportation, pushing or coordinate repair. Holding a door therefore costs the holder&#x27;s location and future movement opportunity.
+
+Movement is assessed against the old topology and occupied positions. Following into an old occupied cell and swapping are disallowed. Competing empty destinations use cyclic priority (actor minus clock modulo three). Key transactions and claims are then processed in cyclic order with current ownership checks. Pending timers mature after movement; a new admitted request is installed; actual door openness is recomputed from the resulting phase and final occupancy. All out-of-range or illegal actions become wait.
+
+Destinations are the east pad (7,1), identity 0, and west pad (1,5), identity 1. Each courier can claim one pad by standing exactly there and using action 7. Its own preferred pad gives 2 instead of 1, plus every actor receives 0.25 per claim in that joint transition. A completed courier stays mobile and may still operate a console, carry a key or hold a threshold. Joint natural completion requires all three claims, not a fixed reward. H=96 bounds unfinished cases.
+
+The reset key samples one bit b and fixes preferences [b,1-b,b], creating conflicting destination priorities without changing the physical layout. Each row observes only its own preference. Public information is the map, actor/key coordinates, key holders, claims, actual doors, current/pending phase, timer and console charges. O=88 comprises 86 such public fields plus own preference and own index. Desired door openness and jam flags shown in the scene are exact public derivations of phase and occupancy, not extra private observations. Private preference and realized private utility are not scene attributes or events.
+
+Complementary keys, finite charges and delayed global topology create partner dependence. One actor may spend a charge to let another cross, lend a key and pursue its own pad, or wait while a peer holds an occupied threshold. An opposing preference may favor spending the next request on the other corridor, or conserving charges for a return trip. Both north and south routes are physical alternatives, with travel and occupancy costs. These are prospective strategies, not tested best responses or proven strategic depth.
+
+The paired intervention changes only actor 0&#x27;s first console action into wait. With a request on call 1, the timer ages on calls 2 and 3, so actor 1&#x27;s east mask can first use the opening on call 4. Both branches retain the same following east actions; an unavailable move is converted to wait. The comparison targets another actor&#x27;s later legal movement, not a reward counter. A second original script asks a peer to occupy the north threshold during a later south rotation, then leave so deferred closure can occur. Neither script was executed.
+
+Source invariants awaiting numerical checks are: unique walkable actor positions; exactly two conserved keys; one key per holder at most; charges 0–3; pending -1/0/1; timer 0–2; phase 0/1; and actual door openness equal to desired openness OR occupancy. A closed threshold cannot contain an actor, by that same closure rule. Completion does not remove or teleport actors. The per-step reward bound [0,3] contains the source-derived maximum 2.75; observations lie in [-1,96].
+
+Natural completion takes priority if the final claim also reaches H. An already-terminal raw call preserves state, clock and observation exactly, returns zero reward and all dones true, and preserves its natural/truncated cause. The raw kernel never performs autoreset. int32 stores small signed integer fields, float32 carries observations/rewards, and bool stores flags; the external reset key is not duplicated in state.
+
+No code was copied from supplied official references; they were byte/hash checked only. No unsupplied game, prior source, training/selection/heldout result or memory was consulted. The proposed adapter, actual JAX parity tests, policy-bank dimensions, native recorded animation and scientific learning/transfer evaluation belong to independent later integration. None is an author-side completion claim.
+
+## Literal source evidence
+
+- candidate.py:64: `request = atswitch &amp; holds &amp; (s[&quot;switch_charge&quot;][None,:]&gt;0) &amp; (s[&quot;pending&quot;]&lt;0)`
+- candidate.py:128: `due = (state[&quot;pending&quot;]&gt;=0)&amp;(state[&quot;timer&quot;]==1)`
+- candidate.py:138: `s[&quot;timer&quot;] = jnp.where(accepted,2,s[&quot;timer&quot;])`
+- candidate.py:139: `s[&quot;switch_charge&quot;] = s[&quot;switch_charge&quot;].at[console].add(-accepted.astype(jnp.int32))`
+- candidate.py:144: `s[&quot;door_open&quot;] = target | occupied`
+- candidate.py:145: `s[&quot;door_jammed&quot;] = ~target &amp; occupied`
+- candidate.py:151: `s[&quot;natural&quot;] = jnp.all(s[&quot;delivered&quot;])`
+- candidate.py:153: `s = jax.tree.map(lambda new,old:jnp.where(state[&quot;done&quot;],old,new),s,state)`
+
+Interface anchors from static AST: reset at candidate.py:12–47; legal_actions at candidate.py:73–78; observe at candidate.py:80–86; raw_step at candidate.py:88–159.
+
+The literal anchors and declared shapes were inspected statically. They are not execution traces or a proof that the implementation satisfies these claims under JAX.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait / receive key</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Request delayed rotation at matching keyed console</span></div><div class="action"><b>6</b><span>Take a ground key underfoot</span></div><div class="action"><b>7</b><span>Claim destination pad once</span></div><div class="action"><b>8</b><span>Drop held key underfoot</span></div><div class="action"><b>9</b><span>Pass key to adjacent waiting keyless actor</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Amber-key courier with private destination</p><p><b>agent_1</b> Keyless courier with private destination</p><p><b>agent_2</b> Azure-key courier with private destination</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      63
+    ],
+    &quot;meaning&quot;: &quot;Public 7 by 9 fortress map, row-major yx&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      63,
+      69
+    ],
+    &quot;meaning&quot;: &quot;Actor xy coordinates&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      69,
+      72
+    ],
+    &quot;meaning&quot;: &quot;Public destination-claim flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      72,
+      76
+    ],
+    &quot;meaning&quot;: &quot;Key xy coordinates&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      76,
+      78
+    ],
+    &quot;meaning&quot;: &quot;Key holders, -1 means ground&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      78,
+      80
+    ],
+    &quot;meaning&quot;: &quot;Actual north/south door openness&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      80,
+      81
+    ],
+    &quot;meaning&quot;: &quot;Current phase: 0 north, 1 south&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      81,
+      82
+    ],
+    &quot;meaning&quot;: &quot;Pending phase or -1&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      82,
+      83
+    ],
+    &quot;meaning&quot;: &quot;Pending countdown&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      83,
+      85
+    ],
+    &quot;meaning&quot;: &quot;West/east console charges&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      85,
+      86
+    ],
+    &quot;meaning&quot;: &quot;Transition clock&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      86,
+      87
+    ],
+    &quot;meaning&quot;: &quot;Own preferred destination pad&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      87,
+      88
+    ],
+    &quot;meaning&quot;: &quot;Own actor index&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;couriers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;Has claimed one destination; can still assist&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;doors&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;door_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;door_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;door_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;door_open&quot;
+        ],
+        &quot;meaning&quot;: &quot;Actual passable threshold&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;door_target&quot;
+        ],
+        &quot;meaning&quot;: &quot;Desired open threshold under current phase&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;door_jammed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Closure deferred because an actor occupies this threshold&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;switches&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;switch_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;switch_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;switch_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;switch_charge&quot;
+        ],
+        &quot;meaning&quot;: &quot;Finite remaining requests&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;switch_key&quot;
+        ],
+        &quot;meaning&quot;: &quot;Required key identity: amber 0, azure 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;keys&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;key_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;key_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;key_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;key_holder&quot;
+        ],
+        &quot;meaning&quot;: &quot;Actor holding this key, or -1 on ground&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;key_color&quot;
+        ],
+        &quot;meaning&quot;: &quot;Amber 0 or azure 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;goals&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;goal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;goal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;goal_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;goal_color&quot;
+        ],
+        &quot;meaning&quot;: &quot;East pad 0 or west pad 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi184&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;4ba373dc6b71975fd04946468ce0199e683f036d3f31f535e51e16728ffb8f03&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 88,
+    &quot;num_actions&quot;: 10,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.6673257350921631
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.5263407230377197
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 4.264220476150513
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.6453213691711426
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.6081764698028564
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.002998828887939453
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.34845733642578125
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.0379457473754883
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.977766752243042
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.9983575344085693
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 14.651440382003784,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 96,
+  &quot;scripted_random_returns&quot;: [
+    2.25,
+    0.25,
+    0.25
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi184&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 4.222595691680908
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 184,
+  &quot;key&quot;: &quot;gi184&quot;,
+  &quot;title&quot;: &quot;轮转要塞&quot;,
+  &quot;summary&quot;: &quot;钥匙控制共用门相位，有限控制台充能与角色通行次序决定同伴机会。&quot;,
+  &quot;tags&quot;: [
+    &quot;门控协作&quot;,
+    &quot;钥匙与通行&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 88,
+    &quot;num_actions&quot;: 10,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;source_sha256&quot;: &quot;4ba373dc6b71975fd04946468ce0199e683f036d3f31f535e51e16728ffb8f03&quot;,
+  &quot;manifest_sha256&quot;: &quot;ca1b7c86578235df882a386f1523536102fc810b67f31e05bc2409349d7bc0fa&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;4ba373dc6b71975fd04946468ce0199e683f036d3f31f535e51e16728ffb8f03&quot;,
+      &quot;bytes&quot;: 8800,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00184/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;ca1b7c86578235df882a386f1523536102fc810b67f31e05bc2409349d7bc0fa&quot;,
+      &quot;bytes&quot;: 13371,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00184/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;87f092afd7a14277fa31ed2341331669756ff7d8c99def74598c696a452a3609&quot;,
+      &quot;bytes&quot;: 7174,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00184/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;e9aa2ad1f19cde237d48ffb6c55b0a6a49bc7cc2fc581e2d908d16feac03ee23&quot;,
+      &quot;bytes&quot;: 7281,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00184/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;76736bc718933b41fcbfaaa2afeddba02eaeb51149fb0798560bedc979d5a35a&quot;,
+      &quot;bytes&quot;: 4227,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00184/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi184">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

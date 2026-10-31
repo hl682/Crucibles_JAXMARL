@@ -1,0 +1,523 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "98be94b718f4981f378e2d87e7f2592a9f9c9b3a0ae144574bacf865c2970c2e",
+  "manifest_sha256": "10d77a312e6116de46464ba5f56694daa44a04090935ed55a987c4332106828c",
+  "title": "Pasture Weave Commons",
+  "rules": [
+    "Every farmer has a selectable native action row. Transferable tools specialize herding, shearing, building and water work.",
+    "Livestock walk real corridors toward grass. Opening or neglecting a gate can expose a neighbor's recovering pasture to grazing.",
+    "Resting plots regrow faster; hay plots convert one grass to fodder instead of two. Animals still graze any accessible plot.",
+    "Shearing needs a rack, a woolly animal and another farmer choosing Hold within one tile of that animal.",
+    "Shared infected equipment can transmit disease and prevent quarantine cure. Clean it with carried water.",
+    "Quarantine pens have four actual places. Admitted animals stay confined until their timer expires and a farmer releases them.",
+    "Store fodder for drought, tend orchards, water troughs, build weather shelters or rescue hungry animals with a partner.",
+    "All dynamics are native source state. No generated scene, fixed script, human play or learning outcome has been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      63,
+      63
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Pasture and village footpath floor",
+          "color": "#9BB570"
+        },
+        {
+          "value": 1,
+          "meaning": "Fence line; actual gate state controls crossing",
+          "color": "#8B785D"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "worker",
+      "label": "64 controllable farmers from sixteen households",
+      "color": "#C48B62",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 herder, 1 shearer, 2 repairer, 3 water steward tool"
+        },
+        {
+          "state_path": [
+            "face"
+          ],
+          "label": "Facing: 1 north, 2 east, 3 south, 4 west"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Carried wood, capacity 4"
+        },
+        {
+          "state_path": [
+            "fodder"
+          ],
+          "label": "Carried fodder, capacity 4"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried water, capacity 3"
+        }
+      ]
+    },
+    {
+      "id": "pasture",
+      "glyph": "plant",
+      "label": "Household grazing, resting and hay plots",
+      "color": "#80A656",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "grass"
+          ],
+          "label": "Regrowing grass, 0 to 12"
+        },
+        {
+          "state_path": [
+            "rotation"
+          ],
+          "label": "0 grazing, 1 rest, 2 hay"
+        },
+        {
+          "state_path": [
+            "grazed"
+          ],
+          "label": "Actual grazing units consumed here this step"
+        }
+      ]
+    },
+    {
+      "id": "orchard",
+      "glyph": "plant",
+      "label": "Watered orchards and renewable branches",
+      "color": "#6F955B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "orchard_growth"
+          ],
+          "label": "Fruit growth, 0 to 8"
+        },
+        {
+          "state_path": [
+            "branches"
+          ],
+          "label": "Available wood branches, 0 to 8"
+        },
+        {
+          "state_path": [
+            "orchard_water"
+          ],
+          "label": "Stored orchard moisture, 0 to 4"
+        }
+      ]
+    },
+    {
+      "id": "barn",
+      "glyph": "square",
+      "label": "Weather shelters and household stores",
+      "color": "#B98757",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "shelter"
+          ],
+          "label": "Weather shelter level, 0 to 3"
+        },
+        {
+          "state_path": [
+            "fodder_stock"
+          ],
+          "label": "Fodder reserve, 0 to 24"
+        },
+        {
+          "state_path": [
+            "wool_stock"
+          ],
+          "label": "Delivered wool products, 0 to 40"
+        },
+        {
+          "state_path": [
+            "fruit_stock"
+          ],
+          "label": "Delivered fruit products, 0 to 40"
+        }
+      ]
+    },
+    {
+      "id": "trough",
+      "glyph": "water",
+      "label": "Physical livestock water troughs",
+      "color": "#77B3BB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "trough_water"
+          ],
+          "label": "Water available to nearby livestock, 0 to 8"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "Shared livestock gates and repairable fence crossings",
+      "color": "#9F8661",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Open passage for farmers and livestock"
+        },
+        {
+          "state_path": [
+            "gate_health"
+          ],
+          "label": "Fence/gate integrity; zero permits uncontrolled crossing"
+        }
+      ]
+    },
+    {
+      "id": "facility",
+      "glyph": "tool",
+      "label": "Shared shearing racks, four-place quarantine pens and wells",
+      "color": "#BEA98A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "facility_water"
+          ],
+          "label": "Finite well water, 0 to 12"
+        },
+        {
+          "state_path": [
+            "facility_dirty"
+          ],
+          "label": "Infectious shared equipment; prevents pen cure"
+        },
+        {
+          "state_path": [
+            "facility_load"
+          ],
+          "label": "Animals occupying quarantine, capacity 4"
+        }
+      ]
+    },
+    {
+      "id": "sheep",
+      "glyph": "circle",
+      "label": "Autonomous livestock; ecology entities, not actor rows",
+      "color": "#EEE0C7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "sheep_owner"
+          ],
+          "label": "Owner household ID"
+        },
+        {
+          "state_path": [
+            "sheep_wool"
+          ],
+          "label": "Wool growth, 0 to 6"
+        },
+        {
+          "state_path": [
+            "sheep_hunger"
+          ],
+          "label": "Hunger, 0 to 8"
+        },
+        {
+          "state_path": [
+            "sheep_health"
+          ],
+          "label": "Health, 0 to 3; zero is inactive"
+        },
+        {
+          "state_path": [
+            "sheep_sick"
+          ],
+          "label": "Infectious disease flag"
+        },
+        {
+          "state_path": [
+            "sheep_pen"
+          ],
+          "label": "Quarantine facility ID, -1 outside a pen"
+        },
+        {
+          "state_path": [
+            "sheep_timer"
+          ],
+          "label": "Quarantine timer, 0 to 8"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_shear"
+      ],
+      "meaning": "Actor completed partner-assisted shearing",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_feed"
+      ],
+      "meaning": "Actor fed and healed an animal",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_quarantine"
+      ],
+      "meaning": "Actor admitted or released an animal at quarantine",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_fruit"
+      ],
+      "meaning": "Actor harvested a ripe orchard",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_rescue"
+      ],
+      "meaning": "Actor rescued a hungry animal with a holding partner",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "grazed"
+      ],
+      "meaning": "Grass actually consumed at each household plot this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Herd nearby livestock one cell forward with herding tool"
+    },
+    {
+      "id": 6,
+      "label": "Toggle nearby livestock gate"
+    },
+    {
+      "id": 7,
+      "label": "Repair nearby gate using hammer and wood"
+    },
+    {
+      "id": 8,
+      "label": "Gather wood from nearby orchard"
+    },
+    {
+      "id": 9,
+      "label": "Harvest ripe fruit from nearby orchard"
+    },
+    {
+      "id": 10,
+      "label": "Cut nearby grass into fodder with herding tool"
+    },
+    {
+      "id": 11,
+      "label": "Draw water at a shared well with bucket"
+    },
+    {
+      "id": 12,
+      "label": "Pour carried water into nearby trough"
+    },
+    {
+      "id": 13,
+      "label": "Admit nearby livestock to a shared quarantine pen"
+    },
+    {
+      "id": 14,
+      "label": "Release nearby animal whose quarantine timer expired"
+    },
+    {
+      "id": 15,
+      "label": "Shear nearby woolly livestock at a rack with a holding partner"
+    },
+    {
+      "id": 16,
+      "label": "Hold nearby livestock for another farmer"
+    },
+    {
+      "id": 17,
+      "label": "Feed nearby livestock from carried fodder"
+    },
+    {
+      "id": 18,
+      "label": "Build nearby weather shelter using hammer and wood"
+    },
+    {
+      "id": 19,
+      "label": "Rotate own nearby pasture between grazing, rest and hay"
+    },
+    {
+      "id": 20,
+      "label": "Exchange tools with nearest adjacent farmer"
+    },
+    {
+      "id": 21,
+      "label": "Give one fodder to nearest adjacent farmer"
+    },
+    {
+      "id": 22,
+      "label": "Tend nearby orchard using carried water"
+    },
+    {
+      "id": 23,
+      "label": "Store one carried fodder at nearby barn"
+    },
+    {
+      "id": 24,
+      "label": "Withdraw one stored fodder from nearby barn"
+    },
+    {
+      "id": 25,
+      "label": "Rescue hungry nearby livestock with fodder and a holding partner"
+    },
+    {
+      "id": 26,
+      "label": "Clean nearby shared rack and quarantine facility with water"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        13
+      ],
+      "meaning": "Self: actor ID/63, x/63, y/63, household/15, tool/3, wood/4, fodder/4, water/3, facing/4, t/896, weather phase/2, own wool/40, own fruit/40",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        53
+      ],
+      "meaning": "Four nearest farmer slots, 10 each: visible, ID/63, x/63, y/63, household/15, tool/3, wood/4, fodder/4, water/3, facing/4",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        149
+      ],
+      "meaning": "16 pasture rows, 6 each: visible, x/63, y/63, grass/12, rotation/2, current grazing/32",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        149,
+        245
+      ],
+      "meaning": "16 orchard rows, 6 each: visible, x/63, y/63, growth/8, branches/8, stored moisture/4",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        245,
+        357
+      ],
+      "meaning": "16 barn rows, 7 each: visible, x/63, y/63, shelter/3, fodder/24, wool products/40, fruit products/40",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        357,
+        421
+      ],
+      "meaning": "16 trough rows, 4 each: visible, x/63, y/63, water/8",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        421,
+        541
+      ],
+      "meaning": "24 gate rows, 5 each: visible, x/63, y/63, open, integrity/3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        541,
+        565
+      ],
+      "meaning": "4 facility rows, 6 each: visible, x/63, y/63, well water/12, infected equipment, occupied pen places/4",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        565,
+        885
+      ],
+      "meaning": "32 livestock rows, 10 each: visible, x/63, y/63, owner/15, wool/6, hunger/8, health/3, sick, (pen+1)/4, timer/8",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        885,
+        910
+      ],
+      "meaning": "Row-major 5 by 5 edge-clamped local fence patch, 0 floor or 1 fence; gate entities determine actual crossing",
+      "visibility": "local"
+    }
+  ]
+}

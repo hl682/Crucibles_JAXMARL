@@ -1,0 +1,344 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Canal Nightmarket Kitchens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI237 / SPATIAL</p><h1>Canal Nightmarket Kitchens</h1><p class="lead"></p><div class="stats"><span>48 agents</span><span>16 actions</span><span>212 observation columns</span><span>768 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 237</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Coordinate shared ingredient unloading, recipes, water allocation and warm matching deliveries to moving customer docks.&quot;,
+  &quot;natural_termination&quot;: &quot;No early natural terminal; the 768-tick market closing truncates the episode.&quot;,
+  &quot;interaction&quot;: &quot;Basket help, shared barge stocks, equipment washing, delayed downstream water, recipe ratios, moving requests and temperature-sensitive handoffs affect others.&quot;,
+  &quot;observation_access&quot;: &quot;Public quay/canal geometry; selected nearest local entity rows reveal customer requests only nearby or through explicit timed relay. Hydraulic and plate-heat gauges are available only within the current four-cell sector. Unseen event channels are debug-only.&quot;
+}</pre></details><p>Declared per-step reward bounds: -4.0 to 4.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Select one of 48 workers. Knife, pot, navigator and wash tools can be exchanged; carried items and warmth transfer through native handoffs.</li><li>Unload one ingredient from a finite-stock barge only while an adjacent worker assists. Knife/navigator tools take root; others take grain.</li><li>Cut roots at boards. Two cut roots and one grain make broth; one cut root and two grain make a rice plate. A clean stove cooks for four ticks.</li><li>Wash uses local water and restores a clean stove use. Open locks send water downstream through two FIFO slots; fresh water enters only at the west.</li><li>Footbridges require water at most three; barges require water at least two and open locks. Barges and customer docks travel along the canal.</li><li>Serve the requested dish while warm. Requests are local; relay them before committing ingredients. Nightmarket closes at 768.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Canal Nightmarket Kitchens
+
+Status: AUTHORED_NOT_EXECUTED. Source SHA256: 313eebca823ab1d005942f0a52a625798ed17296f0302fa0b0091198ecbc8f00. All scripts/interventions are UNEXECUTED_AUTHOR_HYPOTHESIS.
+
+Native contract: A=48, O=212, U=16, H=768; scalar int32 actions, float32 observations, fixed int32/bool state. Geometry 48 by 12, x right/y down. Family cooperative_kitchen.
+
+Twelve kitchens occupy one 48 by 12 quay. Water flows east. Barges and customer docks circulate horizontally; barges refill only at their west-boundary wrap. This is an explicit finite conveyor abstraction. Workers never wrap and cannot cross canal cells except eligible lock bridges. Boats and customers are world processes, not extra agent rows.
+
+Two recipes consume different proportions of two ingredients. A batch consumes one clean use; washing replenishes cleaning but removes water needed by downstream navigation. Closing a lock conserves local water while blocking barges and potentially raising water above bridge access. Starting pot identity is a role, not an exclusive stove permission: any prepared-item carrier may load, while knife, wash and lock operations have tool requirements.
+
+Six barges each hold eight roots and eight grain; people carry one ingredient or plate. Unloading requires simultaneous assistance at original positions; serial handoffs use updated positions. Stove timers, heat and inventory are state. Zero-heat carried food spoils after the action phase; the ordering permits a final cold matching service at lower quality. Sector telemetry exposes hydraulic timing without remote customer requests.
+
+Work costs 0.002. Matching service pays each home-crew actor 0.04+0.08*heat/24 and the server a further 0.08+0.12*heat/24. Spoiled carried plates cost 0.04. No reward is paid merely for washing, relay or loading. Native rewards are clipped to [-4,4]. Central cooks/runners, mobile tool exchange and different water/traffic policies are author hypotheses; success, learnability and throughput are unmeasured.
+
+## Interface and visibility
+
+Public quay/canal geometry; selected nearest local entity rows reveal customer requests only nearby or through explicit timed relay. Hydraulic and plate-heat gauges are available only within the current four-cell sector. Unseen event channels are debug-only.
+
+Source entry lines: reset 26, legal_actions 66, observe 87, raw_step 121. Exact columns, normalizers, shapes and scene bindings are in manifest.json. Every selected entity slot ends with presence; hidden slots are zero. Crew identities remain fixed, while tools may change. A legal intent can still be blocked by earlier actors, missing simultaneous help, material shortages or geometry. Masked or out-of-range actions become Wait. Actor priority rotates as (loop index + t) mod A.
+
+No early natural terminal; the 768-tick market closing truncates the episode.
+
+Already-done raw calls preserve every state leaf and observation, return zero rewards and true per-agent dones, and preserve terminal causes. Nonterminal calls advance t exactly once. No autoreset or external state exists. Signed identities and sentinels use int32; reset keys are not copied into state. Observation bounds [0,1] and explicit reward clipping [-4,4] are source declarations, not numerical verification.
+
+
+## Literal source evidence
+
+- candidate.py:158: assist = jnp.any((jnp.sum(jnp.abs(original_pos - p), axis=1) &lt;= 1) &amp; (actions == 5) &amp; (jnp.arange(48, dtype=jnp.int32) != i))
+- candidate.py:159: lift = (a == 6) &amp; (bd[b] &lt;= 2) &amp; available[b] &amp; assist &amp; (w[&#x27;item&#x27;][i] == 0)
+- candidate.py:167: load = (a == 8) &amp; jnp.any(stove) &amp; room &amp; ((w[&#x27;item&#x27;][i] == 2) | (w[&#x27;item&#x27;][i] == 3)) &amp; (w[&#x27;timer&#x27;][c] == 0) &amp; (w[&#x27;meal&#x27;][c] == 0)
+- candidate.py:72: wash = jnp.any(near &amp; (s[&#x27;station_kind&#x27;][None, :] == 3), axis=1)
+- candidate.py:183: serve = (a == 11) &amp; jnp.any(match) &amp; (w[&#x27;item&#x27;][i] &gt;= 4)
+- candidate.py:204: listeners = (ad &lt;= 3) &amp; signal
+- candidate.py:217: ready = (s[&#x27;veg&#x27;] + s[&#x27;grain&#x27;] == 3) &amp; (s[&#x27;veg&#x27;] &gt;= 1) &amp; (s[&#x27;grain&#x27;] &gt;= 1) &amp; (s[&#x27;clean&#x27;] &gt; 0) &amp; (s[&#x27;meal&#x27;] == 0)
+- candidate.py:231: flow = jnp.where(s[&#x27;gate&#x27;] &amp; (water &gt;= 2), 1, 0).astype(jnp.int32)
+- candidate.py:236: advance = (t % 3 == 0) &amp; (s[&#x27;water&#x27;][sector] &gt;= 2) &amp; s[&#x27;gate&#x27;][sector]
+- candidate.py:245: expired = s[&#x27;deadline&#x27;] &lt;= 0
+
+
+## Human operation, provenance and limits
+Scene data binds actual positions, stock, tools and events. Human single-role/multiple-role control must call the unchanged native joint action interface. No UI has been implemented, opened or played by this author. Role rendering must restrict event presentation to visible entities; global event inspection is debug-only.
+
+
+Four independent world families are authored, without upstream code or assets. Supplied external reference files were permitted but not read. No prior game, results, IR, selection, training, heldout, memory, network, API, local model or numerical package was read/invoked. Current population/family240 and dispatch scope override inherited counts. Parentless initial window: 240 used/reserved of 512, feedback 0.
+
+
+Only bytes/SHA256, JSON/AST and literal structure are checked here. Candidate import/reset/step/observe/legal_actions and provided validators were never executed. Runtime shapes/dtypes, JIT/vmap, terminal replay, mask reachability, script success, finite numerical bounds, resource cost, animation, human playability, non-isomorphism, learning and transfer remain unverified. Independent authorized frozen-source integration must preserve actual failures. No acceptance, deployment or experimental result is authored.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait / receive</span></div><div class="action"><b>1</b><span>Walk north</span></div><div class="action"><b>2</b><span>Walk east</span></div><div class="action"><b>3</b><span>Walk south</span></div><div class="action"><b>4</b><span>Walk west</span></div><div class="action"><b>5</b><span>Assist adjacent basket unloader</span></div><div class="action"><b>6</b><span>Unload barge ingredient with a nearby assisting partner</span></div><div class="action"><b>7</b><span>Cut root at board with knife</span></div><div class="action"><b>8</b><span>Add cut root or grain to nearby stove</span></div><div class="action"><b>9</b><span>Collect finished plate from nearby stove</span></div><div class="action"><b>10</b><span>Wash stove equipment at channel wash station</span></div><div class="action"><b>11</b><span>Serve matching nearby customer request</span></div><div class="action"><b>12</b><span>Toggle nearby lock with navigator tool</span></div><div class="action"><b>13</b><span>Hand item and heat to adjacent waiting empty actor</span></div><div class="action"><b>14</b><span>Relay nearby customer request to local listeners</span></div><div class="action"><b>15</b><span>Exchange tools with adjacent waiting actor</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> knife cook</p><p><b>agent_1</b> pot cook</p><p><b>agent_2</b> lock navigator</p><p><b>agent_3</b> washer</p><p><b>agent_4</b> knife cook</p><p><b>agent_5</b> pot cook</p><p><b>agent_6</b> lock navigator</p><p><b>agent_7</b> washer</p><p><b>agent_8</b> knife cook</p><p><b>agent_9</b> pot cook</p><p><b>agent_10</b> lock navigator</p><p><b>agent_11</b> washer</p><p><b>agent_12</b> knife cook</p><p><b>agent_13</b> pot cook</p><p><b>agent_14</b> lock navigator</p><p><b>agent_15</b> washer</p><p><b>agent_16</b> knife cook</p><p><b>agent_17</b> pot cook</p><p><b>agent_18</b> lock navigator</p><p><b>agent_19</b> washer</p><p><b>agent_20</b> knife cook</p><p><b>agent_21</b> pot cook</p><p><b>agent_22</b> lock navigator</p><p><b>agent_23</b> washer</p><p><b>agent_24</b> knife cook</p><p><b>agent_25</b> pot cook</p><p><b>agent_26</b> lock navigator</p><p><b>agent_27</b> washer</p><p><b>agent_28</b> knife cook</p><p><b>agent_29</b> pot cook</p><p><b>agent_30</b> lock navigator</p><p><b>agent_31</b> washer</p><p><b>agent_32</b> knife cook</p><p><b>agent_33</b> pot cook</p><p><b>agent_34</b> lock navigator</p><p><b>agent_35</b> washer</p><p><b>agent_36</b> knife cook</p><p><b>agent_37</b> pot cook</p><p><b>agent_38</b> lock navigator</p><p><b>agent_39</b> washer</p><p><b>agent_40</b> knife cook</p><p><b>agent_41</b> pot cook</p><p><b>agent_42</b> lock navigator</p><p><b>agent_43</b> washer</p><p><b>agent_44</b> knife cook</p><p><b>agent_45</b> pot cook</p><p><b>agent_46</b> lock navigator</p><p><b>agent_47</b> washer</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      12
+    ],
+    &quot;meaning&quot;: &quot;Self x/47,y/11,crew/11,tool/3,item/5,heat/24,message/5,TTL/16,event/8,id/47,t/768,traffic phase/3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      72
+    ],
+    &quot;meaning&quot;: &quot;6 nearest agents within Manhattan 4: x/47,y/11,tool/3,item/5,heat/24,message/5,TTL/16,crew/11,id/47,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      72,
+      136
+    ],
+    &quot;meaning&quot;: &quot;8 nearest stations within Manhattan 4: x/47,y/11,kind/4,level/6,aux/3,state/54,crew/11,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      136,
+      148
+    ],
+    &quot;meaning&quot;: &quot;2 nearest barges within Manhattan 3: x/47,y/11,roots/8,grain/8,id/5,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      148,
+      169
+    ],
+    &quot;meaning&quot;: &quot;3 nearest customers within Manhattan 3: x/47,y/11,request/5,deadline/48,served/768,id/11,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      169,
+      185
+    ],
+    &quot;meaning&quot;: &quot;Legal intent mask actions 0..15&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      185,
+      190
+    ],
+    &quot;meaning&quot;: &quot;Current four-cell sector gauge: water/6,gate,two inbound slots/2,stove plate heat/24; telemetry throughout current sector&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      190,
+      212
+    ],
+    &quot;meaning&quot;: &quot;Explicit zero padding&quot;,
+    &quot;visibility&quot;: &quot;padding&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Kitchen crew&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 knife,1 pot,2 navigator,3 wash apron&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;item&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty,1 root,2 grain,3 cut root,4 broth,5 rice plate&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;heat&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried meal warmth&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;Last relayed dish request&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message_ttl&quot;
+        ],
+        &quot;meaning&quot;: &quot;Relay ticks remaining&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;stations&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 60,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 platform,1 board,2 stove,3 wash,4 lock&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;station_level&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stove roots or wash/lock water; zero for board/platform&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;station_aux&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stove grain, wash clean uses, otherwise lock flag&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;station_state&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stove meal code times ten plus timer; zero elsewhere&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;barges&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;barge_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;barge_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;barge_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;roots&quot;
+        ],
+        &quot;meaning&quot;: &quot;Finite shared barge roots&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rice&quot;
+        ],
+        &quot;meaning&quot;: &quot;Finite shared barge grain&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;customers&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 12,
+    &quot;position&quot;: [
+      &quot;customer_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;customer_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;customer_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;request&quot;
+        ],
+        &quot;meaning&quot;: &quot;4 broth or 5 rice plate requested&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;deadline&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ticks until request changes&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;served&quot;
+        ],
+        &quot;meaning&quot;: &quot;Matching plates received&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 237,
+  &quot;key&quot;: &quot;gi237&quot;,
+  &quot;title&quot;: &quot;Canal Nightmarket Kitchens&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 48,
+    &quot;observation_size&quot;: 212,
+    &quot;num_actions&quot;: 16,
+    &quot;max_steps&quot;: 768
+  },
+  &quot;source_sha256&quot;: &quot;313eebca823ab1d005942f0a52a625798ed17296f0302fa0b0091198ecbc8f00&quot;,
+  &quot;manifest_sha256&quot;: &quot;196297dc37b2492dfc8cf086456ac03288ed383385df0c4ab25bb24d177faf08&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;313eebca823ab1d005942f0a52a625798ed17296f0302fa0b0091198ecbc8f00&quot;,
+      &quot;bytes&quot;: 17750,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00237/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;196297dc37b2492dfc8cf086456ac03288ed383385df0c4ab25bb24d177faf08&quot;,
+      &quot;bytes&quot;: 27632,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00237/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;c18fe25c6836c9ba1caec19e87277688221cfa25157e73c5e5cf4ecc09b14db4&quot;,
+      &quot;bytes&quot;: 8167,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00237/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;689498c36d5c01c87c7a2402464e730155e55e24bb14afdfad3fef87b2c996e5&quot;,
+      &quot;bytes&quot;: 5592,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00237/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;8ec03d71b1f5fb051c31bd5211c5281fdf5f5c687ae8487858a1cea6d3751049&quot;,
+      &quot;bytes&quot;: 28050,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00237/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi237">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

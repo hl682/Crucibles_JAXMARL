@@ -1,0 +1,444 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fe6b8849bb86e410ff28acff98c1ecff878dedfadbf1d240f0bc46e199c3c670",
+  "manifest_sha256": "6ef0303215cbdfb7da32b671473211787fb2d901635bc805c105900e28f7db7f",
+  "title": "Railguard",
+  "rules": [
+    "Teams are guards zero and one versus guards two and three. Each starts with two health, six energy and two rounds.",
+    "Rail shields move one cell when at least two adjacent guards agree on direction and that direction has a unique largest vote. Operators stay in place.",
+    "Every push attempt spends one energy. Shields cannot enter an occupied cell, wall or another shield; simultaneous shield destination conflicts cancel both moves.",
+    "Walking happens after shield motion, then supply transfers, then all shots resolve from the resulting positions. Walking cannot enter a starting occupied cell.",
+    "A shot spends a round and one energy, sets a two-tick cooldown and travels at most six cells. The first wall, shield or body stops it. Friendly bodies block without damage.",
+    "Rest recovers two energy up to eight. Each team has six reserve rounds at its base. Adjacent teammates can donate ammunition.",
+    "An active guard can spend one round and two energy to revive an adjacent teammate that was down before the transition. A newly hit guard cannot rescue if it is now down.",
+    "Both enemy guards down wins; both teams eliminated in the same transition draws. Terminal raw state is preserved. Horizon: one hundred twenty-eight transitions."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable interior",
+          "color": "#253440"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#111C26"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "guards",
+      "glyph": "robot",
+      "label": "Team guards",
+      "color": "#579CC7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Health"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Energy"
+        },
+        {
+          "state_path": [
+            "ammo"
+          ],
+          "label": "Loaded rounds"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Fire cooldown"
+        },
+        {
+          "state_path": [
+            "last_action"
+          ],
+          "label": "Latest sanitized action"
+        },
+        {
+          "state_path": [
+            "hit"
+          ],
+          "label": "Hits this transition"
+        },
+        {
+          "state_path": [
+            "revived"
+          ],
+          "label": "Revived this transition"
+        }
+      ]
+    },
+    {
+      "id": "shields",
+      "glyph": "square",
+      "label": "Movable rail shields",
+      "color": "#8697A8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cover_votes"
+          ],
+          "label": "North east south west push votes"
+        },
+        {
+          "state_path": [
+            "cover_moved"
+          ],
+          "label": "Moved this transition"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "glyph": "battery",
+      "label": "Team ammunition bases",
+      "color": "#D9AE57",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Remaining reserve rounds"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Enemy incapacitations credited to this team"
+        }
+      ]
+    },
+    {
+      "id": "rays",
+      "glyph": "circle",
+      "label": "Actual latest ray cells",
+      "color": "#F0C85D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "trace_owner"
+          ],
+          "label": "Shooter ID"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "cover_moved"
+      ],
+      "meaning": "Rail shield moved this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cover_votes"
+      ],
+      "meaning": "Current transition push votes",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "hit"
+      ],
+      "meaning": "Enemy hits received this transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "revived"
+      ],
+      "meaning": "Guard revived this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "trace_active"
+      ],
+      "meaning": "Actual ray cells traversed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Enemy incapacitations credited to each team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "winner"
+      ],
+      "meaning": "Winner at natural termination; minus one otherwise or simultaneous draw",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest and recover two energy"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Push adjacent rail shield north"
+    },
+    {
+      "id": 6,
+      "label": "Push adjacent rail shield east"
+    },
+    {
+      "id": 7,
+      "label": "Push adjacent rail shield south"
+    },
+    {
+      "id": 8,
+      "label": "Push adjacent rail shield west"
+    },
+    {
+      "id": 9,
+      "label": "Fire north"
+    },
+    {
+      "id": 10,
+      "label": "Fire east"
+    },
+    {
+      "id": 11,
+      "label": "Fire south"
+    },
+    {
+      "id": 12,
+      "label": "Fire west"
+    },
+    {
+      "id": 13,
+      "label": "Reload one round at own base"
+    },
+    {
+      "id": 14,
+      "label": "Give one round to adjacent live teammate"
+    },
+    {
+      "id": 15,
+      "label": "Revive adjacent previously downed teammate"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Observer role one-hot in fixed agent order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        81
+      ],
+      "meaning": "Public arena walls, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        89
+      ],
+      "meaning": "All guard positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        93
+      ],
+      "meaning": "Team IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        97
+      ],
+      "meaning": "Health; zero means incapacitated",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        101
+      ],
+      "meaning": "Available energy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        105
+      ],
+      "meaning": "Loaded ammunition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        105,
+        109
+      ],
+      "meaning": "Firing cooldown ticks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        109,
+        113
+      ],
+      "meaning": "Latest sanitized commands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        117
+      ],
+      "meaning": "Enemy ray hits this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        121
+      ],
+      "meaning": "Revived this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        125
+      ],
+      "meaning": "Rail-shield positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        127
+      ],
+      "meaning": "Shield moved this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        135
+      ],
+      "meaning": "North east south west push votes for each shield",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        139
+      ],
+      "meaning": "West and east supply bases",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        141
+      ],
+      "meaning": "Remaining team supply stock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        143
+      ],
+      "meaning": "Cumulative enemy incapacitations by team",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        191
+      ],
+      "meaning": "Latest four rays, six cells per shooter, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        191,
+        215
+      ],
+      "meaning": "Cells actually traversed by latest rays",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        215,
+        218
+      ],
+      "meaning": "Clock, joint done flag, winning team ID or minus one",
+      "visibility": "public"
+    }
+  ]
+}

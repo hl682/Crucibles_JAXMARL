@@ -1,0 +1,447 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f3607de1a9dd1c045b8fb3ad0079b5121d44f5acc6ee1b1e1fb55ab97df263fb",
+  "manifest_sha256": "ad4ad858d59cfb8d6f3e6fe77867e0caa00089e72ffbe34d12daa67194a50e86",
+  "title": "Orchard Commons",
+  "rules": [
+    "Walk an orchard keeper to a plot, meadow, pruning tool or market. Plant apples or pears within one cell of your own bare plot.",
+    "Water an adjacent growing plot using 1 pond water to add up to 2 moisture. Anyone may water another farmer plot; the pond refills by 2 on growth ticks, capped at 4.",
+    "Every fourth step, moist seedlings blossom and moist blossoms ripen. Growth consumes 1 moisture. There are six growth ticks.",
+    "Tend the bee meadow to add up to 2 habitat. Habitat of at least 2 when blossoms open stores a pollen flag; habitat falls by 1 each growth tick.",
+    "Ripe yield is 1 fruit, plus 1 for captured pollen, plus 1 for soil at least 2. Compost restores soil; the last harvest from a plot reduces it by 1.",
+    "Only the farmer holding the shared pruning shears can harvest their own ripe plot. Carry at most 3 fruit of one type.",
+    "Pass shears to an adjacent farmer with the lowest role index; with nobody adjacent, place them on the ground. Their visible position and holder follow real state.",
+    "Fruit left ripe for two later growth ticks spoils. At the market, sell your basket for favorite and alternating-season bonuses.",
+    "Show textured trees, blossom, fruit, water channels, bees, baskets and the tool strap from these native fields. Human play accepts any legal actions.",
+    "Favorites are private. Scripts describe intended checks only; no replay, learning or successful harvest has been executed by the author."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable orchard grass and village paths",
+          "color": "#A4BC76"
+        },
+        {
+          "value": 1,
+          "meaning": "Passable covered irrigation channel",
+          "color": "#78A5A2"
+        },
+        {
+          "value": 2,
+          "meaning": "Pond: impassable water tile",
+          "color": "#568EAB"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Aproned orchard keepers with fruit baskets",
+      "color": "#BA7254",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "basket"
+          ],
+          "label": "Fruit in basket"
+        },
+        {
+          "state_path": [
+            "basket_type"
+          ],
+          "label": "Basket: -1 empty, 0 apple, 1 pear"
+        },
+        {
+          "state_path": [
+            "compost"
+          ],
+          "label": "Compost bags"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Market earnings"
+        }
+      ]
+    },
+    {
+      "id": "plot",
+      "glyph": "plant",
+      "label": "Apple or pear plots with blossom and fruit stages",
+      "color": "#729249",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "Stage: 0 bare, 1 growing, 2 blossom, 3 ripe"
+        },
+        {
+          "state_path": [
+            "crop"
+          ],
+          "label": "Crop: -1 none, 0 apple, 1 pear"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Moisture"
+        },
+        {
+          "state_path": [
+            "soil"
+          ],
+          "label": "Soil condition"
+        },
+        {
+          "state_path": [
+            "pollen"
+          ],
+          "label": "Blossom pollinated"
+        },
+        {
+          "state_path": [
+            "fruit"
+          ],
+          "label": "Fruit still on tree"
+        },
+        {
+          "state_path": [
+            "ripe_age"
+          ],
+          "label": "Ripe growth ticks elapsed"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "glyph": "tool",
+      "label": "Shared pruning shears with shoulder strap",
+      "color": "#8B735C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_holder"
+          ],
+          "label": "Holder: -1 resting, otherwise farmer role"
+        }
+      ]
+    },
+    {
+      "id": "habitat",
+      "glyph": "plant",
+      "label": "Wildflower meadow with bees",
+      "color": "#C9AD57",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bees"
+          ],
+          "label": "Bee habitat level"
+        }
+      ]
+    },
+    {
+      "id": "pond",
+      "glyph": "water",
+      "label": "Village pond feeding covered orchard channels",
+      "color": "#568EAB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Shared irrigation water"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "glyph": "food",
+      "label": "Timber fruit stall under a cloth awning",
+      "color": "#C98A5B",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "e_water"
+      ],
+      "meaning": "Water units drawn for each plot this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_tend"
+      ],
+      "meaning": "Farmer tended bee habitat this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_harvest"
+      ],
+      "meaning": "Fruit harvested by each farmer this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_sale"
+      ],
+      "meaning": "Fruit sold by each farmer this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_handoff"
+      ],
+      "meaning": "Pruning tool picked up, passed or placed down",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_blossom"
+      ],
+      "meaning": "Plot entered blossom this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_spoil"
+      ],
+      "meaning": "Unharvested fruit spoiled this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_move"
+      ],
+      "meaning": "Farmer moved this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Plant apple at own empty plot"
+    },
+    {
+      "id": 6,
+      "label": "Plant pear at own empty plot"
+    },
+    {
+      "id": 7,
+      "label": "Water nearest adjacent growing plot: 1 shared water"
+    },
+    {
+      "id": 8,
+      "label": "Tend adjacent bee meadow: add up to 2 habitat"
+    },
+    {
+      "id": 9,
+      "label": "Pick up nearby unheld pruning tool"
+    },
+    {
+      "id": 10,
+      "label": "Pass tool to adjacent lowest-index farmer, or put down"
+    },
+    {
+      "id": 11,
+      "label": "Harvest own ripe plot with pruning tool"
+    },
+    {
+      "id": 12,
+      "label": "Sell whole basket at market"
+    },
+    {
+      "id": 13,
+      "label": "Compost nearest adjacent plot: 1 own compost"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Public t/40, growth ticks completed/6, pond water/4, bee habitat/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        10
+      ],
+      "meaning": "Farmer x/8,y/6 for roles 0..2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "Fruit baskets/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "Basket types encoded (-1 empty,0 apple,1 pear)+1 divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        19
+      ],
+      "meaning": "Compost stock/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        20
+      ],
+      "meaning": "Tool holder plus 1 divided by 3; 0 means unheld",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        22
+      ],
+      "meaning": "Tool x/8,y/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Crop stage/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Crop type plus 1 divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        31
+      ],
+      "meaning": "Moisture/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        34
+      ],
+      "meaning": "Soil condition/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Captured pollination flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Fruit still on plots/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        43
+      ],
+      "meaning": "Ripe ages/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        46
+      ],
+      "meaning": "Market score/128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        49
+      ],
+      "meaning": "Own role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        49,
+        50
+      ],
+      "meaning": "Own favorite: 0 apple,1 pear; others withheld",
+      "visibility": "self"
+    }
+  ]
+}

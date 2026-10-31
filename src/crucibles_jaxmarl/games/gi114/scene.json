@@ -1,0 +1,366 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "16ebb97c9c761db5da08d58d3254d08995165d8b40b8c8222c044731c723a8ba",
+  "manifest_sha256": "38fbc834e8faa6ba7fd7bd6ff21085cabffb006069737ceef5979a7170ad6695",
+  "title": "Lantern rescue and moving shadows",
+  "rules": [
+    "Carry both evacuees to the green shelter. A loaded carrier may enter only cells lit at the start of its step.",
+    "Grounded or carried lit lanterns illuminate radius three through sampled clear cell rays. Lit relay posts provide the same radius.",
+    "The lighter cannot carry evacuees; the carrier cannot pick up lanterns; the runner can carry either one bulky item.",
+    "A lantern spends one battery unit each tick it is on. Recharging transfers up to eight units from the finite depot.",
+    "Pulsing an adjacent relay spends four held-lantern units and gives twelve subsequent displayed illumination ticks.",
+    "Moving shadows hurt unlit rescuers. A disabled rescuer drops its item; rescuers may share floor cells.",
+    "Role views hide unseen cells and objects. The omniscient debug state is not a policy observation.",
+    "This package is authored and statically screened only; no successful run or learning result is claimed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "render_tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Unlit traversable floor",
+          "color": "#2E3949"
+        },
+        {
+          "value": 1,
+          "meaning": "Opaque wall",
+          "color": "#586174"
+        },
+        {
+          "value": 2,
+          "meaning": "Shelter and permanent nearby safety light",
+          "color": "#65C18C"
+        },
+        {
+          "value": 3,
+          "meaning": "Shared battery depot tile",
+          "color": "#71A589"
+        },
+        {
+          "value": 4,
+          "meaning": "Currently illuminated traversable floor",
+          "color": "#D6BE77"
+        }
+      ],
+      "visibility": [
+        "map_visible"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "rescuers",
+      "glyph": "worker",
+      "label": "Rescuers: lighter, carrier, runner",
+      "color": "#4AA8D8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Health, initially three; zero disables this role"
+        },
+        {
+          "state_path": [
+            "agent_lamp"
+          ],
+          "label": "Held lantern identity, minus one means none"
+        },
+        {
+          "state_path": [
+            "agent_evac"
+          ],
+          "label": "Carried evacuee identity, minus one means none"
+        }
+      ]
+    },
+    {
+      "id": "lanterns",
+      "glyph": "beacon",
+      "label": "Portable lanterns",
+      "color": "#FFD166",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lamp_owner"
+          ],
+          "label": "Carrier identity, minus one means grounded"
+        },
+        {
+          "state_path": [
+            "lamp_charge"
+          ],
+          "label": "Remaining lantern battery units"
+        },
+        {
+          "state_path": [
+            "lamp_on"
+          ],
+          "label": "Lantern switch state"
+        }
+      ]
+    },
+    {
+      "id": "evacuees",
+      "glyph": "agent",
+      "label": "Evacuees",
+      "color": "#F48CB9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "evac_carrier"
+          ],
+          "label": "Carrier identity, minus one means uncarried"
+        },
+        {
+          "state_path": [
+            "evac_rescued"
+          ],
+          "label": "Already delivered to the shelter"
+        }
+      ]
+    },
+    {
+      "id": "relay_beacons",
+      "glyph": "beacon",
+      "label": "Relay posts",
+      "color": "#F2C14E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "label": "Remaining relay illumination ticks"
+        }
+      ]
+    },
+    {
+      "id": "battery_depot",
+      "glyph": "battery",
+      "label": "Shared battery depot",
+      "color": "#77B77D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "depot_stock"
+          ],
+          "label": "Remaining shared battery units"
+        }
+      ]
+    },
+    {
+      "id": "moving_shadows",
+      "glyph": "hazard",
+      "label": "Moving shadows; hidden when unlit",
+      "color": "#9A82BC",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued_count"
+      ],
+      "meaning": "Number of evacuees delivered to the shelter; public cumulative record",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "rescue_flash"
+      ],
+      "meaning": "Evacuees newly rescued on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up or ground a lantern"
+    },
+    {
+      "id": 6,
+      "label": "Lift or set down an evacuee"
+    },
+    {
+      "id": 7,
+      "label": "Toggle held lantern"
+    },
+    {
+      "id": 8,
+      "label": "Recharge held lantern from nearby shared depot"
+    },
+    {
+      "id": 9,
+      "label": "Spend four charge units to pulse a nearby relay"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot: lighter 0, evacuee carrier 1, flexible runner 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Self x,y divided by 8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Self health divided by 3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Self held lantern identity plus one, divided by 2; zero means none",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Self carried evacuee identity plus one, divided by 2; zero means none",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "meaning": "Public elapsed ticks divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Public rescued evacuees divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        73
+      ],
+      "meaning": "Row-major base terrain /3 at visible cells, minus one elsewhere",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        73,
+        136
+      ],
+      "meaning": "Row-major current illumination at visible cells, minus one elsewhere",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        154
+      ],
+      "meaning": "Three visible rescuer records: x/8,y/8,health/3,(lamp+1)/2,(evacuee+1)/2,active; all six entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        154,
+        166
+      ],
+      "meaning": "Two visible lantern records: x/8,y/8,charge/64,(owner+1)/3,on,visible=1; all six entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        166,
+        176
+      ],
+      "meaning": "Two visible evacuee records: x/8,y/8,rescued,(carrier+1)/3,visible=1; all five entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        176,
+        184
+      ],
+      "meaning": "Two visible relay records: x/8,y/8,ttl/12,visible=1; all four entries minus one when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        184,
+        188
+      ],
+      "meaning": "Visible battery depot record: x/8,y/8,stock/16,visible=1; four minus ones when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        188,
+        194
+      ],
+      "meaning": "Two lit and locally visible shadow records: x/8,y/8,visible=1; all three entries minus one when unseen",
+      "visibility": "local"
+    }
+  ]
+}

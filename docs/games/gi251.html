@@ -1,0 +1,3253 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Orchard Lantern Commons · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI251 / SPATIAL</p><h1>Orchard Lantern Commons</h1><p class="lead"></p><div class="stats"><span>96 agents</span><span>20 actions</span><span>297 observation columns</span><span>896 original horizon</span><span>Runtime: PASS</span></div><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi251.gif" alt="Actual verification episode gi251"></section><section><h2>Run this game</h2><pre>crucibles play --game 251</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Deliver eight fruit units for each household while preserving orchard growth, shared pollination and fragile transport. Individual baskets and cooperative racks offer different schedules and infrastructure needs.&quot;,
+  &quot;natural_termination&quot;: &quot;Joint natural completion when every household sales ledger reaches eight fruit units. Otherwise H=896 ends the season; ecological hives and fixtures are never extra controllable agents.&quot;,
+  &quot;interaction&quot;: &quot;Pruning removes current fruit and opens a tree cell while improving a paired neighboring plot sunlight. Moving a hive reallocates its single pollination target; lamps divert nearby bees. Two carriers move a rack while another braces its bridge or holds its cold-store door.&quot;,
+  &quot;observation_access&quot;: &quot;The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 8. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>96 independent villagers belong to twelve households. Hives are ecological objects, never extra agent rows.</li><li>Prune to gain timber and open a tree cell, but lose current fruit. The paired neighboring orchard gains sunlight for later growth.</li><li>Harvest ripe fruit, graft with a fruit sacrifice, irrigate a paired neighbor, or repair weather damage with timber. Growth occurs on eighth-step boundaries.</li><li>A beekeeper can lift and relocate a physical hive. Each uncarried hive serves one nearby orchard; a nearby lit lamp distracts it.</li><li>A north and south carrier must agree to move a rack. A third person braces the bridge or holds the cold-store door; a repaired bridge provides a persistent alternative.</li><li>Night lamps protect moving rack quality, while drawing bees away. Hand baskets may use the market; racks sell through the held cold-store door.</li><li>Warm orchards, timber racks and lanterns form an original rural scene. Native execution, animation, learning and human play remain unmeasured.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Orchard Lantern Commons
+
+Status: AUTHORED_NOT_EXECUTED. Initial parentless train candidate; feedback_used=0; source_attempt=0; final_test_used=false.
+
+Native A/O/U/H = 96/297/20/896. Source SHA-256: `0009f3127bcf22d1817749f1b520c0c3cb48e0ae37e4c1107d433518ebc2e595`.
+
+## Physical world and roles
+
+Twelve households occupy adjacent 12 by 8 districts in a 48 by 24 orchard. Each of the 96 villagers is a native independently controlled role. Hives are ecological objects, not additional agents. Relative orchard=(4,3), irrigation=(3,2), starting hive=(6,3), rack=(3,5), bridge=(7,5), cold-store door=(9,5), lamp=(9,2), market=(9,1). Bridge/door stands are one square north of their fixture. Plot, rack and fixture IDs encode fixed household ownership. Hives may physically relocate and serve another household. Adjacent district pairs 0/1,2/3 and so on exchange water and shade effects. People can share broad path squares.
+
+## Actions and timing
+
+- 0 waits; 1..4 move within bounds. A tree cell with positive canopy blocks entry; pruning to zero opens it immediately.
+- 5 requires shears (tool 0), tree adjacency, canopy and timber capacity; it removes one canopy and one available fruit and gains timber. 6 spends timber to tend an adjacent damaged tree. 7 harvests ripe fruit into a basket of capacity three with no carried hive.
+- 8 requires a graft knife (tool 1), an ungrafted nearby tree and one basket fruit. It changes variety and resets ripeness. 9 toggles the nearby irrigation switch; an open channel sends a water unit to the paired neighbor every fourth step if available.
+- 10 with tool 2 and empty basket lifts a nearby free hive, or drops the currently carried one. A carried hive follows the real person position and cannot pollinate.
+- 11/13 requests east/west rack transport with tool 3. One operator must be directly north and one directly south, aligned with rack x; completed opposite coalitions cancel. Operators must walk alongside between pulls. 12 holds a bridge brace or cold door only from its exact stand with tool 3.
+- 14 loads nearby rack fruit up to capacity three. 15 spends timber to repair a nearby footbridge; health three removes its need for a brace. 16 offers a reciprocal adjacent tool exchange. 17 toggles a nearby night lamp.
+- 18 sells a basket at the market, or an adjacent rack already through the cold-store entrance while its door is held. 19 reads the local market weather board or shares cached information locally.
+
+Masks use pre-state facts. Plot operations choose smallest actor ID for each action; simultaneous pruning can remove a remaining fruit in addition to a harvest. Irrigation, rain and repairs update material state. Braces and lamps resolve before movement/ecology. Each uncarried, undistracted hive serves its nearest orchard within six grid steps; relocation reallocates that one contribution. Nearby lit lamps distract hives during both day and night. Every eighth tick, water, health, pollen and sunlight from the paired neighbor canopy jointly permit fruit growth/ripening. Every thirty-second tick canopy regrows and forecast rain may damage trees and bridges. Racks then use two carriers plus brace/door conditions. At night (step mod 32 &gt;=16), moving a loaded unlit rack reduces quality. A loaded zero-quality rack loses one fruit each step until empty. Sales use the same pre-step total-supply price, then reciprocal tool loans/messages and visibility update.
+
+## Rewards and completion
+
+Every person pays -0.003 per accepted non-wait action. Each household member receives price*quality_weighted_units_sold_for_household/24, where price=1/(1+sum(previous household sales)/24). Basket sales credit the seller household; rack sales credit the rack household. Each member pays -0.1 per broken fruit from its household rack. Every one of the 96 people receives a one-time +0.01 for full current orchard pollen coverage. Initial hives already provide coverage, so this milestone may happen on the first transition; it is not a demonstrated restoration achievement. Price depends on total supply, which is not an extra privileged observation. Conservative per-step returned bounds are [-2,8], and each household ledger caps at 512.
+
+Joint natural completion occurs when each household has sold eight fruit units, otherwise H=896 ends the episode. No household is represented by a merged agent row; ecological hives never submit actions.
+
+## Dependence and strategies
+
+Small baskets avoid rack staffing, while racks transport shared harvest with two carriers and a third bridge/door helper. A household can invest timber in a permanent bridge, prune for a neighbor next growth interval, relocate a hive toward a partner or away from a rival, or light a night route at a pollen cost. Weather knowledge remains local and can become stale. Grafting sacrifices immediate fruit for later ripening and quality. These are actual rule tradeoffs; human enjoyment, strategic richness and learnability remain untested.
+
+## Interface, boundaries and completion
+
+The native boundary is reset(key), raw_step(key,state,actions), observe(state), and legal_actions(state). State is a fixed-key dictionary of fixed-shape int32/bool arrays. Observation and reward are float32. Every role has an action, observation, reward and done row. All out-of-range or masked actions deterministically become wait. A legal intention may still lose a simultaneous contest. Entity caps are fixed; no hidden controllers, callbacks, file access or global cache exists.
+
+A nonterminal raw call advances t exactly once. Natural completion has priority when it coincides with H. `truncated=(t&gt;=H)&amp;~terminated`, `done_all=terminated|truncated`, and every individual done equals joint done. Already-terminal input is absorbing: preserve state, observation, clock and cause; return zero rewards and all dones true. Raw auto-reset never occurs. Event flags describe the last actual transition and remain unchanged under absorbing calls; a renderer must not replay them as new events.
+
+## Exact observation and presentation contract
+
+The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.
+
+Every non-padding column has its own exact slice and meaning in `manifest.json:observation_fields`. Entity slots encode `[visible, entity_id, absolute_x, absolute_y, declared attributes...]`; a hidden slot is entirely -1. Sorting is ascending Manhattan distance, then entity ID. No value is normalized. Observations are float32 and conservatively bounded [-1,2048]. Explicit padding is zero. Each group visibility mask equals the selected local slots; actor masks additionally include the selected self, whose full attributes are in its self block.
+
+- self: [0, 14] end-exclusive; id, house, tool, x, y, wood, basket, quality, hive, knowledge, message, event, recipient, own_sales.
+- villagers: [14, 118] end-exclusive; visible, entity_id, x, y, house, tool, wood, basket, quality, hive, message, event, recipient.
+- orchards: [118, 178] end-exclusive; visible, entity_id, x, y, water, canopy, fruit, ripe, variety, pollination, health, valve, sales, growth, pruned.
+- hives: [178, 199] end-exclusive; visible, entity_id, x, y, hive_carrier, flower_target, distracted.
+- racks: [199, 223] end-exclusive; visible, entity_id, x, y, rack_load, rack_quality, rack_moved, breakage.
+- fixtures: [223, 263] end-exclusive; visible, entity_id, x, y, kind, fixture_health, held, lit.
+- map_patch: [263, 288] end-exclusive; 5x5 row-major dy=-2..2, dx=-2..2.
+
+The scene is safe declarative data with exact source and manifest hashes. Actual state coordinates, active masks, local visibility, resource levels, carried items and events determine drawing. Private forecasts are not exposed by a global scene HUD. Event vectors inherit their owning entity mask; full-state debugging is a separate labeled view. Static map layout is public. No narrative text substitutes for a transition. Every individual ID and affiliation is listed in the manifest.
+
+## Human control and unexecuted scripts
+
+A presentation layer should distinguish Enter game from Watch replay, offer native legal actions and pause/step, focus any actor/affiliation, and stage an arbitrary joint-action vector. A human can control one or many native rows; human participant count is not the role count. Human and policy decisions must call the same raw kernel. These files are interface metadata, not a claim that a browser UI, native animation or human session has been run.
+
+- `two_carriers_bridge_cold_store`: 13 literal joint vectors. Actors 0 and 1 carry a rack, actor 2 braces the bridge, actor 7 walks to and holds the cold-store door for entry and sale.
+- `prune_graft_relocate_hive`: 10 literal joint vectors. Actor 4 prunes, actor 5 harvests and grafts, actor 6 relocates a hive toward household 1, actor 7 toggles the ecological lamp tradeoff.
+- Paired `third_person_braces_crossing`: 6 shared prefix vectors; 3 per suffix; exactly one scalar action differs. The same two carriers request unrepaired bridge entry. A third-person brace should allow entry and waiting should block it; common waits expose persistence. Unexecuted.
+
+The scripts are source-reasoned hypotheses, not runtime legality receipts, success trajectories, solvability certificates or effect estimates. Identical reset and step keys are required for paired replay.
+
+## Literal source evidence
+
+- `candidate.py:32`: `def reset(self, key):`; definition ends at line 72.
+- `candidate.py:83`: `def legal_actions(self, s):`; definition ends at line 105.
+- `candidate.py:107`: `def advance(self, key, s, actions):`; definition ends at line 233.
+- `candidate.py:235`: `def raw_step(self, key, state, actions):`; definition ends at line 238.
+- `candidate.py:246`: `def observe(self, s):`; definition ends at line 259.
+- `candidate.py:134`: `# Bracing and lamp switches are actual per-fixture state, before transport/ecology.`.
+- `candidate.py:143`: `# Pruning physically opens a tree cell; movements use the new canopy.`.
+- `candidate.py:158`: `distracted = jnp.any((self.distance(hpos, s[&#x27;fixture_pos&#x27;]) &lt;= 6) &amp; lit[None, :], axis=1)`.
+- `candidate.py:164`: `sunlight = 3 - canopy[neighbor]`.
+- `candidate.py:169`: `# A loaded rack needs a north and a south carrier agreeing on direction.`.
+- `candidate.py:195`: `# Market competition prices every sale using the same pre-step total supply.`.
+- `candidate.py:223`: `reward = -0.003 * (a != 0) + price * values[s[&#x27;house&#x27;]] / 24.0 - 0.1 * breakage[s[&#x27;house&#x27;]] + 0.01 * milestone`.
+
+## Provenance, adaptations and limits
+
+`author_input_freeze.json` records all 25 actual allowed input files with absolute path, relative name, byte length, SHA-256 and use. Tool output could be excerpted; the freeze does not claim unseen content was semantically read. Only current 248-251 request/design and population/family251 control. Removed historical194 was not searched. No earlier candidate, result, heldout, memory or other coordination input was used. The batch contains only four already reserved IDs within the user cumulative 300-game ceiling.
+
+The supplied JaxMARL README informed parallel per-agent adapter expectations, including observation/action/reward/done dictionaries and `__all__`. This author supplies the native flat kernel; an external adapter is neither fabricated nor a change to the frozen learner. Pgx informed explicit masks and functional game-state presentation. Craftax informed the broad material/world-modification category. PureJaxRL and the supplied Craftax_Baselines PPO-RNN source were read only as integration/training context, not new game libraries, replacement learners or evidence of these games performance. No upstream code or commercial assets were copied. The four visual families remain independent.
+
+Representation adaptations: small integers are losslessly int32; refresh explicitly normalizes integer leaves even if a later process enables JAX x64; bool leaves remain bool; observations/rewards explicitly cast float32; the supplied uint32 key is not duplicated in state. Static Python loops only traverse fixed field-name tuples. Intended JIT/vmap/scan compatibility requires later sealed execution.
+
+No candidate/JAX/NumPy/PRNG, policy, training, throughput, browser or human-play execution occurred. Native/R0 acceptance, parity, resource use, deterministic replay, paired causal outcomes, rendered animation, solvability, strategic richness, learning and transfer remain UNKNOWN. Human-playability score is unmeasured. Negative, zero, failed and inconclusive outcomes must be preserved. This author produces no runtime/resource/release/native/PID/human receipt. After the final seven SHA-256 hashes are reported, this attempt is frozen; repairs require a separate dispatch.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>North</span></div><div class="action"><b>2</b><span>East</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>West</span></div><div class="action"><b>5</b><span>Prune canopy</span></div><div class="action"><b>6</b><span>Tend damaged tree</span></div><div class="action"><b>7</b><span>Harvest ripe fruit</span></div><div class="action"><b>8</b><span>Graft new variety</span></div><div class="action"><b>9</b><span>Toggle irrigation</span></div><div class="action"><b>10</b><span>Lift or drop hive</span></div><div class="action"><b>11</b><span>Carry rack east</span></div><div class="action"><b>12</b><span>Brace bridge or hold door</span></div><div class="action"><b>13</b><span>Carry rack west</span></div><div class="action"><b>14</b><span>Load harvest rack</span></div><div class="action"><b>15</b><span>Repair footbridge</span></div><div class="action"><b>16</b><span>Offer tool exchange</span></div><div class="action"><b>17</b><span>Toggle night lamp</span></div><div class="action"><b>18</b><span>Sell basket or stored rack</span></div><div class="action"><b>19</b><span>Read or share forecast</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> household 0: rack carrier/bracer; independently controllable</p><p><b>agent_1</b> household 0: rack carrier/bracer; independently controllable</p><p><b>agent_2</b> household 0: rack carrier/bracer; independently controllable</p><p><b>agent_3</b> household 0: rack carrier/bracer; independently controllable</p><p><b>agent_4</b> household 0: pruner; independently controllable</p><p><b>agent_5</b> household 0: grafter; independently controllable</p><p><b>agent_6</b> household 0: beekeeper; independently controllable</p><p><b>agent_7</b> household 0: rack carrier/bracer; independently controllable</p><p><b>agent_8</b> household 1: rack carrier/bracer; independently controllable</p><p><b>agent_9</b> household 1: rack carrier/bracer; independently controllable</p><p><b>agent_10</b> household 1: rack carrier/bracer; independently controllable</p><p><b>agent_11</b> household 1: rack carrier/bracer; independently controllable</p><p><b>agent_12</b> household 1: pruner; independently controllable</p><p><b>agent_13</b> household 1: grafter; independently controllable</p><p><b>agent_14</b> household 1: beekeeper; independently controllable</p><p><b>agent_15</b> household 1: rack carrier/bracer; independently controllable</p><p><b>agent_16</b> household 2: rack carrier/bracer; independently controllable</p><p><b>agent_17</b> household 2: rack carrier/bracer; independently controllable</p><p><b>agent_18</b> household 2: rack carrier/bracer; independently controllable</p><p><b>agent_19</b> household 2: rack carrier/bracer; independently controllable</p><p><b>agent_20</b> household 2: pruner; independently controllable</p><p><b>agent_21</b> household 2: grafter; independently controllable</p><p><b>agent_22</b> household 2: beekeeper; independently controllable</p><p><b>agent_23</b> household 2: rack carrier/bracer; independently controllable</p><p><b>agent_24</b> household 3: rack carrier/bracer; independently controllable</p><p><b>agent_25</b> household 3: rack carrier/bracer; independently controllable</p><p><b>agent_26</b> household 3: rack carrier/bracer; independently controllable</p><p><b>agent_27</b> household 3: rack carrier/bracer; independently controllable</p><p><b>agent_28</b> household 3: pruner; independently controllable</p><p><b>agent_29</b> household 3: grafter; independently controllable</p><p><b>agent_30</b> household 3: beekeeper; independently controllable</p><p><b>agent_31</b> household 3: rack carrier/bracer; independently controllable</p><p><b>agent_32</b> household 4: rack carrier/bracer; independently controllable</p><p><b>agent_33</b> household 4: rack carrier/bracer; independently controllable</p><p><b>agent_34</b> household 4: rack carrier/bracer; independently controllable</p><p><b>agent_35</b> household 4: rack carrier/bracer; independently controllable</p><p><b>agent_36</b> household 4: pruner; independently controllable</p><p><b>agent_37</b> household 4: grafter; independently controllable</p><p><b>agent_38</b> household 4: beekeeper; independently controllable</p><p><b>agent_39</b> household 4: rack carrier/bracer; independently controllable</p><p><b>agent_40</b> household 5: rack carrier/bracer; independently controllable</p><p><b>agent_41</b> household 5: rack carrier/bracer; independently controllable</p><p><b>agent_42</b> household 5: rack carrier/bracer; independently controllable</p><p><b>agent_43</b> household 5: rack carrier/bracer; independently controllable</p><p><b>agent_44</b> household 5: pruner; independently controllable</p><p><b>agent_45</b> household 5: grafter; independently controllable</p><p><b>agent_46</b> household 5: beekeeper; independently controllable</p><p><b>agent_47</b> household 5: rack carrier/bracer; independently controllable</p><p><b>agent_48</b> household 6: rack carrier/bracer; independently controllable</p><p><b>agent_49</b> household 6: rack carrier/bracer; independently controllable</p><p><b>agent_50</b> household 6: rack carrier/bracer; independently controllable</p><p><b>agent_51</b> household 6: rack carrier/bracer; independently controllable</p><p><b>agent_52</b> household 6: pruner; independently controllable</p><p><b>agent_53</b> household 6: grafter; independently controllable</p><p><b>agent_54</b> household 6: beekeeper; independently controllable</p><p><b>agent_55</b> household 6: rack carrier/bracer; independently controllable</p><p><b>agent_56</b> household 7: rack carrier/bracer; independently controllable</p><p><b>agent_57</b> household 7: rack carrier/bracer; independently controllable</p><p><b>agent_58</b> household 7: rack carrier/bracer; independently controllable</p><p><b>agent_59</b> household 7: rack carrier/bracer; independently controllable</p><p><b>agent_60</b> household 7: pruner; independently controllable</p><p><b>agent_61</b> household 7: grafter; independently controllable</p><p><b>agent_62</b> household 7: beekeeper; independently controllable</p><p><b>agent_63</b> household 7: rack carrier/bracer; independently controllable</p><p><b>agent_64</b> household 8: rack carrier/bracer; independently controllable</p><p><b>agent_65</b> household 8: rack carrier/bracer; independently controllable</p><p><b>agent_66</b> household 8: rack carrier/bracer; independently controllable</p><p><b>agent_67</b> household 8: rack carrier/bracer; independently controllable</p><p><b>agent_68</b> household 8: pruner; independently controllable</p><p><b>agent_69</b> household 8: grafter; independently controllable</p><p><b>agent_70</b> household 8: beekeeper; independently controllable</p><p><b>agent_71</b> household 8: rack carrier/bracer; independently controllable</p><p><b>agent_72</b> household 9: rack carrier/bracer; independently controllable</p><p><b>agent_73</b> household 9: rack carrier/bracer; independently controllable</p><p><b>agent_74</b> household 9: rack carrier/bracer; independently controllable</p><p><b>agent_75</b> household 9: rack carrier/bracer; independently controllable</p><p><b>agent_76</b> household 9: pruner; independently controllable</p><p><b>agent_77</b> household 9: grafter; independently controllable</p><p><b>agent_78</b> household 9: beekeeper; independently controllable</p><p><b>agent_79</b> household 9: rack carrier/bracer; independently controllable</p><p><b>agent_80</b> household 10: rack carrier/bracer; independently controllable</p><p><b>agent_81</b> household 10: rack carrier/bracer; independently controllable</p><p><b>agent_82</b> household 10: rack carrier/bracer; independently controllable</p><p><b>agent_83</b> household 10: rack carrier/bracer; independently controllable</p><p><b>agent_84</b> household 10: pruner; independently controllable</p><p><b>agent_85</b> household 10: grafter; independently controllable</p><p><b>agent_86</b> household 10: beekeeper; independently controllable</p><p><b>agent_87</b> household 10: rack carrier/bracer; independently controllable</p><p><b>agent_88</b> household 11: rack carrier/bracer; independently controllable</p><p><b>agent_89</b> household 11: rack carrier/bracer; independently controllable</p><p><b>agent_90</b> household 11: rack carrier/bracer; independently controllable</p><p><b>agent_91</b> household 11: rack carrier/bracer; independently controllable</p><p><b>agent_92</b> household 11: pruner; independently controllable</p><p><b>agent_93</b> household 11: grafter; independently controllable</p><p><b>agent_94</b> household 11: beekeeper; independently controllable</p><p><b>agent_95</b> household 11: rack carrier/bracer; independently controllable</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;name&quot;: &quot;self.id&quot;,
+    &quot;meaning&quot;: &quot;native zero-based actor ID&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;name&quot;: &quot;self.house&quot;,
+    &quot;meaning&quot;: &quot;household index 0..11&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;name&quot;: &quot;self.tool&quot;,
+    &quot;meaning&quot;: &quot;Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;name&quot;: &quot;self.x&quot;,
+    &quot;meaning&quot;: &quot;absolute grid x coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;name&quot;: &quot;self.y&quot;,
+    &quot;meaning&quot;: &quot;absolute grid y coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;name&quot;: &quot;self.wood&quot;,
+    &quot;meaning&quot;: &quot;carried timber 0..3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;name&quot;: &quot;self.basket&quot;,
+    &quot;meaning&quot;: &quot;carried fruit units 0..3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;name&quot;: &quot;self.quality&quot;,
+    &quot;meaning&quot;: &quot;basket quality 0..3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      9
+    ],
+    &quot;name&quot;: &quot;self.hive&quot;,
+    &quot;meaning&quot;: &quot;carried hive ID or -1&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      10
+    ],
+    &quot;name&quot;: &quot;self.knowledge&quot;,
+    &quot;meaning&quot;: &quot;private cached forecast/recipe; may be stale&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      11
+    ],
+    &quot;name&quot;: &quot;self.message&quot;,
+    &quot;meaning&quot;: &quot;current local message, zero means silence&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      12
+    ],
+    &quot;name&quot;: &quot;self.event&quot;,
+    &quot;meaning&quot;: &quot;accepted action code for the last actual transition; not a success flag&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      13
+    ],
+    &quot;name&quot;: &quot;self.recipient&quot;,
+    &quot;meaning&quot;: &quot;consenting handoff/tool-exchange counterpart ID or -1&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      14
+    ],
+    &quot;name&quot;: &quot;self.own_sales&quot;,
+    &quot;meaning&quot;: &quot;own household fruit sales ledger&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      15
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      16
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      16,
+      17
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      17,
+      18
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      19
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      19,
+      20
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      20,
+      21
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      21,
+      22
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      22,
+      23
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      23,
+      24
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      24,
+      25
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      25,
+      26
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      26,
+      27
+    ],
+    &quot;name&quot;: &quot;villagers.slot0.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 0: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      27,
+      28
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      28,
+      29
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      29,
+      30
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      30,
+      31
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      31,
+      32
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      32,
+      33
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      33,
+      34
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      34,
+      35
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      35,
+      36
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      36,
+      37
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      37,
+      38
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      38,
+      39
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      39,
+      40
+    ],
+    &quot;name&quot;: &quot;villagers.slot1.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 1: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      40,
+      41
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      41,
+      42
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      42,
+      43
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      43,
+      44
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      44,
+      45
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      45,
+      46
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      46,
+      47
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      47,
+      48
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      48,
+      49
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      49,
+      50
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      50,
+      51
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      51,
+      52
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      52,
+      53
+    ],
+    &quot;name&quot;: &quot;villagers.slot2.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 2: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      54
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      54,
+      55
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      55,
+      56
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      56,
+      57
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      57,
+      58
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      58,
+      59
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      59,
+      60
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      60,
+      61
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      61,
+      62
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      62,
+      63
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      63,
+      64
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      64,
+      65
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      65,
+      66
+    ],
+    &quot;name&quot;: &quot;villagers.slot3.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 3: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      66,
+      67
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      67,
+      68
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      68,
+      69
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      69,
+      70
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      70,
+      71
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      71,
+      72
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      72,
+      73
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      73,
+      74
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      75
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      75,
+      76
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      76,
+      77
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      77,
+      78
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      78,
+      79
+    ],
+    &quot;name&quot;: &quot;villagers.slot4.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 4: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      79,
+      80
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      80,
+      81
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      81,
+      82
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      82,
+      83
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      83,
+      84
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      84,
+      85
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      85,
+      86
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      86,
+      87
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      87,
+      88
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      88,
+      89
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      89,
+      90
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      90,
+      91
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      91,
+      92
+    ],
+    &quot;name&quot;: &quot;villagers.slot5.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 5: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      92,
+      93
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      93,
+      94
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      94,
+      95
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      95,
+      96
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      96,
+      97
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      97,
+      98
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      98,
+      99
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      99,
+      100
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      100,
+      101
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      101,
+      102
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      102,
+      103
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      103,
+      104
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      104,
+      105
+    ],
+    &quot;name&quot;: &quot;villagers.slot6.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 6: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      105,
+      106
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.visible&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      106,
+      107
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.entity_id&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      107,
+      108
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.x&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      108,
+      109
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.y&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      109,
+      110
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.house&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      110,
+      111
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.tool&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      111,
+      112
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.wood&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      112,
+      113
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.basket&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      113,
+      114
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.quality&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      114,
+      115
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.hive&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      115,
+      116
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.message&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      116,
+      117
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.event&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      117,
+      118
+    ],
+    &quot;name&quot;: &quot;villagers.slot7.recipient&quot;,
+    &quot;meaning&quot;: &quot;villagers, nearest slot 7: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      118,
+      119
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      119,
+      120
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      120,
+      121
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      121,
+      122
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      122,
+      123
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.water&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      123,
+      124
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.canopy&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      124,
+      125
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.fruit&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      125,
+      126
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.ripe&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      126,
+      127
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.variety&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      127,
+      128
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.pollination&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      128,
+      129
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.health&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      129,
+      130
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.valve&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      130,
+      131
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.sales&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      131,
+      132
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.growth&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      132,
+      133
+    ],
+    &quot;name&quot;: &quot;orchards.slot0.pruned&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 0: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      133,
+      134
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      134,
+      135
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      135,
+      136
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      136,
+      137
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      137,
+      138
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.water&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      138,
+      139
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.canopy&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      139,
+      140
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.fruit&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      140,
+      141
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.ripe&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      141,
+      142
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.variety&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      142,
+      143
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.pollination&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      143,
+      144
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.health&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      144,
+      145
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.valve&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      145,
+      146
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.sales&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      146,
+      147
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.growth&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      147,
+      148
+    ],
+    &quot;name&quot;: &quot;orchards.slot1.pruned&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 1: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      148,
+      149
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      149,
+      150
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      150,
+      151
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      151,
+      152
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      152,
+      153
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.water&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      153,
+      154
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.canopy&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      154,
+      155
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.fruit&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      155,
+      156
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.ripe&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      156,
+      157
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.variety&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      157,
+      158
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.pollination&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      158,
+      159
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.health&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      159,
+      160
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.valve&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      160,
+      161
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.sales&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      161,
+      162
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.growth&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      162,
+      163
+    ],
+    &quot;name&quot;: &quot;orchards.slot2.pruned&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 2: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      163,
+      164
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      164,
+      165
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      165,
+      166
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      166,
+      167
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      167,
+      168
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.water&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      168,
+      169
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.canopy&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      169,
+      170
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.fruit&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      170,
+      171
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.ripe&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      171,
+      172
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.variety&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      172,
+      173
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.pollination&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      173,
+      174
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.health&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      174,
+      175
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.valve&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      175,
+      176
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.sales&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      176,
+      177
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.growth&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      177,
+      178
+    ],
+    &quot;name&quot;: &quot;orchards.slot3.pruned&quot;,
+    &quot;meaning&quot;: &quot;orchards, nearest slot 3: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      178,
+      179
+    ],
+    &quot;name&quot;: &quot;hives.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      179,
+      180
+    ],
+    &quot;name&quot;: &quot;hives.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      180,
+      181
+    ],
+    &quot;name&quot;: &quot;hives.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      181,
+      182
+    ],
+    &quot;name&quot;: &quot;hives.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      182,
+      183
+    ],
+    &quot;name&quot;: &quot;hives.slot0.hive_carrier&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 0: person carrying hive, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      183,
+      184
+    ],
+    &quot;name&quot;: &quot;hives.slot0.flower_target&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 0: single serviced orchard ID, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      184,
+      185
+    ],
+    &quot;name&quot;: &quot;hives.slot0.distracted&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 0: hive distracted by a nearby lit lamp. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      185,
+      186
+    ],
+    &quot;name&quot;: &quot;hives.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      186,
+      187
+    ],
+    &quot;name&quot;: &quot;hives.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      187,
+      188
+    ],
+    &quot;name&quot;: &quot;hives.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      188,
+      189
+    ],
+    &quot;name&quot;: &quot;hives.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      189,
+      190
+    ],
+    &quot;name&quot;: &quot;hives.slot1.hive_carrier&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 1: person carrying hive, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      190,
+      191
+    ],
+    &quot;name&quot;: &quot;hives.slot1.flower_target&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 1: single serviced orchard ID, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      191,
+      192
+    ],
+    &quot;name&quot;: &quot;hives.slot1.distracted&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 1: hive distracted by a nearby lit lamp. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      192,
+      193
+    ],
+    &quot;name&quot;: &quot;hives.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      193,
+      194
+    ],
+    &quot;name&quot;: &quot;hives.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      194,
+      195
+    ],
+    &quot;name&quot;: &quot;hives.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      195,
+      196
+    ],
+    &quot;name&quot;: &quot;hives.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      196,
+      197
+    ],
+    &quot;name&quot;: &quot;hives.slot2.hive_carrier&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 2: person carrying hive, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      197,
+      198
+    ],
+    &quot;name&quot;: &quot;hives.slot2.flower_target&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 2: single serviced orchard ID, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      198,
+      199
+    ],
+    &quot;name&quot;: &quot;hives.slot2.distracted&quot;,
+    &quot;meaning&quot;: &quot;hives, nearest slot 2: hive distracted by a nearby lit lamp. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      199,
+      200
+    ],
+    &quot;name&quot;: &quot;racks.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      200,
+      201
+    ],
+    &quot;name&quot;: &quot;racks.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      201,
+      202
+    ],
+    &quot;name&quot;: &quot;racks.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      202,
+      203
+    ],
+    &quot;name&quot;: &quot;racks.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      203,
+      204
+    ],
+    &quot;name&quot;: &quot;racks.slot0.rack_load&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: rack fruit units 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      204,
+      205
+    ],
+    &quot;name&quot;: &quot;racks.slot0.rack_quality&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: rack fruit quality 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      205,
+      206
+    ],
+    &quot;name&quot;: &quot;racks.slot0.rack_moved&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: rack moved in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      206,
+      207
+    ],
+    &quot;name&quot;: &quot;racks.slot0.breakage&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 0: rack fruit units broken in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      207,
+      208
+    ],
+    &quot;name&quot;: &quot;racks.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      208,
+      209
+    ],
+    &quot;name&quot;: &quot;racks.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      209,
+      210
+    ],
+    &quot;name&quot;: &quot;racks.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      210,
+      211
+    ],
+    &quot;name&quot;: &quot;racks.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      211,
+      212
+    ],
+    &quot;name&quot;: &quot;racks.slot1.rack_load&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: rack fruit units 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      212,
+      213
+    ],
+    &quot;name&quot;: &quot;racks.slot1.rack_quality&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: rack fruit quality 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      213,
+      214
+    ],
+    &quot;name&quot;: &quot;racks.slot1.rack_moved&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: rack moved in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      214,
+      215
+    ],
+    &quot;name&quot;: &quot;racks.slot1.breakage&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 1: rack fruit units broken in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      215,
+      216
+    ],
+    &quot;name&quot;: &quot;racks.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      216,
+      217
+    ],
+    &quot;name&quot;: &quot;racks.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      217,
+      218
+    ],
+    &quot;name&quot;: &quot;racks.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      218,
+      219
+    ],
+    &quot;name&quot;: &quot;racks.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      219,
+      220
+    ],
+    &quot;name&quot;: &quot;racks.slot2.rack_load&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: rack fruit units 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      220,
+      221
+    ],
+    &quot;name&quot;: &quot;racks.slot2.rack_quality&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: rack fruit quality 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      221,
+      222
+    ],
+    &quot;name&quot;: &quot;racks.slot2.rack_moved&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: rack moved in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      222,
+      223
+    ],
+    &quot;name&quot;: &quot;racks.slot2.breakage&quot;,
+    &quot;meaning&quot;: &quot;racks, nearest slot 2: rack fruit units broken in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      223,
+      224
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      224,
+      225
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      225,
+      226
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      226,
+      227
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      227,
+      228
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.kind&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      228,
+      229
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.fixture_health&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      229,
+      230
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.held&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      230,
+      231
+    ],
+    &quot;name&quot;: &quot;fixtures.slot0.lit&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 0: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      231,
+      232
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      232,
+      233
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      233,
+      234
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      234,
+      235
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      235,
+      236
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.kind&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      236,
+      237
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.fixture_health&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      237,
+      238
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.held&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      238,
+      239
+    ],
+    &quot;name&quot;: &quot;fixtures.slot1.lit&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 1: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      239,
+      240
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      240,
+      241
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      241,
+      242
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      242,
+      243
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      243,
+      244
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.kind&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      244,
+      245
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.fixture_health&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      245,
+      246
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.held&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      246,
+      247
+    ],
+    &quot;name&quot;: &quot;fixtures.slot2.lit&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 2: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      247,
+      248
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      248,
+      249
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      249,
+      250
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      250,
+      251
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      251,
+      252
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.kind&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      252,
+      253
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.fixture_health&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      253,
+      254
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.held&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      254,
+      255
+    ],
+    &quot;name&quot;: &quot;fixtures.slot3.lit&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 3: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      255,
+      256
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.visible&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      256,
+      257
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.entity_id&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      257,
+      258
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.x&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      258,
+      259
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.y&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      259,
+      260
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.kind&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      260,
+      261
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.fixture_health&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      261,
+      262
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.held&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      262,
+      263
+    ],
+    &quot;name&quot;: &quot;fixtures.slot4.lit&quot;,
+    &quot;meaning&quot;: &quot;fixtures, nearest slot 4: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      263,
+      264
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      264,
+      265
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      265,
+      266
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      266,
+      267
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      267,
+      268
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      268,
+      269
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      269,
+      270
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      270,
+      271
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      271,
+      272
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      272,
+      273
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      273,
+      274
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      274,
+      275
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      275,
+      276
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      276,
+      277
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      277,
+      278
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      278,
+      279
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      279,
+      280
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      280,
+      281
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      281,
+      282
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      282,
+      283
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      283,
+      284
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      284,
+      285
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      285,
+      286
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      286,
+      287
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      287,
+      288
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      288,
+      289
+    ],
+    &quot;name&quot;: &quot;public.t&quot;,
+    &quot;meaning&quot;: &quot;completed native transition count&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      289,
+      290
+    ],
+    &quot;name&quot;: &quot;public.done&quot;,
+    &quot;meaning&quot;: &quot;joint episode completion&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      290,
+      291
+    ],
+    &quot;name&quot;: &quot;public.terminated&quot;,
+    &quot;meaning&quot;: &quot;natural completion cause&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      291,
+      292
+    ],
+    &quot;name&quot;: &quot;public.community&quot;,
+    &quot;meaning&quot;: &quot;one-time community pollination milestone already awarded&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      292,
+      297
+    ],
+    &quot;name&quot;: &quot;padding&quot;,
+    &quot;meaning&quot;: &quot;Explicit constant zero padding; contains no additional information.&quot;,
+    &quot;visibility&quot;: &quot;padding&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;villagers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 96,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;actor_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;house&quot;
+        ],
+        &quot;meaning&quot;: &quot;household index 0..11&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried timber 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;basket&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried fruit units 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;quality&quot;
+        ],
+        &quot;meaning&quot;: &quot;basket quality 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;hive&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried hive ID or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;current local message, zero means silence&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;event&quot;
+        ],
+        &quot;meaning&quot;: &quot;accepted action code for the last actual transition; not a success flag&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;recipient&quot;
+        ],
+        &quot;meaning&quot;: &quot;consenting handoff/tool-exchange counterpart ID or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;orchards&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 12,
+    &quot;position&quot;: [
+      &quot;plot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;plot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;plot_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;local water level 0..4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;canopy&quot;
+        ],
+        &quot;meaning&quot;: &quot;tree canopy 0..3; positive blocks tree-cell entry&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fruit&quot;
+        ],
+        &quot;meaning&quot;: &quot;unpicked fruit units 0..8&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;ripe&quot;
+        ],
+        &quot;meaning&quot;: &quot;ripeness 0..8; harvest requires at least 6&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;variety&quot;
+        ],
+        &quot;meaning&quot;: &quot;original 0 or grafted 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pollination&quot;
+        ],
+        &quot;meaning&quot;: &quot;active hive contributions 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;tree or lock structural health 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;valve&quot;
+        ],
+        &quot;meaning&quot;: &quot;diversion/irrigation switch state&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sales&quot;
+        ],
+        &quot;meaning&quot;: &quot;household cumulative fruit units sold 0..512&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;orchard grew in last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pruned&quot;
+        ],
+        &quot;meaning&quot;: &quot;orchard pruned in last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;hives&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 12,
+    &quot;position&quot;: [
+      &quot;hive_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;hive_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;hive_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;hive_carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;person carrying hive, or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;flower_target&quot;
+        ],
+        &quot;meaning&quot;: &quot;single serviced orchard ID, or -1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;distracted&quot;
+        ],
+        &quot;meaning&quot;: &quot;hive distracted by a nearby lit lamp&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;racks&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 12,
+    &quot;position&quot;: [
+      &quot;rack_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;rack_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;rack_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;rack_load&quot;
+        ],
+        &quot;meaning&quot;: &quot;rack fruit units 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rack_quality&quot;
+        ],
+        &quot;meaning&quot;: &quot;rack fruit quality 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rack_moved&quot;
+        ],
+        &quot;meaning&quot;: &quot;rack moved in last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;breakage&quot;
+        ],
+        &quot;meaning&quot;: &quot;rack fruit units broken in last transition&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;fixtures&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 36,
+    &quot;position&quot;: [
+      &quot;fixture_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;fixture_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;fixture_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;fixture type: 0 footbridge,1 cold-store door,2 lamp&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fixture_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;fixture health 0..3; bridge at 3 needs no brace&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;held&quot;
+        ],
+        &quot;meaning&quot;: &quot;currently held brake, brace or door&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;lit&quot;
+        ],
+        &quot;meaning&quot;: &quot;lamp switched on&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi251&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;source_sha256&quot;: &quot;0009f3127bcf22d1817749f1b520c0c3cb48e0ae37e4c1107d433518ebc2e595&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 96,
+    &quot;observation_size&quot;: 297,
+    &quot;num_actions&quot;: 20,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 5.362361431121826
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.3785207271575928
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.9867923259735107
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.091667652130127
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.7508647441864014
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.00577092170715332
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.491607904434204
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.9103124141693115
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 4.492063760757446
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 13.208630561828613
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 36.2678017616272,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;episode_steps&quot;: 896,
+  &quot;scripted_random_returns&quot;: [
+    -2.19236844452098,
+    -2.177368444390595,
+    -2.087368443608284,
+    -2.1323684453964233,
+    -2.1233684453181922,
+    -2.183368444442749,
+    -2.0693684411235154,
+    -2.123368441592902,
+    -2.1159026883542538,
+    -2.0949026881717145,
+    -2.118902686983347,
+    -2.106902686879039,
+    -2.0919026867486537,
+    -2.1909026876091957,
+    -2.103902686852962,
+    -2.0949026867747307,
+    -2.24694596324116,
+    -2.1869459627196193,
+    -2.2259459630586207,
+    -2.1899459627456963,
+    -2.1299459622241557,
+    -2.2259459630586207,
+    -2.237945963162929,
+    -2.156945962458849,
+    -2.1975205782800913,
+    -2.1555205769836903,
+    -2.1555205793119967,
+    -2.15852057794109,
+    -2.203520579729229,
+    -2.1195205776020885,
+    -2.092520577367395,
+    -2.095520577393472,
+    -2.029145131353289,
+    -2.0501451301388443,
+    -2.0021451311185956,
+    -1.9751451294869184,
+    -2.047145130112767,
+    -2.059145131614059,
+    -2.0831451304256916,
+    -1.9811451309360564,
+    -1.9798912652768195,
+    -2.0218912633135915,
+    -2.0128912571817636,
+    -1.9768912652507424,
+    -1.9708912568166852,
+    -2.042891265824437,
+    -2.0398912597447634,
+    -1.9498912650160491,
+    -2.00051047001034,
+    -1.97651046840474,
+    -2.051510469056666,
+    -2.072510469239205,
+    -2.045510469004512,
+    -1.9555104682222009,
+    -1.9735104711726308,
+    -2.0485104704275727,
+    -2.121034500654787,
+    -2.232034501619637,
+    -2.1900345012545586,
+    -2.1720345024950802,
+    -2.1750345011241734,
+    -2.1780345011502504,
+    -2.1990345013327897,
+    -2.2050345013849437,
+    -2.2710000197403133,
+    -2.1870000190101564,
+    -2.226000019349158,
+    -2.238000019453466,
+    -2.3040000200271606,
+    -2.3010000200010836,
+    -2.2800000198185444,
+    -2.253000019583851,
+    -2.086784327402711,
+    -2.023784328252077,
+    -2.089784327428788,
+    -2.1107843229547143,
+    -2.0597843285650015,
+    -2.023784328252077,
+    -2.0537843285128474,
+    -2.110784329008311,
+    -2.0321818231604993,
+    -2.062181832268834,
+    -2.095181823708117,
+    -2.0681818234734237,
+    -2.083181823603809,
+    -2.0861818324774504,
+    -2.0831818324513733,
+    -2.1161818238906562,
+    -2.256000019609928,
+    -2.259000019636005,
+    -2.2200000192970037,
+    -2.259000019636005,
+    -2.334000020287931,
+    -2.247000019531697,
+    -2.2170000192709267,
+    -2.235000019427389
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 26,
+  &quot;render_roles_checked&quot;: 96
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 251,
+  &quot;key&quot;: &quot;gi251&quot;,
+  &quot;title&quot;: &quot;Orchard Lantern Commons&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 96,
+    &quot;observation_size&quot;: 297,
+    &quot;num_actions&quot;: 20,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;0009f3127bcf22d1817749f1b520c0c3cb48e0ae37e4c1107d433518ebc2e595&quot;,
+  &quot;manifest_sha256&quot;: &quot;825ed2fee717d4962a8356d5fb8f5f3acb0b311b8cbd9608208ece688d40ac47&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;0009f3127bcf22d1817749f1b520c0c3cb48e0ae37e4c1107d433518ebc2e595&quot;,
+      &quot;bytes&quot;: 19605,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00251/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;825ed2fee717d4962a8356d5fb8f5f3acb0b311b8cbd9608208ece688d40ac47&quot;,
+      &quot;bytes&quot;: 115961,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00251/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;d2651d75435d0e8de6c95ee7f0e4ad532546210adf050231d32cfda9f52b909d&quot;,
+      &quot;bytes&quot;: 88756,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00251/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;331b74034c7ac1fa0a1a9fd7eb73fc6b348e47382de0f16f2039d592fbb3dab1&quot;,
+      &quot;bytes&quot;: 13278,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00251/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;9897e5f0940fdc5b308b601f71b687578e081f4d282857a2cad1dccf7b8d0dbc&quot;,
+      &quot;bytes&quot;: 46920,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00251/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi251">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

@@ -1,0 +1,276 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "644e8a7b3ff57a0ef176b7eb23e05748452733331f04a1f279793e500c796109",
+  "manifest_sha256": "fca034b2982bf76f3f20c8627c6c1104565fb5892fdf92ed9ca4a870e0f04bf9",
+  "title": "Harbor Barter and Complementary Cargo",
+  "rules": [
+    "Six individual cargo items exist, two of each type. Every boat starts with two items and can carry at most two.",
+    "Each boat privately requires two different types. Missing types are permuted at reset, preserving two demands per type.",
+    "Advertise a held type for four ticks. A trade needs live offers and both adjacent boats explicitly accepting each other.",
+    "Trades swap one item each and conserve item identities. Refusal, expiration or withdrawal prevents the trade.",
+    "Entering a shallow approach forces one recovery tick before the next move.",
+    "Old dock leases govern movement. New three-tick reservations apply after movement; simultaneous requests use cyclic priority.",
+    "Moves into occupied old cells or contested destinations fail. Completed boats depart and have only wait.",
+    "Delivery consumes a demanded item into a permanent dock ledger. Individual reward is six per delivery, three on completion and minus one per active turn."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "water channel"
+        },
+        {
+          "value": 1,
+          "meaning": "pier or boundary"
+        },
+        {
+          "value": 2,
+          "meaning": "shallow approach with recovery tick"
+        },
+        {
+          "value": 3,
+          "meaning": "shared delivery dock"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "boats",
+      "glyph": "agent",
+      "label": "Cargo boats",
+      "color": "#0284C7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Remaining movement recovery ticks"
+        },
+        {
+          "state_path": [
+            "offer"
+          ],
+          "label": "Advertised type or minus one"
+        },
+        {
+          "state_path": [
+            "offer_ttl"
+          ],
+          "label": "Offer validity ticks remaining"
+        },
+        {
+          "state_path": [
+            "inventory_count"
+          ],
+          "label": "Physical items aboard, maximum two"
+        },
+        {
+          "state_path": [
+            "finished"
+          ],
+          "label": "Private delivery contract completed; boat has departed"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Six conserved cargo items",
+      "color": "#D97706",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_type"
+          ],
+          "label": "Immutable cargo type zero, one or two"
+        },
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "label": "Current boat id or minus one if delivered"
+        },
+        {
+          "state_path": [
+            "cargo_delivered_by"
+          ],
+          "label": "Credited boat id or minus one if undelivered"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "glyph": "flag",
+      "label": "Shared delivery docks",
+      "color": "#7C3AED",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "dock_owner"
+          ],
+          "label": "Lease holder boat id or minus one"
+        },
+        {
+          "state_path": [
+            "dock_timer"
+          ],
+          "label": "Lease transitions remaining"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "dock_owner"
+      ],
+      "meaning": "Public current dock lease holders",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "dock_timer"
+      ],
+      "meaning": "Public current lease countdown",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "cargo_total"
+      ],
+      "meaning": "Six physical items remain in the world, aboard or delivered",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move south"
+    },
+    {
+      "id": 3,
+      "label": "Move west"
+    },
+    {
+      "id": 4,
+      "label": "Move east"
+    },
+    {
+      "id": 5,
+      "label": "Advertise type zero"
+    },
+    {
+      "id": 6,
+      "label": "Advertise type one"
+    },
+    {
+      "id": 7,
+      "label": "Advertise type two"
+    },
+    {
+      "id": 8,
+      "label": "Withdraw offer"
+    },
+    {
+      "id": 9,
+      "label": "Accept next-id boat"
+    },
+    {
+      "id": 10,
+      "label": "Accept previous-id boat"
+    },
+    {
+      "id": 11,
+      "label": "Reserve nearest eligible dock"
+    },
+    {
+      "id": 12,
+      "label": "Deliver one demanded item"
+    },
+    {
+      "id": 13,
+      "label": "Release owned dock leases"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Public t, joint done, conserved cargo total",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        13
+      ],
+      "meaning": "Self id, x, y, movement cooldown, three private demand bits, three private delivered counts",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        76
+      ],
+      "meaning": "Public 7 by 9 static harbor terrain, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        100
+      ],
+      "meaning": "Three boat records: visible, x, y, cooldown, offered type, offer TTL, inventory count, finished; Manhattan-three local visibility; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        100,
+        136
+      ],
+      "meaning": "Six cargo records: visible, x, y, immutable type, owner, delivered-by id; Manhattan-three local visibility; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        146
+      ],
+      "meaning": "Two public dock records: visible, x, y, lease owner, lease timer",
+      "visibility": "public"
+    }
+  ]
+}

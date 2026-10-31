@@ -1,0 +1,791 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00210",
+  "source_sha256": "be6bf2ba2aaccce15d7be4c910873bebcee93b51b5b010b62ad910216b91617c",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 167,
+  "num_actions": 14,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -4,
+  "observation_high": 160,
+  "reward_low": -2.0,
+  "reward_high": 4.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West grid keeper; all native actions available"
+    },
+    {
+      "id": "agent_1",
+      "role": "Central cable runner; all native actions available"
+    },
+    {
+      "id": "agent_2",
+      "role": "East ore sorter; all native actions available"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index eligible loose item within one tile; hands must be empty"
+    },
+    {
+      "id": 6,
+      "label": "Drop held item on current tile"
+    },
+    {
+      "id": 7,
+      "label": "Toggle closest branch switch within one tile"
+    },
+    {
+      "id": 8,
+      "label": "Crank generator within one tile: one fuel gives six charge if charge <= 6"
+    },
+    {
+      "id": 9,
+      "label": "Install held cable at closest unwired branch within one tile"
+    },
+    {
+      "id": 10,
+      "label": "Repair closest blown branch with held fuse within one tile"
+    },
+    {
+      "id": 11,
+      "label": "Hold manual lift bypass open for three ticks from within one tile"
+    },
+    {
+      "id": 12,
+      "label": "Sort held ore beside powered sorter branch 2"
+    },
+    {
+      "id": 13,
+      "label": "Deliver sorted held ore beside depot"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "branch_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "branch_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "branch_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "branch_on"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wired"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fuse"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "powered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plant_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plant_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plant_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "item_pos"
+      ],
+      "shape": [
+        10,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_active"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "item_visible"
+      ],
+      "shape": [
+        3,
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "kind"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "holder"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "sorted"
+      ],
+      "shape": [
+        10
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "charge"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bypass"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trips"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable block floor",
+          "color": "#807564"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid quarry wall",
+          "color": "#4F535D"
+        },
+        {
+          "value": 2,
+          "meaning": "Lift gate; powered branch 1 or manual bypass permits crossing",
+          "color": "#BD9B45"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "load"
+          ],
+          "meaning": "Held item index; -1 empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "circuits",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "branch_pos"
+      ],
+      "active": [
+        "branch_active"
+      ],
+      "visibility": [
+        "branch_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "branch_on"
+          ],
+          "meaning": "Switch requested on",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "wired"
+          ],
+          "meaning": "Installed cable connection",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "fuse"
+          ],
+          "meaning": "Fuse intact",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "powered"
+          ],
+          "meaning": "Supply available this interval",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "plant_pos"
+      ],
+      "active": [
+        "plant_active"
+      ],
+      "visibility": [
+        "plant_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "materials",
+      "kind": "resource",
+      "count": 10,
+      "position": [
+        "item_pos"
+      ],
+      "active": [
+        "item_active"
+      ],
+      "visibility": [
+        "item_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "kind"
+          ],
+          "meaning": "0 ore, 1 cable, 2 fuse",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "meaning": "-1 ground, >=0 actor, -2 consumed, -3 delivered",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "sorted"
+          ],
+          "meaning": "Ore sorted",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Sorted ore deposited; cumulative out of six",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "trips"
+      ],
+      "meaning": "Trunk overload trips; cumulative",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "charge"
+      ],
+      "meaning": "Shared capacitor charge, 0..12",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "bypass"
+      ],
+      "meaning": "Manual gate time remaining",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        67
+      ],
+      "meaning": "terrain; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        73
+      ],
+      "meaning": "Public circuit positions in index order lamp, lift, sorter; x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        76
+      ],
+      "meaning": "Three public switch demands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "Three public cable installed flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        82
+      ],
+      "meaning": "Three public fuse integrity flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        85
+      ],
+      "meaning": "Three public current supply flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        89
+      ],
+      "meaning": "Public generator then depot positions; x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        90
+      ],
+      "meaning": "Remaining shared generator fuel units, 0..9",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        91
+      ],
+      "meaning": "Capacitor stored charge, 0..12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        92
+      ],
+      "meaning": "Manual gate bypass ticks remaining, 0..3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        93
+      ],
+      "meaning": "Sorted ore already deposited, 0..6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        94
+      ],
+      "meaning": "Cumulative trunk overload count; at most t",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        95
+      ],
+      "meaning": "Own immutable actor index, 0..2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        95,
+        107
+      ],
+      "meaning": "Three records: visible, x, y, held item index; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        107,
+        167
+      ],
+      "meaning": "Ten item records: visible, x, y, kind, holder, sorted; hidden values -1",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Transport and sort six finite ore blocks, then carry them to the west depot while managing a finite electric grid.",
+    "natural_termination": "Natural completion when all six ore blocks have been delivered. Otherwise truncate at tick 160.",
+    "interaction": "Toggling a branch allocates shared capacitor charge; demand above trunk capacity trips the highest-demand branch. Lamp power changes other crews' visible objects, while lift and sorter power alter transport and processing opportunities.",
+    "observation_access": "The map, clock, terminal causes, fixed circuit/facility positions and all circuit/fuel/charge/bypass/delivery indicators are public. Each crew sees itself and agents/items within Manhattan radius 1; radius expands to 4 if it is within four tiles of the powered lamp. Visibility is recomputed after each transition. Hidden agent/item records are -1 with a separate visibility bit. Inventory is shown only on visible entities. No hidden object data appears in event channels."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 160
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "branch_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "plant_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "item_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "charge"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel"
+      ],
+      "low": 0,
+      "high": 9
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "holder"
+      ],
+      "low": -3,
+      "high": 2
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

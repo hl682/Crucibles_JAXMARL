@@ -1,0 +1,1511 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00219",
+  "source_sha256": "34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 16,
+  "observation_size": 909,
+  "num_actions": 22,
+  "max_steps": 384,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -5,
+  "observation_high": 384,
+  "reward_low": -5,
+  "reward_high": 40,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "actor_00",
+      "role": "Knifehouse chef"
+    },
+    {
+      "id": "actor_01",
+      "role": "Knifehouse porter"
+    },
+    {
+      "id": "actor_02",
+      "role": "Knifehouse washer"
+    },
+    {
+      "id": "actor_03",
+      "role": "Knifehouse stoker"
+    },
+    {
+      "id": "actor_04",
+      "role": "Steamroom chef"
+    },
+    {
+      "id": "actor_05",
+      "role": "Steamroom porter"
+    },
+    {
+      "id": "actor_06",
+      "role": "Steamroom washer"
+    },
+    {
+      "id": "actor_07",
+      "role": "Steamroom stoker"
+    },
+    {
+      "id": "actor_08",
+      "role": "Garnish Hall chef"
+    },
+    {
+      "id": "actor_09",
+      "role": "Garnish Hall porter"
+    },
+    {
+      "id": "actor_10",
+      "role": "Garnish Hall washer"
+    },
+    {
+      "id": "actor_11",
+      "role": "Garnish Hall stoker"
+    },
+    {
+      "id": "actor_12",
+      "role": "Tray Corner chef"
+    },
+    {
+      "id": "actor_13",
+      "role": "Tray Corner porter"
+    },
+    {
+      "id": "actor_14",
+      "role": "Tray Corner washer"
+    },
+    {
+      "id": "actor_15",
+      "role": "Tray Corner stoker"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait; recover two energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Take local pantry's raw flavour into empty hands"
+    },
+    {
+      "id": 6,
+      "label": "Process carried food at its next equipment station, chef tool"
+    },
+    {
+      "id": 7,
+      "label": "Place carried item onto nearest empty adjacent conveyor cell"
+    },
+    {
+      "id": 8,
+      "label": "Pick item from nearest occupied adjacent conveyor cell"
+    },
+    {
+      "id": 9,
+      "label": "Hand carried item to lowest-ID adjacent empty-handed actor"
+    },
+    {
+      "id": 10,
+      "label": "Wash carried dirty tray at station 2, brush and shared water"
+    },
+    {
+      "id": 11,
+      "label": "Take clean tray from station 2 rack"
+    },
+    {
+      "id": 12,
+      "label": "Return carried clean tray to station 3 plating rack"
+    },
+    {
+      "id": 13,
+      "label": "Take one fuel from the central fuel pile"
+    },
+    {
+      "id": 14,
+      "label": "Stoke station 1 with carried fuel, bellows tool"
+    },
+    {
+      "id": 15,
+      "label": "Toggle adjacent junction between bypass and holding spur"
+    },
+    {
+      "id": 16,
+      "label": "Offer plated warm dish at adjacent service counter"
+    },
+    {
+      "id": 17,
+      "label": "Discard food; preserve its tray as dirty when plated"
+    },
+    {
+      "id": 18,
+      "label": "Tell adjacent actors the current home-kitchen order"
+    },
+    {
+      "id": 19,
+      "label": "Exchange tools with lowest-ID adjacent actor"
+    },
+    {
+      "id": 20,
+      "label": "Rest; recover five energy"
+    },
+    {
+      "id": 21,
+      "label": "Reheat cooked or later food at station 1, chef tool and fuel"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        19,
+        19
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        16,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        16,
+        16
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "kitchen"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flavour"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "warmth"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_type"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        16,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trays"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pantry_stock"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_pos"
+      ],
+      "shape": [
+        28,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_active"
+      ],
+      "shape": [
+        28
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "belt_visible"
+      ],
+      "shape": [
+        16,
+        28
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "belt_item"
+      ],
+      "shape": [
+        28
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_flavour"
+      ],
+      "shape": [
+        28
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_warmth"
+      ],
+      "shape": [
+        28
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_flow"
+      ],
+      "shape": [
+        28,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "junction_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "junction_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "junction_visible"
+      ],
+      "shape": [
+        16,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "route"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "service_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_visible"
+      ],
+      "shape": [
+        16,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "deadline"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "notes"
+      ],
+      "shape": [
+        16,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "note_life"
+      ],
+      "shape": [
+        16,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "utility_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "utility_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "utility_visible"
+      ],
+      "shape": [
+        16,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel_stock"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "served"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wasted"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "processed"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "handed"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "belt_moved"
+      ],
+      "shape": [
+        28
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reward_parts"
+      ],
+      "shape": [
+        16,
+        5
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      18,
+      18
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Festival square floor",
+          "color": "#E4DDC7"
+        },
+        {
+          "value": 1,
+          "meaning": "Knifehouse preparation floor",
+          "color": "#DDB18E"
+        },
+        {
+          "value": 2,
+          "meaning": "Steamroom floor",
+          "color": "#9FBFCD"
+        },
+        {
+          "value": 3,
+          "meaning": "Garnish Hall floor",
+          "color": "#ADC795"
+        },
+        {
+          "value": 4,
+          "meaning": "Tray Corner floor",
+          "color": "#D1B3C6"
+        },
+        {
+          "value": 5,
+          "meaning": "Conveyor machinery; workers cannot stand on it",
+          "color": "#8F99A5"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "staff",
+      "kind": "agent",
+      "count": 16,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "kitchen"
+          ],
+          "meaning": "Kitchen 0 Knifehouse, 1 Steamroom, 2 Garnish Hall, 3 Tray Corner",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "meaning": "Tool 1 chef knife, 2 insulated porter grip, 3 wash brush, 4 bellows",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "meaning": "Hands: 0 empty, 1 raw, 2 chopped, 3 steamed, 4 garnished, 5 plated, 6 dirty tray, 7 tray, 8 fuel",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "flavour"
+          ],
+          "meaning": "Food flavour 1-4; zero when no food identity is held",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "warmth"
+          ],
+          "meaning": "Hot food remaining lifetime; reheating resets to 64 before cooling",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "meaning": "Energy 0-16",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "equipment",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_type"
+          ],
+          "meaning": "Station 0 chop, 1 steam, 2 garnish and sink, 3 plate",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "meaning": "Boiler fuel; only station 1 consumes and accepts it",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "trays"
+          ],
+          "meaning": "Clean trays; sink rack starts at station 2, plating rack at station 3",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "pantry_stock"
+          ],
+          "meaning": "Local raw stock; station index plus one is its flavour",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "conveyor",
+      "kind": "object",
+      "count": 28,
+      "position": [
+        "belt_pos"
+      ],
+      "active": [
+        "belt_active"
+      ],
+      "visibility": [
+        "belt_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "belt_item"
+          ],
+          "meaning": "Conveyor item code uses the same dictionary as actor cargo",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "belt_flavour"
+          ],
+          "meaning": "Carried food flavour on the cell, zero for nonfood",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "belt_warmth"
+          ],
+          "meaning": "Remaining hot-food lifetime on the cell",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "belt_flow"
+          ],
+          "meaning": "Current successor displacement in x,y; zero means held at a spur",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "junctions",
+      "kind": "gate",
+      "count": 4,
+      "position": [
+        "junction_pos"
+      ],
+      "active": [
+        "junction_active"
+      ],
+      "visibility": [
+        "junction_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "route"
+          ],
+          "meaning": "0 bypass plus spur release, 1 divert into the holding spur",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "service_counters",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "service_pos"
+      ],
+      "active": [
+        "order_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "meaning": "Public order deadline; nominal reset to 96, then end-step decrement",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "order_cards",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "service_pos"
+      ],
+      "active": [
+        "order_active"
+      ],
+      "visibility": [
+        "order_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "order"
+          ],
+          "meaning": "Current requested flavour 1-4; foreign spoken reports may be stale",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "utility_pos"
+      ],
+      "active": [
+        "utility_active"
+      ],
+      "visibility": [
+        "utility_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Actual matched warm services",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "processed"
+      ],
+      "meaning": "Actual intermediate processing stages",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handed"
+      ],
+      "meaning": "Physical item handoffs",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "wasted"
+      ],
+      "meaning": "Food waste count in this native step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "belt_moved"
+      ],
+      "meaning": "Occupied belt source cells that moved",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "water"
+      ],
+      "meaning": "Shared washwater level",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "fuel_stock"
+      ],
+      "meaning": "Central fuel supply level",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Self actor ID 0-15.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Cached order flavours for kitchens 0-3. Own kitchen is current; other entries contain only a nearby actor's last spoken report, or zero when expired.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        9
+      ],
+      "meaning": "Remaining report lifetimes. Own kitchen is always 12; spoken foreign reports count down after each step and can become stale before expiry.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "t: Native step clock; nonterminal transitions increment once. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "done: Joint terminal flag, true only at the declared cap in this continuing world. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "meaning": "terminated: Natural termination cause; always false under this continuing-world rule. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        13
+      ],
+      "meaning": "truncated: Cap cause with natural-termination priority; preserved after done. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        374
+      ],
+      "meaning": "terrain: Row-major native tile map with values in the world legend. Shape [19, 19], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        374,
+        406
+      ],
+      "meaning": "pos: Actor coordinates in ordered actor-ID order, x then y. Shape [16, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        406,
+        422
+      ],
+      "meaning": "kitchen: Kitchen 0 Knifehouse, 1 Steamroom, 2 Garnish Hall, 3 Tray Corner Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        422,
+        438
+      ],
+      "meaning": "tool: Tool 1 chef knife, 2 insulated porter grip, 3 wash brush, 4 bellows Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        438,
+        454
+      ],
+      "meaning": "cargo: Hands: 0 empty, 1 raw, 2 chopped, 3 steamed, 4 garnished, 5 plated, 6 dirty tray, 7 tray, 8 fuel Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        454,
+        470
+      ],
+      "meaning": "flavour: Food flavour 1-4; zero when no food identity is held Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        470,
+        486
+      ],
+      "meaning": "warmth: Hot food remaining lifetime; reheating resets to 64 before cooling Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        486,
+        502
+      ],
+      "meaning": "energy: Energy 0-16 Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        502,
+        510
+      ],
+      "meaning": "station_pos: Actual x,y coordinates for Four distinct equipment stations and local pantries in entity-index order. Shape [4, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        510,
+        514
+      ],
+      "meaning": "station_type: Station 0 chop, 1 steam, 2 garnish and sink, 3 plate Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        514,
+        518
+      ],
+      "meaning": "fuel: Boiler fuel; only station 1 consumes and accepts it Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        518,
+        522
+      ],
+      "meaning": "trays: Clean trays; sink rack starts at station 2, plating rack at station 3 Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        522,
+        526
+      ],
+      "meaning": "pantry_stock: Local raw stock; station index plus one is its flavour Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        526,
+        582
+      ],
+      "meaning": "belt_pos: Actual x,y coordinates for Twenty-four ring cells and four one-cell holding spurs in entity-index order. Shape [28, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        582,
+        610
+      ],
+      "meaning": "belt_item: Conveyor item code uses the same dictionary as actor cargo Shape [28], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        610,
+        638
+      ],
+      "meaning": "belt_flavour: Carried food flavour on the cell, zero for nonfood Shape [28], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        638,
+        666
+      ],
+      "meaning": "belt_warmth: Remaining hot-food lifetime on the cell Shape [28], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        666,
+        722
+      ],
+      "meaning": "belt_flow: Current successor displacement in x,y; zero means held at a spur Shape [28, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        722,
+        730
+      ],
+      "meaning": "junction_pos: Actual x,y coordinates for Physical junction switches at ring corners in entity-index order. Shape [4, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        730,
+        734
+      ],
+      "meaning": "route: 0 bypass plus spur release, 1 divert into the holding spur Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        734,
+        742
+      ],
+      "meaning": "service_pos: Actual x,y coordinates for Public service counters and deadline clocks in entity-index order. Shape [4, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        742,
+        746
+      ],
+      "meaning": "deadline: Public order deadline; nominal reset to 96, then end-step decrement Shape [4], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        746,
+        750
+      ],
+      "meaning": "utility_pos: Actual x,y coordinates for Fuel pile at index 0; piped washwater tank at index 1 in entity-index order. Shape [2, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        750,
+        751
+      ],
+      "meaning": "water: Shared piped washwater, capacity 24; one unit renews every six steps. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        751,
+        752
+      ],
+      "meaning": "fuel_stock: Central fuel pile, capacity 16; one fuel renews every twelve steps. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        752,
+        768
+      ],
+      "meaning": "served: Per-actor completed matching warm order events, not partial processing. Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        768,
+        769
+      ],
+      "meaning": "wasted: One-element public count of discarded and expired food units this step. Shape [1], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        769,
+        785
+      ],
+      "meaning": "processed: Per-actor successful preparation stages this step; no completion reward. Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        785,
+        801
+      ],
+      "meaning": "handed: Per-actor physical carried-item handoffs this step. Shape [16], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        801,
+        829
+      ],
+      "meaning": "belt_moved: Per-source conveyor-cell movement flags this step. Shape [28], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        829,
+        909
+      ],
+      "meaning": "reward_parts: Columns: common completed service, recipient kitchen, serving actor, effort/resource cost, waste/wrong/late cost. Shape [16, 5], row-major flattening.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Keep four kitchens serving their own changing festival orders by transporting food through distinct equipment stages, protecting heat, fueling the shared boiler and returning reusable trays through hands or a finite routed conveyor.",
+    "natural_termination": "No natural success or joint-failure terminal. This is a continuing finite world. H=384 truncates the observation window, not a success event; done inputs are absorbing.",
+    "interaction": "A dish requires different equipment in four locations. Route switches and occupancy change another kitchen's item delay and freshness. Plating removes a shared clean tray until a served or expired dish's dirty tray is washed and returned. Physical reports reveal another kitchen's order for a limited time; insulated porter tools alter hot-food transport timing and can be exchanged.",
+    "observation_access": "The map, all physical staff cargo, stations, belt occupancy/direction, fuel/water levels, service clocks, public events and reward components are public. Current order flavour is directly visible only to the four actors belonging to that kitchen: order_visible is the kitchen-equality mask. Each observation adds only that actor's own notes and note_life rows. Speaking transfers the speaker's current home order to adjacent actors; foreign notes expire and can disagree with a changed live order. Legal serving masks do not test hidden flavour equality. A full-state/debug view must be labelled separately."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "pos"
+      ],
+      "low": 0,
+      "high": 18
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 384
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cargo"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "flavour"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "warmth"
+      ],
+      "low": 0,
+      "high": 64
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "energy"
+      ],
+      "low": 0,
+      "high": 16
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tool"
+      ],
+      "low": 1,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "trays"
+      ],
+      "low": 0,
+      "high": 16
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "pantry_stock"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "belt_item"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "belt_flavour"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "belt_warmth"
+      ],
+      "low": 0,
+      "high": 64
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "route"
+      ],
+      "low": 0,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "order"
+      ],
+      "low": 1,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "deadline"
+      ],
+      "low": 1,
+      "high": 96
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "notes"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "note_life"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "water"
+      ],
+      "low": 0,
+      "high": 24
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel_stock"
+      ],
+      "low": 0,
+      "high": 16
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wasted"
+      ],
+      "low": 0,
+      "high": 60
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "reward_components": [
+    "Shared service: +0.5 to every actor per actual matching warm plated delivery",
+    "Recipient kitchen: +1.5 to every member of the counter's kitchen per completed order",
+    "Serving actor: +2.0 per completed order",
+    "Effort/resources: -0.01 per move or non-rest interaction attempt, and -0.03 per wash, reheat or steaming event",
+    "Quality/timing: -0.4 to the actor for an unmatched or cold offered plate, -0.05 to all per wasted food, and -0.3 to each member of a kitchen whose deadline expired"
+  ],
+  "reward_bound_derivation": "At most 16 actors can serve per step, so any actor receives at most 16*0.5 shared, 16*1.5 recipient-kitchen and 2 personal reward: 34. A deliberately loose waste upper count is 16 discards + 16 carried expiries + 28 belt expiries = 60, yielding at worst -3 shared waste, -0.4 wrong service, -0.3 local deadline and -0.04 effort/resource cost. Therefore [-5,40] encloses the native reward. Stage, report, utility and conveyor values are bounded by 64 or less, service clocks by 96 and native t by 384; reward components fit the declared observation bounds [-5,384].",
+  "human_control": {
+    "native_actions": "int32[16]",
+    "native_observations": "float32[16,909]",
+    "transition": "GeneratedEnv.raw_step",
+    "selectable_actor_ids": [
+      "actor_00",
+      "actor_01",
+      "actor_02",
+      "actor_03",
+      "actor_04",
+      "actor_05",
+      "actor_06",
+      "actor_07",
+      "actor_08",
+      "actor_09",
+      "actor_10",
+      "actor_11",
+      "actor_12",
+      "actor_13",
+      "actor_14",
+      "actor_15"
+    ],
+    "single_or_multiple_actor_takeover": "Assign any subset of joint-action components at native step boundaries; unassigned components come from policies or explicit waits.",
+    "group_state_path": [
+      "kitchen"
+    ],
+    "camera_hint": "Use actual selected actor coordinates; retain overview and labelled group IDs.",
+    "separate_browser_dynamics": false,
+    "frontend_implemented_by_author": false
+  },
+  "author_evidence_status": "AUTHORED_NOT_EXECUTED"
+}

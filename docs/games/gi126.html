@@ -1,0 +1,682 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>守住桥跨 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI126 / SPATIAL</p><h1>守住桥跨</h1><p class="lead">建桥与维持支撑的角色互相配合，为伙伴保留桥面与通行机会。</p><div class="stats"><span>3 agents</span><span>13 actions</span><span>96 observation columns</span><span>96 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi126.gif" alt="Original saved demonstration gi126"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi126.gif" alt="Actual verification episode gi126"></section><section><h2>Run this game</h2><pre>crucibles play --game 126</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Deliver each worker&#x27;s personal cargo to its exact opposite-bank flag, while maintaining shared crossing structures.&quot;,
+  &quot;natural_termination&quot;: &quot;All three cargo deliveries are recorded, or all three beams are broken. Otherwise truncate at 96 nonterminal steps.&quot;,
+  &quot;interaction&quot;: &quot;Both ends of a placed beam need a pin or a worker holding that exact endpoint on this tick. With any temporary end the beam carries one river occupant; with both ends pinned it carries two. Unsupported or overloaded occupied beams break, and workers on unsafe river cells return home. Holdings prevent movement that turn; pins and beams have unique persistent custody.&quot;,
+  &quot;observation_access&quot;: &quot;All entity positions and declared attributes are public. Role identity is self information. Fixed maps, constant labels and redundant derived geometry add no hidden information. Only native observations and legal masks enter a learner.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 4. Observability: fully_observable.</p></section><section><h2>Rules</h2><ol><li>Each role carries personal cargo to its opposite-bank flag. Cargo delivery is automatic at that exact cell.</li><li>Pick and place one beam per worker. Horizontal and vertical orientation changes the actual three-cell coverage and endpoint positions.</li><li>Both beam ends need installed pins or workers choosing Hold/Brace at the exact endpoint. A temporary bridge supports one river occupant; two pins support two.</li><li>New unsupported river entries are blocked. Releasing an occupied bridge or overloading it breaks the beam and returns exposed workers, with carried materials, home.</li><li>Bank cells allow co-location. Resources resolve in rotating role order. Installed pins stay attached even after a beam breaks.</li><li>All state used in the scene is public. Only an independent real replay can establish whether a proposed construction script works.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Bridgewrights: Hold the Span
+
+Status: AUTHORED_NOT_EXECUTED. This is train-only initial source attempt 00, not a replay, animation, training result or accepted scientific finding.
+
+The river occupies x=4 on a 9 by 7 grid. Three workers start on opposite banks with personal cargo; three beams and four support pins are the entire material stock. A beam has status 0 loose, 1 carried, 2 placed or 3 broken. Each worker may carry at most one beam and one pin in addition to personal cargo. Picking uses Manhattan distance at most one and the lowest material index. For simultaneous material requests, role order rotates with t. Place chooses a one-cell offset toward the river for a horizontal beam, or toward the middle row for a vertical beam; both endpoints must be in bounds and no other placed beam may have the same center. The three-cell geometry, not a cosmetic marker, defines traversable river coverage.
+
+Pins attach to unpinned endpoints on dry ground within one cell of the installing worker; endpoints are indexed negative-axis then positive-axis. Installed pins never re-enter the loose inventory and stay attached to broken beams. Holding is evaluated from exact endpoint occupancy before movement. Actions 8 and 9 are deliberately equivalent Brace/Hold requests; action 12 is a cargo-preserving Wait alias. The latest support flags record that step&#x27;s support calculation. After a fall, an old held-end flag does not promise support on the next step; the kernel recalculates it from current positions and actions. Only pins or current holders support a beam. Dry bank cells permit co-location. A bridge supported temporarily has river-load capacity one; a fully pinned bridge has capacity two. Every covered bridge bears the full occupant count; overlapping coverage is not extra load sharing. Entry onto river cells without currently supported coverage is blocked. Releasing an occupied span or overloading a supported one breaks it, and any worker lacking safe river coverage returns to that worker&#x27;s own home. Carried materials follow their owner home. Cargo already delivered stays delivered.
+
+A temporary crossing exchanges two workers&#x27; action turns for a third&#x27;s travel; permanent pins exchange retrieval and installation time for later independent crossing. Building one shared route versus separating upper and lower routes, using one pin plus a helper versus spending two pins, and deciding whose cargo crosses first are distinct proposed strategies. A vertical placement changes actual endpoint geometry and may be unhelpful on this narrow river; the rules do not award progress for placement alone. Own delivery gives 2 plus a shared 0.25 per new delivery; falling costs the affected role 1. Helpers can therefore face a real opportunity cost. Broken-material scarcity and poorly timed release may lead to negative or failed attempts. No policy advantage, optimal sequence or solvability proof is claimed.
+
+Transition order is resource pickup/placement/installation, support calculation, joint movement, load/collapse, home recovery, delivery, and terminal selection. The span-cell and endpoint entity groups are derived by the same geometry method used for crossing and support; they provide real beam orientation and held/pinned ends to native animation. Positions for inactive derived cells are clipped only for safe presentation bounds. Future separately specified variations could alter river geometry, pin supply, cargo objectives or load capacities; none is implemented or evaluated here.
+
+## Contract and evidence boundaries
+
+A=3, O=96, U=13, H=96. Observations are flat float32 and action indices int32. Every state leaf has a fixed declared shape. Source byte count is 12393 and SHA-256 is d08254385748360daaaca50e0a71fcb7a081663193b4da06d2835f53e5fc5269. The manifest binds exactly these bytes; the scene binds the manifest bytes.
+
+The raw kernel advances a nonterminal clock once, computes natural completion before truncation, and preserves a terminal input exactly with zero reward. There is no raw autoreset. Illegal indices become Wait; unavailable in-range requests are deterministic no-ops. Every active role has Wait legal. Role disablement is separate from joint done. State bounds and conservation rules are source declarations awaiting numerical R0 checks. Array updates are immutable JAX operations; local dictionary copies have no external mutable state.
+
+The two literal scripts and paired suffixes in playthrough.json remain UNEXECUTED_AUTHOR_HYPOTHESIS. Reset uses fold_in(PRNGKey(seed),0); transition k uses fold_in(PRNGKey(seed),k+1). A paired suffix continues at global index len(prefix). Identical branch indices use identical keys. No original script is replaced by an adaptive action search or a successful-looking trace. Static shape/range checks do not establish mask legality or intended events. Stop the future replay at joint done and report any prior invalid request, unavailable interaction or unexpected outcome.
+
+Trainability here means a supplied fixed-shape pure-JAX kernel, bounded discrete actions and rewards, explicit observations and masks, and a finite episode contract suitable for later integration. It does not mean learning has been observed. New A/O/U/H require matching policy metadata and weights. Source differences, causal hypotheses and a valid scene do not prove non-isomorphism, strategic richness, meta-learning or transfer. The independent executor must retain negative, failed, missing and indeterminate evidence.
+
+The scene is a complete declarative mapping of native entity positions, masks, attributes and events. It contains no synthetic trajectory, decorative state transition, HTML, JavaScript or extra policy information. Actual replay, RGB frames, animation controls, adapter compatibility and learning results remain mandatory later delivery work.
+
+## Literal source evidence
+
+- Resource custody and rotating arbitration: candidate.py:109; literal source: `for k in range(3):`.
+- Placement uses spatial endpoints and orientation: candidate.py:122; literal source: `center = s[&quot;agent_pos&quot;][i] + shift * jnp.array([1 - ba[b], ba[b]], dtype=jnp.int32)`.
+- Permanent and temporary support alter crossing: candidate.py:161; literal source: `supported = (bs == 2) &amp; jnp.all(pinned | held, axis=1)`.
+- Overloading and release can harm another worker: candidate.py:170; literal source: `collapse = (bs == 2) &amp; (load &gt; capacity) &amp; (load &gt; 0)`.
+- Unsafe occupants return home while material custody persists: candidate.py:175; literal source: `pos = jnp.where(fall[:, None], s[&quot;home_pos&quot;], pos)`.
+- Personal and shared delivery payoffs: candidate.py:193; literal source: `reward = 2.0 * delivered.astype(jnp.float32) + 0.25 * jnp.sum(delivered.astype(jnp.float32)) - fall.astype(jnp.float32)`.
+- Native beam cells and held endpoints: candidate.py:14; literal source: `ends, cells = self.geometry(s[&quot;beam_pos&quot;], s[&quot;beam_axis&quot;])`.
+- reset interface: candidate.py:30-79.
+- observe interface: candidate.py:81-90.
+- legal_actions interface: candidate.py:92-93.
+- raw_step interface: candidate.py:101-197.
+
+## Reference attribution
+
+- JaxMARL: agent-keyed public adapter concepts; author kernel remains the assigned flat functional interface.
+- Pgx: explicit legal masks and terminal state concepts from its board-game API; no board implementation or benchmark imported.
+- Craftax: spatial entities, persistent resources, game-like state and native rendering concepts; no Craftax game code copied.
+- PureJaxRL and Craftax PPO-RNN baseline: functional vectorized rollout and recurrent-done integration concepts only. They are learner implementations, not generated game libraries and do not replace the frozen learner.
+
+No upstream source code was copied. Only the supplied official snapshot excerpts were read; no network access, prior candidate source, project outcome, heldout implementation or final test was used.
+
+- references\JaxMARL_README.md; SHA-256 6649d04f5ed05d620e78e8416a00d4db841cf2633ae60fdb3c9729e037a71c15; https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md
+- references\Pgx_README.md; SHA-256 153f44999e55d5df3e51e13dee6ef418cc9704ddfa26206f1dc5789b9cbbf8df; https://github.com/sotetsuk/pgx/blob/main/README.md
+- references\PureJaxRL_README.md; SHA-256 d5f40182c924a42cec820931e61a7d5070e48c4c8413c7d16455abc6ea0ef6b0; https://github.com/luchris429/purejaxrl/blob/main/README.md
+- references\Craftax_Baselines_ppo_rnn.py; SHA-256 5f93e6a7c3a1e0c551831d75be311735ba495dfdecae51787a1c03a27b1cd011; https://github.com/MichaelTMatthews/Craftax_Baselines/blob/main/ppo_rnn.py
+- references\Craftax_README.md; SHA-256 7f9757a2047143cf183f7e2e84851a740f386af80dbee050c89b316d66a3d3ff; https://github.com/MichaelTMatthews/Craftax/blob/main/README.md
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Pick nearest free beam</span></div><div class="action"><b>6</b><span>Place carried beam</span></div><div class="action"><b>7</b><span>Rotate carried beam</span></div><div class="action"><b>8</b><span>Brace endpoint</span></div><div class="action"><b>9</b><span>Hold endpoint</span></div><div class="action"><b>10</b><span>Take nearest loose support pin</span></div><div class="action"><b>11</b><span>Install carried pin at a dry endpoint</span></div><div class="action"><b>12</b><span>Wait with cargo</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> West-bank upper cargo owner and builder</p><p><b>agent_1</b> West-bank lower cargo owner and builder</p><p><b>agent_2</b> East-bank cargo owner and builder</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      3
+    ],
+    &quot;meaning&quot;: &quot;Role one-hot in role index order&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      9
+    ],
+    &quot;state_path&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;meaning&quot;: &quot;workers positions in entity index order, each [x,y]; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      15
+    ],
+    &quot;state_path&quot;: [
+      &quot;goal_pos&quot;
+    ],
+    &quot;meaning&quot;: &quot;Exact personal delivery goal [x,y] in role order; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      18
+    ],
+    &quot;state_path&quot;: [
+      &quot;cargo_done&quot;
+    ],
+    &quot;meaning&quot;: &quot;Personal cargo delivery flags in role order; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      24
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_pos&quot;
+    ],
+    &quot;meaning&quot;: &quot;beams positions in entity index order, each [x,y]; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      24,
+      27
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_status&quot;
+    ],
+    &quot;meaning&quot;: &quot;0 loose; 1 carried; 2 placed; 3 broken; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      27,
+      30
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_carrier&quot;
+    ],
+    &quot;meaning&quot;: &quot;Carrier role; -1 none; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      30,
+      33
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_axis&quot;
+    ],
+    &quot;meaning&quot;: &quot;0 east-west; 1 north-south; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      33,
+      39
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_pinned&quot;
+    ],
+    &quot;meaning&quot;: &quot;Permanent support flags, beam-major then negative/positive endpoint; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      39,
+      45
+    ],
+    &quot;state_path&quot;: [
+      &quot;held_ends&quot;
+    ],
+    &quot;meaning&quot;: &quot;Latest step hold requests at placed endpoints, beam-major then negative/positive endpoint; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      45,
+      48
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_supported&quot;
+    ],
+    &quot;meaning&quot;: &quot;Latest step support computation, excluding beams that collapsed; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      48,
+      51
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_capacity&quot;
+    ],
+    &quot;meaning&quot;: &quot;Safe river load on this step; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      51,
+      54
+    ],
+    &quot;state_path&quot;: [
+      &quot;beam_load&quot;
+    ],
+    &quot;meaning&quot;: &quot;Current river occupants on this beam; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      54,
+      62
+    ],
+    &quot;state_path&quot;: [
+      &quot;pin_pos&quot;
+    ],
+    &quot;meaning&quot;: &quot;support pins positions in entity index order, each [x,y]; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      62,
+      66
+    ],
+    &quot;state_path&quot;: [
+      &quot;pin_status&quot;
+    ],
+    &quot;meaning&quot;: &quot;0 loose; 1 carried; 2 installed; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      66,
+      70
+    ],
+    &quot;state_path&quot;: [
+      &quot;pin_carrier&quot;
+    ],
+    &quot;meaning&quot;: &quot;Carrier role; -1 none; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      70,
+      74
+    ],
+    &quot;state_path&quot;: [
+      &quot;pin_beam&quot;
+    ],
+    &quot;meaning&quot;: &quot;Attached beam; -1 unattached; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      78
+    ],
+    &quot;state_path&quot;: [
+      &quot;pin_side&quot;
+    ],
+    &quot;meaning&quot;: &quot;0 negative-axis end; 1 positive-axis end; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      78,
+      81
+    ],
+    &quot;state_path&quot;: [
+      &quot;fall_event&quot;
+    ],
+    &quot;meaning&quot;: &quot;Workers returned to their own home this step; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      81,
+      84
+    ],
+    &quot;state_path&quot;: [
+      &quot;delivery_event&quot;
+    ],
+    &quot;meaning&quot;: &quot;Own cargo arrived at its exact goal this step; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      84,
+      87
+    ],
+    &quot;state_path&quot;: [
+      &quot;collapse_event&quot;
+    ],
+    &quot;meaning&quot;: &quot;Beam failed under unsupported or excessive river load this step; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      87,
+      90
+    ],
+    &quot;state_path&quot;: [
+      &quot;place_event&quot;
+    ],
+    &quot;meaning&quot;: &quot;Beam newly placed this step; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      90,
+      94
+    ],
+    &quot;state_path&quot;: [
+      &quot;install_event&quot;
+    ],
+    &quot;meaning&quot;: &quot;Pin newly installed this step; row-major flattening divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      94,
+      95
+    ],
+    &quot;meaning&quot;: &quot;Clock t divided by 128&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      95,
+      96
+    ],
+    &quot;meaning&quot;: &quot;Joint episode completion flag, unscaled&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;workers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo_done&quot;
+        ],
+        &quot;meaning&quot;: &quot;Own cargo delivered&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;cargo&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;cargo_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cargo_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cargo_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;goals&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;goal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;goal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;goal_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;beams&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;beam_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;beam_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;beam_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;beam_status&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 loose; 1 carried; 2 placed; 3 broken&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;beam_carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carrier role; -1 none&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;beam_axis&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 east-west; 1 north-south&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;beam_supported&quot;
+        ],
+        &quot;meaning&quot;: &quot;Both ends currently supported&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;beam_capacity&quot;
+        ],
+        &quot;meaning&quot;: &quot;Safe river load on this step&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;beam_load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current river occupants on this beam&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;beam_cells&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 9,
+    &quot;position&quot;: [
+      &quot;span_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;span_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;span_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;span_supported&quot;
+        ],
+        &quot;meaning&quot;: &quot;Beam segment currently supported&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;beam_ends&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;end_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;end_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;end_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;end_held&quot;
+        ],
+        &quot;meaning&quot;: &quot;Currently held by endpoint worker&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;end_pinned&quot;
+        ],
+        &quot;meaning&quot;: &quot;Permanent support installed&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;support_pins&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;pin_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;pin_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;pin_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;pin_status&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 loose; 1 carried; 2 installed&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pin_carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carrier role; -1 none&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pin_beam&quot;
+        ],
+        &quot;meaning&quot;: &quot;Attached beam; -1 unattached&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pin_side&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 negative-axis end; 1 positive-axis end&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi126&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;d08254385748360daaaca50e0a71fcb7a081663193b4da06d2835f53e5fc5269&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 96,
+    &quot;num_actions&quot;: 13,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.2149198055267334
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1878063678741455
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.300416946411133
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.09052729606628418
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.3915574550628662
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0010004043579101562
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.11514067649841309
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.4907052516937256
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.6991207599639893
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7339859008789062
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 11.709734439849854,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 96,
+  &quot;scripted_random_returns&quot;: [
+    0.0,
+    0.0,
+    0.0
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi126&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 4.374596834182739
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 126,
+  &quot;key&quot;: &quot;gi126&quot;,
+  &quot;title&quot;: &quot;守住桥跨&quot;,
+  &quot;summary&quot;: &quot;建桥与维持支撑的角色互相配合，为伙伴保留桥面与通行机会。&quot;,
+  &quot;tags&quot;: [
+    &quot;桥梁协作&quot;,
+    &quot;支撑&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 96,
+    &quot;num_actions&quot;: 13,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;source_sha256&quot;: &quot;d08254385748360daaaca50e0a71fcb7a081663193b4da06d2835f53e5fc5269&quot;,
+  &quot;manifest_sha256&quot;: &quot;33c5f1091b07d2f3b60309ec5ad940939b84727225bb18fd876202472efcfd71&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;d08254385748360daaaca50e0a71fcb7a081663193b4da06d2835f53e5fc5269&quot;,
+      &quot;bytes&quot;: 12393,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00126/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;33c5f1091b07d2f3b60309ec5ad940939b84727225bb18fd876202472efcfd71&quot;,
+      &quot;bytes&quot;: 21762,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00126/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;c22b32ef36327ded4e6d46acca2148d255e64a7b426044e96c78fd0276b990bc&quot;,
+      &quot;bytes&quot;: 12192,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00126/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;2c291eb4b7d1c3004e45684fc70233de232e19d0435639a0fde384a420b1530b&quot;,
+      &quot;bytes&quot;: 8752,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00126/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;15c973bf22b0bea8fdd35497241421595037760a2be7c9bc4c6298271f7b8f1e&quot;,
+      &quot;bytes&quot;: 7721,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00126/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi126">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

@@ -1,0 +1,242 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "88d7919965eb62cd7750ba29240d0d417baf3405188b59d79089ff5bf1b60688",
+  "manifest_sha256": "6d2fc89b157de50a7794de7fae2386714c444f9df19399c273e262e1e99d2d63",
+  "title": "Thermal Loom",
+  "rules": [
+    "Four pieces pass through press, furnace and quench to shipping. Three shipments complete the task.",
+    "Only the corresponding specialist loads each machine; everyone can carry, drop, hand off, ship and crank.",
+    "Processing needs three, four and two powered ticks. Outputs must be removed before a machine reloads.",
+    "At most two machines receive power each tick using rotating priority, spending one common charge per powered machine.",
+    "Generator cranking adds four charge, capped at twenty-four; recycling scrap adds three.",
+    "Hot furnace output has eighteen ticks to finish quenching. Stored, carried and processing hot items all face expiry.",
+    "Two narrow crossings and exclusive worker cells create congestion; following into a just-vacated cell fails.",
+    "Three shipments or insufficient remaining viable material ends naturally; otherwise step 128 truncates."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "grid"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable workshop floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid divider; middle crossings at y=2 and y=4"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Workers",
+      "color": "#60A5FA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Held item index; -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "workpieces",
+      "glyph": "crate",
+      "label": "Workpieces",
+      "color": "#FB923C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "0 raw; 1 cut; 2 hot; 3 finished; 4 shipped; 5 scrap; 6 recycled"
+        },
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "-1 ground; 0..2 carrier; -2/-3/-4 press/furnace/quench"
+        },
+        {
+          "state_path": [
+            "heat"
+          ],
+          "label": "Hot lifetime remaining"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Stations",
+      "color": "#34D399",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "timer"
+          ],
+          "label": "Powered ticks remaining; dock and generator always zero"
+        },
+        {
+          "state_path": [
+            "loaded"
+          ],
+          "label": "Loaded item index; -1 empty; dock and generator always empty"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Finished pieces shipped",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Pieces lost to heat expiry",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "charge"
+      ],
+      "meaning": "Common grid charge",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "timer"
+      ],
+      "meaning": "Machine work remaining",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "stage"
+      ],
+      "meaning": "Each physical item material stage",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index adjacent ground item if empty; otherwise drop onto an unoccupied item buffer cell"
+    },
+    {
+      "id": 6,
+      "label": "Load eligible held item into nearby role-specific machine"
+    },
+    {
+      "id": 7,
+      "label": "Ship finished item at dock or recycle scrap at generator"
+    },
+    {
+      "id": 8,
+      "label": "Crank four shared charge at generator"
+    },
+    {
+      "id": 9,
+      "label": "Mutual adjacent item handoff to empty partner"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Own role one-hot(3), x,y,carrying item index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        10
+      ],
+      "meaning": "Clock, shared charge, cumulative delivered and spoiled",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        19
+      ],
+      "meaning": "All workers: x,y,carrying per slot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        39
+      ],
+      "meaning": "All four pieces including retired records: x,y,stage,owner,heat",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        59
+      ],
+      "meaning": "Five stations: x,y,timer,loaded; slots press,furnace,quench,dock,generator",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        122
+      ],
+      "meaning": "Public 7-by-9 map flattened row-major yx",
+      "visibility": "public"
+    }
+  ]
+}

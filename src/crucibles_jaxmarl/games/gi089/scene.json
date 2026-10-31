@@ -1,0 +1,304 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0eb71ead2afbbe9f80e84fd2b382a2431f9a87610211f6ef2c2540ea1d88a7fb",
+  "manifest_sha256": "e65d8a2c3b666f3d3f56aabcba291a825a0904549013d375e5536965d5035c9a",
+  "title": "Lantern Intercept",
+  "rules": [
+    "Two teams each have one scout and one runner. The relic starts at one of three original ridge openings chosen from the reset key.",
+    "Scouts see farther. A four-turn lantern reveals nearby agents and the relic to both teams, at a real energy/action cost.",
+    "Pick up within one cell. A carrying scout can move only on even old-clock turns; runners do not have that carrying slowdown.",
+    "Both adjacent teammates must choose HANDOFF to transfer. The relic position follows its actual carrier.",
+    "TAG costs one energy and starts a three-turn cooldown. A hit stuns for two turns and drops any carried relic.",
+    "A teammate SCREEN blocks tags on the adjacent partner for that turn. It cannot protect the screener itself.",
+    "Extract only with the runner on its own pad holding the relic and an adjacent scout co-signing on the same turn.",
+    "Tags occur before pickup, handoff and extraction; either participant being hit can disrupt a rendezvous.",
+    "WAIT restores one energy. Public notices do not disclose hidden positions. Each role view uses actual visibility masks."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable alley",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "solid wall or center ridge",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "team 0 extraction tile",
+          "color": "#93C5FD"
+        },
+        {
+          "value": 3,
+          "meaning": "team 1 extraction tile",
+          "color": "#FCA5A5"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "agent",
+      "color": "#475569",
+      "label": "Scouts and runners",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team identity, 0 or 1"
+        },
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Role: scout 0, runner 1"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Energy, capacity 3"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "label": "Forced WAIT turns remaining"
+        },
+        {
+          "state_path": [
+            "tag_cooldown"
+          ],
+          "label": "Turns until a further tag is legal"
+        }
+      ]
+    },
+    {
+      "id": "relic",
+      "glyph": "key",
+      "color": "#EAB308",
+      "label": "Contested relay relic",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "relic_carrier"
+          ],
+          "label": "Carrier identity; -1 means on ground"
+        }
+      ]
+    },
+    {
+      "id": "lanterns",
+      "glyph": "beacon",
+      "color": "#A855F7",
+      "label": "Public scan lanterns",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beacon_ttl"
+          ],
+          "label": "Public light lifetime remaining"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "glyph": "flag",
+      "color": "#0D9488",
+      "label": "Team 0 and team 1 extraction pads",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pickup_notice"
+      ],
+      "meaning": "Public per-team notice that a pickup occurred this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tag_notice"
+      ],
+      "meaning": "Public per-team number of agents actually stunned this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "claim_once"
+      ],
+      "meaning": "Public teams that have ever held the relic; at most once per team",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "delivery_notice"
+      ],
+      "meaning": "Jointly co-signed extraction on the final live transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "winner"
+      ],
+      "meaning": "Winner identity; -1 until natural extraction",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "WAIT and recover one energy"
+    },
+    {
+      "id": 1,
+      "label": "NORTH intent"
+    },
+    {
+      "id": 2,
+      "label": "EAST intent"
+    },
+    {
+      "id": 3,
+      "label": "SOUTH intent"
+    },
+    {
+      "id": 4,
+      "label": "WEST intent"
+    },
+    {
+      "id": 5,
+      "label": "FLASH public four-turn lantern, scout only"
+    },
+    {
+      "id": 6,
+      "label": "PICK UP uncarried relic within reach one"
+    },
+    {
+      "id": 7,
+      "label": "JOINT HANDOFF with adjacent teammate"
+    },
+    {
+      "id": 8,
+      "label": "TAG adjacent enemy"
+    },
+    {
+      "id": 9,
+      "label": "SCREEN adjacent teammate from tags this turn"
+    },
+    {
+      "id": 10,
+      "label": "CO-SIGN extraction near own base"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        7
+      ],
+      "meaning": "Public t/100, done, (winner+1)/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        9
+      ],
+      "meaning": "Public pickup notices for teams 0 and 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Public per-team newly stunned agent count /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        13
+      ],
+      "meaning": "Public ever-held-relic bits for teams 0 and 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public final extraction notices for teams 0 and 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        19
+      ],
+      "meaning": "Public team 0/team 1 base [x/10,y/10] positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        27
+      ],
+      "meaning": "Public two lantern slots [x/10,y/10,ttl/4,active]; inactive lantern data is zero",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        59
+      ],
+      "meaning": "Four agent slots [x/10,y/10,energy/3,stun/2,tag_cooldown/3,role,team,visible]; all fields zero if not locally visible or lit",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        59,
+        63
+      ],
+      "meaning": "Relic [x/10,y/10,(carrier+1)/4,visible]; zero unless recognized locally or illuminated and active",
+      "visibility": "local"
+    }
+  ]
+}

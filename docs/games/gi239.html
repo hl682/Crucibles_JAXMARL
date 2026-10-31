@@ -1,0 +1,395 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Floodplain Seed Cooperative · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI239 / SPATIAL</p><h1>Floodplain Seed Cooperative</h1><p class="lead"></p><div class="stats"><span>96 agents</span><span>19 actions</span><span>238 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 239</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Sustain household food and communal seeds through complementary care, local harvest labor, downstream water management and livestock shelter.&quot;,
+  &quot;natural_termination&quot;: &quot;No early natural terminal; farming season truncates at 896 ticks.&quot;,
+  &quot;interaction&quot;: &quot;Assist changes harvesting; shared tools and seeds alter production; three-slot downstream water/salt and moving trays affect other households; herding restores soils.&quot;,
+  &quot;observation_access&quot;: &quot;Public village/drainage geometry; only selected nearby entity rows with presence flags are observed. Downstream pipes and remote weather are hidden; local field-water relay requires an actual action. Off-view events are debug-only.&quot;
+}</pre></details><p>Declared per-step reward bounds: -4.0 to 4.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Twenty-four households share a serpentine watershed. All 96 people have native actions; livestock and trays are separate objects.</li><li>Sow a seed, then apply hoe and watering care. Wet and dry crops have distinct moisture/salt limits; orchards grow half as often.</li><li>Harvest needs a sickle and nearby Assist. Private food, seed donation and levee repair compete for each harvest bundle.</li><li>A sluice sends up to two water and one salt units downstream after three subsequent transitions. The final household drains outside the world.</li><li>Boat users launch trays. Wet open source gates move trays through three increments to the next nursery; neighbors can collect the real seed.</li><li>Herd livestock to barns before floods. Safe livestock and fallow fields restore soil. Food consumption and flood damage are native state. Season ends at 896.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Floodplain Seed Cooperative
+
+Status: AUTHORED_NOT_EXECUTED. Source SHA256: 88c80f02733cafd84a9a6ec94b88c35b218f754b8acd8a799af10423a545881b. All scripts/interventions are UNEXECUTED_AUTHOR_HYPOTHESIS.
+
+Native contract: A=96, O=238, U=19, H=896; scalar int32 actions, float32 observations, fixed int32/bool state. Geometry 48 by 24, x right/y down. Family rural_community.
+
+Twenty-four households follow a serpentine order across six columns and four rows. Each has a plot, slower orchard, nursery, granary, sluice/levee and barn. The directed watershed is a coarse channel network between real sites, not fluid simulation. Source water and salt enter three FIFO slots: an emission on tick t reaches the downstream field three subsequent transitions later. A tray advances only on wet/open source ticks and may stall.
+
+Four tools are exchangeable. The boat tool also crosses drainage strips without intact levees. A sickle needs another actor&#x27;s simultaneous Assist within two Manhattan cells of its field; cooperation reads original positions while handoffs use serial current positions. Plantings need both care bits and positive soil. Wet variety needs water at least three and salt at most two; dry variety needs water one through three and salt at most one. Orchard growth ticks every eight, fields every four. Flood and high salt erode growth.
+
+A harvest bundle becomes three private food units, three shared seeds, or three levee integrity. Returning an unused seed earns no reward, avoiding seed-withdrawal reward cycling. Bounded rain, evaporation, eight-tick flood phases, levee weathering, pantry consumption and fallow recovery are native rules. Herding moves an animal one cardinal step toward its barn; sheltered living animals support soil recovery, while unsafe animals can lose health in floods.
+
+Work costs 0.002. Harvest pays 0.08. Private storage pays actor 0.15 and household actors 0.025 each. Donating a harvest bundle pays 0.06; donating a seed pays zero. Crop flood/salt stress costs home actors 0.005 per tick; harmful arriving flow additionally charges its recorded real sluice operator 0.03. Empty granaries on thirty-two-tick consumption cost household actors 0.03. Rewards are clipped to [-4,4]. Food versus seeds, upstream relief versus exported salt, and herding versus fieldwork are untested author hypotheses.
+
+## Interface and visibility
+
+Public village/drainage geometry; only selected nearby entity rows with presence flags are observed. Downstream pipes and remote weather are hidden; local field-water relay requires an actual action. Off-view events are debug-only.
+
+Source entry lines: reset 31, legal_actions 67, observe 89, raw_step 123. Exact columns, normalizers, shapes and scene bindings are in manifest.json. Every selected entity slot ends with presence; hidden slots are zero. Crew identities remain fixed, while tools may change. A legal intent can still be blocked by earlier actors, missing simultaneous help, material shortages or geometry. Masked or out-of-range actions become Wait. Actor priority rotates as (loop index + t) mod A.
+
+No early natural terminal; farming season truncates at 896 ticks.
+
+Already-done raw calls preserve every state leaf and observation, return zero rewards and true per-agent dones, and preserve terminal causes. Nonterminal calls advance t exactly once. No autoreset or external state exists. Signed identities and sentinels use int32; reset keys are not copied into state. Observation bounds [0,1] and explicit reward clipping [-4,4] are source declarations, not numerical verification.
+
+
+## Literal source evidence
+
+- candidate.py:167: assist = jnp.any((jnp.sum(jnp.abs(original - w[&#x27;field_pos&#x27;][f]), axis=1) &lt;= 2) &amp; (actions == 18) &amp; (jnp.arange(96, dtype=jnp.int32) != i))
+- candidate.py:168: harvest = (a == 7) &amp; close &amp; w[&#x27;planted&#x27;][f] &amp; (w[&#x27;growth&#x27;][f] &gt;= 8) &amp; (w[&#x27;tool&#x27;][i] == 2) &amp; (w[&#x27;cargo&#x27;][i] == 0) &amp; assist
+- candidate.py:183: launch = (a == 11) &amp; jnp.any(sluices) &amp; ((w[&#x27;cargo&#x27;][i] == 1) | (w[&#x27;cargo&#x27;][i] == 2)) &amp; (w[&#x27;tool&#x27;][i] == 3) &amp; ~w[&#x27;tray_active&#x27;][c] &amp; (c &lt; 23)
+- candidate.py:203: donation_harvest = donate &amp; (w[&#x27;cargo&#x27;][i] == 3)
+- candidate.py:215: herd = (a == 14) &amp; (ad[animal] &lt;= 1) &amp; w[&#x27;animal_active&#x27;][animal]
+- candidate.py:242: incoming = s[&#x27;water_pipe&#x27;][:, 0]
+- candidate.py:253: charged = (incoming &gt; 0) &amp; bad[::2] &amp; (s[&#x27;flow_owner&#x27;][:, 0] &gt;= 0)
+- candidate.py:260: growing = s[&#x27;planted&#x27;] &amp; (s[&#x27;care&#x27;] == 3) &amp; (s[&#x27;soil&#x27;] &gt; 0) &amp; (s[&#x27;salt&#x27;] &lt;= jnp.where(s[&#x27;variety&#x27;] == 0, 2, 1))
+- candidate.py:268: animal_hurt = flood &amp; ~s[&#x27;animal_safe&#x27;] &amp; (s[&#x27;water&#x27;][::2] &gt; 5) &amp; s[&#x27;animal_active&#x27;]
+- candidate.py:275: drift = s[&#x27;tray_active&#x27;] &amp; s[&#x27;gate&#x27;] &amp; (s[&#x27;tray_progress&#x27;] &lt; 3) &amp; (wet &gt;= 2)
+
+
+## Human operation, provenance and limits
+Scene data binds actual positions, stock, tools and events. Human single-role/multiple-role control must call the unchanged native joint action interface. No UI has been implemented, opened or played by this author. Role rendering must restrict event presentation to visible entities; global event inspection is debug-only.
+
+
+Four independent world families are authored, without upstream code or assets. Supplied external reference files were permitted but not read. No prior game, results, IR, selection, training, heldout, memory, network, API, local model or numerical package was read/invoked. Current population/family240 and dispatch scope override inherited counts. Parentless initial window: 240 used/reserved of 512, feedback 0.
+
+
+Only bytes/SHA256, JSON/AST and literal structure are checked here. Candidate import/reset/step/observe/legal_actions and provided validators were never executed. Runtime shapes/dtypes, JIT/vmap, terminal replay, mask reachability, script success, finite numerical bounds, resource cost, animation, human playability, non-isomorphism, learning and transfer remain unverified. Independent authorized frozen-source integration must preserve actual failures. No acceptance, deployment or experimental result is authored.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait / receive</span></div><div class="action"><b>1</b><span>Walk north</span></div><div class="action"><b>2</b><span>Walk east</span></div><div class="action"><b>3</b><span>Walk south</span></div><div class="action"><b>4</b><span>Walk west</span></div><div class="action"><b>5</b><span>Sow carried seed in nearby empty field or orchard</span></div><div class="action"><b>6</b><span>Hoe or water crop using current tool</span></div><div class="action"><b>7</b><span>Harvest mature crop with sickle and nearby assisting partner</span></div><div class="action"><b>8</b><span>Toggle nearby sluice</span></div><div class="action"><b>9</b><span>Repair levee using a harvest bundle</span></div><div class="action"><b>10</b><span>Collect floating tray, otherwise withdraw nursery seed</span></div><div class="action"><b>11</b><span>Launch seed in downstream tray with boat tool</span></div><div class="action"><b>12</b><span>Store harvest bundle in household granary</span></div><div class="action"><b>13</b><span>Donate seed or harvest bundle to communal nursery</span></div><div class="action"><b>14</b><span>Herd adjacent livestock one step toward raised barn</span></div><div class="action"><b>15</b><span>Hand cargo to adjacent waiting empty actor</span></div><div class="action"><b>16</b><span>Exchange tools with adjacent waiting actor</span></div><div class="action"><b>17</b><span>Relay nearby field water level locally</span></div><div class="action"><b>18</b><span>Assist nearby harvest</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> hoe farmer</p><p><b>agent_1</b> watering farmer</p><p><b>agent_2</b> sickle harvester</p><p><b>agent_3</b> boat and herd keeper</p><p><b>agent_4</b> hoe farmer</p><p><b>agent_5</b> watering farmer</p><p><b>agent_6</b> sickle harvester</p><p><b>agent_7</b> boat and herd keeper</p><p><b>agent_8</b> hoe farmer</p><p><b>agent_9</b> watering farmer</p><p><b>agent_10</b> sickle harvester</p><p><b>agent_11</b> boat and herd keeper</p><p><b>agent_12</b> hoe farmer</p><p><b>agent_13</b> watering farmer</p><p><b>agent_14</b> sickle harvester</p><p><b>agent_15</b> boat and herd keeper</p><p><b>agent_16</b> hoe farmer</p><p><b>agent_17</b> watering farmer</p><p><b>agent_18</b> sickle harvester</p><p><b>agent_19</b> boat and herd keeper</p><p><b>agent_20</b> hoe farmer</p><p><b>agent_21</b> watering farmer</p><p><b>agent_22</b> sickle harvester</p><p><b>agent_23</b> boat and herd keeper</p><p><b>agent_24</b> hoe farmer</p><p><b>agent_25</b> watering farmer</p><p><b>agent_26</b> sickle harvester</p><p><b>agent_27</b> boat and herd keeper</p><p><b>agent_28</b> hoe farmer</p><p><b>agent_29</b> watering farmer</p><p><b>agent_30</b> sickle harvester</p><p><b>agent_31</b> boat and herd keeper</p><p><b>agent_32</b> hoe farmer</p><p><b>agent_33</b> watering farmer</p><p><b>agent_34</b> sickle harvester</p><p><b>agent_35</b> boat and herd keeper</p><p><b>agent_36</b> hoe farmer</p><p><b>agent_37</b> watering farmer</p><p><b>agent_38</b> sickle harvester</p><p><b>agent_39</b> boat and herd keeper</p><p><b>agent_40</b> hoe farmer</p><p><b>agent_41</b> watering farmer</p><p><b>agent_42</b> sickle harvester</p><p><b>agent_43</b> boat and herd keeper</p><p><b>agent_44</b> hoe farmer</p><p><b>agent_45</b> watering farmer</p><p><b>agent_46</b> sickle harvester</p><p><b>agent_47</b> boat and herd keeper</p><p><b>agent_48</b> hoe farmer</p><p><b>agent_49</b> watering farmer</p><p><b>agent_50</b> sickle harvester</p><p><b>agent_51</b> boat and herd keeper</p><p><b>agent_52</b> hoe farmer</p><p><b>agent_53</b> watering farmer</p><p><b>agent_54</b> sickle harvester</p><p><b>agent_55</b> boat and herd keeper</p><p><b>agent_56</b> hoe farmer</p><p><b>agent_57</b> watering farmer</p><p><b>agent_58</b> sickle harvester</p><p><b>agent_59</b> boat and herd keeper</p><p><b>agent_60</b> hoe farmer</p><p><b>agent_61</b> watering farmer</p><p><b>agent_62</b> sickle harvester</p><p><b>agent_63</b> boat and herd keeper</p><p><b>agent_64</b> hoe farmer</p><p><b>agent_65</b> watering farmer</p><p><b>agent_66</b> sickle harvester</p><p><b>agent_67</b> boat and herd keeper</p><p><b>agent_68</b> hoe farmer</p><p><b>agent_69</b> watering farmer</p><p><b>agent_70</b> sickle harvester</p><p><b>agent_71</b> boat and herd keeper</p><p><b>agent_72</b> hoe farmer</p><p><b>agent_73</b> watering farmer</p><p><b>agent_74</b> sickle harvester</p><p><b>agent_75</b> boat and herd keeper</p><p><b>agent_76</b> hoe farmer</p><p><b>agent_77</b> watering farmer</p><p><b>agent_78</b> sickle harvester</p><p><b>agent_79</b> boat and herd keeper</p><p><b>agent_80</b> hoe farmer</p><p><b>agent_81</b> watering farmer</p><p><b>agent_82</b> sickle harvester</p><p><b>agent_83</b> boat and herd keeper</p><p><b>agent_84</b> hoe farmer</p><p><b>agent_85</b> watering farmer</p><p><b>agent_86</b> sickle harvester</p><p><b>agent_87</b> boat and herd keeper</p><p><b>agent_88</b> hoe farmer</p><p><b>agent_89</b> watering farmer</p><p><b>agent_90</b> sickle harvester</p><p><b>agent_91</b> boat and herd keeper</p><p><b>agent_92</b> hoe farmer</p><p><b>agent_93</b> watering farmer</p><p><b>agent_94</b> sickle harvester</p><p><b>agent_95</b> boat and herd keeper</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      10
+    ],
+    &quot;meaning&quot;: &quot;Self x/47,y/23,household/23,tool/3,cargo/3,message/8,event/9,id/95,t/896,flood phase/63&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      74
+    ],
+    &quot;meaning&quot;: &quot;8 nearest agents within Manhattan 4: x/47,y/23,household/23,tool/3,cargo/3,message/8,id/95,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      122
+    ],
+    &quot;meaning&quot;: &quot;4 nearest fields within Manhattan 5: x/47,y/23,kind,variety,growth/8,planted,water/8,salt/4,soil/4,care/3,household/23,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      122,
+      164
+    ],
+    &quot;meaning&quot;: &quot;6 nearest facilities within Manhattan 5: x/47,y/23,kind/3,stock/24,gate,household/23,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      164,
+      176
+    ],
+    &quot;meaning&quot;: &quot;2 nearest living animals within Manhattan 4: x/47,y/23,health/6,safe,household/23,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      176,
+      188
+    ],
+    &quot;meaning&quot;: &quot;2 nearest active trays within Manhattan 4: x/47,y/23,variety,progress/3,destination/23,presence&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      188,
+      207
+    ],
+    &quot;meaning&quot;: &quot;Legal intent mask actions 0..18&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      207,
+      238
+    ],
+    &quot;meaning&quot;: &quot;Explicit zero padding&quot;,
+    &quot;visibility&quot;: &quot;padding&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 96,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Household&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 hoe,1 watering,2 sickle,3 boat&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty,1 wet seed,2 dry seed,3 harvest bundle&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;Decaying field-water relay&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;fields&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 48,
+    &quot;position&quot;: [
+      &quot;field_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;field_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;field_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;field_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 floodplain plot,1 orchard&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;variety&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 wet-tolerant,1 low-salt dry crop&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Crop maturity&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;planted&quot;
+        ],
+        &quot;meaning&quot;: &quot;Planting present&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Local moisture&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;salt&quot;
+        ],
+        &quot;meaning&quot;: &quot;Local salinity&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;soil&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fertility reserve&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;care&quot;
+        ],
+        &quot;meaning&quot;: &quot;Bit 1 hoe, bit 2 watering care&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;facilities&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 96,
+    &quot;position&quot;: [
+      &quot;facility_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;facility_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;facility_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;facility_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 nursery,1 granary,2 sluice/levee,3 raised barn&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;facility_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Seeds, pantry food, levee integrity or animal health&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;facility_gate&quot;
+        ],
+        &quot;meaning&quot;: &quot;Open sluice&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;livestock&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;animal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;animal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;animal_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;animal_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Livestock health&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;animal_safe&quot;
+        ],
+        &quot;meaning&quot;: &quot;At raised barn&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;seed_trays&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;tray_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;tray_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;tray_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;tray_variety&quot;
+        ],
+        &quot;meaning&quot;: &quot;Seed variety in tray&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tray_progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Progress to next nursery in three drift increments&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tray_dest&quot;
+        ],
+        &quot;meaning&quot;: &quot;Downstream household&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 239,
+  &quot;key&quot;: &quot;gi239&quot;,
+  &quot;title&quot;: &quot;Floodplain Seed Cooperative&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 96,
+    &quot;observation_size&quot;: 238,
+    &quot;num_actions&quot;: 19,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;88c80f02733cafd84a9a6ec94b88c35b218f754b8acd8a799af10423a545881b&quot;,
+  &quot;manifest_sha256&quot;: &quot;edac80da0f8520d8a68b461b7fa593208180f198d80c7534718422c4d01711dd&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;88c80f02733cafd84a9a6ec94b88c35b218f754b8acd8a799af10423a545881b&quot;,
+      &quot;bytes&quot;: 21769,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00239/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;edac80da0f8520d8a68b461b7fa593208180f198d80c7534718422c4d01711dd&quot;,
+      &quot;bytes&quot;: 36996,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00239/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;3aa5f8a453e092e4c96af7bbc16e0fc3ed3f1a91c7513c292579e4250825ef21&quot;,
+      &quot;bytes&quot;: 9192,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00239/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;72dcd1c06580e58e2effaa88e73ae047c82096dbd7782a352191d569035367e3&quot;,
+      &quot;bytes&quot;: 6001,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00239/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;553ecee01e9e557d9f65dfd94020f36d3db451698b1268cbd4e74e5e2d8ad15e&quot;,
+      &quot;bytes&quot;: 33411,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00239/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi239">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

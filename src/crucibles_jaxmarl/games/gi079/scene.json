@@ -1,0 +1,556 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fcda29220e23fbd33e45d5c960bc6417993978a6af8f64bc89ac5ac649f8bf44",
+  "manifest_sha256": "52b7c396b179229bd4e9f65743d934c22f08531e5aecd4ac67858ad95c7b669d",
+  "title": "Switchback Relay | Cover the breach, bring the core home",
+  "rules": [
+    "Two left-side relay terminals feed the central gate. Charge leaks without channeling; both must remain positive for passage. Occupants hold the gate open until they clear it.",
+    "Move among actual walls and cover. Movement cannot enter another live squad member or a live turret cell; simultaneous empty-cell conflicts use rotating priority.",
+    "Bolts travel one cardinal cell per step. Walls stop them. Enemy bolts damage squad or an uncarried core; guards and temporary bulwark fields absorb them.",
+    "Distant shots cannot penetrate an unmarked turret. A scout scan broadcasts turret state and makes each hit deal two damage; a shot fired within two cells can deal one without marking.",
+    "Bulwark shield and scout scan cost one shared support; engineer jam costs two and pauses nearby turret firing clocks. Every role draws from the same finite pool.",
+    "A core carrier cannot shoot, use support abilities or guard. Dropping and another squad member picking up can transfer the burden.",
+    "Fire and support create noise that affects turret aim acquisition. Locked aim and countdown are real state; launched bolts follow their recorded direction.",
+    "Refill at the base consumes a finite supply unit, restores one own ammunition and adds one shared support.",
+    "Core radio and terrain are public. Other dynamic entities are visible within radius five; marked turrets are broadcast to all roles.",
+    "Reach extraction with an intact core. Core destruction or loss of the whole squad fails; otherwise the 160-step horizon truncates."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable deck or open gate",
+          "color": "#DAE4EB"
+        },
+        {
+          "value": 1,
+          "meaning": "solid wall or cover; blocks motion and bolts",
+          "color": "#44546B"
+        },
+        {
+          "value": 2,
+          "meaning": "closed relay gate; blocks motion and bolts",
+          "color": "#B68A45"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "agent",
+      "label": "Relay squad",
+      "color": "#46A8CC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "label": "0 bulwark, 1 scout, 2 engineer"
+        },
+        {
+          "state_path": [
+            "agent_health"
+          ],
+          "label": "Remaining health, at most four"
+        },
+        {
+          "state_path": [
+            "agent_ammo"
+          ],
+          "label": "Carried bolt ammunition, at most five"
+        },
+        {
+          "state_path": [
+            "agent_noise"
+          ],
+          "label": "Recent action noise used by enemy aim acquisition"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "label": "Movement or firing direction"
+        }
+      ]
+    },
+    {
+      "id": "turret",
+      "glyph": "hazard",
+      "label": "Threat emitters",
+      "color": "#D76657",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "turret_health"
+          ],
+          "label": "Turret armor health, at most three"
+        },
+        {
+          "state_path": [
+            "turret_clock"
+          ],
+          "label": "Remaining firing countdown; aim acquisition at two"
+        },
+        {
+          "state_path": [
+            "turret_mark"
+          ],
+          "label": "Scout exposure timer; also broadcasts turret state to the squad"
+        },
+        {
+          "state_path": [
+            "turret_jam"
+          ],
+          "label": "Engineer interruption timer; freezes firing clock"
+        },
+        {
+          "state_path": [
+            "turret_aim"
+          ],
+          "label": "Locked cardinal firing direction"
+        }
+      ]
+    },
+    {
+      "id": "bolt",
+      "glyph": "circle",
+      "label": "Moving bolts",
+      "color": "#F3C75E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bolt_vel"
+          ],
+          "label": "Actual cardinal movement per step"
+        },
+        {
+          "state_path": [
+            "bolt_owner"
+          ],
+          "label": "0-2 squad source; 3-5 turret source"
+        },
+        {
+          "state_path": [
+            "bolt_ttl"
+          ],
+          "label": "Remaining flight time"
+        }
+      ]
+    },
+    {
+      "id": "shield",
+      "glyph": "square",
+      "label": "Bulwark field",
+      "color": "#6FC8B7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "shield_ttl"
+          ],
+          "label": "Remaining protective-field duration"
+        }
+      ]
+    },
+    {
+      "id": "terminal",
+      "glyph": "beacon",
+      "label": "Relay controls",
+      "color": "#9D88CF",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "terminal_charge"
+          ],
+          "label": "Relay charge; drains by one without a channeler"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "Timed gate",
+      "color": "#BE925B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Open if both relay charges are positive or an object occupies the gate cell"
+        }
+      ]
+    },
+    {
+      "id": "core",
+      "glyph": "battery",
+      "label": "Extraction core",
+      "color": "#E2B94F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "core_hull"
+          ],
+          "label": "Core hull; zero fails the mission"
+        },
+        {
+          "state_path": [
+            "core_carrier"
+          ],
+          "label": "-1 is dropped; 0-2 is the carrying squad member"
+        }
+      ]
+    },
+    {
+      "id": "supply",
+      "glyph": "crate",
+      "label": "Finite base supplies",
+      "color": "#7CA56E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "supply_stock"
+          ],
+          "label": "Finite support-and-ammunition refill units"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "glyph": "flag",
+      "label": "Extraction zone",
+      "color": "#74BC8D",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "ev_fire"
+      ],
+      "meaning": "Squad member actually allocated a new moving bolt and consumed ammunition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_ability"
+      ],
+      "meaning": "Squad member actually spent shared support on shield, scan or jam",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_channel"
+      ],
+      "meaning": "Squad member replenished a nearby physical relay",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_pickup"
+      ],
+      "meaning": "Squad member physically picked up the dropped core",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_drop"
+      ],
+      "meaning": "Squad member voluntarily dropped the carried core",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_reload"
+      ],
+      "meaning": "Squad member consumed a finite supply unit at the base",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_hit_agent"
+      ],
+      "meaning": "Squad member lost actual health to an unblocked incoming bolt",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_hit_turret"
+      ],
+      "meaning": "Turret lost actual armor to a vulnerable impact",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_enemy_fire"
+      ],
+      "meaning": "Turret launched an actual moving bolt",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_blocked"
+      ],
+      "meaning": "Pre-existing bolt slot was absorbed by a shield or guard this step; a reused slot is not its impact location",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "core_ever_picked"
+      ],
+      "meaning": "Core has been picked up at least once",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "core_crossed"
+      ],
+      "meaning": "Previously picked core has crossed left of the relay gate",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Core extracted at the exit with positive hull and a surviving squad member",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Fire north"
+    },
+    {
+      "id": 6,
+      "label": "Fire east"
+    },
+    {
+      "id": 7,
+      "label": "Fire south"
+    },
+    {
+      "id": 8,
+      "label": "Fire west"
+    },
+    {
+      "id": 9,
+      "label": "Role support: shield / scan / jam"
+    },
+    {
+      "id": 10,
+      "label": "Channel adjacent relay, otherwise pick up or drop core"
+    },
+    {
+      "id": 11,
+      "label": "Guard; bulwark also covers adjacent squad"
+    },
+    {
+      "id": 12,
+      "label": "Refill ammunition and shared support at base"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Own x,y position /12",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own health /4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own ammunition /5",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Own noise /8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        10
+      ],
+      "meaning": "Own cardinal facing components",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Own core-carrying flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        13
+      ],
+      "meaning": "Elapsed time /160 and public shared support /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public core beacon x,y /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        17
+      ],
+      "meaning": "Public core hull /6 and carrier index encoded as (index+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        20
+      ],
+      "meaning": "Public gate-open, ever-picked and crossed-gate flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        137
+      ],
+      "meaning": "Public 9 by 13 terrain row-major, code /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        167
+      ],
+      "meaning": "Three local squad rows: x,y /12; health /4; ammo /5; noise /8; role /2; facing x,y; active; visible. Invisible row values zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        167,
+        194
+      ],
+      "meaning": "Three turret rows: x,y /12; health /3; countdown /8; mark /8; jam /4; aim x,y; visible. Local radius five or team scan; otherwise zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        194,
+        386
+      ],
+      "meaning": "Twenty-four bolt rows: x,y /12; velocity x,y; owner /5; TTL /14; active; visible. Local radius five; otherwise zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        386,
+        401
+      ],
+      "meaning": "Three shield rows: x,y /12; TTL /4; active; visible. Local radius five; otherwise zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        401,
+        407
+      ],
+      "meaning": "Two public relay rows: x,y /12 and charge /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        407,
+        410
+      ],
+      "meaning": "Public supply position x,y /12 and stock /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        410,
+        412
+      ],
+      "meaning": "Public gate position x,y /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        412,
+        414
+      ],
+      "meaning": "Public extraction position x,y /12",
+      "visibility": "public"
+    }
+  ]
+}

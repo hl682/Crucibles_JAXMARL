@@ -1,0 +1,629 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "54b637caa92235dfa2ca57b8bef6da72e69269b5e281ca8d21e63a2204c56932",
+  "manifest_sha256": "5cb526fb3549f7712021b97b69e017394191d89ceee1f6d2a4553c19e030a66c",
+  "title": "Steam Basket Kitchen",
+  "rules": [
+    "One basket or rolling pin fits in each worker's hands. Nearest accessible pickup uses distance then object ID; lids must be open for tier pickup.",
+    "Roll raw baskets on the counter while holding the pin. Vegetable needs one roll, dense two; completed preparation consumes one clean wrapper.",
+    "Two physical tiers share pressure. Any open lid subtracts two pressure per tick; a fueled wet burner adds one up to three.",
+    "Closed tiers cook only with pressure at least two and boiler water one through four. Vegetable accepts ticks four to six, dense seven to nine.",
+    "The burner consumes finite fuel. Every third heating tick evaporates one water; three dry-heating danger ends the shift.",
+    "Water above four wets loaded baskets, and overflow wets them further. Moisture three spoils a prepared or ready batch.",
+    "Serve at the hatch; the basket becomes dirty. Wash at the sink using one flask unit, or discard a bad batch there.",
+    "Actions and state are identical for human and policy roles; scripts are unexecuted source hypotheses."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable kitchen floor and station cells",
+          "color": "#EFE1C3"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid central counter partition",
+          "color": "#997D62"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Kitchen workers",
+      "color": "#CC8065",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "held"
+          ],
+          "label": "-1 empty; 0-2 basket; 3 rolling pin"
+        },
+        {
+          "state_path": [
+            "flask"
+          ],
+          "label": "Carried water, zero through two"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "label": "Accepted non-wait action count"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "label": "Invalid action or lost movement contention"
+        }
+      ]
+    },
+    {
+      "id": "basket",
+      "glyph": "food",
+      "label": "Three reusable steam baskets",
+      "color": "#C5A15B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "basket_holder"
+          ],
+          "label": "Carrier ID or -1"
+        },
+        {
+          "state_path": [
+            "tier_of"
+          ],
+          "label": "Steamer tier index or -1 outside"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "0 empty, 1 raw, 2 prepared, 3 ready, 4 spoiled, 5 dirty"
+        },
+        {
+          "state_path": [
+            "filling"
+          ],
+          "label": "0 vegetable, 1 dense, -1 no batch"
+        },
+        {
+          "state_path": [
+            "prep"
+          ],
+          "label": "Rolling work; vegetable needs one, dense two"
+        },
+        {
+          "state_path": [
+            "cook"
+          ],
+          "label": "Accumulated qualifying steam ticks"
+        },
+        {
+          "state_path": [
+            "wet"
+          ],
+          "label": "Excess moisture; three spoils a prepared or ready batch"
+        },
+        {
+          "state_path": [
+            "batch_owner"
+          ],
+          "label": "Worker who filled this batch; -1 none"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "glyph": "tool",
+      "label": "Shared rolling pin",
+      "color": "#9E7450",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_holder"
+          ],
+          "label": "Carrier ID or -1 on floor"
+        }
+      ]
+    },
+    {
+      "id": "tier",
+      "glyph": "door",
+      "label": "Upper and lower steam tiers",
+      "color": "#B68752",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tier_open"
+          ],
+          "label": "Open for loading and removal; vents common steam"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "glyph": "square",
+      "label": "Pantry, counter, boiler, sink, hatch",
+      "color": "#7F9B91",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Accepted orders by filling",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Discarded batches by filling",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "served_now"
+      ],
+      "meaning": "Worker served on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill"
+      ],
+      "meaning": "Boiler overflow on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Newly spoiled basket",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pressure"
+      ],
+      "meaning": "Shared pressure level",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "vented"
+      ],
+      "meaning": "At least one tier currently open",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick nearest accessible basket or rolling pin"
+    },
+    {
+      "id": 6,
+      "label": "Put held basket or pin on current cell"
+    },
+    {
+      "id": 7,
+      "label": "Fill empty basket with vegetable filling at pantry"
+    },
+    {
+      "id": 8,
+      "label": "Fill empty basket with dense filling at pantry"
+    },
+    {
+      "id": 9,
+      "label": "Roll raw basket at counter while holding the pin"
+    },
+    {
+      "id": 10,
+      "label": "Toggle nearest steamer tier lid"
+    },
+    {
+      "id": 11,
+      "label": "Toggle nearby burner"
+    },
+    {
+      "id": 12,
+      "label": "Pour carried flask water into nearby boiler"
+    },
+    {
+      "id": 13,
+      "label": "Load prepared basket into nearest open empty tier"
+    },
+    {
+      "id": 14,
+      "label": "Serve ready basket beside hatch"
+    },
+    {
+      "id": 15,
+      "label": "Wash carried dirty or filled basket at sink"
+    },
+    {
+      "id": 16,
+      "label": "Refill one flask unit at sink"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public elapsed nonterminal transitions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Natural completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Cap completion flag with natural priority",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Natural task success flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Natural task failure flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        83
+      ],
+      "meaning": "Actual public tile map flattened y then x",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        89
+      ],
+      "meaning": "Actual Kitchen workers positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        92
+      ],
+      "meaning": "-1 empty; 0-2 basket; 3 rolling pin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Carried water, zero through two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        98
+      ],
+      "meaning": "Accepted non-wait action count",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        101
+      ],
+      "meaning": "Invalid action or lost movement contention",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        107
+      ],
+      "meaning": "Actual Three reusable steam baskets positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        107,
+        110
+      ],
+      "meaning": "Carrier ID or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        113
+      ],
+      "meaning": "Steamer tier index or -1 outside",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "0 empty, 1 raw, 2 prepared, 3 ready, 4 spoiled, 5 dirty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "0 vegetable, 1 dense, -1 no batch",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        122
+      ],
+      "meaning": "Rolling work; vegetable needs one, dense two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        125
+      ],
+      "meaning": "Accumulated qualifying steam ticks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        128
+      ],
+      "meaning": "Excess moisture; three spoils a prepared or ready batch",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        131
+      ],
+      "meaning": "Worker who filled this batch; -1 none",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        133
+      ],
+      "meaning": "Actual Shared rolling pin positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        134
+      ],
+      "meaning": "Carrier ID or -1 on floor",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        138
+      ],
+      "meaning": "Actual Upper and lower steam tiers positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        140
+      ],
+      "meaning": "Open for loading and removal; vents common steam",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        150
+      ],
+      "meaning": "Actual Pantry, counter, boiler, sink, hatch positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        151
+      ],
+      "meaning": "Shared steam pressure, zero through three",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        152
+      ],
+      "meaning": "Boiler water units, zero through six",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        153
+      ],
+      "meaning": "Remaining finite burner fuel ticks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        154
+      ],
+      "meaning": "Burner on flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "meaning": "Dry-heating danger, zero through three",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        157
+      ],
+      "meaning": "Remaining vegetable and dense filling portions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "meaning": "Remaining finite clean wrappers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        159
+      ],
+      "meaning": "Remaining sink water supply",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        161
+      ],
+      "meaning": "Accepted baskets by filling",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        161,
+        163
+      ],
+      "meaning": "Discarded batches by filling",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        163,
+        164
+      ],
+      "meaning": "Cumulative boiler spill and evaporation units; excludes wash use",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        167
+      ],
+      "meaning": "Workers serving a basket this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        167,
+        168
+      ],
+      "meaning": "At least one tier is open on this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        169
+      ],
+      "meaning": "Boiler overflow happened this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        169,
+        172
+      ],
+      "meaning": "Baskets newly overcooked or waterlogged this step",
+      "visibility": "public"
+    }
+  ]
+}

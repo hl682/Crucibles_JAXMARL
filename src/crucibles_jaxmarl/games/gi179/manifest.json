@@ -1,0 +1,837 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00179",
+  "source_sha256": "d4be54af328065660b722ca32aaa60d2e62e4378d803bece02858f14e18c3acf",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 251,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -0.1,
+  "reward_high": 3.8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "issuer and courier of eastbound load 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "issuer and courier of westbound load 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "issuer and courier of eastbound load 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait and recover one stamina"
+    },
+    {
+      "id": 1,
+      "label": "Move west"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move north"
+    },
+    {
+      "id": 4,
+      "label": "Move south"
+    },
+    {
+      "id": 5,
+      "label": "Spend one filter on cross-shaped sweep"
+    },
+    {
+      "id": 6,
+      "label": "Deliver carried load at its station"
+    },
+    {
+      "id": 7,
+      "label": "Drop carried load or pick lowest ground load"
+    },
+    {
+      "id": 8,
+      "label": "Offer load to a waiting empty adjacent courier"
+    },
+    {
+      "id": 9,
+      "label": "Spill carried dust and body burden"
+    },
+    {
+      "id": 10,
+      "label": "Take one finite station filter"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stamina"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "filters"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "burden"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "priority"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "load_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "destination"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "quality"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "load_dust"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_stock"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tile_pos"
+      ],
+      "shape": [
+        63,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dust"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dust_amount"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "filter_used"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spilled"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "vented"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "filters_consumed"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "private_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "load_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "load_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dust_active"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dust_visible"
+      ],
+      "shape": [
+        3,
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cleaned"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exposed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "handoff"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Floor or corridor"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid partition"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "meaning": "Travel stamina",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "filters"
+          ],
+          "meaning": "Unused portable filters",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "burden"
+          ],
+          "meaning": "Carried fictional dust",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "loads",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "load_pos"
+      ],
+      "active": [
+        "load_active"
+      ],
+      "visibility": [
+        "load_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "meaning": "Owner -1 on ground; 0..2 carrier; -2 delivered",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "destination"
+          ],
+          "meaning": "Processing station id",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "quality"
+          ],
+          "meaning": "Remaining delivery quality",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "load_dust"
+          ],
+          "meaning": "Finite releasable load dust",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_stock"
+          ],
+          "meaning": "Remaining shared filter stock",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "dust_cells",
+      "kind": "hazard",
+      "count": 63,
+      "position": [
+        "tile_pos"
+      ],
+      "active": [
+        "dust_active"
+      ],
+      "visibility": [
+        "dust_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "dust_amount"
+          ],
+          "meaning": "Actual cell dust level 1..3",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent public delivery receipt per original load",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "station_stock"
+      ],
+      "meaning": "Current public finite filter stock",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own x/8,y/6",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own stamina/20",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own filters/4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own carried dust burden/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        9
+      ],
+      "meaning": "Own carried load id 0,1,2 or none=3 one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Private priority of own issued load/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Clock/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        74
+      ],
+      "meaning": "Public 7x9 wall map flattened y-major",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        78
+      ],
+      "meaning": "Station x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        78,
+        80
+      ],
+      "meaning": "Finite station filter stocks/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        83
+      ],
+      "meaning": "Public delivered receipts by original load id",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        101
+      ],
+      "meaning": "Three local courier rows [visible,x/8,y/6,stamina/20,filters/4,burden/3]; invisible numeric fields zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        101,
+        122
+      ],
+      "meaning": "Three local load rows [visible,x/8,y/6,(owner+2)/4,destination,quality/6,load_dust/4]; invisible numeric fields zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        122,
+        185
+      ],
+      "meaning": "Cell dust/3 for visible cells, else zero; y-major",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        185,
+        248
+      ],
+      "meaning": "Matching radius-two cell visibility masks; zero dust outside these masks is unknown",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        248,
+        251
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Deliver three distinct loads to their designated stations while preserving quality; original issuers earn private priority-weighted quality and the actual carrier earns a handling bonus.",
+    "natural_termination": "All three loads delivered, otherwise H=96 truncation. Zero quality is retained and may still be delivered.",
+    "interaction": "Finite dusty loads and carried burden dirty shared cells; filters can clean a peer route, expose a peer to quality loss, or be saved for private use. Real load ownership can be handed to a waiting adjacent courier.",
+    "observation_access": "Static walls, station coordinates/stocks and cumulative delivery receipts are public. Courier, load and cell dust data are visible within Manhattan radius two with no wall occlusion. Each original issuer alone sees its priority. Hidden numeric fields are zeroed with separate visibility flags. Scene events contain public levels only."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stamina"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "filters"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "burden"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "quality"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "load_dust"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "station_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "dust"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "dust_amount"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "vented"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "filters_consumed"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_permissions": "Movement requires in-bounds floor, sufficient old stamina and an old-empty target. Highest-level mask is local: every target is within sensing radius. Sweep needs a filter; deliver needs own carried load at its destination; drop/pick needs a carried or grounded load; handoff needs an adjacent empty peer; spill needs carried dust; refill needs shared stock and filters below four. Handoff acceptance additionally requires the recipient to wait. Invalid actions become wait; terminal roles permit only wait.",
+  "private_state_permissions": [
+    {
+      "state_path": [
+        "priority"
+      ],
+      "owner_axis": 0,
+      "visibility": [
+        "private_visible"
+      ],
+      "access": "self row only; omitted from entity attributes; full-state debug must be explicitly privileged"
+    }
+  ],
+  "authoring_status": "AUTHORED_NOT_EXECUTED",
+  "representation_adaptations": [
+    "All signed small integer rule fields are represented losslessly as int32.",
+    "Reset key is supplied by the trusted caller and is not duplicated in state. Private values use the literal randint distribution in reset.",
+    "Absorbing raw terminal calls preserve all state and causes, return zero reward, and never auto-reset."
+  ]
+}

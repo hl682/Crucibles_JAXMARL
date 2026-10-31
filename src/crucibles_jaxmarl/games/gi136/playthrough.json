@@ -1,0 +1,225 @@
+{
+  "schema": "cr01-spatial-game-playthrough-v3",
+  "candidate_id": "game-v3-00136",
+  "source_sha256": "cc7856a8a488e1142d45a1afda813dffde0080112144fca73f95123eb4938895",
+  "status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "seed": 0,
+  "key_schedule": {
+    "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+    "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+    "reset_calls": 1,
+    "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+    "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+  },
+  "scripts": [
+    {
+      "id": "cargo_turn_and_partner_passage",
+      "scope": "Physical cargo and partner displacement witness hypothesis",
+      "intended_objective": "Request cargo-0 pickup and carry, operate the left station, let role 1 enter, rotate that partner, then drop cargo. No delivery or whole-game success is asserted.",
+      "actions": [
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      }
+    },
+    {
+      "id": "early_empty_evacuation",
+      "scope": "Natural terminal branch with cargo intentionally unfinished",
+      "intended_objective": "Request two steps into initially open bays and empty-handed escape by every role. This is an unexecuted negative-outcome terminal hypothesis, not a mission-success claim.",
+      "actions": [
+        [
+          1,
+          3,
+          3
+        ],
+        [
+          1,
+          3,
+          3
+        ],
+        [
+          9,
+          9,
+          9
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      }
+    }
+  ],
+  "paired_intervention_hypotheses": [
+    {
+      "id": "turn_changes_partner_passage",
+      "scope": "Room control intervention with fixed partner movement",
+      "intended_difference": "Role 0 clockwise should keep the first bridge connected while counterclockwise should close it before role 1's westward move. The same next westward request should preserve a spatial branch difference.",
+      "prefix": [
+        [
+          0,
+          4,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          5,
+          4,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          6,
+          4,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      },
+      "coupling": "Reset each branch independently with the identical reset key. Prefix and suffix use absolute k in the same step-key schedule. No policy search or candidate execution has occurred."
+    },
+    {
+      "id": "agreement_versus_control_conflict",
+      "scope": "Shared-station commitment conflict",
+      "intended_difference": "Same-sign requests should execute one clockwise turn and charge both operators; opposite requests should cancel, preserving orientation, positions and energy. No observations have been collected.",
+      "prefix": [
+        [
+          0,
+          4,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          5,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          5,
+          6,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      },
+      "coupling": "Reset each branch independently with the identical reset key. Prefix and suffix use absolute k in the same step-key schedule. No policy search or candidate execution has occurred."
+    }
+  ],
+  "legality_status": "AUTHOR_REASONED_ONLY_NOT_RUNTIME_VERIFIED",
+  "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "limits": "Integer vector dimensions and action ranges were checked as data only. Legality, state effects, terminal behavior and solvability require independent sealed execution. This is not a successful replay, validation result, performance score or learning claim."
+}

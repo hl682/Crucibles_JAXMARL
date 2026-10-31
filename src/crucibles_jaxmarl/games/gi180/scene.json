@@ -1,0 +1,312 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f86308ea53c8962a99ee7ee2bba0038550c9f3b13858411f8edbd96b2bcab05a",
+  "manifest_sha256": "56a2f193f4a9d4636c11526118a323aee632814c3bd7cf2139ed1a31052d2cd3",
+  "title": "Beacon Auction",
+  "rules": [
+    "Two fixed pairs (0,1) and (2,3) compete around two physical beacon gates, plus a public bypass that burns two charge per entry.",
+    "Nearby bids lock one or two liquid charge per action. Every fourth transition, inactive sites award the highest accumulated bid; ties use the public rotating agent rank.",
+    "Losing escrow is refunded in full; the winner payment is consumed. Rights last six following movement transitions, then expire. No bids are accepted while rights are active.",
+    "Movement uses old rights. The owner pair enters for free; a rival pays one charge to the owner. Anyone already on an expired gate may leave.",
+    "An adjacent partner may receive two charge. Owning both sites as a pair enables a one-charge relay between their actual positions when the destination is empty.",
+    "Delivery values are private, bids public. AUTHOR SOURCE ONLY: no clearing, conservation, native replay, animation or learned strategy has been numerically tested."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Ordinary floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall"
+        },
+        {
+          "value": 2,
+          "meaning": "Auction-controlled beacon gate"
+        },
+        {
+          "value": 3,
+          "meaning": "Public bypass; burn two charge on entry"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "glyph": "robot",
+      "label": "Charge couriers",
+      "color": "#417BAA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "charge"
+          ],
+          "label": "Liquid finite charge"
+        },
+        {
+          "state_path": [
+            "escrow"
+          ],
+          "label": "Public committed bids [north,south]"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Own parcel delivered"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "glyph": "beacon",
+      "label": "Auction beacon gates",
+      "color": "#A4772C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "Current rights owner; -1 unowned"
+        },
+        {
+          "state_path": [
+            "ttl"
+          ],
+          "label": "Remaining usable transitions"
+        },
+        {
+          "state_path": [
+            "escrow_total"
+          ],
+          "label": "Pending public charge in this auction"
+        }
+      ]
+    },
+    {
+      "id": "terminals",
+      "glyph": "flag",
+      "label": "Opposing delivery terminals",
+      "color": "#497D58",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "owner"
+      ],
+      "meaning": "Current access and toll-right owner",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "ttl"
+      ],
+      "meaning": "Current rights lifetime",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent delivery receipts",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "spent_charge"
+      ],
+      "meaning": "Charge irreversibly consumed by winning bids, bypass and relay",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move west"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move north"
+    },
+    {
+      "id": 4,
+      "label": "Move south"
+    },
+    {
+      "id": 5,
+      "label": "Commit one charge at nearby inactive beacon"
+    },
+    {
+      "id": 6,
+      "label": "Commit two charge at nearby inactive beacon"
+    },
+    {
+      "id": 7,
+      "label": "Give two charge to adjacent fixed partner"
+    },
+    {
+      "id": 8,
+      "label": "Relay between two partner-owned active beacons"
+    },
+    {
+      "id": 9,
+      "label": "Deliver at either opposing terminal"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own private north/south delivery values/5",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Clock/80",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        11
+      ],
+      "meaning": "Four public courier x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        15
+      ],
+      "meaning": "Liquid charges/24",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        23
+      ],
+      "meaning": "Public agent-major two-site escrow table/24",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Persistent parcel-delivered flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        31
+      ],
+      "meaning": "Two beacon x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        33
+      ],
+      "meaning": "Beacon owners encoded (owner+1)/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "meaning": "Beacon remaining transitions/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        37
+      ],
+      "meaning": "Total site escrows/24",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        45
+      ],
+      "meaning": "Four terminal x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        108
+      ],
+      "meaning": "Public y-major map values/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        109
+      ],
+      "meaning": "Joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        109,
+        110
+      ],
+      "meaning": "Total irreversibly consumed charge/24",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        114
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

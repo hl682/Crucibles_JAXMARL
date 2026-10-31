@@ -1,0 +1,339 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "a68e16ea61f5486530ed5dbdd03805b0985192578932dbf91634ce11ae39e814",
+  "manifest_sha256": "d916a6fd276c5877916a8bc332a2714ba67db5d8cee165ed6f9ec9f1d885ebe9",
+  "title": "Echo Passage — lures, patrols and shared exposure",
+  "rules": [
+    "Extract both cases at the western exit. Alarm five ends the mission in failure.",
+    "Only role 0 has the one-use tool for the central gate; north and south openings provide alternative routes.",
+    "Lures consume one of three charges and emit strength six. Moving with a case emits four, radio opening three, unlocking five.",
+    "Sound decays one per step and loses one per Manhattan cell. It penetrates walls by definition.",
+    "Patrols retarget to the strongest audible source; ties use source index. Attention persists three ticks.",
+    "Patrols move one cell toward a target with deterministic x-first then y fallback, respecting walls and the gate.",
+    "A nearby source can expose a different crew member. All-wait silence reduces alarm only when nobody is exposed.",
+    "Radios consume one of two charges and share live sender positions and nearby patrol/gate visibility for three ticks.",
+    "Interact together to transfer a case to an adjacent empty-handed partner; floor pickup and extraction use distance one.",
+    "Role views hide patrols, cases, gate state and sounds outside the declared visibility or hearing rules."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#E4E8EC"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall; blocks movement",
+          "color": "#374151"
+        },
+        {
+          "value": 2,
+          "meaning": "Public gate location; passable only when gate_open is true",
+          "color": "#B8860B"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "glyph": "agent",
+      "label": "Extraction crew",
+      "color": "#3276B5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carried object (-1 means empty)"
+        },
+        {
+          "state_path": [
+            "radio_ttl"
+          ],
+          "label": "Open radio ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "patrols",
+      "glyph": "robot",
+      "label": "Sound-directed patrols",
+      "color": "#B54848",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "patrol_attention"
+          ],
+          "label": "Persistent attention ticks"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "Locksmith shortcut gate",
+      "color": "#AD862A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Gate open"
+        }
+      ]
+    },
+    {
+      "id": "objects",
+      "glyph": "crate",
+      "label": "Mission cases",
+      "color": "#C67A31",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "object_owner"
+          ],
+          "label": "Owner (-1 floor; 0-2 carrier)"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "glyph": "flag",
+      "label": "Shared extraction point",
+      "color": "#2A9256",
+      "attribute_labels": []
+    },
+    {
+      "id": "noise_sources",
+      "glyph": "beacon",
+      "label": "Active acoustic sources",
+      "color": "#9B58BC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "noise_strength"
+          ],
+          "label": "Source strength (1-6)"
+        }
+      ]
+    },
+    {
+      "id": "acoustic_cells",
+      "glyph": "circle",
+      "label": "Actual positive acoustic field cells",
+      "color": "#DCAD48",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "field_value"
+          ],
+          "label": "Acoustic intensity (1-6)"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "alarm"
+      ],
+      "meaning": "Current shared alarm; not a newly occurring event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "radio_ttl"
+      ],
+      "meaning": "Current open radio-channel durations; not newly occurring events",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait quietly"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Emit lure if charges remain"
+    },
+    {
+      "id": 6,
+      "label": "Interact: unlock, hand off, collect or deliver"
+    },
+    {
+      "id": 7,
+      "label": "Open three-tick radio channel if charges remain"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own xy divided by 12",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        5
+      ],
+      "meaning": "Own lure charges /3, radio charges /2 and locksmith tool remaining",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        8
+      ],
+      "meaning": "Own carried-object one-hot: empty, object 0, object 1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        26
+      ],
+      "meaning": "Three agent blocks: xy /12, visible flag, carried-object one-hot; whole block zero unless Chebyshev range <=3 or that agent has an open radio",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        26,
+        34
+      ],
+      "meaning": "Two patrol blocks: xy /12, visible flag, attention /3; visible locally or through an active sender local to that patrol",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        34,
+        46
+      ],
+      "meaning": "Three sound-source blocks: xy /12, strength /6, visible flag; zero unless active and own or strictly audible",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        46,
+        54
+      ],
+      "meaning": "Two mission-object blocks: xy /12, visible flag, (owner+2)/4; zero unless active and locally seen or carried by a visible agent",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        54,
+        58
+      ],
+      "meaning": "Gate xy /12, visible flag, open flag; zero unless local or visible via an active radio sender",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        58,
+        60
+      ],
+      "meaning": "Public exit xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        63
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        63,
+        64
+      ],
+      "meaning": "Shared alarm /5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        65
+      ],
+      "meaning": "Clock /112",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        67
+      ],
+      "meaning": "Public extraction-completed flags per mission object",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        70
+      ],
+      "meaning": "Public radio-channel TTL per agent /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        213
+      ],
+      "meaning": "Public static 11 by 13 map in yx order /2; the gate tile denotes location, not current open state",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        213,
+        356
+      ],
+      "meaning": "Actual acoustic intensity /6 at cells within own Chebyshev radius 2, zero elsewhere; visible domain follows own position",
+      "visibility": "local"
+    }
+  ]
+}

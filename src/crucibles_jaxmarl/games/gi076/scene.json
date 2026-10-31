@@ -1,0 +1,621 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "3aefd945deb38d64614ec4dfaf55ddc131d192b81e6b155f2814bb88f56d37ea",
+  "manifest_sha256": "b723d014345281821ed0669cd3db69855859b1f7d947a7b915c711433322ee1a",
+  "title": "Ballast Run — The Drifting Sample Skiff",
+  "rules": [
+    "Three crew collect three fragile capsules and bank them at the home berth; this is authored source, not observed successful play.",
+    "The real 5x3 skiff retains velocity. Thrust, braking, currents and full-hull collision determine its actual river position.",
+    "Crew mass, corner-tank water and cargo determine torque. Loose capsules can slide or be lost; two real clips stop slides but retain mass.",
+    "Loading and banking require actual station positions, stopped motion and safe balance. Hull failure and capsule loss take priority over success.",
+    "Show the river board plus deck detail, actual moving crew/cargo, tank fill, clip states and committed effects. A numeric dashboard is supplementary.",
+    "Current arrows are public force previews; rejected collisions and force arrows must not be animated as successful travel.",
+    "Each event is identified by tick and slot. Repeated absorbing snapshots do not replay old effects.",
+    "Natural endings precede H192 truncation. Already-ended raw states remain unchanged and reward zero. Do not label time limit as success."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      22.5,
+      14.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Ordinary navigable water",
+          "color": "#326B92"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid boundary cliff",
+          "color": "#24303B"
+        },
+        {
+          "value": 2,
+          "meaning": "Solid reef",
+          "color": "#7D817A"
+        },
+        {
+          "value": 3,
+          "meaning": "Water with eastward base current",
+          "color": "#286C9B"
+        },
+        {
+          "value": 4,
+          "meaning": "Water with westward base current",
+          "color": "#2D789A"
+        }
+      ]
+    },
+    "entity_footprints": [
+      {
+        "entity_id": "vessel",
+        "offsets_xy": [
+          [
+            -2,
+            -1
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            0,
+            -1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            2,
+            -1
+          ],
+          [
+            -2,
+            0
+          ],
+          [
+            -1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            -2,
+            1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      }
+    ],
+    "coordinate_frames": [
+      {
+        "id": "deck",
+        "bounds": [
+          -0.5,
+          -0.5,
+          4.5,
+          2.5
+        ],
+        "world_translation_state_path": [
+          "boat_xy"
+        ],
+        "translation_offset_xy": [
+          -2,
+          -1
+        ],
+        "crew_local_state_path": [
+          "crew_deck_xy"
+        ],
+        "cargo_local_state_path": [
+          "capsule_deck_xy"
+        ],
+        "cargo_active_status": 1,
+        "cargo_status_path": [
+          "capsule_status"
+        ]
+      }
+    ],
+    "spatial_fields": [
+      {
+        "state_path": [
+          "current_direction"
+        ],
+        "encoding": "signed_horizontal_unit_arrows",
+        "public": true,
+        "impulse_period": 4,
+        "tide_half_period": 8,
+        "clock_path": [
+          "t"
+        ],
+        "meaning": "Force preview only; accepted vessel positions determine motion."
+      }
+    ],
+    "berth_storage_offsets_xy": [
+      [
+        -1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "presentation_rule": "Show the actual river board and a magnified deck view. The bank sockets are the design's fixed berth storage placement; they do not alter navigation or rewards."
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "glyph": "worker",
+      "label": "Crew",
+      "color": "#EAD6AA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_number"
+          ],
+          "label": "Crew id 0..2."
+        }
+      ]
+    },
+    {
+      "id": "vessel",
+      "glyph": "crate",
+      "label": "Skiff: actual 5x3 footprint",
+      "color": "#8C6242",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "vessel_hull"
+          ],
+          "label": "Hull condition 0..12."
+        },
+        {
+          "state_path": [
+            "vessel_fuel"
+          ],
+          "label": "Fuel 0..80."
+        },
+        {
+          "state_path": [
+            "vessel_velocity"
+          ],
+          "label": "Persistent [vx,vy], each -1..1."
+        },
+        {
+          "state_path": [
+            "vessel_torque"
+          ],
+          "label": "Actual [torque_x,torque_y]."
+        }
+      ]
+    },
+    {
+      "id": "tanks",
+      "glyph": "water",
+      "label": "Corner ballast tanks",
+      "color": "#54ABCA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ballast"
+          ],
+          "label": "Tank water level 0..3."
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Helm / scoop / dispatch",
+      "color": "#D9CC9D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_kind"
+          ],
+          "label": "0 helm;1 scoop;2 dispatch."
+        }
+      ]
+    },
+    {
+      "id": "capsules",
+      "glyph": "resource",
+      "label": "Fragile survey capsules",
+      "color": "#97DCE6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "capsule_number"
+          ],
+          "label": "Persistent capsule id."
+        },
+        {
+          "state_path": [
+            "capsule_status"
+          ],
+          "label": "0 buoy;1 aboard;2 banked;3 lost."
+        },
+        {
+          "state_path": [
+            "capsule_pinned"
+          ],
+          "label": "True when actual clip attached."
+        }
+      ]
+    },
+    {
+      "id": "buoys",
+      "glyph": "beacon",
+      "label": "Source moorings",
+      "color": "#ED9A4E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "buoy_available"
+          ],
+          "label": "True while the source capsule remains available."
+        }
+      ]
+    },
+    {
+      "id": "berth",
+      "glyph": "flag",
+      "label": "Home berth",
+      "color": "#83BA88",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "banked_count"
+          ],
+          "label": "Actual banked capsules, 0..3."
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_kind"
+      ],
+      "meaning": "Committed transition event codes, gated by event_active; payloads describe actual accepted changes, with documented force/rejected-attempt exceptions.",
+      "semantics": "per_step_flag",
+      "active_path": [
+        "event_active"
+      ],
+      "count_path": [
+        "event_count"
+      ],
+      "tick_path": [
+        "event_tick"
+      ],
+      "actor_path": [
+        "event_actor"
+      ],
+      "object_path": [
+        "event_object"
+      ],
+      "from_position_path": [
+        "event_from_xy"
+      ],
+      "to_position_path": [
+        "event_to_xy"
+      ],
+      "value_path": [
+        "event_value"
+      ],
+      "visibility_path": [
+        "event_visibility"
+      ],
+      "from_space_path": [
+        "event_from_space"
+      ],
+      "to_space_path": [
+        "event_to_space"
+      ],
+      "coordinate_spaces": {
+        "0": "world",
+        "1": "deck",
+        "2": "absent"
+      },
+      "identity": [
+        "candidate_id",
+        "event_tick",
+        "slot"
+      ],
+      "kinds": [
+        {
+          "code": 0,
+          "name": "unused",
+          "actor": "none",
+          "object": "none",
+          "from_to": "absent",
+          "value": "0",
+          "visual_lifetime": "none"
+        },
+        {
+          "code": 1,
+          "name": "crew_move",
+          "actor": "moving crew",
+          "object": "-1",
+          "from_to": "old and accepted new deck cell",
+          "value": "1 accepted move",
+          "visual_lifetime": "0.75 transition interval; interpolate only accepted cells"
+        },
+        {
+          "code": 2,
+          "name": "ballast_change",
+          "actor": "tank operator",
+          "object": "tank id",
+          "from_to": "same deck tank cell",
+          "value": "+1 fill or -1 drain",
+          "visual_lifetime": "0.6 interval; animate actual fill-level change"
+        },
+        {
+          "code": 3,
+          "name": "thrust",
+          "actor": "helmsman",
+          "object": "-1",
+          "from_to": "old world centre to old centre plus command direction; a force arrow, not travel",
+          "value": "1 fuel spent",
+          "visual_lifetime": "0.4 interval"
+        },
+        {
+          "code": 4,
+          "name": "brake",
+          "actor": "helmsman",
+          "object": "-1",
+          "from_to": "same world centre",
+          "value": "1 fuel spent",
+          "visual_lifetime": "0.4 interval; brake icon only"
+        },
+        {
+          "code": 5,
+          "name": "vessel_move",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "old and accepted new world centre",
+          "value": "1 accepted displacement",
+          "visual_lifetime": "0.8 interval; hull, crew and cargo translate together"
+        },
+        {
+          "code": 6,
+          "name": "collision",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "old world centre and rejected candidate centre",
+          "value": "1 hull lost",
+          "visual_lifetime": "0.5 interval; cross at blocked direction, hull remains at accepted position"
+        },
+        {
+          "code": 7,
+          "name": "sample_load",
+          "actor": "scoop operator",
+          "object": "capsule id",
+          "from_to": "source buoy in world space to accepted tray in deck space",
+          "value": "1 capsule loaded",
+          "visual_lifetime": "0.7 interval; animate only accepted transfer"
+        },
+        {
+          "code": 8,
+          "name": "sample_bank",
+          "actor": "dispatch operator",
+          "object": "capsule id",
+          "from_to": "previous cargo deck cell to home berth in world space",
+          "value": "1 capsule banked",
+          "visual_lifetime": "0.7 interval"
+        },
+        {
+          "code": 9,
+          "name": "sample_slide",
+          "actor": "-1",
+          "object": "capsule id",
+          "from_to": "old and accepted new deck cell",
+          "value": "1 slide",
+          "visual_lifetime": "0.6 interval"
+        },
+        {
+          "code": 10,
+          "name": "sample_loss",
+          "actor": "-1",
+          "object": "capsule id",
+          "from_to": "old deck cell and off-deck proposed cell, both in deck space",
+          "value": "1 capsule lost",
+          "visual_lifetime": "0.8 interval; endpoint is a recorded loss location"
+        },
+        {
+          "code": 11,
+          "name": "clip_attach",
+          "actor": "clip operator",
+          "object": "capsule id",
+          "from_to": "same deck cell",
+          "value": "1 clip attached",
+          "visual_lifetime": "0.4 interval; persistent strap then follows capsule_pinned"
+        },
+        {
+          "code": 12,
+          "name": "clip_release",
+          "actor": "clip operator",
+          "object": "capsule id",
+          "from_to": "same deck cell",
+          "value": "1 clip released",
+          "visual_lifetime": "0.4 interval"
+        },
+        {
+          "code": 13,
+          "name": "overstrain",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "same world boat centre",
+          "value": "1 hull lost",
+          "visual_lifetime": "0.5 interval; stress flash driven by committed damage"
+        },
+        {
+          "code": 14,
+          "name": "episode_end",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "absent",
+          "value": "terminal_reason 1..4",
+          "visual_lifetime": "one new-event reveal; persistent banner subsequently derives from done/reason"
+        }
+      ],
+      "replay_rule": "Deduplicate tick/slot identities; interpolate actual stage endpoints only. Absorbing snapshots preserve events and must not replay them."
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "walk_north"
+    },
+    {
+      "id": 2,
+      "label": "walk_east"
+    },
+    {
+      "id": 3,
+      "label": "walk_south"
+    },
+    {
+      "id": 4,
+      "label": "walk_west"
+    },
+    {
+      "id": 5,
+      "label": "thrust_north"
+    },
+    {
+      "id": 6,
+      "label": "thrust_east"
+    },
+    {
+      "id": 7,
+      "label": "thrust_south"
+    },
+    {
+      "id": 8,
+      "label": "thrust_west"
+    },
+    {
+      "id": 9,
+      "label": "brake"
+    },
+    {
+      "id": 10,
+      "label": "fill_tank"
+    },
+    {
+      "id": 11,
+      "label": "drain_tank"
+    },
+    {
+      "id": 12,
+      "label": "work_station"
+    },
+    {
+      "id": 13,
+      "label": "toggle_clip"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1725
+      ],
+      "meaning": "One-hot terrain in code order 0..4.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1725,
+        1890
+      ],
+      "meaning": "Channels: crew 0 occupancy, crew 1 occupancy, crew 2 occupancy, ballast/3 at tank cells, capsule mass/2, unpinned capsule count, pinned capsule count, helm flag, scoop flag, dispatch flag, tank flag. Cargo occupancy is at most one.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1890,
+        1911
+      ],
+      "meaning": "Per id: one-hot status (4), deck x/4 and y/2 if aboard else 0 (2), pin flag (1).",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1911,
+        1917
+      ],
+      "meaning": "World source x/22,y/14.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1917,
+        1920
+      ],
+      "meaning": "Self one-hot identity, 3 columns.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1920,
+        1939
+      ],
+      "meaning": "Boat xy normalized (2), velocity (2), fuel, hull, t, tide sign, tide-flip countdown, impulse due, two torques, free clips, done, success, terminated, truncated, reason, banked count; exact normalization is in observe.",
+      "visibility": "public"
+    }
+  ]
+}

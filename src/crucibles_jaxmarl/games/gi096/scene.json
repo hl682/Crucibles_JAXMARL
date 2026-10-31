@@ -1,0 +1,450 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "dc0778d0198f820eb1619db6f0f6b666b6bca60afb7655ac7f1ba5ed4e83634f",
+  "manifest_sha256": "23911efdb665bce93e0f75ba3770f07ae4b76b36520fc829a297e9149872b506",
+  "title": "Flank-and-Hold Meadow",
+  "rules": [
+    "Guide all four animals to either marked pen. Each saved animal gives every shepherd +1; each lost animal gives -1.",
+    "Ordinary shepherd proximity repels within distance 2. A whistle costs one focus and doubles pressure within distance 3.",
+    "Calm restores one focus, emits no pressure, and reduces nearby panic. An adjacent gate-hold action is also quiet.",
+    "Strong combined pressure raises panic. Panic at least 3 grants a second microstep and allows dangerous ditch entry.",
+    "Animals without pressure follow nearby herd mates; calm animals beyond the gate follow a marked pen.",
+    "Holding the gate sets its timer to 3. The timer decays, but occupied gates remain open for safe clearance.",
+    "Movements, collisions, panic and gate passability are real state. These author scripts have not been run."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Meadow floor",
+          "color": "#C4D6A3"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid hedge",
+          "color": "#466D49"
+        },
+        {
+          "value": 2,
+          "meaning": "Gate tile; entity state controls passability",
+          "color": "#BC9D68"
+        },
+        {
+          "value": 3,
+          "meaning": "Ditch; panic permits dangerous entry",
+          "color": "#A4745C"
+        },
+        {
+          "value": 4,
+          "meaning": "Safe pen",
+          "color": "#81BD83"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "shepherds",
+      "glyph": "worker",
+      "label": "Shepherds",
+      "color": "#5484B5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "focus"
+          ],
+          "label": "Whistle focus, maximum 4"
+        },
+        {
+          "state_path": [
+            "signal"
+          ],
+          "label": "Signal: ordinary 0, whistle 1, calm 2, hold 3"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "label": "Last movement was blocked"
+        }
+      ]
+    },
+    {
+      "id": "herd",
+      "glyph": "circle",
+      "label": "Herd animals",
+      "color": "#E1D8B8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "panic"
+          ],
+          "label": "Panic: 0 to 4; second microstep at 3"
+        },
+        {
+          "state_path": [
+            "saved"
+          ],
+          "label": "Saved permanently"
+        },
+        {
+          "state_path": [
+            "lost"
+          ],
+          "label": "Lost permanently"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "Meadow gate",
+      "color": "#A98556",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Gate passable"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "label": "Remaining hold timer, maximum 3"
+        }
+      ]
+    },
+    {
+      "id": "pens",
+      "glyph": "flag",
+      "label": "Safe pens",
+      "color": "#61A86A",
+      "attribute_labels": []
+    },
+    {
+      "id": "ditches",
+      "glyph": "hazard",
+      "label": "Ditches",
+      "color": "#B86C56",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "saved_now"
+      ],
+      "meaning": "Animals saved during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lost_now"
+      ],
+      "meaning": "Animals lost during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gate_opened"
+      ],
+      "meaning": "Gate changed to open during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "saved_total"
+      ],
+      "meaning": "Cumulative saved animals",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost_total"
+      ],
+      "meaning": "Cumulative lost animals",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "panic"
+      ],
+      "meaning": "Current bounded herd panic",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Current gate passability",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait with ordinary proximity pressure"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Whistle using one focus"
+    },
+    {
+      "id": 6,
+      "label": "Calm nearby animals and recover focus"
+    },
+    {
+      "id": 7,
+      "label": "Hold gate open when adjacent"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Shepherd positions [x,y].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "Whistle focus from 0 to 4; a whistle spends 1 and calm restores 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Last effective signal: 0 ordinary, 1 whistle, 2 calm, 3 gate hold.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Last nonabsorbing blocked shepherd movement flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        23
+      ],
+      "meaning": "Animal positions [x,y], including final saved or lost locations.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Animals still physically moving in the meadow.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        31
+      ],
+      "meaning": "Animal panic from 0 to 4; panic at least 3 permits a second microstep and ditch entry.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        35
+      ],
+      "meaning": "Persistent per-animal saved status.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        39
+      ],
+      "meaning": "Persistent per-animal lost status.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        41
+      ],
+      "meaning": "Gate position [5,3].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        42
+      ],
+      "meaning": "The gate entity is always present.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        43
+      ],
+      "meaning": "Actual passability of the gate during the most recent transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        44
+      ],
+      "meaning": "Open hold timer, 0 to 3; occupied gates remain open even at zero.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        48
+      ],
+      "meaning": "Safe pen positions [7,2] and [7,4].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        52
+      ],
+      "meaning": "Ditch positions [4,1] and [4,5].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        115
+      ],
+      "meaning": "Public y-major map: floor 0, hedge 1, gate 2, ditch 3, pen 4.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        115,
+        116
+      ],
+      "meaning": "Cumulative number of saved animals.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        117
+      ],
+      "meaning": "Cumulative number of lost animals.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        118
+      ],
+      "meaning": "Elapsed nonabsorbing steps, 0 through 64.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        118,
+        122
+      ],
+      "meaning": "Which animals entered a safe pen on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        126
+      ],
+      "meaning": "Which animals entered a ditch in panic on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        127
+      ],
+      "meaning": "Gate changed from closed to open on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        128
+      ],
+      "meaning": "Joint episode completion; true for natural completion or horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        129
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        130
+      ],
+      "meaning": "Horizon cause; false when natural completion coincides with horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        133
+      ],
+      "meaning": "Own agent identity as A-way one-hot in agent_0 through agent_2 order.",
+      "visibility": "self"
+    }
+  ]
+}

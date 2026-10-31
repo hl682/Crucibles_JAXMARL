@@ -1,0 +1,766 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00099",
+  "source_sha256": "a355223f334d3ddcfe71534c335342c327adcf0862c3d4a35f1d249dbb4472ae",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 73,
+  "num_actions": 7,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -3,
+  "observation_high": 128,
+  "reward_low": -16,
+  "reward_high": 16,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Warden on the upper approach"
+    },
+    {
+      "id": "agent_1",
+      "role": "Warden on the lower approach"
+    },
+    {
+      "id": "agent_2",
+      "role": "Courier initially approaching the upper pennant"
+    },
+    {
+      "id": "agent_3",
+      "role": "Courier initially approaching the lower pennant"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Warden: tag adjacent vulnerable courier; courier: rescue, otherwise exit with pennant or pick up pennant"
+    },
+    {
+      "id": 6,
+      "label": "Warden: seal adjacent shelter; courier: spend a charge while standing on an open shelter"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "frozen"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "grace"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "escaped"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "guard"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flag_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flag_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flag_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flag_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shelter_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shelter_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_charge"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shelter_seal"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "exit_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "exit_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_vis"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tag_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "rescue_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "escape_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "seal_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cover_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open traversable board",
+          "color": "#E7EDF3"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable fixed wall",
+          "color": "#4A5568"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "frozen"
+          ],
+          "meaning": "Remaining immobilization timer",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "grace"
+          ],
+          "meaning": "Rescue protection timer",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Pennant index or -1 for no pennant",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "escaped"
+          ],
+          "meaning": "Courier already exited; only no-op remains",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "meaning": "Shelter cover spent for this tick",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "flag",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "flag_pos"
+      ],
+      "active": [
+        "flag_active"
+      ],
+      "visibility": [
+        "flag_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "flag_owner"
+          ],
+          "meaning": "-1 loose, 2 or 3 carried by that courier, -2 delivered",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "shelter_pos"
+      ],
+      "active": [
+        "shelter_active"
+      ],
+      "visibility": [
+        "shelter_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "shelter_charge"
+          ],
+          "meaning": "Shared cover charges, at most four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "shelter_seal"
+          ],
+          "meaning": "Warden closure timer",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "exit_pos"
+      ],
+      "active": [
+        "exit_active"
+      ],
+      "visibility": [
+        "exit_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tag_event"
+      ],
+      "meaning": "Couriers newly immobilized this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescue_event"
+      ],
+      "meaning": "Couriers released by their teammate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "escape_event"
+      ],
+      "meaning": "Couriers who deposited a pennant and exited this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "seal_event"
+      ],
+      "meaning": "Shelters closed by wardens this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cover_event"
+      ],
+      "meaning": "Couriers who spent a shelter charge this tick",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Observer role index; roles 0/1 wardens, 2/3 couriers",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Public clock, done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        9
+      ],
+      "meaning": "Public shelter x,y coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Public shelter charge levels",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        13
+      ],
+      "meaning": "Public shelter closure timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public exit x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        19
+      ],
+      "meaning": "Public tag announcements by tagged identity; positions are not broadcast",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        23
+      ],
+      "meaning": "Public rescue announcements by rescued identity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Public exit announcements by identity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        29
+      ],
+      "meaning": "Public shelter-seal events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        33
+      ],
+      "meaning": "Public shelter-cover expenditures by identity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        41
+      ],
+      "meaning": "Visible worker x,y; hidden coordinates zero-filled",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        41,
+        45
+      ],
+      "meaning": "Worker visibility flags: same team or Manhattan distance at most three",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        45,
+        49
+      ],
+      "meaning": "Visible immobilization timers; hidden entries zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        49,
+        53
+      ],
+      "meaning": "Visible rescue-grace timers; hidden entries zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        57
+      ],
+      "meaning": "Visible carried pennant index; -1 empty, -2 unknown",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        57,
+        61
+      ],
+      "meaning": "Visible escaped flags; hidden entries false",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        61,
+        65
+      ],
+      "meaning": "Visible cover flags; hidden entries false",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        65,
+        69
+      ],
+      "meaning": "Visible pennant x,y; hidden coordinates zero-filled",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        69,
+        71
+      ],
+      "meaning": "Pennant visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        71,
+        73
+      ],
+      "meaning": "Visible pennant owner; -1 loose, carrier index, or -3 unknown",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Wardens aim to immobilize every courier still inside. Couriers aim to get both pennants out, one carried pennant per escaping courier, while keeping their partner available for rescue.",
+    "natural_termination": "Both couriers escaped, or every nonescaped courier is currently frozen. If one has escaped and the other is tagged, the wardens end the remaining chase. Otherwise truncate at 96 steps. Frozen timers last at most six steps without retagging; an episode can end earlier. Terminal raw state is absorbing.",
+    "interaction": "Workers occupy a courtyard with two routes around a wall. Tagging drops carried cargo and removes the target's next actions. A nearby courier can free the partner with grace before the tag phase. Both couriers draw from the same regenerating shelter charges; wardens can seal those physical shelters. Exiting removes a possible rescuer while also securing a payoff.",
+    "observation_access": "Same-team workers are always radio-visible. Opponents are visible only within Manhattan distance three; walls do not block this proximity sensor. Pennants are visible within the same radius or when carried by a teammate; delivered pennants are inactive. The static map, shelters, exit, shelter resources and identity-only event announcements are public. Hidden worker and pennant coordinates and attributes are masked exactly as listed; the renderer must honor agent_vis and flag_vis."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "frozen"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "grace"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "shelter_charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "shelter_seal"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_pos"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "flag_pos"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "stochasticity": "Deterministic fixed initial world and deterministic transitions; supplied reset/step keys are accepted and unused. No PRNG state is stored.",
+  "invalid_action_handling": "Out-of-range or masked actions become no-op. Unavailable target intents and blocked movement have no effect; an otherwise legal intent is not a claim that its preconditions hold."
+}

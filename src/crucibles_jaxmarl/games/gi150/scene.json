@@ -1,0 +1,297 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "c9dedefd7cfb5f8f316d9ffabf6862034fdc8f50c90aa8a10ad10d75a1de71a9",
+  "manifest_sha256": "aa6ca9c5ee2db13b299fb6dc91f1bd11227c69c3c2ca091a1a0541a1df2e46cc",
+  "title": "Relay Foundry",
+  "rules": [
+    "Roles 0, 1 and 2 alone cut, weld and calibrate respectively; everyone can carry, assist or ship.",
+    "Each worker holds at most one part; the only clamp can travel with a part or separately.",
+    "Powered work requires the role at its station, the cool clamp, and another worker assisting from an adjacent cell in the same tick.",
+    "The clamp heats to three after welding or calibration; work requires heat zero at the start of the tick.",
+    "Only the current serial queue head can ship; stages never reverse and finite parts never respawn.",
+    "Entity sight is Manhattan radius three; the map, shipping count and audit counts are public.",
+    "Joint reward is -0.002 per step, +0.1 per stage advance and +1 per shipment.",
+    "Four shipments finish the episode; otherwise the horizon is 192."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Floor",
+          "color": "#D6D4CB"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall",
+          "color": "#394652"
+        },
+        {
+          "value": 2,
+          "meaning": "Cutting station",
+          "color": "#BA8A45"
+        },
+        {
+          "value": 3,
+          "meaning": "Welding station",
+          "color": "#6D95A6"
+        },
+        {
+          "value": 4,
+          "meaning": "Calibration station",
+          "color": "#79945B"
+        },
+        {
+          "value": 5,
+          "meaning": "FIFO shipping station",
+          "color": "#B66E57"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Workers",
+      "color": "#517EAD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Unique complementary capability, indexed 0 to 3"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carried part id; -1 is empty"
+        },
+        {
+          "state_path": [
+            "has_clamp"
+          ],
+          "label": "Currently holds the only clamp"
+        }
+      ]
+    },
+    {
+      "id": "orders",
+      "glyph": "crate",
+      "label": "Four finite orders",
+      "color": "#C6984D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "part_stage"
+          ],
+          "label": "0 raw, 1 cut, 2 welded, 3 calibrated, 4 shipped"
+        },
+        {
+          "state_path": [
+            "part_carrier"
+          ],
+          "label": "Carrier id; -1 means on ground or shipped"
+        }
+      ]
+    },
+    {
+      "id": "clamp",
+      "glyph": "tool",
+      "label": "Single portable clamp",
+      "color": "#8E729E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_carrier"
+          ],
+          "label": "Clamp holder; -1 is on ground"
+        },
+        {
+          "state_path": [
+            "tool_heat"
+          ],
+          "label": "Remaining cooling ticks after powered use"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "beacon",
+      "label": "Linked stations",
+      "color": "#6E9881",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_type"
+          ],
+          "label": "0 cutter, 1 welder, 2 calibrator, 3 shipping"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "stage_events"
+      ],
+      "meaning": "Public workshop audit: number of irreversible stage advances this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transfer_events"
+      ],
+      "meaning": "Public workshop audit: number of part/clamp transfers this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public shipping bell: one FIFO order shipped this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "queue_head"
+      ],
+      "meaning": "Number of shipped orders and next required serial id",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up or drop a part on this cell"
+    },
+    {
+      "id": 6,
+      "label": "Operate matching station or ship current FIFO head"
+    },
+    {
+      "id": 7,
+      "label": "Assist an adjacent powered station"
+    },
+    {
+      "id": 8,
+      "label": "Take or release the shared clamp on this cell"
+    },
+    {
+      "id": 9,
+      "label": "Pass held part and clamp to adjacent agent 0"
+    },
+    {
+      "id": 10,
+      "label": "Pass held part and clamp to adjacent agent 1"
+    },
+    {
+      "id": 11,
+      "label": "Pass held part and clamp to adjacent agent 2"
+    },
+    {
+      "id": 12,
+      "label": "Pass held part and clamp to adjacent agent 3"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "visibility": "self",
+      "meaning": "Own role, x, y, carried part id (-1 empty), clamp-held flag, clock."
+    },
+    {
+      "slice": [
+        6,
+        11
+      ],
+      "visibility": "public",
+      "meaning": "FIFO head, stage-advance count this tick, transfer count this tick, shipping bell, joint episode done."
+    },
+    {
+      "slice": [
+        11,
+        35
+      ],
+      "visibility": "local",
+      "meaning": "Four agent records in id order: x,y,role,carried part id,clamp flag,visible. Hidden fields -1; final flag 0."
+    },
+    {
+      "slice": [
+        35,
+        55
+      ],
+      "visibility": "local",
+      "meaning": "Four part records in serial order: x,y,assembly stage,carrier id,visible. Only active parts within Manhattan radius 3."
+    },
+    {
+      "slice": [
+        55,
+        60
+      ],
+      "visibility": "local",
+      "meaning": "Clamp record: x,y,carrier id,heat,visible; hidden values -1."
+    },
+    {
+      "slice": [
+        60,
+        76
+      ],
+      "visibility": "local",
+      "meaning": "Four station records in station order: x,y,type,visible; radius 3."
+    },
+    {
+      "slice": [
+        76,
+        153
+      ],
+      "visibility": "public",
+      "meaning": "Static 7 by 11 public tile map flattened row-major yx; codes match world legend."
+    }
+  ]
+}

@@ -1,0 +1,622 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00116",
+  "source_sha256": "77e414f83595f8e956845a9273d39bf6e347e9f43075f77e97ffe07f8d39d772",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 102,
+  "num_actions": 12,
+  "max_steps": 144,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -2.0,
+  "reward_high": 12.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "entities": [
+    {
+      "id": "builders",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Tool kit: zero stabilizer, one builder, two porter",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "meaning": "Number of held structural parts",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "arrived"
+          ],
+          "meaning": "Has reached the far bank at least once",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "structural_parts",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "part_pos"
+      ],
+      "active": [
+        "part_active"
+      ],
+      "visibility": [
+        "part_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "part_owner"
+          ],
+          "meaning": "Minus one ground, zero to two carrier, three to six installed bridge site",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "bridge_sites",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "bridge_pos"
+      ],
+      "active": [
+        "bridge_active"
+      ],
+      "visibility": [
+        "bridge_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "built"
+          ],
+          "meaning": "A physical span is currently installed",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "life"
+          ],
+          "meaning": "Remaining unsupported span lifetime",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "support"
+          ],
+          "meaning": "Remaining support timer",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "capacity"
+          ],
+          "meaning": "Allowed total crossing mass at this site",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "collapse_count"
+      ],
+      "meaning": "Number of collapsed spans over the episode",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "fall_count"
+      ],
+      "meaning": "Number of crew falls with a deterministic recovery to the western bank",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "load"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "life"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "support"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "capacity"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "collapse_count"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fall_count"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      4.5
+    ],
+    "map": {
+      "state_path": [
+        "render_tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Safe island ground; agents may share a cell",
+          "color": "#B7C98D"
+        },
+        {
+          "value": 1,
+          "meaning": "Uncrossable water",
+          "color": "#6DAEDB"
+        },
+        {
+          "value": 2,
+          "meaning": "Unbuilt bridge socket, not traversable",
+          "color": "#607D8B"
+        },
+        {
+          "value": 3,
+          "meaning": "Far-bank goal ground",
+          "color": "#81C784"
+        },
+        {
+          "value": 4,
+          "meaning": "Installed traversable span, subject to mass and lifetime",
+          "color": "#C9A66B"
+        }
+      ],
+      "public": true
+    }
+  },
+  "title": "Bridge builders with unequal tool kits",
+  "action_mask_semantics": "Every listed action is a legal command attempt for an active role. Unmet physical, capability, inventory or consent prerequisites yield no effect. Out-of-range integers become wait. Inactive roles and absorbed episodes expose only action 0.",
+  "public_adapter_status": "NOT_DELIVERED_IN_AUTHOR_PACKAGE; the separate implementation layer must supply and validate agent-keyed dictionaries and __all__ without changing this flat kernel or the frozen learner.",
+  "authoring_status": "AUTHORED_NOT_EXECUTED",
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Stabilizer: braces nearby supports and has no carrying capacity"
+    },
+    {
+      "id": "agent_1",
+      "role": "Builder: carries one part, assembles or recovers spans"
+    },
+    {
+      "id": "agent_2",
+      "role": "Porter: carries two parts and hands them to the builder"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up a nearby ground part on land if capacity allows"
+    },
+    {
+      "id": 6,
+      "label": "Builder assembles a held part at a nearby empty socket"
+    },
+    {
+      "id": 7,
+      "label": "Stabilizer braces the first nearby socket"
+    },
+    {
+      "id": 8,
+      "label": "Offer one held part to an adjacent consenting receiver"
+    },
+    {
+      "id": 9,
+      "label": "Consent to receive one offered part"
+    },
+    {
+      "id": 10,
+      "label": "Builder recovers an adjacent unoccupied span if hand is free"
+    },
+    {
+      "id": 11,
+      "label": "Drop one held part onto current land cell"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        5,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "render_tiles"
+      ],
+      "shape": [
+        5,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "material_total"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "collapse_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fall_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "arrived"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "part_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "part_owner"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "built"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "life"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "support"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "capacity"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role identity one-hot: stabilizer, builder, porter",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Elapsed ticks divided by 144",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        49
+      ],
+      "meaning": "Row-major base terrain /3; bridge installation is separately observed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        64
+      ],
+      "meaning": "Three crew records: x/8,y/8,load/2,role/2,ever-arrived",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        76
+      ],
+      "meaning": "Four part records: x/8,y/8,(owner+1)/7; installed parts retain identity even though their separate sprite is inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        100
+      ],
+      "meaning": "Four bridge records: x/8,y/8,built,life/12,support/10,capacity/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        102
+      ],
+      "meaning": "Cumulative collapse count /576 and fallen-person count /432; normalization uses finite episode maxima",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Bring all three crew members to x>=6 across two channels using four reusable parts and temporary spans.",
+    "natural_termination": "All crew physically occupy far-bank ground simultaneously; otherwise truncate at tick 144. A previously arrived crew member may return to help, and arrival reward is not repeated.",
+    "interaction": "Mass equals one plus carried part count. Unbraced spans carry mass one; braced spans carry mass two. The builder consumes a held part to install a span, the stabilizer sustains it, and the porter cannot cross while holding two parts. Consent-based handoffs and bridge recovery move exactly existing material identities.",
+    "observation_access": "Map, roles, all part locations and owners, bridge support/lifetime/capacity and current crew locations are public. The acting role receives its identity one-hot. There are no private fields.",
+    "transition_order": "Movement uses existing spans/capacities and rotating mass arbitration; pickup/drop and consent-based handoffs follow; support decays or is renewed; the builder installs or retrieves a span; unsupported lifetime decays; overload/expiry collapses return parts and affected crew to the western bank; arrivals and termination follow."
+  },
+  "invariant_notes": [
+    "Every part identity has exactly one owner status: ground -1, a carrier 0..2, or an installed socket 3..6.",
+    "There is at most one installed part per socket; material_total is always four.",
+    "Carrier loads respect pickup/handoff capacities [0,1,2]; a porter with two parts has mass three and cannot enter any bridge.",
+    "Support lies in [0,10], lifetime in [0,12]; built flags are derived from actual part ownership.",
+    "Agents may share land. On a surviving bridge, final total occupant mass is at most capacity.",
+    "Collapse recovery is an explicit game rule, not a claim about realistic engineering; it conserves all parts and preserves negative consequences.",
+    "The far-bank first-arrival flags are monotone, but natural termination requires current positions.",
+    "Raw terminal state is absorbing and does not award another arrival or completion bonus."
+  ]
+}

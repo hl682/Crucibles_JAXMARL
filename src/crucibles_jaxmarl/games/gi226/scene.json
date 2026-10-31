@@ -1,0 +1,445 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "710243d27cc5a344f2720b331feceda722808668d2b2e17c3d542352d711b2e3",
+  "manifest_sha256": "251052bbbefdd74846332354ef3d73c3d9cdd03238341e992f4bc66a269dfc8f",
+  "title": "Tidal Canal Federation",
+  "rules": [
+    "Any of the 96 citizens can be human- or policy-controlled through one native action row. Equipment and position determine available work.",
+    "Walk on land or usable footbridges. Barges follow the actual serpentine canal.",
+    "An open sluice releases at most one water unit each turn; a released unit arrives downstream three subsequent steps later.",
+    "Irrigation consumes navigation water. Towing needs two water units in both reaches and an open sluice when crossing between reaches.",
+    "Wrenches operate gates and infrastructure; watering cans irrigate; tow ropes move barges. Waiting neighbors accept equipment exchanges.",
+    "Contextual work targets the nearest object within distance one; ties use object id. Conflicts resolve in clock-rotating actor order.",
+    "Harvest into empty hands, deposit at town stores, or load physical barges. Commissions and storage are finite.",
+    "At most one tow moves a barge per turn. Canal cells hold one barge; reservoir docks hold two.",
+    "Local roles see radius-five entities with the declared slot limits. Keepers additionally know their home incoming-water total; posted readings can be stale.",
+    "Bridge repairs and levees consume timber. Floods damage crossings and crops and impose district and shared costs.",
+    "The 768-turn charter truncates without a success threshold. This scene is authored metadata, not proof of an executed replay."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      40,
+      30
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "River plain and towpath land",
+          "color": "#B6B18D"
+        },
+        {
+          "value": 1,
+          "meaning": "Canal; walking forbidden",
+          "color": "#387F9A"
+        },
+        {
+          "value": 2,
+          "meaning": "Town store and levee",
+          "color": "#C49C55"
+        },
+        {
+          "value": 3,
+          "meaning": "Irrigated field",
+          "color": "#7F9C57"
+        },
+        {
+          "value": 4,
+          "meaning": "Sluice crossing; bridge strength determines walking",
+          "color": "#776853"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "citizens",
+      "glyph": "worker",
+      "label": "Canal citizens and equipment",
+      "color": "#D8B46B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "District 0-11"
+        },
+        {
+          "state_path": [
+            "profession"
+          ],
+          "label": "0 keeper, 1 builder, 2 hauler, 3 grower"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "1 wrench, 2 watering can, 3 tow rope"
+        },
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "0 empty, 1 timber, 2 grain"
+        }
+      ]
+    },
+    {
+      "id": "sluices",
+      "glyph": "gate",
+      "label": "Sluices and pedestrian crossings",
+      "color": "#846743",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Sluice open"
+        },
+        {
+          "state_path": [
+            "bridge"
+          ],
+          "label": "Footbridge strength 0-3"
+        }
+      ]
+    },
+    {
+      "id": "reservoirs",
+      "glyph": "water",
+      "label": "District reservoirs",
+      "color": "#438CAB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Reservoir water 0-8"
+        },
+        {
+          "state_path": [
+            "flood"
+          ],
+          "label": "Water exceeds levee protection"
+        }
+      ]
+    },
+    {
+      "id": "fields",
+      "glyph": "plant",
+      "label": "Irrigated fields",
+      "color": "#6C913F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "soil"
+          ],
+          "label": "Stored irrigation 0-3"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Crop maturity 0-6"
+        }
+      ]
+    },
+    {
+      "id": "towns",
+      "glyph": "flag",
+      "label": "Town stores, levees and readings",
+      "color": "#BE8B46",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Timber stock 0-32"
+        },
+        {
+          "state_path": [
+            "food"
+          ],
+          "label": "Grain stock 0-32"
+        },
+        {
+          "state_path": [
+            "levee"
+          ],
+          "label": "Levee level 0-2"
+        },
+        {
+          "state_path": [
+            "orders"
+          ],
+          "label": "Unfilled commissions 0-6"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Hand-delivered grain ledger 0-32"
+        },
+        {
+          "state_path": [
+            "report"
+          ],
+          "label": "Reported upstream water 0-8"
+        },
+        {
+          "state_path": [
+            "report_age"
+          ],
+          "label": "Reading age; 768 absent or stale"
+        }
+      ]
+    },
+    {
+      "id": "barges",
+      "glyph": "crate",
+      "label": "Towable cargo barges",
+      "color": "#8B5A3A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "boat_load"
+          ],
+          "label": "0 empty, 1 timber, 2 grain"
+        },
+        {
+          "state_path": [
+            "boat_owner"
+          ],
+          "label": "Home district"
+        },
+        {
+          "state_path": [
+            "boat_dest"
+          ],
+          "label": "Delivery district"
+        },
+        {
+          "state_path": [
+            "boat_index"
+          ],
+          "label": "Canal cell index 0-110"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Current sluice openness, not a new opening every frame.",
+      "semantics": "level",
+      "entity_id": "sluices",
+      "visibility": [
+        "gate_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "flood"
+      ],
+      "meaning": "Current reservoir flood level.",
+      "semantics": "level",
+      "entity_id": "reservoirs",
+      "visibility": [
+        "basin_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "boat_load"
+      ],
+      "meaning": "Current physical barge cargo.",
+      "semantics": "level",
+      "entity_id": "barges",
+      "visibility": [
+        "boat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "orders"
+      ],
+      "meaning": "Current unfilled town commissions.",
+      "semantics": "level",
+      "entity_id": "towns",
+      "visibility": [
+        "store_visible"
+      ]
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait / accept neighboring handoff"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Withdraw one timber at nearest store"
+    },
+    {
+      "id": 6,
+      "label": "Deposit carried timber or grain"
+    },
+    {
+      "id": 7,
+      "label": "Swap tools with accepting neighbor"
+    },
+    {
+      "id": 8,
+      "label": "Give cargo to empty accepting neighbor"
+    },
+    {
+      "id": 9,
+      "label": "Open sluice with wrench"
+    },
+    {
+      "id": 10,
+      "label": "Close sluice with wrench"
+    },
+    {
+      "id": 11,
+      "label": "Repair footbridge with timber and wrench"
+    },
+    {
+      "id": 12,
+      "label": "Irrigate field with watering can"
+    },
+    {
+      "id": 13,
+      "label": "Harvest ripe field into empty hands"
+    },
+    {
+      "id": 14,
+      "label": "Tow barge downstream"
+    },
+    {
+      "id": 15,
+      "label": "Tow barge upstream"
+    },
+    {
+      "id": 16,
+      "label": "Load cargo onto empty barge"
+    },
+    {
+      "id": 17,
+      "label": "Post upstream water reading downstream"
+    },
+    {
+      "id": 18,
+      "label": "Raise town levee with three timber"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public charter clock t/768.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        7
+      ],
+      "meaning": "Self x/40, y/30, district/11, profession/3, tool/3, carried item/2.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        9
+      ],
+      "meaning": "Keeper forecast access flag and total incoming home-water queue units/3. Non-keepers receive two zeros.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        73
+      ],
+      "meaning": "8 citizen slots, each: seen, id/95, x/40, y/30, district/11, profession/3, tool/3, cargo/2.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        73,
+        91
+      ],
+      "meaning": "3 sluice slots, each: seen, id/11, x/40, y/30, open, bridge/3.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        91,
+        109
+      ],
+      "meaning": "3 reservoir slots, each: seen, id/11, x/40, y/30, water/8, flood.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        109,
+        127
+      ],
+      "meaning": "3 field slots, each: seen, id/11, x/40, y/30, soil/3, growth/6.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        127,
+        160
+      ],
+      "meaning": "3 town slots, each: seen, id/11, x/40, y/30, timber/32, grain/32, levee/2, orders/6, grain ledger/32, report/8, report age/768.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        160,
+        184
+      ],
+      "meaning": "3 barge slots, each: seen, id/11, x/40, y/30, cargo/2, owner/11, destination/11, canal index/110.",
+      "visibility": "local"
+    }
+  ]
+}

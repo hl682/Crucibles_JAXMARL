@@ -1,0 +1,319 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "41fd76cd8f3a07938911f7529ee4b6f4591ba9f5f43b175c780f754426fdf19e",
+  "manifest_sha256": "ad5415f36e428bb1146b2b6d00fcc929b4b0dddabc0255cade53425cdcbfc419",
+  "title": "Bridge Pact",
+  "rules": [
+    "Four builders start with complementary finite wood and bolts on opposite islands. Two distinct three-cell crossing routes exist at y=1 and y=5.",
+    "A cell requires one wood and one bolts, committed from the cell or a cardinal neighbor. Same-material contention awards the lowest agent id; complementary contributions combine simultaneously.",
+    "Newly complete cells receive integrity twelve. Old complete cells with positive integrity admit one builder per cell; old occupied destinations block swaps.",
+    "Every entry causes one wear and every fourth transition causes one decay. Zero integrity blocks new entry but never moves or removes an existing occupant.",
+    "Repair consumes one wood and one bolts, restores six integrity up to twelve, and may restore a worn-out occupied cell. Adjacent peers may transfer one material.",
+    "Private destination values permit different route priorities. AUTHOR SOURCE ONLY: no connectivity trace, successful crossing, animation, causality test or learning result has been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Solid island ground"
+        },
+        {
+          "value": 1,
+          "meaning": "Water; impassable"
+        },
+        {
+          "value": 2,
+          "meaning": "Potential bridge cell; needs both materials and positive health for new entry"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "builders",
+      "glyph": "worker",
+      "label": "Builders and carriers",
+      "color": "#427B95",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "materials"
+          ],
+          "label": "Owned [wood,bolts] stock"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Own parcel delivered"
+        }
+      ]
+    },
+    {
+      "id": "bridge_cells",
+      "glyph": "gate",
+      "label": "Shared bridge cells",
+      "color": "#A47B40",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Permanent wood commitment 0 or 1"
+        },
+        {
+          "state_path": [
+            "bolts"
+          ],
+          "label": "Permanent bolts commitment 0 or 1"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Current usable integrity"
+        },
+        {
+          "state_path": [
+            "bridge_occupancy"
+          ],
+          "label": "Number of actual builders on this capacity-one cell"
+        }
+      ]
+    },
+    {
+      "id": "terminals",
+      "glyph": "flag",
+      "label": "Opposing delivery terminals",
+      "color": "#51875A",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "wood"
+      ],
+      "meaning": "Persistent wood commitments",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "bolts"
+      ],
+      "meaning": "Persistent bolts commitments",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "health"
+      ],
+      "meaning": "Current crossing integrity",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent parcel delivery receipts",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "repair_used"
+      ],
+      "meaning": "Cumulative wood and bolts irreversibly consumed in repairs",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move west"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move north"
+    },
+    {
+      "id": 4,
+      "label": "Move south"
+    },
+    {
+      "id": 5,
+      "label": "Commit wood to first reachable missing-wood cell"
+    },
+    {
+      "id": 6,
+      "label": "Commit bolts to first reachable missing-bolts cell"
+    },
+    {
+      "id": 7,
+      "label": "Give one wood to poorest adjacent peer"
+    },
+    {
+      "id": 8,
+      "label": "Give one bolts to poorest adjacent peer"
+    },
+    {
+      "id": 9,
+      "label": "Consume wood and bolts to repair weakest reachable cell"
+    },
+    {
+      "id": 10,
+      "label": "Deliver at either opposing terminal"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own private north/south delivery values/5",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Clock/120",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        11
+      ],
+      "meaning": "Four builder x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        19
+      ],
+      "meaning": "Agent-major [wood,bolts] inventory/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        23
+      ],
+      "meaning": "Parcel delivered flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        35
+      ],
+      "meaning": "Six ordered bridge-cell x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        41
+      ],
+      "meaning": "Persistent wood bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        47
+      ],
+      "meaning": "Persistent bolts bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        47,
+        53
+      ],
+      "meaning": "Bridge integrity/12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        59
+      ],
+      "meaning": "Bridge occupancy 0 or 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        67
+      ],
+      "meaning": "Four terminal x/8,y/6 pairs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        130
+      ],
+      "meaning": "Public y-major terrain values/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        132
+      ],
+      "meaning": "Cumulative wood,bolts repair consumption/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        133
+      ],
+      "meaning": "Joint done flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        137
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    }
+  ]
+}

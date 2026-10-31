@@ -1,0 +1,760 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00139",
+  "source_sha256": "01fe140143e8464ce2affdebe5c9aefa347536d5b309d0af03c478cf68994f08",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 120,
+  "num_actions": 12,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": 0,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "courier_0 with private harvest preference"
+    },
+    {
+      "id": "agent_1",
+      "role": "courier_1 with private harvest preference"
+    },
+    {
+      "id": "agent_2",
+      "role": "courier_2 with private harvest preference"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Gather one pollen packet"
+    },
+    {
+      "id": 6,
+      "label": "Give pollen to an adjacent receiving courier"
+    },
+    {
+      "id": 7,
+      "label": "Receive pollen into an empty inventory"
+    },
+    {
+      "id": 8,
+      "label": "Graft opposite-species pollen handled by another collector"
+    },
+    {
+      "id": 9,
+      "label": "Harvest one ripe fruit into an empty inventory"
+    },
+    {
+      "id": 10,
+      "label": "Deliver carried fruit within one cell of the depot"
+    },
+    {
+      "id": 11,
+      "label": "Discard held pollen permanently"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "preference"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pollen_kind"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pollen_collector"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fruit_load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plant_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plant_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plant_flowering"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plant_visibility"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plant_species"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plant_stock"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plant_stage"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plant_growth"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fruit_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fruit_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fruit_visibility"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fruit_species"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fruit_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pollen_used"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pollen_discarded"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gather_event"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "handoff_event"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pollination_event"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ripening_event"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "harvest_event"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "collision_event"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ]
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pollen_kind"
+          ],
+          "meaning": "Carried pollen species; -1 empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pollen_collector"
+          ],
+          "meaning": "Original collector id; -1 empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "fruit_load"
+          ],
+          "meaning": "Carried fruit id; -1 none",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "plants",
+      "kind": "resource",
+      "count": 6,
+      "position": [
+        "plant_pos"
+      ],
+      "active": [
+        "plant_active"
+      ],
+      "visibility": [
+        "plant_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "plant_species"
+          ],
+          "meaning": "Plant species 0 or 1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "plant_stock"
+          ],
+          "meaning": "Uncollected pollen units, initially two",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "plant_stage"
+          ],
+          "meaning": "0 ungrafted, 1 growing, 2 ripe, 3 harvested",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "plant_growth"
+          ],
+          "meaning": "Remaining later steps to ripeness",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "plant_flowering"
+          ],
+          "meaning": "Currently open to collection and grafting",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "fruit",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "fruit_pos"
+      ],
+      "active": [
+        "fruit_active"
+      ],
+      "visibility": [
+        "fruit_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "fruit_species"
+          ],
+          "meaning": "Fruit species inherited from its plant",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "fruit_owner"
+          ],
+          "meaning": "-2 unborn, -1 ripe on plant, 0..2 carried, 3 delivered",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Fruit delivered across all couriers",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "gather_event"
+      ],
+      "meaning": "Public garden bell: count of pollen packets gathered this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handoff_event"
+      ],
+      "meaning": "Public garden bell: count of successful courier handoffs this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pollination_event"
+      ],
+      "meaning": "Public garden bell: count of plants grafted this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ripening_event"
+      ],
+      "meaning": "Public garden bell: count of fruits becoming ripe this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "harvest_event"
+      ],
+      "meaning": "Public garden bell: count of fruits harvested this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public garden bell: count of fruit deliveries this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collision_event"
+      ],
+      "meaning": "Public garden bell: count of blocked movement proposals due to couriers",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Total deposited fruit",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "pollen_used"
+      ],
+      "meaning": "Total pollen units consumed by grafting",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "pollen_discarded"
+      ],
+      "meaning": "Total pollen units irreversibly discarded",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        5
+      ],
+      "meaning": "Self: id/4,private preferred species,(pollen_kind+1)/2,(collector+1)/4,(fruit_load+1)/8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        10
+      ],
+      "meaning": "Public: t/128,flowering phase,delivered/8,discarded pollen/16,used pollen/16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        28
+      ],
+      "meaning": "Three local courier records, stride 6: visible,x/16,y/16,(pollen_kind+1)/2,(collector+1)/4,(fruit_load+1)/8; hidden payloads zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        28,
+        76
+      ],
+      "meaning": "Six local plant records, stride 8: visible,x/16,y/16,species,flowering,stock/2,stage/4,growth/4; hidden payloads zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        76,
+        106
+      ],
+      "meaning": "Six local active fruit records, stride 5: visible,x/16,y/16,species,(owner+2)/8; hidden/inactive payloads zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        106,
+        108
+      ],
+      "meaning": "Public depot x/16,y/16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        115
+      ],
+      "meaning": "Public event counts/8 in order gather,handoff,pollination,ripening,harvest,delivery,collision; no actor or site identity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        115,
+        120
+      ],
+      "meaning": "Five constant zeros",
+      "visibility": "padding"
+    }
+  ],
+  "task": {
+    "objective": "Cooperatively deliver the six finite fruits. Each delivery rewards every courier 0.5; the delivering courier additionally receives 0.5 when its private preferred species matches.",
+    "natural_termination": "Six deliveries naturally complete the garden. Missing pollen or poor coordination may instead reach the 96-step truncation.",
+    "interaction": "A packet must pass to another handler before grafting. Grafting closes that plant as a pollen source, then opens a delayed harvest opportunity for any courier. One inventory slot and contested plants create route, handoff and harvesting tradeoffs.",
+    "observation_access": "Each role sees its own preference and inventory. Courier/plant/active-fruit payloads are visible only at Manhattan distance <=3; other payloads are zero with explicit visibility bits. Depot, clock, phase, aggregate stock-consumption counters and anonymous event-count bells are public. Preferences of other roles are never exposed in observations or entity attributes."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "plant_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "plant_stage"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "plant_growth"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pollen_used"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pollen_discarded"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "source_status": "AUTHORED_NOT_EXECUTED"
+}

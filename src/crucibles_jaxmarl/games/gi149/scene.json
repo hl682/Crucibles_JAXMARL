@@ -1,0 +1,325 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "9abcc5d6624660d59aecb39b200c169a66fc87c4e017edba89e97954d69bd011",
+  "manifest_sha256": "d86f10a8a1d7ed208d9cc733538c9b8ba4eed046bdd722c30cde2bfc11bb7087",
+  "title": "Tide Locks and Competitive Salvage Crews",
+  "rules": [
+    "Two crews each contain one rigger and one hauler. Only haulers carry, with capacity one weight-one crate.",
+    "The tide cycles low, rising, high, falling, three transitions per phase. High tide prohibits lock entry and loaded lock motion.",
+    "A rigger near a console can spend one counterweight charge to supply three opening intervals and two shared entry tickets.",
+    "Cranking restores one counterweight charge, capped at four. Multiple crankers produce only one shared stroke.",
+    "Loaded moves touching a lock need a same-crew rigger stabilizing during that very transition. A displayed operator is previous-transition history.",
+    "An unladen opponent may consume an open lock's tickets. Concurrent holders use cyclic priority; contested movement destinations cancel.",
+    "Each loaded move forces one recovery tick. Crates may be dropped and reclaimed before delivery; deposits are permanent.",
+    "The first crew with two of three crates wins. Delivery margin pays five per crate; a terminal winner receives eight and the opposing crew loses eight."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "bank or traversable channel approach"
+        },
+        {
+          "value": 1,
+          "meaning": "wall or uncrossable canal"
+        },
+        {
+          "value": 2,
+          "meaning": "shared tidal lock passage"
+        },
+        {
+          "value": 3,
+          "meaning": "counterweight console"
+        },
+        {
+          "value": 4,
+          "meaning": "west delivery base"
+        },
+        {
+          "value": 5,
+          "meaning": "east delivery base"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crews",
+      "glyph": "worker",
+      "label": "Riggers and haulers",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Zero west crew, one east crew"
+        },
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Zero rigger, one hauler"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Loaded movement recovery ticks"
+        },
+        {
+          "state_path": [
+            "holding"
+          ],
+          "label": "Hauler carries one crate"
+        }
+      ]
+    },
+    {
+      "id": "salvage",
+      "glyph": "crate",
+      "label": "Conserved salvage crates",
+      "color": "#D97706",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crate_holder"
+          ],
+          "label": "Carrier id or minus one"
+        },
+        {
+          "state_path": [
+            "crate_delivered_team"
+          ],
+          "label": "Credited team or minus one for unclaimed salvage"
+        },
+        {
+          "state_path": [
+            "crate_weight"
+          ],
+          "label": "Immutable lift load of one"
+        }
+      ]
+    },
+    {
+      "id": "locks",
+      "glyph": "gate",
+      "label": "Tidal locks and counterweights",
+      "color": "#06B6D4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lock_charge"
+          ],
+          "label": "Counterweight charge, bounded by four"
+        },
+        {
+          "state_path": [
+            "lock_timer"
+          ],
+          "label": "Opening interval timer"
+        },
+        {
+          "state_path": [
+            "lock_tickets"
+          ],
+          "label": "Remaining shared entry opportunities, at most two"
+        },
+        {
+          "state_path": [
+            "lock_operator"
+          ],
+          "label": "Rigger who supported the preceding transition or minus one"
+        }
+      ]
+    },
+    {
+      "id": "consoles",
+      "glyph": "tool",
+      "label": "Rope and counterweight consoles",
+      "color": "#7C3AED",
+      "attribute_labels": []
+    },
+    {
+      "id": "bases",
+      "glyph": "flag",
+      "label": "Crew delivery bases",
+      "color": "#16A34A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "base_team"
+          ],
+          "label": "Owning crew"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tide"
+      ],
+      "meaning": "Public tide: zero low, one rising, two high, three falling",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Public cumulative delivered crates by crew",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lock_timer"
+      ],
+      "meaning": "Public remaining opening intervals",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lock_tickets"
+      ],
+      "meaning": "Public unconsumed lock entries",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lock_operator"
+      ],
+      "meaning": "Preceding-transition rigger support",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move south"
+    },
+    {
+      "id": 3,
+      "label": "Move west"
+    },
+    {
+      "id": 4,
+      "label": "Move east"
+    },
+    {
+      "id": 5,
+      "label": "Stabilize a nearby lock from a console"
+    },
+    {
+      "id": 6,
+      "label": "Crank a nearby counterweight"
+    },
+    {
+      "id": 7,
+      "label": "Lift one nearby unclaimed crate"
+    },
+    {
+      "id": 8,
+      "label": "Drop carried crate"
+    },
+    {
+      "id": 9,
+      "label": "Deposit carried crate at own base"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Public t, tide phase, west score, east score, joint done, winner id or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        13
+      ],
+      "meaning": "Self id, team, role, x, y, movement recovery, carrying flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        90
+      ],
+      "meaning": "Public 7 by 11 fixed terrain map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        118
+      ],
+      "meaning": "Four crew records: visible, x, y, team, role, recovery, carrying. Teammates shared; enemies within Manhattan three; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        118,
+        136
+      ],
+      "meaning": "Three crate records: visible, x, y, holder, delivered team, weight. Local radius three or carried by own team; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        150
+      ],
+      "meaning": "Two public lock records: visible, x, y, counterweight charge, opening timer, entry tickets, preceding operator",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        162
+      ],
+      "meaning": "Four public console records: visible, x, y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        170
+      ],
+      "meaning": "Two public base records: visible, x, y, team",
+      "visibility": "public"
+    }
+  ]
+}

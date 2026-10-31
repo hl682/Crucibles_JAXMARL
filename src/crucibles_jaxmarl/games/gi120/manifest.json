@@ -1,0 +1,1054 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00120",
+  "source_sha256": "caca2a24be3b3391f4a341640bc129934ec74e897cdcf06f544db7f384aa2fdf",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 239,
+  "num_actions": 14,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -3.0,
+  "reward_high": 3.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Team west upper patrol, cargo carrier or scout"
+    },
+    {
+      "id": "agent_1",
+      "role": "Team west lower patrol, cargo carrier or guard"
+    },
+    {
+      "id": "agent_2",
+      "role": "Team east upper patrol, cargo carrier or scout"
+    },
+    {
+      "id": "agent_3",
+      "role": "Team east lower patrol, cargo carrier or guard"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Hold; recharge one decoy charge near own home while awake"
+    },
+    {
+      "id": 1,
+      "label": "Move east"
+    },
+    {
+      "id": 2,
+      "label": "Move west"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move north"
+    },
+    {
+      "id": 5,
+      "label": "Collect an adjacent ground objective when empty, or bank carried objective near own home"
+    },
+    {
+      "id": 6,
+      "label": "Hand carried objective to adjacent empty teammate"
+    },
+    {
+      "id": 7,
+      "label": "Guard this tick; capture adjacent awake enemies unless distracted by a hostile decoy"
+    },
+    {
+      "id": 8,
+      "label": "Scout pulse this tick; observation radius five and position signal"
+    },
+    {
+      "id": 9,
+      "label": "Deploy or replace own mobile decoy heading east"
+    },
+    {
+      "id": 10,
+      "label": "Deploy or replace own mobile decoy heading west"
+    },
+    {
+      "id": 11,
+      "label": "Deploy or replace own mobile decoy heading south"
+    },
+    {
+      "id": 12,
+      "label": "Deploy or replace own mobile decoy heading north"
+    },
+    {
+      "id": 13,
+      "label": "Drop carried objective at current cell"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "spawn_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stun"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "guard"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "scout"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "charges"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "jammed"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_heading"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_owner"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "objective_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "objective_mode"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "objective_carrier"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "objective_bank"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "objective_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "objective_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "capture_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "distraction_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "deploy_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "handoff_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable passage; west/east refuge admission also depends on team",
+          "color": "#D5DCD1"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#505D64"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "patrols",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Team: 0 west, 1 east",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "meaning": "Forced-hold recovery ticks",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "meaning": "Uncaptured guard stance from this transition",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "scout"
+          ],
+          "meaning": "Active scout pulse",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carried objective id; -1 means none",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "charges"
+          ],
+          "meaning": "Available decoy charges",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "decoys",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "decoy_pos"
+      ],
+      "active": [
+        "decoy_active"
+      ],
+      "visibility": [
+        "decoy_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "decoy_owner"
+          ],
+          "meaning": "Owning patrol id",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "decoy_heading"
+          ],
+          "meaning": "Actual decoy travel heading",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "decoy_ttl"
+          ],
+          "meaning": "Remaining active ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "objectives",
+      "kind": "resource",
+      "count": 4,
+      "position": [
+        "objective_pos"
+      ],
+      "active": [
+        "objective_active"
+      ],
+      "visibility": [
+        "objective_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "objective_mode"
+          ],
+          "meaning": "0 ground; 1 carried; 2 banked and inactive",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "objective_carrier"
+          ],
+          "meaning": "Carrier patrol id; -1 if none",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "objective_bank"
+          ],
+          "meaning": "Banked team; -1 until banked",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "homes",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "home_pos"
+      ],
+      "active": [
+        "home_active"
+      ],
+      "visibility": [
+        "home_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "home_team"
+          ],
+          "meaning": "Home team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "meaning": "Public banked-objective count",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "signals",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "signal_pos"
+      ],
+      "active": [
+        "signal_active"
+      ],
+      "visibility": [
+        "signal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Signaling patrol team",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "capture_event"
+      ],
+      "meaning": "Patrol captured and returned to its refuge on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "distraction_event"
+      ],
+      "meaning": "Guard spent this tick on a hostile decoy rather than capturing",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "deploy_event"
+      ],
+      "meaning": "Patrol deployed or replaced its own decoy",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "handoff_event"
+      ],
+      "meaning": "Patrol transferred carried objective to teammate",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Patrol banked an objective at its home",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own xy position divided by 12",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own team id",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own recovery ticks divided by 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own carried objective id divided by 3; negative means none",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own decoy charges divided by 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own launch cooldown divided by 3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        11
+      ],
+      "meaning": "Own patrol one-hot id",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        47
+      ],
+      "meaning": "Four ordered patrol records, stride 9: visible, x/12, y/12, team, stun/2, guard, scout, objective id/3, charges/2. Invisible data values are zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        47,
+        75
+      ],
+      "meaning": "Four decoy records, stride 7: visible, x/12, y/12, heading dx, heading dy, owner/3, ttl/6. Invisible data are zero; an owner has active-decoy telemetry.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        75,
+        99
+      ],
+      "meaning": "Four objective records, stride 6: visible, x/12, y/12, mode/2, carrier/3, bank team. Invisible data are zero; banked objectives are inactive.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        99,
+        115
+      ],
+      "meaning": "Four scout-signal records, stride 4: visible active pulse, x/12, y/12, sender team. Friendly pulses are audible globally; enemy pulses only within distance five. No other sender fields are broadcast.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        115,
+        232
+      ],
+      "meaning": "Public 9 by 13 wall map in yx row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        232,
+        236
+      ],
+      "meaning": "Two public home xy positions divided by 12, ordered by team",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        236,
+        238
+      ],
+      "meaning": "Public team banked-objective totals divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        238,
+        239
+      ],
+      "meaning": "Clock divided by 96",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Two teams contest four physical objectives and transport them to their own homes. Team rewards oppose each other for deliveries and actual captures; teammates share their team payoff.",
+    "natural_termination": "All four objectives have been banked, possibly by either team. Otherwise time ends at 96 transitions. Recovery from capture is temporary, not an individual episode end.",
+    "interaction": "Bodies block contested passages; a guard tags adjacent opponents and forces them to drop cargo. A hostile mobile decoy within distance two consumes the guard action and is destroyed, allowing an otherwise capturable opponent to escape. Decoys also reduce nearby opposing sight radius from three to one unless a scout pulse restores five. Physical cargo handoffs, local patrol information, public scores and private decoy telemetry create team coordination choices.",
+    "observation_access": "Terrain, home locations, score totals and clock are public. Patrol/objective/decoy state is visible within Manhattan radius three, or one when a hostile active decoy is within distance two; a scout pulse raises it to five. Self is always visible. The owner additionally sees its active decoy remotely. Friendly scout signals broadcast only sender position/team globally; hostile signals are visible within distance five. A signal does not reveal the sender inventory or other hidden attributes. Every invisible record has an explicit visibility bit and zero data fields."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "pos"
+      ],
+      "low": 1,
+      "high": 11,
+      "min": 1,
+      "max": 11
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "decoy_pos"
+      ],
+      "low": 1,
+      "high": 11,
+      "min": 1,
+      "max": 11
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "objective_pos"
+      ],
+      "low": 1,
+      "high": 11,
+      "min": 1,
+      "max": 11
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stun"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "charges"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cooldown"
+      ],
+      "low": 0,
+      "high": 3,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "decoy_ttl"
+      ],
+      "low": 0,
+      "high": 6,
+      "min": 0,
+      "max": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "decoy_heading"
+      ],
+      "low": -1,
+      "high": 1,
+      "min": -1,
+      "max": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "objective_mode"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "objective_carrier"
+      ],
+      "low": -1,
+      "high": 3,
+      "min": -1,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "objective_bank"
+      ],
+      "low": -1,
+      "high": 1,
+      "min": -1,
+      "max": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "score"
+      ],
+      "low": 0,
+      "high": 4,
+      "min": 0,
+      "max": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 96,
+      "min": 0,
+      "max": 96
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "team"
+      ],
+      "value": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "decoy_owner"
+      ],
+      "value": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_resolution": "All fourteen intents are legal for an awake role; inapplicable interactions are deterministic no-ops. A stunned role and a terminal state allow only 0. Out-of-range or masked actions map to 0. Movement resolves simultaneously against walls, previous occupied cells, duplicate targets and enemy refuge admission; swaps are blocked. Existing decoys move before new launches. Guards resolve simultaneously after movement and decoy updates: each distracted guard destroys its nearest hostile decoy and captures nobody; other guards tag every adjacent awake enemy outside its refuge. Mutual captures are allowed. Captured cargo drops before teleport. Pickup, banking, handoff and voluntary drop then resolve in cyclic role order starting at t mod 4. Capture returns to a fixed refuge berth, where temporary friendly co-location is permitted; no global unique-agent-position invariant is asserted.",
+  "rng_contract": "Reset and all transitions are deterministic and ignore the supplied keys. The exact declared seed/fold-in schedule remains replay provenance. No local model, hidden RNG or process state is consulted.",
+  "event_visibility_note": "Per-step event arrays bind agent_visible. Role views must hide events attributed to invisible patrols, even though public scores reveal delivery totals. Full capture/deployment/handoff event identity belongs only to the labelled debug view when its participant is hidden. A scout signal must not be treated as full agent visibility.",
+  "scientific_status": "AUTHORED_NOT_EXECUTED_NOT_R0_ACCEPTED",
+  "adapter_boundary": "This package supplies the native fixed-array kernel. Agent-keyed JaxMARL adapter, __all__, real replay and presentation acceptance are separate integration deliverables; no frozen learner is replaced."
+}

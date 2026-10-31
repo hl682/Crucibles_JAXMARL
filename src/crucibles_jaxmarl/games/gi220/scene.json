@@ -1,0 +1,751 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0fc73005a86b8d8efc383377d1b908d9075861b7d963d74278ad35bcf008ef07",
+  "manifest_sha256": "be36818fe39f2779e753dbb880e9fe62c73418f980d56aa8c7d0474192f8f9eb",
+  "title": "Delta Federation",
+  "rules": [
+    "Six settlements have farming, building, freight and sluice tools. Any adjacent residents can exchange tools or pass real grain/timber units.",
+    "Fields grow on hydraulic phases when their river node has enough water and is not flooded. Grain can be carried by road or loaded onto a one-unit barge.",
+    "Every fourth tick is a hydraulic phase. Opening a gate releases at most three units into a visible three-position downstream delay queue.",
+    "An embankment raises its field flood tolerance, but high protected water can release an extra unit downstream. Extreme floods damage levees and bridges.",
+    "Barges advance one river cell on hydraulic phases only with an open source sluice, enough water at both endpoints and sediment below four.",
+    "Builders spend timber on bridges and levees. Operators dredge, close gates or breach a levee; every choice can change other settlements' future water or routes.",
+    "Direct granary and rainfall-code knowledge belongs to the home settlement. Adjacent speech creates expiring reports; public trade and rain remain observable.",
+    "Storage rewards use signed stock changes; withdrawing grain reverses the deposit potential. Separate rewards mark actual meals, first bridges and navigable routes.",
+    "The delta persists through H=512. Hunger, floods and damaged infrastructure are local costs; they do not declare global success or end the world early."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      24,
+      18
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Shared delta land and walking routes",
+          "color": "#CEC6A7"
+        },
+        {
+          "value": 1,
+          "meaning": "Main river channel; foot crossing requires a live bridge at a node",
+          "color": "#789CA9"
+        },
+        {
+          "value": 2,
+          "meaning": "Visible irrigation ditch joining river node to its field; passable footway",
+          "color": "#A8B7A0"
+        },
+        {
+          "value": 10,
+          "meaning": "Headreach territory",
+          "color": "#D9BC8E"
+        },
+        {
+          "value": 11,
+          "meaning": "Reedbank territory",
+          "color": "#BCC29B"
+        },
+        {
+          "value": 12,
+          "meaning": "Eastgate territory",
+          "color": "#BCB2CF"
+        },
+        {
+          "value": 13,
+          "meaning": "Lower Bend territory",
+          "color": "#D2A89A"
+        },
+        {
+          "value": 14,
+          "meaning": "Siltmarket territory",
+          "color": "#A8C1C2"
+        },
+        {
+          "value": 15,
+          "meaning": "West Mouth territory",
+          "color": "#C6B69C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "inhabitants",
+      "glyph": "worker",
+      "label": "Twenty-four inhabitants in six four-role settlements",
+      "color": "#9B7954",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "settlement"
+          ],
+          "label": "Home settlement 0-5; tools can change while membership remains fixed"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Tool 1 farming, 2 building, 3 freight, 4 sluice operation"
+        },
+        {
+          "state_path": [
+            "inventory"
+          ],
+          "label": "Inventory columns grain and timber; total capacity six"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Energy 0-16"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "glyph": "flag",
+      "label": "Six public settlement locations",
+      "color": "#BAA271",
+      "attribute_labels": []
+    },
+    {
+      "id": "granaries",
+      "glyph": "crate",
+      "label": "Local granary and weather record; home settlement only",
+      "color": "#AE9669",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "granary"
+          ],
+          "label": "Stored grain 0-32; each meal consumes one"
+        },
+        {
+          "state_path": [
+            "forecast"
+          ],
+          "label": "Private local rainfall phase code 0-2"
+        }
+      ]
+    },
+    {
+      "id": "fields",
+      "glyph": "plant",
+      "label": "Irrigated settlement fields",
+      "color": "#9AAA65",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Field progress 0-6; farmer harvest requires at least four"
+        }
+      ]
+    },
+    {
+      "id": "woodlots",
+      "glyph": "resource",
+      "label": "Renewing finite woodlots",
+      "color": "#7F8E67",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Remaining timber, capacity eight; one renews each 24 ticks"
+        }
+      ]
+    },
+    {
+      "id": "river_nodes",
+      "glyph": "gate",
+      "label": "Connected river nodes, sluices and embankments",
+      "color": "#7199A9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Node water 0-9 after incoming flow, release and consumption"
+        },
+        {
+          "state_path": [
+            "gate"
+          ],
+          "label": "Open sluice releases water on hydraulic phases and permits its barge route"
+        },
+        {
+          "state_path": [
+            "levee"
+          ],
+          "label": "Protective embankment height 0-3; high water redirects extra flow downstream"
+        },
+        {
+          "state_path": [
+            "bridge"
+          ],
+          "label": "Live bridge at this river tile; one actor per cell"
+        },
+        {
+          "state_path": [
+            "sediment"
+          ],
+          "label": "Sediment 0-6; four or more blocks barge passage"
+        }
+      ]
+    },
+    {
+      "id": "water_packets",
+      "glyph": "water",
+      "label": "Water units travelling through three cells of each river reach",
+      "color": "#72A8C1",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "packet_amount"
+          ],
+          "label": "Units in this delay position; zero positions are inactive"
+        }
+      ]
+    },
+    {
+      "id": "barges",
+      "glyph": "crate",
+      "label": "Five shared one-unit barges on consecutive reaches",
+      "color": "#B58D56",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "barge_cargo"
+          ],
+          "label": "Cargo 0 empty, 1 grain, 2 timber"
+        },
+        {
+          "state_path": [
+            "barge_owner"
+          ],
+          "label": "Loading settlement -1 when empty; unloading is open to other inhabitants"
+        },
+        {
+          "state_path": [
+            "barge_progress"
+          ],
+          "label": "Distance along the actual assigned river reach"
+        },
+        {
+          "state_path": [
+            "barge_direction"
+          ],
+          "label": "Signed reach direction: +1 downstream, -1 upstream"
+        },
+        {
+          "state_path": [
+            "barge_length"
+          ],
+          "label": "Reach length in grid cells"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Physical granary deposits",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "flooded"
+      ],
+      "meaning": "Destructive field flood events",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "built_now"
+      ],
+      "meaning": "First bridge construction events",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shipped"
+      ],
+      "meaning": "Loaded barge movement events",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handed"
+      ],
+      "meaning": "Physical grain or timber handoffs",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fed"
+      ],
+      "meaning": "Actual grain meals",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rain"
+      ],
+      "meaning": "Rain units in this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; recover two energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Harvest adjacent mature field with farming tool"
+    },
+    {
+      "id": 6,
+      "label": "Collect one timber from adjacent woodlot"
+    },
+    {
+      "id": 7,
+      "label": "Raise adjacent levee for two timber, builder tool"
+    },
+    {
+      "id": 8,
+      "label": "Open adjacent sluice, operator tool"
+    },
+    {
+      "id": 9,
+      "label": "Close adjacent sluice, operator tool"
+    },
+    {
+      "id": 10,
+      "label": "Dredge two sediment at adjacent node, operator tool"
+    },
+    {
+      "id": 11,
+      "label": "Load nearest empty adjacent barge with grain before timber, courier tool"
+    },
+    {
+      "id": 12,
+      "label": "Unload nearest loaded adjacent barge into inventory"
+    },
+    {
+      "id": 13,
+      "label": "Set adjacent barge direction downstream"
+    },
+    {
+      "id": 14,
+      "label": "Set adjacent barge direction upstream"
+    },
+    {
+      "id": 15,
+      "label": "Store one grain in adjacent granary"
+    },
+    {
+      "id": 16,
+      "label": "Take one grain from own adjacent granary"
+    },
+    {
+      "id": 17,
+      "label": "Give grain before timber to lowest-ID adjacent actor with room"
+    },
+    {
+      "id": 18,
+      "label": "Exchange tools with lowest-ID adjacent actor"
+    },
+    {
+      "id": 19,
+      "label": "Tell adjacent actors home granary and rain phase code"
+    },
+    {
+      "id": 20,
+      "label": "Construct adjacent bridge for two timber, builder tool"
+    },
+    {
+      "id": 21,
+      "label": "Clear one sediment for one timber, builder tool"
+    },
+    {
+      "id": 22,
+      "label": "Rest; recover five energy"
+    },
+    {
+      "id": 23,
+      "label": "Sow one grain to advance adjacent young field by two, farmer tool"
+    },
+    {
+      "id": 24,
+      "label": "Breach one levee height at adjacent node, operator tool"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Self actor ID 0-23.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        7
+      ],
+      "meaning": "Own settlement's live granary and foreign granary snapshots learned from adjacent speakers; zero may mean empty or an expired report, distinguished by note_life.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        13
+      ],
+      "meaning": "Own live rain phase code and foreign spoken phase snapshots; -1 means no unexpired report.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        19
+      ],
+      "meaning": "Report lifetimes; own settlement remains 16, foreign snapshots decrement after each step.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        19,
+        20
+      ],
+      "meaning": "t: Native step clock; nonterminal transitions increment once. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        21
+      ],
+      "meaning": "done: Joint terminal flag, true only at the declared cap in this continuing world. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        22
+      ],
+      "meaning": "terminated: Natural termination cause; always false under this continuing-world rule. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        23
+      ],
+      "meaning": "truncated: Cap cause with natural-termination priority; preserved after done. Shape [], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        498
+      ],
+      "meaning": "terrain: Row-major native tile map with values in the world legend. Shape [19, 25], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        498,
+        546
+      ],
+      "meaning": "pos: Actor coordinates in ordered actor-ID order, x then y. Shape [24, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        546,
+        570
+      ],
+      "meaning": "settlement: Home settlement 0-5; tools can change while membership remains fixed Shape [24], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        570,
+        594
+      ],
+      "meaning": "tool: Tool 1 farming, 2 building, 3 freight, 4 sluice operation Shape [24], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        594,
+        642
+      ],
+      "meaning": "inventory: Inventory columns grain and timber; total capacity six Shape [24, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        642,
+        666
+      ],
+      "meaning": "energy: Energy 0-16 Shape [24], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        666,
+        678
+      ],
+      "meaning": "village_pos: Actual x,y coordinates for Six public settlement locations in entity-index order. Shape [6, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        678,
+        690
+      ],
+      "meaning": "field_pos: Actual x,y coordinates for Irrigated settlement fields in entity-index order. Shape [6, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        690,
+        696
+      ],
+      "meaning": "growth: Field progress 0-6; farmer harvest requires at least four Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        696,
+        708
+      ],
+      "meaning": "wood_pos: Actual x,y coordinates for Renewing finite woodlots in entity-index order. Shape [6, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        708,
+        714
+      ],
+      "meaning": "wood: Remaining timber, capacity eight; one renews each 24 ticks Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        714,
+        726
+      ],
+      "meaning": "river_pos: Actual x,y coordinates for Connected river nodes, sluices and embankments in entity-index order. Shape [6, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        726,
+        732
+      ],
+      "meaning": "water: Node water 0-9 after incoming flow, release and consumption Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        732,
+        738
+      ],
+      "meaning": "gate: Open sluice releases water on hydraulic phases and permits its barge route Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        738,
+        744
+      ],
+      "meaning": "levee: Protective embankment height 0-3; high water redirects extra flow downstream Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        744,
+        750
+      ],
+      "meaning": "bridge: Live bridge at this river tile; one actor per cell Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        750,
+        756
+      ],
+      "meaning": "sediment: Sediment 0-6; four or more blocks barge passage Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        756,
+        762
+      ],
+      "meaning": "rain: This-step per-node rain units, generated by each settlement's reset phase code. Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        762,
+        798
+      ],
+      "meaning": "packet_pos: Actual x,y coordinates for Water units travelling through three cells of each river reach in entity-index order. Shape [18, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        798,
+        816
+      ],
+      "meaning": "packet_amount: Units in this delay position; zero positions are inactive Shape [18], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        816,
+        826
+      ],
+      "meaning": "barge_pos: Actual x,y coordinates for Five shared one-unit barges on consecutive reaches in entity-index order. Shape [5, 2], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        826,
+        831
+      ],
+      "meaning": "barge_cargo: Cargo 0 empty, 1 grain, 2 timber Shape [5], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        831,
+        836
+      ],
+      "meaning": "barge_owner: Loading settlement -1 when empty; unloading is open to other inhabitants Shape [5], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        836,
+        841
+      ],
+      "meaning": "barge_progress: Distance along the actual assigned river reach Shape [5], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        841,
+        846
+      ],
+      "meaning": "barge_direction: Signed reach direction: +1 downstream, -1 upstream Shape [5], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        846,
+        851
+      ],
+      "meaning": "barge_length: Reach length in grid cells Shape [5], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        851,
+        875
+      ],
+      "meaning": "delivered: Per-actor actual granary deposit events this step. Shape [24], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        875,
+        881
+      ],
+      "meaning": "flooded: Per-node destructive field flood event on the hydraulic phase. Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        881,
+        887
+      ],
+      "meaning": "built_now: First-ever bridge installations this step; rebuilding a lost bridge has no milestone reward. Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        887,
+        892
+      ],
+      "meaning": "shipped: Loaded barges whose position advanced this step; actual movement, not completed delivery. Shape [5], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        892,
+        916
+      ],
+      "meaning": "handed: Per-actor physical inventory handoff events this step. Shape [24], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        916,
+        922
+      ],
+      "meaning": "fed: Per-settlement actual one-grain meal consumed this step. Shape [6], row-major flattening.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        922,
+        1042
+      ],
+      "meaning": "reward_parts: Columns: settlement inventory potential and meals, carrier inventory potential, common infrastructure/navigation, effort/material spending, flood/hunger. Shape [24, 5], row-major flattening.",
+      "visibility": "public"
+    }
+  ]
+}

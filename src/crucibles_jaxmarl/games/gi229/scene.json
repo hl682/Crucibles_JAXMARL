@@ -1,0 +1,463 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "97209e05ff4bc4806ce64dc4b090707c2c39e4874da15eae748c9af2ad077583",
+  "manifest_sha256": "61c53c9f2956d69c06fb006fa447e16b35b934f2d9fcdf70c7e5e74780ceeece",
+  "title": "Festival Steam Kitchens",
+  "rules": [
+    "Each of six kitchens has four separate actors: preparer, steamer, runner and engineer. Selecting a person means selecting its original native action row.",
+    "Colored counters are physical obstacles: pantry, board, pot, cooling rack, hatch, valve and sink. Turn toward a counter before interacting.",
+    "Use a knife to prepare roots or beans. A clean plate and prepared ingredient enter an empty pot; tongs or a tray lift the hot meal once progress reaches 4.",
+    "Carried heat falls one per tick. A zero-heat hot meal still needs the cooling-rack action before serving.",
+    "Serving the requested ingredient has quality 2; a substitution has quality 1. Only workers next to the hatch can read its current menu and deadline.",
+    "A served plate becomes a dirty dish cart in the lane. Push or pick it up, wash it at a sink, then return the clean plate to a pot.",
+    "An open valve draws at most two steam units. Unused steam advances through two buffers to the next kitchen; valve choices change downstream timing.",
+    "This source-bound kitchen scene and its literal scripts have not been run. Native animation, human play, causal effects and learning remain unverified."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      29,
+      17
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable kitchen floor",
+          "color": "#F4E2C2"
+        },
+        {
+          "value": 1,
+          "meaning": "Ingredient pantry",
+          "color": "#A6C473"
+        },
+        {
+          "value": 2,
+          "meaning": "Chopping board",
+          "color": "#C59C69"
+        },
+        {
+          "value": 3,
+          "meaning": "Steam pot counter",
+          "color": "#B65C44"
+        },
+        {
+          "value": 4,
+          "meaning": "Cooling rack",
+          "color": "#71ABB0"
+        },
+        {
+          "value": 5,
+          "meaning": "Serving hatch and local menu",
+          "color": "#E3B34F"
+        },
+        {
+          "value": 6,
+          "meaning": "Steam valve",
+          "color": "#9C93AE"
+        },
+        {
+          "value": 7,
+          "meaning": "Dishwashing sink",
+          "color": "#689FBC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "kitchen_teams",
+      "glyph": "worker",
+      "label": "Kitchen teams",
+      "color": "#E97159",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Kitchen team 0..5"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 knife, 1 tongs, 2 tray, 3 wrench"
+        },
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "0 empty; 1/2 raw root/bean; 3/4 prepared; 5/6 hot; 7/8 cooled; 9 dirty dish; 10 clean plate"
+        },
+        {
+          "state_path": [
+            "temperature"
+          ],
+          "label": "Carried meal heat; 0..4"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "0 silent, 1/2 order ingredient, 3 general request"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "square",
+      "label": "Color-coded work counters",
+      "color": "#C8AD8D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_kind"
+          ],
+          "label": "0 pantry, 1 board, 2 pot, 3 rack, 4 hatch, 5 valve, 6 sink"
+        }
+      ]
+    },
+    {
+      "id": "steam_pots",
+      "glyph": "food",
+      "label": "Steam pots and meal stages",
+      "color": "#D86A42",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "recipe"
+          ],
+          "label": "0 empty, 1 root, 2 bean"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "label": "Cooking progress; ready at 4"
+        },
+        {
+          "state_path": [
+            "burn"
+          ],
+          "label": "Overheating ticks; spoil at 3"
+        },
+        {
+          "state_path": [
+            "plate"
+          ],
+          "label": "Clean reusable plate is available"
+        },
+        {
+          "state_path": [
+            "heat"
+          ],
+          "label": "Steam drawn this tick; 0..2"
+        }
+      ]
+    },
+    {
+      "id": "steam_valves",
+      "glyph": "tool",
+      "label": "Steam valves and pressure buffers",
+      "color": "#9884B3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "valve"
+          ],
+          "label": "Open valve siphons passing steam"
+        },
+        {
+          "state_path": [
+            "steam"
+          ],
+          "label": "Two successive native steam buffers; each 0..6"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Sink water replenished by periodic condensation"
+        }
+      ]
+    },
+    {
+      "id": "order_menus",
+      "glyph": "flag",
+      "label": "Local order menus",
+      "color": "#E6B646",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wanted"
+          ],
+          "label": "Requested ingredient: 1 root, 2 bean"
+        },
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "label": "Ticks until current order deadline; 0..80"
+        },
+        {
+          "state_path": [
+            "served"
+          ],
+          "label": "Completed orders; goal 2"
+        }
+      ]
+    },
+    {
+      "id": "return_carts",
+      "glyph": "crate",
+      "label": "Reusable dish return carts",
+      "color": "#63A6B2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cart_kind"
+          ],
+          "label": "Physical dirty dish awaiting pickup; code 9"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served_event"
+      ],
+      "meaning": "Actor served one cooled meal",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "washed"
+      ],
+      "meaning": "Actor washed one dirty dish",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handoff"
+      ],
+      "meaning": "Actor handed a carried item to another actor",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "toggled"
+      ],
+      "meaning": "Actor toggled a steam valve",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Pot meal spoiled this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "missed"
+      ],
+      "meaning": "Kitchen deadline expired this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Cumulative orders served by kitchen",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; no movement"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Face north"
+    },
+    {
+      "id": 6,
+      "label": "Face east"
+    },
+    {
+      "id": 7,
+      "label": "Face south"
+    },
+    {
+      "id": 8,
+      "label": "Face west"
+    },
+    {
+      "id": 9,
+      "label": "Collect root ingredient at facing pantry"
+    },
+    {
+      "id": 10,
+      "label": "Collect bean ingredient at facing pantry"
+    },
+    {
+      "id": 11,
+      "label": "Chop carried raw ingredient with knife at board"
+    },
+    {
+      "id": 12,
+      "label": "Load prepared ingredient or clean plate into facing empty pot"
+    },
+    {
+      "id": 13,
+      "label": "Take cooked meal with tongs or tray"
+    },
+    {
+      "id": 14,
+      "label": "Finish cooling at rack after carried heat reaches zero"
+    },
+    {
+      "id": 15,
+      "label": "Serve cooled meal at facing menu station"
+    },
+    {
+      "id": 16,
+      "label": "Toggle steam valve using wrench"
+    },
+    {
+      "id": 17,
+      "label": "Hand carried item to empty-handed actor ahead"
+    },
+    {
+      "id": 18,
+      "label": "Swap tools with actor ahead"
+    },
+    {
+      "id": 19,
+      "label": "Wash carried dirty dish at sink using local water"
+    },
+    {
+      "id": 20,
+      "label": "Pick up facing dish cart contents"
+    },
+    {
+      "id": 21,
+      "label": "Push facing dish cart one clear cell"
+    },
+    {
+      "id": 22,
+      "label": "Signal readable order, or generic request"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        14
+      ],
+      "meaning": "Self: x/29,y/17,facing/3,tool/3,carry/10,temperature/4,team/5,heard/3,t/512,served_event,washed,handoff,toggled,constant active marker 1.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        14,
+        112
+      ],
+      "meaning": "7x7 row-major dy/dx patch; each cell [station tile/7 (outside=-1), occupancy: cart 1, otherwise actor 0.5, otherwise 0].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        112,
+        136
+      ],
+      "meaning": "Nearest 3 other actors in Chebyshev 3: [visible,dx/3,dy/3,tool/3,carry/10,temperature/4,message/3,team/5], zero missing.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        144
+      ],
+      "meaning": "Nearest local pot: [visible,dx/3,dy/3,recipe/2,progress/4,burn/3,plate,heat/2]; zero outside radius 3.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        144,
+        151
+      ],
+      "meaning": "Nearest local valve: [visible,dx/3,dy/3,open,steam buffer 0/6,steam buffer 1/6,sink water/8]; zero outside radius 3.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        151,
+        156
+      ],
+      "meaning": "Nearest menu only within Manhattan 1: [visible,wanted/2,deadline/80,served/2,team/5].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        156,
+        158
+      ],
+      "meaning": "Pantry root and bean stock/8 for nearest pot kitchen only when its pantry is within Manhattan 3; otherwise zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        158,
+        159
+      ],
+      "meaning": "Pantry-stock visibility flag for preceding two columns.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        159,
+        160
+      ],
+      "meaning": "Explicit zero padding; never interpreted as extra information.",
+      "visibility": "padding"
+    }
+  ]
+}
+

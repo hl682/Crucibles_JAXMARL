@@ -1,0 +1,570 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pasture Weave Commons · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI235 / SPATIAL</p><h1>Pasture Weave Commons</h1><p class="lead"></p><div class="stats"><span>64 agents</span><span>27 actions</span><span>910 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 235</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Manage shared grazing, livestock health and production while households decide whether to open access, save fodder, protect crops or contribute labor and water.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural failure occurs when all 32 livestock health values are zero. Otherwise H=896 truncates the persistent village. Ordinary shearing, harvest and pasture rotation never reset the world.&quot;,
+  &quot;interaction&quot;: &quot;Gate decisions let autonomous livestock reach another household&#x27;s grass; assisting a shearer changes that farmer&#x27;s production; dirty shared racks infect other animals and defeat quarantine; finite wells and physical handoffs couple household labor, water and reserves.&quot;,
+  &quot;observation_access&quot;: &quot;Farmers and all ecology/facility groups use L1 radius 6. Four nearest visible farmer rows plus self are exposed. Clock/weather and each household&#x27;s own accumulated wool and fruit ledger are known to its members. Other households&#x27; changing grass, illness, reserves and gates remain local. Animals are separate ecology rows and cannot be counted as controllable actors.&quot;
+}</pre></details><p>Declared per-step reward bounds: -4 to 4. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Every farmer has a selectable native action row. Transferable tools specialize herding, shearing, building and water work.</li><li>Livestock walk real corridors toward grass. Opening or neglecting a gate can expose a neighbor&#x27;s recovering pasture to grazing.</li><li>Resting plots regrow faster; hay plots convert one grass to fodder instead of two. Animals still graze any accessible plot.</li><li>Shearing needs a rack, a woolly animal and another farmer choosing Hold within one tile of that animal.</li><li>Shared infected equipment can transmit disease and prevent quarantine cure. Clean it with carried water.</li><li>Quarantine pens have four actual places. Admitted animals stay confined until their timer expires and a farmer releases them.</li><li>Store fodder for drought, tend orchards, water troughs, build weather shelters or rescue hungry animals with a partner.</li><li>All dynamics are native source state. No generated scene, fixed script, human play or learning outcome has been executed.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Pasture Weave Commons
+
+Status: **AUTHORED_NOT_EXECUTED**. Candidate identity: game-v3-00235. Source split: train. No final test or previous candidate outcome was an input.
+
+## Native contract and human controls
+
+A=64, O=910, U=27, H=896. Every one of the 64 actor rows is independently controllable through one scalar int32 action. Ambient entities are not counted as agents. A human/AI/group assignment chooses the same native joint-action vector; no alternative UI dynamics are supplied. The source is the complete native kernel, and scene.json is complete declarative presentation data. JaxMARL adapter integration, actual keyboard/click controls, replay, animation, JIT/vmap, throughput, training and transfer remain unexecuted and unaccepted.
+
+Movement is a cardinal one-cell proposal with boundary clipping. Multiple people may occupy a tile; this is an explicit broad-walkway abstraction. Visible objects and terrain govern interaction conditions. Masks describe capability/inventory permissions, not a promise that a distant or blocked operation succeeds. Out-of-range or mask-invalid codes become no-op deterministically. Spatially inapplicable legal attempts cost the stated work cost and change no targeted object. Joint actions are captured together; movement precedes ordered work, and work resolves actor IDs in ascending order. This tie rule is fixed before any execution and can affect scarce-resource competition.
+
+Sixteen four-person households share a 64 by 64 landscape divided by paired fence lines. Twenty-four real gate crossings connect plots. Gate toggles affect both farmers and animals; leaving gates open wears integrity by one every 96 steps, and integrity zero allows uncontrolled passage until repaired. Wood comes from orchard branches, which regrow on a 32-step clock. A herder can push the nearest active animal one cell in the farmer&#x27;s actual facing direction; fences and gates govern whether the push succeeds.
+
+Thirty-two autonomous livestock are separate ecology entities. Every second step an unconfined animal proposes one cardinal step toward the pasture maximizing four times grass minus L1 distance, with fixed index tie breaking. A blocked proposal stays in place, so steering through gates and rescue labor matter. Every fourth step livestock consume one available grass at their current plot and modify that household&#x27;s resource and payoff. Resting plots regrow two rather than one grass every eighth non-drought step. Hay plots spend one rather than two grass to create a carried fodder. Animals do not respect a household&#x27;s intended rest designation, creating a gate/commons tradeoff. Every third 128-step weather phase is drought; grass/wells then stop replenishing. Trough water only benefits animals within distance 3; strong shelters within distance 4 protect from drought exposure. Hunger, illness and unprotected drought can remove health every 16 ticks. Zero-health animals become inactive.
+
+Four shared facilities combine a water well, shearing rack and four-place quarantine pen. Actual nearby animals are moved into a pen and confined; an eight-count timer is decremented during the same step&#x27;s ecology phase, so admission&#x27;s first end-state timer is seven. When the countdown reaches zero, a clean facility clears infection; release still needs a farmer action. Dirty equipment can infect a subsequently shorn animal and prevents pen curing until a water steward cleans it. Shearing requires wool &gt;=3, rack distance &lt;=2, shearer distance &lt;=1 and a distinct farmer choosing Hold within distance 1 of that animal. The same holding dependency supports a fodder-funded rescue of a hungry animal. Feeding, tool/fodder exchange, water transport, branch gathering, orchard tending and barn reserves are actual state transfers. Orchards grow every 16 ticks with moisture, and successful fruit harvest resets only that orchard&#x27;s growth.
+
+## Action legend
+
+- 0: Wait.
+- 1: Move north and face north.
+- 2: Move east and face east.
+- 3: Move south and face south.
+- 4: Move west and face west.
+- 5: Herd nearby livestock one cell forward with herding tool.
+- 6: Toggle nearby livestock gate.
+- 7: Repair nearby gate using hammer and wood.
+- 8: Gather wood from nearby orchard.
+- 9: Harvest ripe fruit from nearby orchard.
+- 10: Cut nearby grass into fodder with herding tool.
+- 11: Draw water at a shared well with bucket.
+- 12: Pour carried water into nearby trough.
+- 13: Admit nearby livestock to a shared quarantine pen.
+- 14: Release nearby animal whose quarantine timer expired.
+- 15: Shear nearby woolly livestock at a rack with a holding partner.
+- 16: Hold nearby livestock for another farmer.
+- 17: Feed nearby livestock from carried fodder.
+- 18: Build nearby weather shelter using hammer and wood.
+- 19: Rotate own nearby pasture between grazing, rest and hay.
+- 20: Exchange tools with nearest adjacent farmer.
+- 21: Give one fodder to nearest adjacent farmer.
+- 22: Tend nearby orchard using carried water.
+- 23: Store one carried fodder at nearby barn.
+- 24: Withdraw one stored fodder from nearby barn.
+- 25: Rescue hungry nearby livestock with fodder and a holding partner.
+- 26: Clean nearby shared rack and quarantine facility with water.
+
+## Observation and role-view contract
+
+Farmers and all ecology/facility groups use L1 radius 6. Four nearest visible farmer rows plus self are exposed. Clock/weather and each household&#x27;s own accumulated wool and fruit ledger are known to its members. Other households&#x27; changing grass, illness, reserves and gates remain local. Animals are separate ecology rows and cannot be counted as controllable actors.
+
+The first scalar of the self block is actor ID/(A-1). Each nearest-actor slot begins with visibility then actor ID/(A-1); absent slots are all zero. Actor slots use the four smallest L1 distances with ID tie breaking; self is always visible through its self block. All other entity blocks use original entity order, visibility flag, normalized absolute x/y, then the listed attributes; hidden rows are zero. Terrain layout is fixed public knowledge, while changing object states use declared local visibility. The renderer must filter entity and event displays by role visibility; full-state diagnostics are a separate labeled view. Public scene metadata does not add policy input.
+
+- [0, 13): Self: actor ID/63, x/63, y/63, household/15, tool/3, wood/4, fodder/4, water/3, facing/4, t/896, weather phase/2, own wool/40, own fruit/40 (self).
+- [13, 53): Four nearest farmer slots, 10 each: visible, ID/63, x/63, y/63, household/15, tool/3, wood/4, fodder/4, water/3, facing/4 (local).
+- [53, 149): 16 pasture rows, 6 each: visible, x/63, y/63, grass/12, rotation/2, current grazing/32 (local).
+- [149, 245): 16 orchard rows, 6 each: visible, x/63, y/63, growth/8, branches/8, stored moisture/4 (local).
+- [245, 357): 16 barn rows, 7 each: visible, x/63, y/63, shelter/3, fodder/24, wool products/40, fruit products/40 (local).
+- [357, 421): 16 trough rows, 4 each: visible, x/63, y/63, water/8 (local).
+- [421, 541): 24 gate rows, 5 each: visible, x/63, y/63, open, integrity/3 (local).
+- [541, 565): 4 facility rows, 6 each: visible, x/63, y/63, well water/12, infected equipment, occupied pen places/4 (local).
+- [565, 885): 32 livestock rows, 10 each: visible, x/63, y/63, owner/15, wool/6, hunger/8, health/3, sick, (pen+1)/4, timer/8 (local).
+- [885, 910): Row-major 5 by 5 edge-clamped local fence patch, 0 floor or 1 fence; gate entities determine actual crossing (local).
+
+## Rewards, bounds and persistent consequences
+
+Every legal work attempt costs 0.01. Shearing pays its actor 0.75 and shares another 0.25 equally among the actor&#x27;s four household members; ripe fruit pays its actor 0.4 and shares 0.2. Partner-assisted rescue pays its actor 0.15. Shearing at infected equipment costs that actor 0.25. Each actual consumed grass costs every member of the grazed plot&#x27;s household 0.04, and each animal injury costs every member of its owning household 0.1. Thus opening a gate can export grazing losses while livestock injury remains attributable to ownership. Food storage, draws, rotation and repeated toggles have no positive shaping reward. At most 32 animals graze, each owner has two animals, and each farmer performs one action, so [-4,4] conservatively contains every per-actor step return.
+
+Rewards are float32[A]. Observations are explicitly float32[A,O]; normalized bounds are [0.0,1]. Declared reward bounds are [-4, 4], analytical containment bounds rather than empirical results or performance gates. Actor/group identity, positions, tool changes and real object levels bind to native state in manifest.json and scene.json; no scripted display transition substitutes for a kernel transition.
+
+## Termination and declared source invariants
+
+Natural failure occurs when all 32 livestock health values are zero. Otherwise H=896 truncates the persistent village. Ordinary shearing, harvest and pasture rotation never reset the world. A live call advances t exactly once. Natural termination has priority at H. A terminal call is absorbing: all state and observation leaves, clock and terminal cause are preserved; reward is zero and every done row is true. There is no raw auto-reset.
+
+All 64 farmer rows remain active until joint termination. Livestock active flags equal health&gt;0. Grass stays 0..12, rotation 0..2, wood/fodder 0..4, carried water 0..3, orchard stage/branches 0..8, orchard water 0..4, shelters/gate integrity 0..3, trough water 0..8, well water 0..12, barn fodder 0..24 and product stocks 0..40. Sheep wool stays 0..6, hunger 0..8, health 0..3 and timer 0..8. Each sheep is in at most one pen and each pen admits at most four. Pen occupancy includes inactive animals; no undisclosed cleanup or resurrection occurs. Farmers and livestock may share cells. Grazing, illness and shared equipment persist across work and movement.
+
+The manifest declares the complete fixed-key state tree. Numeric/bool state leaves use int32/float32/bool. PRNG keys remain external trajectory provenance and are not duplicated in state. The source&#x27;s reset randomness is only sixteen reset grass levels, each an integer in 6..10 from the supplied key; initial livestock owner, infection, wool and positions are fixed; raw_step consumes no additional random draws. No signed-int or PRNG distribution substitution is made. Human-readable invariants above have not been numerically checked; the optional machine invariant list is empty to avoid inventing an unsupported invariant-check dialect.
+
+## Prospective strategies and fixed diagnostics
+
+A household can open gates to reach a shared rack or a new pasture, while accepting that its neighbors&#x27; livestock can consume recovering grass. It can reserve fodder in a barn and keep a plot resting, or rotate into hay to gather more efficiently at the expense of rest regrowth. Another choice is to supply water and hold an animal for a neighbor&#x27;s shearer instead of claiming production personally. The first literal script combines an initial assisted shear and a water steward&#x27;s fixed well-to-trough sequence; the second rotates, cuts and stores a fodder reserve. The pair removes only actor 3&#x27;s initial Hold while actor 1 performs the same shearing action, targeting another actor&#x27;s product and the animal&#x27;s wool.
+
+playthrough.json contains two complete literal joint-action arrays at seed 23517, plus one pair whose entire continuation differs in exactly one actor action at one step. All are UNEXECUTED_AUTHOR_HYPOTHESIS. Their finite lengths are diagnostic scopes, not claims of finishing the game. Conditions, delays and intended state changes are source reasoning; legality during rollout, effects, rewards, solvability and human usability remain unverified. There is no adaptive policy, seed search, measured effect size or expected-success threshold.
+
+## Literal source evidence
+
+- Gate state governs native passage: candidate.py:15 — `gate = jnp.any((self.distance(positions, s[&#x27;gate_pos&#x27;]) &lt;= 1) &amp; (s[&#x27;gate_open&#x27;] | (s[&#x27;gate_health&#x27;] == 0))[None, :], axis=1)`
+- Complete farmer and ecology state: candidate.py:63 — `s = {&#x27;t&#x27;: jnp.array(0, jnp.int32), &#x27;done&#x27;: jnp.array(False), &#x27;terminated&#x27;: jnp.array(False), &#x27;tiles&#x27;: tiles, &#x27;pos&#x27;: pos, &#x27;active&#x27;: jnp.ones((64,), jnp.bool_), &#x27;tool&#x27;: ids % 4, &#x27;face&#x27;: jnp.full((64,), 2, jnp.int32), &#x27;wood&#x27;: jnp.zeros((64,), jnp.int32), &#x27;fodder&#x27;: jnp.zeros((64,), jnp.int32), &#x27;water&#x27;: jnp.zeros((64,), jnp.int32), &#x27;seen&#x27;: jnp.zeros((64, 4), jnp.int32), &#x27;agent_vis&#x27;: jnp.zeros((64, 64), jnp.bool_), &#x27;pasture_pos&#x27;: center, &#x27;grass&#x27;: jax.random.randint(key, (16,), 6, 11).astype(jnp.int32), &#x27;rotation&#x27;: jnp.zeros((16,), jnp.int32), &#x27;grazed&#x27;: jnp.zeros((16,), jnp.int32), &#x27;pasture_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;pasture_vis&#x27;: jnp.zeros((64, 16), jnp.bool_), &#x27;orchard_pos&#x27;: center + jnp.array([-3, -3], jnp.int32), &#x27;orchard_growth&#x27;: jnp.full((16,), 4, jnp.int32), &#x27;branches&#x27;: jnp.full((16,), 8, jnp.int32), &#x27;orchard_water&#x27;: jnp.full((16,), 2, jnp.int32), &#x27;orchard_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;orchard_vis&#x27;: jnp.zeros((64, 16), jnp.bool_), &#x27;barn_pos&#x27;: center + jnp.array([0, -3], jnp.int32), &#x27;shelter&#x27;: jnp.zeros((16,), jnp.int32), &#x27;fodder_stock&#x27;: jnp.zeros((16,), jnp.int32), &#x27;wool_stock&#x27;: jnp.zeros((16,), jnp.int32), &#x27;fruit_stock&#x27;: jnp.zeros((16,), jnp.int32), &#x27;barn_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;barn_vis&#x27;: jnp.zeros((64, 16), jnp.bool_), &#x27;trough_pos&#x27;: center + jnp.array([3, 2], jnp.int32), &#x27;trough_water&#x27;: jnp.full((16,), 4, jnp.int32), &#x27;trough_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;trough_vis&#x27;: jnp.zeros((64, 16), jnp.bool_), &#x27;gate_pos&#x27;: gates, &#x27;gate_open&#x27;: jnp.zeros((24,), jnp.bool_), &#x27;gate_health&#x27;: jnp.full((24,), 3, jnp.int32), &#x27;gate_active&#x27;: jnp.ones((24,), jnp.bool_), &#x27;gate_vis&#x27;: jnp.zeros((64, 24), jnp.bool_), &#x27;facility_pos&#x27;: jnp.array([[10, 10], [42, 10], [10, 42], [42, 42]], jnp.int32), &#x27;facility_water&#x27;: jnp.full((4,), 12, jnp.int32), &#x27;facility_dirty&#x27;: jnp.zeros((4,), jnp.bool_), &#x27;facility_load&#x27;: jnp.zeros((4,), jnp.int32), &#x27;facility_active&#x27;: jnp.ones((4,), jnp.bool_), &#x27;facility_vis&#x27;: jnp.zeros((64, 4), jnp.bool_), &#x27;sheep_pos&#x27;: jnp.repeat(center, 2, axis=0) + jnp.tile(jnp.array([[1, 1], [2, 1]], jnp.int32), (16, 1)), &#x27;sheep_owner&#x27;: jnp.repeat(c, 2), &#x27;sheep_wool&#x27;: jnp.full((32,), 3, jnp.int32), &#x27;sheep_hunger&#x27;: jnp.zeros((32,), jnp.int32), &#x27;sheep_health&#x27;: jnp.full((32,), 3, jnp.int32), &#x27;sheep_sick&#x27;: jnp.arange(32, dtype=jnp.int32) == 31, &#x27;sheep_pen&#x27;: jnp.full((32,), -1, jnp.int32), &#x27;sheep_timer&#x27;: jnp.zeros((32,), jnp.int32), &#x27;sheep_active&#x27;: jnp.ones((32,), jnp.bool_), &#x27;sheep_vis&#x27;: jnp.zeros((64, 32), jnp.bool_), &#x27;event_shear&#x27;: jnp.zeros((64,), jnp.bool_), &#x27;event_feed&#x27;: jnp.zeros((64,), jnp.bool_), &#x27;event_quarantine&#x27;: jnp.zeros((64,), jnp.bool_), &#x27;event_fruit&#x27;: jnp.zeros((64,), jnp.bool_), &#x27;event_rescue&#x27;: jnp.zeros((64,), jnp.bool_)}`
+- Real pasture rotation cost: candidate.py:144 — `cut_cost = jnp.where(z[&#x27;rotation&#x27;][pasture] == 2, 1, 2)`
+- Shared finite quarantine places: candidate.py:162 — `confine = (a[i] == 13) &amp; near &amp; (fd[facility] &lt;= 3) &amp; (z[&#x27;sheep_pen&#x27;][sheep] &lt; 0) &amp; (pen_load &lt; 4)`
+- Distinct partner holding condition: candidate.py:121 — `helpers = jnp.any((jnp.sum(jnp.abs(z[&#x27;pos&#x27;] - z[&#x27;sheep_pos&#x27;][sheep]), axis=1) &lt;= 1) &amp; (a == 16) &amp; (jnp.arange(64, dtype=jnp.int32) != i))`
+- Partner-assisted shearing: candidate.py:171 — `shear = (a[i] == 15) &amp; (sd[sheep] &lt;= 1) &amp; z[&#x27;sheep_active&#x27;][sheep] &amp; (rackdist[rack] &lt;= 2) &amp; (z[&#x27;sheep_wool&#x27;][sheep] &gt;= 3) &amp; helpers &amp; (z[&#x27;wool_stock&#x27;][crew] &lt; 40)`
+- Shared equipment infection: candidate.py:172 — `contaminated = shear &amp; z[&#x27;facility_dirty&#x27;][rack]`
+- Autonomous native movement: candidate.py:210 — `score = 4 * n[&#x27;grass&#x27;][None, :] - self.distance(n[&#x27;sheep_pos&#x27;], n[&#x27;pasture_pos&#x27;])`
+- Grazing changes another household: candidate.py:232 — `z[&#x27;grazed&#x27;] = z[&#x27;grazed&#x27;].at[region].add(eat.astype(jnp.int32))`
+- Attributable grazing and injury costs: candidate.py:242 — `rew = rew - (jnp.arange(64, dtype=jnp.int32) // 4 == region).astype(jnp.float32) * 0.04 * eat`
+- Preserved terminal state: candidate.py:250 — `n = jax.tree.map(lambda new, old: jnp.where(s[&#x27;done&#x27;], old, new), n, s)`
+
+## Provenance and limits
+
+Only the 21 actual authorized input files in author_input_freeze.json were read. The controlling population/family237 input sets A and H. Older copied population notes were not read. No old source, result, IR, training/selection/heldout file, memory file, network, local model, remote model API or other author feedback was used. The inherited genre direction comes from this batch&#x27;s independent_family_principles.json and design brief. No supplied upstream reference snapshot or upstream code was read or copied: Craftax mechanics and Pgx board APIs are not claimed as implementations, and PureJaxRL/Craftax PPO baselines are neither new game libraries nor replacements for the frozen learner.
+
+Author-side checks are standard-library AST parsing, literal schema/shape declarations, JSON, byte lengths and SHA256 only. Supplied validator modules were read as input text and were not executed. No import of candidate.py, JAX, NumPy, reset, raw_step, observe or legal_actions occurred. This package establishes authored source/data identity only, not accepted R0/M0, numerical parity, learnability, strategic non-isomorphism, animation acceptance, scientific benefit or transfer.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north and face north</span></div><div class="action"><b>2</b><span>Move east and face east</span></div><div class="action"><b>3</b><span>Move south and face south</span></div><div class="action"><b>4</b><span>Move west and face west</span></div><div class="action"><b>5</b><span>Herd nearby livestock one cell forward with herding tool</span></div><div class="action"><b>6</b><span>Toggle nearby livestock gate</span></div><div class="action"><b>7</b><span>Repair nearby gate using hammer and wood</span></div><div class="action"><b>8</b><span>Gather wood from nearby orchard</span></div><div class="action"><b>9</b><span>Harvest ripe fruit from nearby orchard</span></div><div class="action"><b>10</b><span>Cut nearby grass into fodder with herding tool</span></div><div class="action"><b>11</b><span>Draw water at a shared well with bucket</span></div><div class="action"><b>12</b><span>Pour carried water into nearby trough</span></div><div class="action"><b>13</b><span>Admit nearby livestock to a shared quarantine pen</span></div><div class="action"><b>14</b><span>Release nearby animal whose quarantine timer expired</span></div><div class="action"><b>15</b><span>Shear nearby woolly livestock at a rack with a holding partner</span></div><div class="action"><b>16</b><span>Hold nearby livestock for another farmer</span></div><div class="action"><b>17</b><span>Feed nearby livestock from carried fodder</span></div><div class="action"><b>18</b><span>Build nearby weather shelter using hammer and wood</span></div><div class="action"><b>19</b><span>Rotate own nearby pasture between grazing, rest and hay</span></div><div class="action"><b>20</b><span>Exchange tools with nearest adjacent farmer</span></div><div class="action"><b>21</b><span>Give one fodder to nearest adjacent farmer</span></div><div class="action"><b>22</b><span>Tend nearby orchard using carried water</span></div><div class="action"><b>23</b><span>Store one carried fodder at nearby barn</span></div><div class="action"><b>24</b><span>Withdraw one stored fodder from nearby barn</span></div><div class="action"><b>25</b><span>Rescue hungry nearby livestock with fodder and a holding partner</span></div><div class="action"><b>26</b><span>Clean nearby shared rack and quarantine facility with water</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Household 00; actor 000; initial herding crook; individually controllable</p><p><b>agent_1</b> Household 00; actor 001; initial shearing tool; individually controllable</p><p><b>agent_2</b> Household 00; actor 002; initial repair hammer; individually controllable</p><p><b>agent_3</b> Household 00; actor 003; initial water steward bucket; individually controllable</p><p><b>agent_4</b> Household 01; actor 004; initial herding crook; individually controllable</p><p><b>agent_5</b> Household 01; actor 005; initial shearing tool; individually controllable</p><p><b>agent_6</b> Household 01; actor 006; initial repair hammer; individually controllable</p><p><b>agent_7</b> Household 01; actor 007; initial water steward bucket; individually controllable</p><p><b>agent_8</b> Household 02; actor 008; initial herding crook; individually controllable</p><p><b>agent_9</b> Household 02; actor 009; initial shearing tool; individually controllable</p><p><b>agent_10</b> Household 02; actor 010; initial repair hammer; individually controllable</p><p><b>agent_11</b> Household 02; actor 011; initial water steward bucket; individually controllable</p><p><b>agent_12</b> Household 03; actor 012; initial herding crook; individually controllable</p><p><b>agent_13</b> Household 03; actor 013; initial shearing tool; individually controllable</p><p><b>agent_14</b> Household 03; actor 014; initial repair hammer; individually controllable</p><p><b>agent_15</b> Household 03; actor 015; initial water steward bucket; individually controllable</p><p><b>agent_16</b> Household 04; actor 016; initial herding crook; individually controllable</p><p><b>agent_17</b> Household 04; actor 017; initial shearing tool; individually controllable</p><p><b>agent_18</b> Household 04; actor 018; initial repair hammer; individually controllable</p><p><b>agent_19</b> Household 04; actor 019; initial water steward bucket; individually controllable</p><p><b>agent_20</b> Household 05; actor 020; initial herding crook; individually controllable</p><p><b>agent_21</b> Household 05; actor 021; initial shearing tool; individually controllable</p><p><b>agent_22</b> Household 05; actor 022; initial repair hammer; individually controllable</p><p><b>agent_23</b> Household 05; actor 023; initial water steward bucket; individually controllable</p><p><b>agent_24</b> Household 06; actor 024; initial herding crook; individually controllable</p><p><b>agent_25</b> Household 06; actor 025; initial shearing tool; individually controllable</p><p><b>agent_26</b> Household 06; actor 026; initial repair hammer; individually controllable</p><p><b>agent_27</b> Household 06; actor 027; initial water steward bucket; individually controllable</p><p><b>agent_28</b> Household 07; actor 028; initial herding crook; individually controllable</p><p><b>agent_29</b> Household 07; actor 029; initial shearing tool; individually controllable</p><p><b>agent_30</b> Household 07; actor 030; initial repair hammer; individually controllable</p><p><b>agent_31</b> Household 07; actor 031; initial water steward bucket; individually controllable</p><p><b>agent_32</b> Household 08; actor 032; initial herding crook; individually controllable</p><p><b>agent_33</b> Household 08; actor 033; initial shearing tool; individually controllable</p><p><b>agent_34</b> Household 08; actor 034; initial repair hammer; individually controllable</p><p><b>agent_35</b> Household 08; actor 035; initial water steward bucket; individually controllable</p><p><b>agent_36</b> Household 09; actor 036; initial herding crook; individually controllable</p><p><b>agent_37</b> Household 09; actor 037; initial shearing tool; individually controllable</p><p><b>agent_38</b> Household 09; actor 038; initial repair hammer; individually controllable</p><p><b>agent_39</b> Household 09; actor 039; initial water steward bucket; individually controllable</p><p><b>agent_40</b> Household 10; actor 040; initial herding crook; individually controllable</p><p><b>agent_41</b> Household 10; actor 041; initial shearing tool; individually controllable</p><p><b>agent_42</b> Household 10; actor 042; initial repair hammer; individually controllable</p><p><b>agent_43</b> Household 10; actor 043; initial water steward bucket; individually controllable</p><p><b>agent_44</b> Household 11; actor 044; initial herding crook; individually controllable</p><p><b>agent_45</b> Household 11; actor 045; initial shearing tool; individually controllable</p><p><b>agent_46</b> Household 11; actor 046; initial repair hammer; individually controllable</p><p><b>agent_47</b> Household 11; actor 047; initial water steward bucket; individually controllable</p><p><b>agent_48</b> Household 12; actor 048; initial herding crook; individually controllable</p><p><b>agent_49</b> Household 12; actor 049; initial shearing tool; individually controllable</p><p><b>agent_50</b> Household 12; actor 050; initial repair hammer; individually controllable</p><p><b>agent_51</b> Household 12; actor 051; initial water steward bucket; individually controllable</p><p><b>agent_52</b> Household 13; actor 052; initial herding crook; individually controllable</p><p><b>agent_53</b> Household 13; actor 053; initial shearing tool; individually controllable</p><p><b>agent_54</b> Household 13; actor 054; initial repair hammer; individually controllable</p><p><b>agent_55</b> Household 13; actor 055; initial water steward bucket; individually controllable</p><p><b>agent_56</b> Household 14; actor 056; initial herding crook; individually controllable</p><p><b>agent_57</b> Household 14; actor 057; initial shearing tool; individually controllable</p><p><b>agent_58</b> Household 14; actor 058; initial repair hammer; individually controllable</p><p><b>agent_59</b> Household 14; actor 059; initial water steward bucket; individually controllable</p><p><b>agent_60</b> Household 15; actor 060; initial herding crook; individually controllable</p><p><b>agent_61</b> Household 15; actor 061; initial shearing tool; individually controllable</p><p><b>agent_62</b> Household 15; actor 062; initial repair hammer; individually controllable</p><p><b>agent_63</b> Household 15; actor 063; initial water steward bucket; individually controllable</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      13
+    ],
+    &quot;meaning&quot;: &quot;Self: actor ID/63, x/63, y/63, household/15, tool/3, wood/4, fodder/4, water/3, facing/4, t/896, weather phase/2, own wool/40, own fruit/40&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      53
+    ],
+    &quot;meaning&quot;: &quot;Four nearest farmer slots, 10 each: visible, ID/63, x/63, y/63, household/15, tool/3, wood/4, fodder/4, water/3, facing/4&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      149
+    ],
+    &quot;meaning&quot;: &quot;16 pasture rows, 6 each: visible, x/63, y/63, grass/12, rotation/2, current grazing/32&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      149,
+      245
+    ],
+    &quot;meaning&quot;: &quot;16 orchard rows, 6 each: visible, x/63, y/63, growth/8, branches/8, stored moisture/4&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      245,
+      357
+    ],
+    &quot;meaning&quot;: &quot;16 barn rows, 7 each: visible, x/63, y/63, shelter/3, fodder/24, wool products/40, fruit products/40&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      357,
+      421
+    ],
+    &quot;meaning&quot;: &quot;16 trough rows, 4 each: visible, x/63, y/63, water/8&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      421,
+      541
+    ],
+    &quot;meaning&quot;: &quot;24 gate rows, 5 each: visible, x/63, y/63, open, integrity/3&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      541,
+      565
+    ],
+    &quot;meaning&quot;: &quot;4 facility rows, 6 each: visible, x/63, y/63, well water/12, infected equipment, occupied pen places/4&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      565,
+      885
+    ],
+    &quot;meaning&quot;: &quot;32 livestock rows, 10 each: visible, x/63, y/63, owner/15, wool/6, hunger/8, health/3, sick, (pen+1)/4, timer/8&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      885,
+      910
+    ],
+    &quot;meaning&quot;: &quot;Row-major 5 by 5 edge-clamped local fence patch, 0 floor or 1 fence; gate entities determine actual crossing&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agents&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 64,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 herder, 1 shearer, 2 repairer, 3 water steward tool&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;face&quot;
+        ],
+        &quot;meaning&quot;: &quot;Facing: 1 north, 2 east, 3 south, 4 west&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried wood, capacity 4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fodder&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried fodder, capacity 4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried water, capacity 3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;pasture&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;pasture_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;pasture_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;pasture_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;grass&quot;
+        ],
+        &quot;meaning&quot;: &quot;Regrowing grass, 0 to 12&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rotation&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 grazing, 1 rest, 2 hay&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;grazed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Actual grazing units consumed here this step&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;orchard&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;orchard_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;orchard_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;orchard_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;orchard_growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fruit growth, 0 to 8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;branches&quot;
+        ],
+        &quot;meaning&quot;: &quot;Available wood branches, 0 to 8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;orchard_water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stored orchard moisture, 0 to 4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;barn&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;barn_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;barn_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;barn_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;shelter&quot;
+        ],
+        &quot;meaning&quot;: &quot;Weather shelter level, 0 to 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fodder_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fodder reserve, 0 to 24&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wool_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Delivered wool products, 0 to 40&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fruit_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Delivered fruit products, 0 to 40&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;trough&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;trough_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;trough_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;trough_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;trough_water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Water available to nearby livestock, 0 to 8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gate&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gate_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_open&quot;
+        ],
+        &quot;meaning&quot;: &quot;Open passage for farmers and livestock&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fence/gate integrity; zero permits uncontrolled crossing&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;facility&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;facility_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;facility_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;facility_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;facility_water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Finite well water, 0 to 12&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;facility_dirty&quot;
+        ],
+        &quot;meaning&quot;: &quot;Infectious shared equipment; prevents pen cure&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;facility_load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Animals occupying quarantine, capacity 4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;sheep&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;sheep_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;sheep_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;sheep_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;sheep_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Owner household ID&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sheep_wool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Wool growth, 0 to 6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sheep_hunger&quot;
+        ],
+        &quot;meaning&quot;: &quot;Hunger, 0 to 8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sheep_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Health, 0 to 3; zero is inactive&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sheep_sick&quot;
+        ],
+        &quot;meaning&quot;: &quot;Infectious disease flag&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sheep_pen&quot;
+        ],
+        &quot;meaning&quot;: &quot;Quarantine facility ID, -1 outside a pen&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;sheep_timer&quot;
+        ],
+        &quot;meaning&quot;: &quot;Quarantine timer, 0 to 8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 235,
+  &quot;key&quot;: &quot;gi235&quot;,
+  &quot;title&quot;: &quot;Pasture Weave Commons&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 64,
+    &quot;observation_size&quot;: 910,
+    &quot;num_actions&quot;: 27,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;98be94b718f4981f378e2d87e7f2592a9f9c9b3a0ae144574bacf865c2970c2e&quot;,
+  &quot;manifest_sha256&quot;: &quot;10d77a312e6116de46464ba5f56694daa44a04090935ed55a987c4332106828c&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;98be94b718f4981f378e2d87e7f2592a9f9c9b3a0ae144574bacf865c2970c2e&quot;,
+      &quot;bytes&quot;: 21653,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00235/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;10d77a312e6116de46464ba5f56694daa44a04090935ed55a987c4332106828c&quot;,
+      &quot;bytes&quot;: 30618,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00235/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;47be9c9ec156b9fcbb70a897fe88802a6df2048da4b97f5fb5c38fb42c2b3efb&quot;,
+      &quot;bytes&quot;: 12795,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00235/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;1b9205b6257fa17d6139d78d4d8878fec82506c095a81f826fa3b72036816581&quot;,
+      &quot;bytes&quot;: 17341,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00235/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;e8e4d494651f550713c848dd149144373f3d4ea088bcf4641bda7d662fbc7851&quot;,
+      &quot;bytes&quot;: 41523,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00235/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi235">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

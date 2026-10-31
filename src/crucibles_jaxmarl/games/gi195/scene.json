@@ -1,0 +1,479 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "7ee81895c600922a68ea58c3fea8a5e3bd770dff4e06a25bd7c5f0d04fd6bebe",
+  "manifest_sha256": "2049765d8108e9b32d713bb545aff5ab1ac61c38aad87fa2beb785ed127d7245",
+  "title": "Clockwork Banquet",
+  "rules": [
+    "Three trays are conserved. Carry one tray, or put it down on a cell without another loose tray.",
+    "Load a clean tray at the matching pantry. Vegetable and protein each have three ingredients.",
+    "Start the raw portion at its matching stove. The tray stays there during three cooking ticks.",
+    "Ready food spoils after twelve age ticks. Serving happens before that tick's ageing.",
+    "The hatch asks for vegetable, protein, vegetable, protein, in that order.",
+    "Serving leaves a dirty tray. Carry dirty or spoiled trays to the sink to wash them.",
+    "Loose trays on row y=3 move one cell on even ticks. Endpoints and occupied tray cells stop movement.",
+    "A cook at (4,5) reverses the whole belt, helping one delivery route while delaying another."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable kitchen floor",
+          "color": "#F0DBC0"
+        },
+        {
+          "value": 1,
+          "meaning": "Walkable reversible conveyor",
+          "color": "#547F8A"
+        },
+        {
+          "value": 2,
+          "meaning": "Vegetable pantry",
+          "color": "#6DAD55"
+        },
+        {
+          "value": 3,
+          "meaning": "Protein pantry",
+          "color": "#B95C50"
+        },
+        {
+          "value": 4,
+          "meaning": "Vegetable stove",
+          "color": "#C47D3D"
+        },
+        {
+          "value": 5,
+          "meaning": "Protein stove",
+          "color": "#A65D3C"
+        },
+        {
+          "value": 6,
+          "meaning": "Washing sink",
+          "color": "#6AADD0"
+        },
+        {
+          "value": 7,
+          "meaning": "Conveyor direction control",
+          "color": "#E3B84A"
+        },
+        {
+          "value": 8,
+          "meaning": "Banquet serving hatch",
+          "color": "#9166AF"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "cooks",
+      "glyph": "worker",
+      "label": "Banquet cooks",
+      "color": "#3975C3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "carrying"
+        }
+      ]
+    },
+    {
+      "id": "trays",
+      "glyph": "food",
+      "label": "Reusable serving trays",
+      "color": "#D9AE61",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "holder"
+        },
+        {
+          "state_path": [
+            "food"
+          ],
+          "label": "food"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "label": "stage"
+        },
+        {
+          "state_path": [
+            "timer"
+          ],
+          "label": "timer"
+        },
+        {
+          "state_path": [
+            "tray_moved"
+          ],
+          "label": "tray moved"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Pantries, stoves, sink, control and hatch",
+      "color": "#D27347",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_kind"
+          ],
+          "label": "station kind"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tray_moved"
+      ],
+      "meaning": "Per-tray conveyor motion this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served_now"
+      ],
+      "meaning": "The next requested course was served this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "loaded_now"
+      ],
+      "meaning": "Per-tray ingredient loading this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "washed_now"
+      ],
+      "meaning": "Per-tray washing this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "reversed"
+      ],
+      "meaning": "A cook reversed the conveyor this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Total served courses by food type.",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Total ingredients discarded during washing by food type.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Take a non-cooking tray here, or put held tray on a free floor cell"
+    },
+    {
+      "id": 6,
+      "label": "Load clean held tray at a stocked pantry"
+    },
+    {
+      "id": 7,
+      "label": "Start matching raw course at its stove, leaving the tray there"
+    },
+    {
+      "id": 8,
+      "label": "Reverse conveyor at control (4,5)"
+    },
+    {
+      "id": 9,
+      "label": "Wash held dirty/spoiled tray at sink (1,5)"
+    },
+    {
+      "id": 10,
+      "label": "Serve the requested ready held course at hatch (7,1)"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot in declared role order.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "t: Nonterminal clock, frozen after joint terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "done: Joint terminal latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "terminated: Natural cause latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "truncated: Cap-only latch, excluding natural termination. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        70
+      ],
+      "meaning": "tiles: Actual y-major terrain codes; see tile legend. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        76
+      ],
+      "meaning": "agent_pos: Agent [x,y] coordinates in role order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "agent_active: All roles remain present through joint terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        82
+      ],
+      "meaning": "carrying: Held object index; -1 means empty. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        88
+      ],
+      "meaning": "tray_pos: Physical [x,y] per tray; held trays follow their cook. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        88,
+        91
+      ],
+      "meaning": "tray_active: Native tray active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        94
+      ],
+      "meaning": "holder: -1 loose on floor/belt/station, otherwise holder role 0..2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "food: 0 none, 1 vegetable, 2 protein. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        100
+      ],
+      "meaning": "stage: 0 clean, 1 raw, 2 cooking, 3 ready, 4 dirty, 5 spoiled. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        103
+      ],
+      "meaning": "timer: Integer cooking or ready age; 0 after transition, max 11. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        117
+      ],
+      "meaning": "station_pos: Ordered vegetable pantry, protein pantry, vegetable stove, protein stove, sink, control, hatch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        124
+      ],
+      "meaning": "station_active: Native station active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        131
+      ],
+      "meaning": "station_kind: Station index/type 0..6 in that same order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        133
+      ],
+      "meaning": "stock: Remaining vegetable and protein pantry ingredients. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        134
+      ],
+      "meaning": "direction: Conveyor x direction: +1 east, -1 west; moves on even resulting t. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        135
+      ],
+      "meaning": "course: Number of requested courses served; next type is 1 + (course mod 2), unless course=4 terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        137
+      ],
+      "meaning": "served: Cumulative served portions, vegetable then protein. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        139
+      ],
+      "meaning": "waste: Cumulative discarded ingredients at washing, vegetable then protein. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        142
+      ],
+      "meaning": "tray_moved: Per-tray belt displacement in this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        143
+      ],
+      "meaning": "served_now: A correct requested portion was served this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        146
+      ],
+      "meaning": "loaded_now: Per-tray ingredient load this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        149
+      ],
+      "meaning": "washed_now: Per-tray washing this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        150
+      ],
+      "meaning": "reversed: Conveyor was reversed this step. Flattened row-major.",
+      "visibility": "public"
+    }
+  ]
+}

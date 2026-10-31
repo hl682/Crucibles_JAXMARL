@@ -1,0 +1,703 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "3a95595a4884c363195d29b2f7ca9caf00b8b92a91227d12f6fd5562005c959d",
+  "manifest_sha256": "eef9399eddc22cd52a854e24185063081aff545c5a51e4a92ab45a9d0ef87e28",
+  "title": "Magnet Frontier",
+  "rules": [
+    "Six reusable specialist kits divide mining, timber, magnetic construction, power, hauling and brace building.",
+    "Ore becomes coils; coils plus timber become magnets. Timber becomes braces for bridges, anchors and repairs. Ore plus timber becomes power packs.",
+    "Face or aim toward a cell before construction. Rails and bridged gaps persist; long perimeter routes remain available.",
+    "All magnets share a 32-unit bus. Each requested mount costs one charge; insufficient total charge powers none.",
+    "Fields sum pull/repel vectors within native radius four. Their combination can redirect, pin or jam several loads.",
+    "Manual lifting bypasses magnetic routing; braced cargo stays fixed until lifted. Brace repair restores jammed/damaged freight.",
+    "Optional contracts consume mine stock when the original freight body replenishes after its cooldown.",
+    "Dry solar pulses and rainy timber renewal are native cycles. The world truncates at 384 without a compulsory quest terminal."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      23,
+      23
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable frontier ground",
+          "color": "#8F9470"
+        },
+        {
+          "value": 1,
+          "meaning": "Broken floor gap; people need a bridge",
+          "color": "#384B66"
+        },
+        {
+          "value": 2,
+          "meaning": "Built brace bridge",
+          "color": "#BEA47A"
+        },
+        {
+          "value": 3,
+          "meaning": "Freight rail",
+          "color": "#7D8189"
+        },
+        {
+          "value": 4,
+          "meaning": "Rail on bridge",
+          "color": "#C5AA76"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "crews",
+      "glyph": "worker",
+      "label": "Six frontier crews",
+      "color": "#D1A16C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Specialist role 0..5"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "Direction 1 north, 2 east, 3 south, 4 west"
+        },
+        {
+          "state_path": [
+            "inventory"
+          ],
+          "label": "Ore/timber/coil/brace/pack/reserved counts; each <=6"
+        },
+        {
+          "state_path": [
+            "selected"
+          ],
+          "label": "Selected transfer resource, 0..4"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carried cargo index, -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "kits",
+      "glyph": "tool",
+      "label": "Reusable attached specialist tools",
+      "color": "#BFA978",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_kind"
+          ],
+          "label": "Pick / saw / wrench / winding / sling / clamp"
+        },
+        {
+          "state_path": [
+            "tool_holder"
+          ],
+          "label": "Fixed crew carrying this reusable kit"
+        }
+      ]
+    },
+    {
+      "id": "deposits",
+      "glyph": "resource",
+      "label": "Ore seams and timber stands",
+      "color": "#6D9B6E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "node_kind"
+          ],
+          "label": "0 ore, 1 timber"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Available units, bounded 0..12"
+        }
+      ]
+    },
+    {
+      "id": "magnets",
+      "glyph": "battery",
+      "label": "Player-built field mounts",
+      "color": "#8F87BE",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "magnet_on"
+          ],
+          "label": "Requested activation"
+        },
+        {
+          "state_path": [
+            "magnet_powered"
+          ],
+          "label": "Bus actually supplied this interval"
+        },
+        {
+          "state_path": [
+            "magnet_radius"
+          ],
+          "label": "Manhattan field radius"
+        },
+        {
+          "state_path": [
+            "polarity"
+          ],
+          "label": "+1 pull, -1 repel"
+        }
+      ]
+    },
+    {
+      "id": "freight",
+      "glyph": "crate",
+      "label": "Reusable iron freight bodies",
+      "color": "#A1B1BF",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "-1 loose, 0..5 carrying crew"
+        },
+        {
+          "state_path": [
+            "cargo_kind"
+          ],
+          "label": "0 west contract, 1 southeast contract"
+        },
+        {
+          "state_path": [
+            "jam"
+          ],
+          "label": "Recoverable contact jam"
+        },
+        {
+          "state_path": [
+            "anchored"
+          ],
+          "label": "Nonmagnetic brace prevents magnetic movement"
+        },
+        {
+          "state_path": [
+            "integrity"
+          ],
+          "label": "Remaining freight integrity, 0..3"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "label": "Mine replenishment delay after delivery"
+        },
+        {
+          "state_path": [
+            "last_touch"
+          ],
+          "label": "Last lifting crew receives collision cost"
+        }
+      ]
+    },
+    {
+      "id": "sites",
+      "glyph": "square",
+      "label": "Workbench/bus and two delivery sites",
+      "color": "#85705B",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "charge"
+      ],
+      "meaning": "Shared finite bus charge, 0..32",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "weather"
+      ],
+      "meaning": "0 dry, 1 rain phase",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "deliveries"
+      ],
+      "meaning": "Completed optional freight contracts per crew",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "builds"
+      ],
+      "meaning": "Successful magnet, rail or bridge placements",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Gather ore with miner kit or timber with saw kit beside matching node"
+    },
+    {
+      "id": 6,
+      "label": "Lift lowest-index adjacent loose cargo; miner or hauler only"
+    },
+    {
+      "id": 7,
+      "label": "Put held cargo at current tile"
+    },
+    {
+      "id": 8,
+      "label": "Craft a coil from two ore at workbench; engineer"
+    },
+    {
+      "id": 9,
+      "label": "Craft a brace from two timber at workbench; builder"
+    },
+    {
+      "id": 10,
+      "label": "Craft a power pack from one ore and one timber at workbench; electrician"
+    },
+    {
+      "id": 11,
+      "label": "Build a magnet on front tile using one coil and one timber; engineer"
+    },
+    {
+      "id": 12,
+      "label": "Lay front rail using one ore and one timber; engineer"
+    },
+    {
+      "id": 13,
+      "label": "Bridge a front gap with one brace; builder"
+    },
+    {
+      "id": 14,
+      "label": "Toggle nearest adjacent mounted magnet"
+    },
+    {
+      "id": 15,
+      "label": "Reverse nearest adjacent magnet polarity"
+    },
+    {
+      "id": 16,
+      "label": "Dismantle front magnet and recover one coil; engineer or builder"
+    },
+    {
+      "id": 17,
+      "label": "Load one power pack into bus at workbench for eight charge; electrician"
+    },
+    {
+      "id": 18,
+      "label": "Deliver held cargo at its matching destination; starts its mine replenishment cooldown"
+    },
+    {
+      "id": 19,
+      "label": "Select next carried resource: ore, timber, coil, brace, pack"
+    },
+    {
+      "id": 20,
+      "label": "Give one selected resource to lowest-index adjacent peer with room"
+    },
+    {
+      "id": 21,
+      "label": "Repair or unjam adjacent cargo with a brace; hauler or builder"
+    },
+    {
+      "id": 22,
+      "label": "Hand-crank one charge at the workbench"
+    },
+    {
+      "id": 23,
+      "label": "Anchor adjacent loose cargo with a nonmagnetic brace; builder"
+    },
+    {
+      "id": 24,
+      "label": "Aim north without moving"
+    },
+    {
+      "id": 25,
+      "label": "Aim east without moving"
+    },
+    {
+      "id": 26,
+      "label": "Aim south without moving"
+    },
+    {
+      "id": 27,
+      "label": "Aim west without moving"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        580
+      ],
+      "meaning": "24x24 native grid: floor 0, gap 1, bridge 2, rail 3, rail bridge 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        580,
+        592
+      ],
+      "meaning": "agent pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        592,
+        598
+      ],
+      "meaning": "role; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        598,
+        604
+      ],
+      "meaning": "facing; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        604,
+        640
+      ],
+      "meaning": "Per crew: ore, timber, coil, brace, power pack, reserved zero; counts 0..6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        640,
+        646
+      ],
+      "meaning": "selected; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        646,
+        652
+      ],
+      "meaning": "carrying; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        652,
+        700
+      ],
+      "meaning": "Per-crew first visit flags for eight resource regions; arrival within two cells",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        700,
+        712
+      ],
+      "meaning": "tool pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        712,
+        718
+      ],
+      "meaning": "Reusable kit capability code equals its fixed crew role",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        718,
+        724
+      ],
+      "meaning": "tool holder; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        724,
+        740
+      ],
+      "meaning": "node pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        740,
+        748
+      ],
+      "meaning": "node kind; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        748,
+        756
+      ],
+      "meaning": "Node resource units, 0..12, with seeded initial quantities and regeneration",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        756,
+        772
+      ],
+      "meaning": "magnet pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        772,
+        780
+      ],
+      "meaning": "magnet active; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        780,
+        788
+      ],
+      "meaning": "magnet on; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        788,
+        796
+      ],
+      "meaning": "Eight actual supply flags after common bus allocation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        796,
+        804
+      ],
+      "meaning": "Eight native Manhattan field radii, each four",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        804,
+        812
+      ],
+      "meaning": "polarity; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        812,
+        828
+      ],
+      "meaning": "cargo pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        828,
+        836
+      ],
+      "meaning": "cargo active; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        836,
+        844
+      ],
+      "meaning": "holder; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        844,
+        852
+      ],
+      "meaning": "cargo kind; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        852,
+        860
+      ],
+      "meaning": "jam; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        860,
+        868
+      ],
+      "meaning": "anchored; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        868,
+        876
+      ],
+      "meaning": "integrity; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        876,
+        884
+      ],
+      "meaning": "cooldown; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        884,
+        892
+      ],
+      "meaning": "last touch; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        892,
+        898
+      ],
+      "meaning": "facility pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        898,
+        899
+      ],
+      "meaning": "charge; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        899,
+        900
+      ],
+      "meaning": "weather; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        900,
+        901
+      ],
+      "meaning": "Seeded bounded phase offset; no external randomness",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        901,
+        907
+      ],
+      "meaning": "deliveries; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        907,
+        908
+      ],
+      "meaning": "builds; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        908,
+        938
+      ],
+      "meaning": "Per crew five float32 components: first region visits, freight value, shared construction, material/energy costs, cargo damage",
+      "visibility": "public"
+    }
+  ]
+}

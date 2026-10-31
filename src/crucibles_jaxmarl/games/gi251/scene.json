@@ -1,0 +1,3077 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0009f3127bcf22d1817749f1b520c0c3cb48e0ae37e4c1107d433518ebc2e595",
+  "manifest_sha256": "825ed2fee717d4962a8356d5fb8f5f3acb0b311b8cbd9608208ece688d40ac47",
+  "title": "Orchard Lantern Commons",
+  "rules": [
+    "96 independent villagers belong to twelve households. Hives are ecological objects, never extra agent rows.",
+    "Prune to gain timber and open a tree cell, but lose current fruit. The paired neighboring orchard gains sunlight for later growth.",
+    "Harvest ripe fruit, graft with a fruit sacrifice, irrigate a paired neighbor, or repair weather damage with timber. Growth occurs on eighth-step boundaries.",
+    "A beekeeper can lift and relocate a physical hive. Each uncarried hive serves one nearby orchard; a nearby lit lamp distracts it.",
+    "A north and south carrier must agree to move a rack. A third person braces the bridge or holds the cold-store door; a repaired bridge provides a persistent alternative.",
+    "Night lamps protect moving rack quality, while drawing bees away. Hand baskets may use the market; racks sell through the held cold-store door.",
+    "Warm orchards, timber racks and lanterns form an original rural scene. Native execution, animation, learning and human play remain unmeasured."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      47.5,
+      23.5
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Village path and terrace",
+          "color": "#E7EBCF"
+        },
+        {
+          "value": 1,
+          "meaning": "Tree cell blocked while canopy is positive",
+          "color": "#E7EBCF"
+        },
+        {
+          "value": 2,
+          "meaning": "Irrigation channel switch",
+          "color": "#E7EBCF"
+        },
+        {
+          "value": 3,
+          "meaning": "Footbridge crossing",
+          "color": "#E7EBCF"
+        },
+        {
+          "value": 4,
+          "meaning": "Cold-store door",
+          "color": "#E7EBCF"
+        },
+        {
+          "value": 5,
+          "meaning": "Night lamp switch",
+          "color": "#E7EBCF"
+        },
+        {
+          "value": 6,
+          "meaning": "Night-market and weather board",
+          "color": "#E7EBCF"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "villagers",
+      "glyph": "worker",
+      "label": "Villagers",
+      "color": "#D4A276",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "house"
+          ],
+          "label": "household index 0..11"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "carried timber 0..3"
+        },
+        {
+          "state_path": [
+            "basket"
+          ],
+          "label": "carried fruit units 0..3"
+        },
+        {
+          "state_path": [
+            "quality"
+          ],
+          "label": "basket quality 0..3"
+        },
+        {
+          "state_path": [
+            "hive"
+          ],
+          "label": "carried hive ID or -1"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "current local message, zero means silence"
+        },
+        {
+          "state_path": [
+            "event"
+          ],
+          "label": "accepted action code for the last actual transition; not a success flag"
+        },
+        {
+          "state_path": [
+            "recipient"
+          ],
+          "label": "consenting handoff/tool-exchange counterpart ID or -1"
+        }
+      ]
+    },
+    {
+      "id": "orchards",
+      "glyph": "plant",
+      "label": "Orchards",
+      "color": "#79A85C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "local water level 0..4"
+        },
+        {
+          "state_path": [
+            "canopy"
+          ],
+          "label": "tree canopy 0..3; positive blocks tree-cell entry"
+        },
+        {
+          "state_path": [
+            "fruit"
+          ],
+          "label": "unpicked fruit units 0..8"
+        },
+        {
+          "state_path": [
+            "ripe"
+          ],
+          "label": "ripeness 0..8; harvest requires at least 6"
+        },
+        {
+          "state_path": [
+            "variety"
+          ],
+          "label": "original 0 or grafted 1"
+        },
+        {
+          "state_path": [
+            "pollination"
+          ],
+          "label": "active hive contributions 0..3"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "tree or lock structural health 0..3"
+        },
+        {
+          "state_path": [
+            "valve"
+          ],
+          "label": "diversion/irrigation switch state"
+        },
+        {
+          "state_path": [
+            "sales"
+          ],
+          "label": "household cumulative fruit units sold 0..512"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "orchard grew in last transition"
+        },
+        {
+          "state_path": [
+            "pruned"
+          ],
+          "label": "orchard pruned in last transition"
+        }
+      ]
+    },
+    {
+      "id": "hives",
+      "glyph": "resource",
+      "label": "Hives",
+      "color": "#DEB954",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "hive_carrier"
+          ],
+          "label": "person carrying hive, or -1"
+        },
+        {
+          "state_path": [
+            "flower_target"
+          ],
+          "label": "single serviced orchard ID, or -1"
+        },
+        {
+          "state_path": [
+            "distracted"
+          ],
+          "label": "hive distracted by a nearby lit lamp"
+        }
+      ]
+    },
+    {
+      "id": "racks",
+      "glyph": "crate",
+      "label": "Racks",
+      "color": "#B77E4F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "rack_load"
+          ],
+          "label": "rack fruit units 0..3"
+        },
+        {
+          "state_path": [
+            "rack_quality"
+          ],
+          "label": "rack fruit quality 0..3"
+        },
+        {
+          "state_path": [
+            "rack_moved"
+          ],
+          "label": "rack moved in last transition"
+        },
+        {
+          "state_path": [
+            "breakage"
+          ],
+          "label": "rack fruit units broken in last transition"
+        }
+      ]
+    },
+    {
+      "id": "fixtures",
+      "glyph": "beacon",
+      "label": "Fixtures",
+      "color": "#B6A77A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "kind"
+          ],
+          "label": "fixture type: 0 footbridge,1 cold-store door,2 lamp"
+        },
+        {
+          "state_path": [
+            "fixture_health"
+          ],
+          "label": "fixture health 0..3; bridge at 3 needs no brace"
+        },
+        {
+          "state_path": [
+            "held"
+          ],
+          "label": "currently held brake, brace or door"
+        },
+        {
+          "state_path": [
+            "lit"
+          ],
+          "label": "lamp switched on"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event"
+      ],
+      "meaning": "accepted action code for the last actual transition; not a success flag",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "growth"
+      ],
+      "meaning": "orchard grew in last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pruned"
+      ],
+      "meaning": "orchard pruned in last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rack_moved"
+      ],
+      "meaning": "rack moved in last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "breakage"
+      ],
+      "meaning": "rack fruit units broken in last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "held"
+      ],
+      "meaning": "currently held brake, brace or door",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lit"
+      ],
+      "meaning": "lamp switched on",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Prune canopy"
+    },
+    {
+      "id": 6,
+      "label": "Tend damaged tree"
+    },
+    {
+      "id": 7,
+      "label": "Harvest ripe fruit"
+    },
+    {
+      "id": 8,
+      "label": "Graft new variety"
+    },
+    {
+      "id": 9,
+      "label": "Toggle irrigation"
+    },
+    {
+      "id": 10,
+      "label": "Lift or drop hive"
+    },
+    {
+      "id": 11,
+      "label": "Carry rack east"
+    },
+    {
+      "id": 12,
+      "label": "Brace bridge or hold door"
+    },
+    {
+      "id": 13,
+      "label": "Carry rack west"
+    },
+    {
+      "id": 14,
+      "label": "Load harvest rack"
+    },
+    {
+      "id": 15,
+      "label": "Repair footbridge"
+    },
+    {
+      "id": 16,
+      "label": "Offer tool exchange"
+    },
+    {
+      "id": 17,
+      "label": "Toggle night lamp"
+    },
+    {
+      "id": 18,
+      "label": "Sell basket or stored rack"
+    },
+    {
+      "id": 19,
+      "label": "Read or share forecast"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "name": "self.id",
+      "meaning": "native zero-based actor ID",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "name": "self.house",
+      "meaning": "household index 0..11",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "name": "self.tool",
+      "meaning": "Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "name": "self.x",
+      "meaning": "absolute grid x coordinate",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "name": "self.y",
+      "meaning": "absolute grid y coordinate",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "name": "self.wood",
+      "meaning": "carried timber 0..3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "name": "self.basket",
+      "meaning": "carried fruit units 0..3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "name": "self.quality",
+      "meaning": "basket quality 0..3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "name": "self.hive",
+      "meaning": "carried hive ID or -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "name": "self.knowledge",
+      "meaning": "private cached forecast/recipe; may be stale",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "name": "self.message",
+      "meaning": "current local message, zero means silence",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "name": "self.event",
+      "meaning": "accepted action code for the last actual transition; not a success flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        13
+      ],
+      "name": "self.recipient",
+      "meaning": "consenting handoff/tool-exchange counterpart ID or -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        14
+      ],
+      "name": "self.own_sales",
+      "meaning": "own household fruit sales ledger",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        14,
+        15
+      ],
+      "name": "villagers.slot0.visible",
+      "meaning": "villagers, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        15,
+        16
+      ],
+      "name": "villagers.slot0.entity_id",
+      "meaning": "villagers, nearest slot 0: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        16,
+        17
+      ],
+      "name": "villagers.slot0.x",
+      "meaning": "villagers, nearest slot 0: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        17,
+        18
+      ],
+      "name": "villagers.slot0.y",
+      "meaning": "villagers, nearest slot 0: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        18,
+        19
+      ],
+      "name": "villagers.slot0.house",
+      "meaning": "villagers, nearest slot 0: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        19,
+        20
+      ],
+      "name": "villagers.slot0.tool",
+      "meaning": "villagers, nearest slot 0: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        20,
+        21
+      ],
+      "name": "villagers.slot0.wood",
+      "meaning": "villagers, nearest slot 0: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        21,
+        22
+      ],
+      "name": "villagers.slot0.basket",
+      "meaning": "villagers, nearest slot 0: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        22,
+        23
+      ],
+      "name": "villagers.slot0.quality",
+      "meaning": "villagers, nearest slot 0: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        23,
+        24
+      ],
+      "name": "villagers.slot0.hive",
+      "meaning": "villagers, nearest slot 0: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        24,
+        25
+      ],
+      "name": "villagers.slot0.message",
+      "meaning": "villagers, nearest slot 0: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        25,
+        26
+      ],
+      "name": "villagers.slot0.event",
+      "meaning": "villagers, nearest slot 0: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        26,
+        27
+      ],
+      "name": "villagers.slot0.recipient",
+      "meaning": "villagers, nearest slot 0: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        27,
+        28
+      ],
+      "name": "villagers.slot1.visible",
+      "meaning": "villagers, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        28,
+        29
+      ],
+      "name": "villagers.slot1.entity_id",
+      "meaning": "villagers, nearest slot 1: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        29,
+        30
+      ],
+      "name": "villagers.slot1.x",
+      "meaning": "villagers, nearest slot 1: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        30,
+        31
+      ],
+      "name": "villagers.slot1.y",
+      "meaning": "villagers, nearest slot 1: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        31,
+        32
+      ],
+      "name": "villagers.slot1.house",
+      "meaning": "villagers, nearest slot 1: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        32,
+        33
+      ],
+      "name": "villagers.slot1.tool",
+      "meaning": "villagers, nearest slot 1: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        33,
+        34
+      ],
+      "name": "villagers.slot1.wood",
+      "meaning": "villagers, nearest slot 1: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        34,
+        35
+      ],
+      "name": "villagers.slot1.basket",
+      "meaning": "villagers, nearest slot 1: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        35,
+        36
+      ],
+      "name": "villagers.slot1.quality",
+      "meaning": "villagers, nearest slot 1: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        36,
+        37
+      ],
+      "name": "villagers.slot1.hive",
+      "meaning": "villagers, nearest slot 1: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        37,
+        38
+      ],
+      "name": "villagers.slot1.message",
+      "meaning": "villagers, nearest slot 1: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        38,
+        39
+      ],
+      "name": "villagers.slot1.event",
+      "meaning": "villagers, nearest slot 1: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        39,
+        40
+      ],
+      "name": "villagers.slot1.recipient",
+      "meaning": "villagers, nearest slot 1: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "name": "villagers.slot2.visible",
+      "meaning": "villagers, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        41,
+        42
+      ],
+      "name": "villagers.slot2.entity_id",
+      "meaning": "villagers, nearest slot 2: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        42,
+        43
+      ],
+      "name": "villagers.slot2.x",
+      "meaning": "villagers, nearest slot 2: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        43,
+        44
+      ],
+      "name": "villagers.slot2.y",
+      "meaning": "villagers, nearest slot 2: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        44,
+        45
+      ],
+      "name": "villagers.slot2.house",
+      "meaning": "villagers, nearest slot 2: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        45,
+        46
+      ],
+      "name": "villagers.slot2.tool",
+      "meaning": "villagers, nearest slot 2: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        46,
+        47
+      ],
+      "name": "villagers.slot2.wood",
+      "meaning": "villagers, nearest slot 2: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        47,
+        48
+      ],
+      "name": "villagers.slot2.basket",
+      "meaning": "villagers, nearest slot 2: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        48,
+        49
+      ],
+      "name": "villagers.slot2.quality",
+      "meaning": "villagers, nearest slot 2: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        49,
+        50
+      ],
+      "name": "villagers.slot2.hive",
+      "meaning": "villagers, nearest slot 2: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        50,
+        51
+      ],
+      "name": "villagers.slot2.message",
+      "meaning": "villagers, nearest slot 2: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        51,
+        52
+      ],
+      "name": "villagers.slot2.event",
+      "meaning": "villagers, nearest slot 2: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        52,
+        53
+      ],
+      "name": "villagers.slot2.recipient",
+      "meaning": "villagers, nearest slot 2: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        54
+      ],
+      "name": "villagers.slot3.visible",
+      "meaning": "villagers, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        54,
+        55
+      ],
+      "name": "villagers.slot3.entity_id",
+      "meaning": "villagers, nearest slot 3: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        55,
+        56
+      ],
+      "name": "villagers.slot3.x",
+      "meaning": "villagers, nearest slot 3: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "name": "villagers.slot3.y",
+      "meaning": "villagers, nearest slot 3: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        57,
+        58
+      ],
+      "name": "villagers.slot3.house",
+      "meaning": "villagers, nearest slot 3: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        58,
+        59
+      ],
+      "name": "villagers.slot3.tool",
+      "meaning": "villagers, nearest slot 3: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        59,
+        60
+      ],
+      "name": "villagers.slot3.wood",
+      "meaning": "villagers, nearest slot 3: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        60,
+        61
+      ],
+      "name": "villagers.slot3.basket",
+      "meaning": "villagers, nearest slot 3: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        61,
+        62
+      ],
+      "name": "villagers.slot3.quality",
+      "meaning": "villagers, nearest slot 3: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        62,
+        63
+      ],
+      "name": "villagers.slot3.hive",
+      "meaning": "villagers, nearest slot 3: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        63,
+        64
+      ],
+      "name": "villagers.slot3.message",
+      "meaning": "villagers, nearest slot 3: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        64,
+        65
+      ],
+      "name": "villagers.slot3.event",
+      "meaning": "villagers, nearest slot 3: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        65,
+        66
+      ],
+      "name": "villagers.slot3.recipient",
+      "meaning": "villagers, nearest slot 3: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        66,
+        67
+      ],
+      "name": "villagers.slot4.visible",
+      "meaning": "villagers, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        67,
+        68
+      ],
+      "name": "villagers.slot4.entity_id",
+      "meaning": "villagers, nearest slot 4: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        68,
+        69
+      ],
+      "name": "villagers.slot4.x",
+      "meaning": "villagers, nearest slot 4: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        69,
+        70
+      ],
+      "name": "villagers.slot4.y",
+      "meaning": "villagers, nearest slot 4: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        70,
+        71
+      ],
+      "name": "villagers.slot4.house",
+      "meaning": "villagers, nearest slot 4: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        71,
+        72
+      ],
+      "name": "villagers.slot4.tool",
+      "meaning": "villagers, nearest slot 4: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        72,
+        73
+      ],
+      "name": "villagers.slot4.wood",
+      "meaning": "villagers, nearest slot 4: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        73,
+        74
+      ],
+      "name": "villagers.slot4.basket",
+      "meaning": "villagers, nearest slot 4: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        74,
+        75
+      ],
+      "name": "villagers.slot4.quality",
+      "meaning": "villagers, nearest slot 4: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        75,
+        76
+      ],
+      "name": "villagers.slot4.hive",
+      "meaning": "villagers, nearest slot 4: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        76,
+        77
+      ],
+      "name": "villagers.slot4.message",
+      "meaning": "villagers, nearest slot 4: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        77,
+        78
+      ],
+      "name": "villagers.slot4.event",
+      "meaning": "villagers, nearest slot 4: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        78,
+        79
+      ],
+      "name": "villagers.slot4.recipient",
+      "meaning": "villagers, nearest slot 4: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "name": "villagers.slot5.visible",
+      "meaning": "villagers, nearest slot 5: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "name": "villagers.slot5.entity_id",
+      "meaning": "villagers, nearest slot 5: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "name": "villagers.slot5.x",
+      "meaning": "villagers, nearest slot 5: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        82,
+        83
+      ],
+      "name": "villagers.slot5.y",
+      "meaning": "villagers, nearest slot 5: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        83,
+        84
+      ],
+      "name": "villagers.slot5.house",
+      "meaning": "villagers, nearest slot 5: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        84,
+        85
+      ],
+      "name": "villagers.slot5.tool",
+      "meaning": "villagers, nearest slot 5: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        85,
+        86
+      ],
+      "name": "villagers.slot5.wood",
+      "meaning": "villagers, nearest slot 5: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        86,
+        87
+      ],
+      "name": "villagers.slot5.basket",
+      "meaning": "villagers, nearest slot 5: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        87,
+        88
+      ],
+      "name": "villagers.slot5.quality",
+      "meaning": "villagers, nearest slot 5: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        88,
+        89
+      ],
+      "name": "villagers.slot5.hive",
+      "meaning": "villagers, nearest slot 5: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        89,
+        90
+      ],
+      "name": "villagers.slot5.message",
+      "meaning": "villagers, nearest slot 5: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        90,
+        91
+      ],
+      "name": "villagers.slot5.event",
+      "meaning": "villagers, nearest slot 5: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        91,
+        92
+      ],
+      "name": "villagers.slot5.recipient",
+      "meaning": "villagers, nearest slot 5: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        92,
+        93
+      ],
+      "name": "villagers.slot6.visible",
+      "meaning": "villagers, nearest slot 6: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        93,
+        94
+      ],
+      "name": "villagers.slot6.entity_id",
+      "meaning": "villagers, nearest slot 6: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        94,
+        95
+      ],
+      "name": "villagers.slot6.x",
+      "meaning": "villagers, nearest slot 6: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        95,
+        96
+      ],
+      "name": "villagers.slot6.y",
+      "meaning": "villagers, nearest slot 6: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        96,
+        97
+      ],
+      "name": "villagers.slot6.house",
+      "meaning": "villagers, nearest slot 6: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        97,
+        98
+      ],
+      "name": "villagers.slot6.tool",
+      "meaning": "villagers, nearest slot 6: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        98,
+        99
+      ],
+      "name": "villagers.slot6.wood",
+      "meaning": "villagers, nearest slot 6: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        99,
+        100
+      ],
+      "name": "villagers.slot6.basket",
+      "meaning": "villagers, nearest slot 6: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        100,
+        101
+      ],
+      "name": "villagers.slot6.quality",
+      "meaning": "villagers, nearest slot 6: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        101,
+        102
+      ],
+      "name": "villagers.slot6.hive",
+      "meaning": "villagers, nearest slot 6: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        102,
+        103
+      ],
+      "name": "villagers.slot6.message",
+      "meaning": "villagers, nearest slot 6: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        103,
+        104
+      ],
+      "name": "villagers.slot6.event",
+      "meaning": "villagers, nearest slot 6: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        104,
+        105
+      ],
+      "name": "villagers.slot6.recipient",
+      "meaning": "villagers, nearest slot 6: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        105,
+        106
+      ],
+      "name": "villagers.slot7.visible",
+      "meaning": "villagers, nearest slot 7: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        106,
+        107
+      ],
+      "name": "villagers.slot7.entity_id",
+      "meaning": "villagers, nearest slot 7: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        107,
+        108
+      ],
+      "name": "villagers.slot7.x",
+      "meaning": "villagers, nearest slot 7: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        108,
+        109
+      ],
+      "name": "villagers.slot7.y",
+      "meaning": "villagers, nearest slot 7: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        109,
+        110
+      ],
+      "name": "villagers.slot7.house",
+      "meaning": "villagers, nearest slot 7: household index 0..11. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        110,
+        111
+      ],
+      "name": "villagers.slot7.tool",
+      "meaning": "villagers, nearest slot 7: Tool: 0 pruning shears,1 graft knife,2 hive sling,3 rack/brace harness. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        111,
+        112
+      ],
+      "name": "villagers.slot7.wood",
+      "meaning": "villagers, nearest slot 7: carried timber 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        112,
+        113
+      ],
+      "name": "villagers.slot7.basket",
+      "meaning": "villagers, nearest slot 7: carried fruit units 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        113,
+        114
+      ],
+      "name": "villagers.slot7.quality",
+      "meaning": "villagers, nearest slot 7: basket quality 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        114,
+        115
+      ],
+      "name": "villagers.slot7.hive",
+      "meaning": "villagers, nearest slot 7: carried hive ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        115,
+        116
+      ],
+      "name": "villagers.slot7.message",
+      "meaning": "villagers, nearest slot 7: current local message, zero means silence. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        116,
+        117
+      ],
+      "name": "villagers.slot7.event",
+      "meaning": "villagers, nearest slot 7: accepted action code for the last actual transition; not a success flag. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        117,
+        118
+      ],
+      "name": "villagers.slot7.recipient",
+      "meaning": "villagers, nearest slot 7: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        118,
+        119
+      ],
+      "name": "orchards.slot0.visible",
+      "meaning": "orchards, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        119,
+        120
+      ],
+      "name": "orchards.slot0.entity_id",
+      "meaning": "orchards, nearest slot 0: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        120,
+        121
+      ],
+      "name": "orchards.slot0.x",
+      "meaning": "orchards, nearest slot 0: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        121,
+        122
+      ],
+      "name": "orchards.slot0.y",
+      "meaning": "orchards, nearest slot 0: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        122,
+        123
+      ],
+      "name": "orchards.slot0.water",
+      "meaning": "orchards, nearest slot 0: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        123,
+        124
+      ],
+      "name": "orchards.slot0.canopy",
+      "meaning": "orchards, nearest slot 0: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        124,
+        125
+      ],
+      "name": "orchards.slot0.fruit",
+      "meaning": "orchards, nearest slot 0: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        125,
+        126
+      ],
+      "name": "orchards.slot0.ripe",
+      "meaning": "orchards, nearest slot 0: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        126,
+        127
+      ],
+      "name": "orchards.slot0.variety",
+      "meaning": "orchards, nearest slot 0: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        127,
+        128
+      ],
+      "name": "orchards.slot0.pollination",
+      "meaning": "orchards, nearest slot 0: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        128,
+        129
+      ],
+      "name": "orchards.slot0.health",
+      "meaning": "orchards, nearest slot 0: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        129,
+        130
+      ],
+      "name": "orchards.slot0.valve",
+      "meaning": "orchards, nearest slot 0: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        130,
+        131
+      ],
+      "name": "orchards.slot0.sales",
+      "meaning": "orchards, nearest slot 0: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        131,
+        132
+      ],
+      "name": "orchards.slot0.growth",
+      "meaning": "orchards, nearest slot 0: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        132,
+        133
+      ],
+      "name": "orchards.slot0.pruned",
+      "meaning": "orchards, nearest slot 0: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        133,
+        134
+      ],
+      "name": "orchards.slot1.visible",
+      "meaning": "orchards, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        134,
+        135
+      ],
+      "name": "orchards.slot1.entity_id",
+      "meaning": "orchards, nearest slot 1: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        135,
+        136
+      ],
+      "name": "orchards.slot1.x",
+      "meaning": "orchards, nearest slot 1: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        137
+      ],
+      "name": "orchards.slot1.y",
+      "meaning": "orchards, nearest slot 1: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        137,
+        138
+      ],
+      "name": "orchards.slot1.water",
+      "meaning": "orchards, nearest slot 1: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        138,
+        139
+      ],
+      "name": "orchards.slot1.canopy",
+      "meaning": "orchards, nearest slot 1: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        139,
+        140
+      ],
+      "name": "orchards.slot1.fruit",
+      "meaning": "orchards, nearest slot 1: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        140,
+        141
+      ],
+      "name": "orchards.slot1.ripe",
+      "meaning": "orchards, nearest slot 1: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        141,
+        142
+      ],
+      "name": "orchards.slot1.variety",
+      "meaning": "orchards, nearest slot 1: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        142,
+        143
+      ],
+      "name": "orchards.slot1.pollination",
+      "meaning": "orchards, nearest slot 1: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        143,
+        144
+      ],
+      "name": "orchards.slot1.health",
+      "meaning": "orchards, nearest slot 1: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        144,
+        145
+      ],
+      "name": "orchards.slot1.valve",
+      "meaning": "orchards, nearest slot 1: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        145,
+        146
+      ],
+      "name": "orchards.slot1.sales",
+      "meaning": "orchards, nearest slot 1: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        146,
+        147
+      ],
+      "name": "orchards.slot1.growth",
+      "meaning": "orchards, nearest slot 1: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        147,
+        148
+      ],
+      "name": "orchards.slot1.pruned",
+      "meaning": "orchards, nearest slot 1: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        148,
+        149
+      ],
+      "name": "orchards.slot2.visible",
+      "meaning": "orchards, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        149,
+        150
+      ],
+      "name": "orchards.slot2.entity_id",
+      "meaning": "orchards, nearest slot 2: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        150,
+        151
+      ],
+      "name": "orchards.slot2.x",
+      "meaning": "orchards, nearest slot 2: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        151,
+        152
+      ],
+      "name": "orchards.slot2.y",
+      "meaning": "orchards, nearest slot 2: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        152,
+        153
+      ],
+      "name": "orchards.slot2.water",
+      "meaning": "orchards, nearest slot 2: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        153,
+        154
+      ],
+      "name": "orchards.slot2.canopy",
+      "meaning": "orchards, nearest slot 2: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "name": "orchards.slot2.fruit",
+      "meaning": "orchards, nearest slot 2: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        155,
+        156
+      ],
+      "name": "orchards.slot2.ripe",
+      "meaning": "orchards, nearest slot 2: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        156,
+        157
+      ],
+      "name": "orchards.slot2.variety",
+      "meaning": "orchards, nearest slot 2: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "name": "orchards.slot2.pollination",
+      "meaning": "orchards, nearest slot 2: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        158,
+        159
+      ],
+      "name": "orchards.slot2.health",
+      "meaning": "orchards, nearest slot 2: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        159,
+        160
+      ],
+      "name": "orchards.slot2.valve",
+      "meaning": "orchards, nearest slot 2: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        160,
+        161
+      ],
+      "name": "orchards.slot2.sales",
+      "meaning": "orchards, nearest slot 2: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        161,
+        162
+      ],
+      "name": "orchards.slot2.growth",
+      "meaning": "orchards, nearest slot 2: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        162,
+        163
+      ],
+      "name": "orchards.slot2.pruned",
+      "meaning": "orchards, nearest slot 2: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        163,
+        164
+      ],
+      "name": "orchards.slot3.visible",
+      "meaning": "orchards, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        164,
+        165
+      ],
+      "name": "orchards.slot3.entity_id",
+      "meaning": "orchards, nearest slot 3: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        165,
+        166
+      ],
+      "name": "orchards.slot3.x",
+      "meaning": "orchards, nearest slot 3: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        166,
+        167
+      ],
+      "name": "orchards.slot3.y",
+      "meaning": "orchards, nearest slot 3: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        167,
+        168
+      ],
+      "name": "orchards.slot3.water",
+      "meaning": "orchards, nearest slot 3: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        168,
+        169
+      ],
+      "name": "orchards.slot3.canopy",
+      "meaning": "orchards, nearest slot 3: tree canopy 0..3; positive blocks tree-cell entry. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        169,
+        170
+      ],
+      "name": "orchards.slot3.fruit",
+      "meaning": "orchards, nearest slot 3: unpicked fruit units 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        170,
+        171
+      ],
+      "name": "orchards.slot3.ripe",
+      "meaning": "orchards, nearest slot 3: ripeness 0..8; harvest requires at least 6. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        171,
+        172
+      ],
+      "name": "orchards.slot3.variety",
+      "meaning": "orchards, nearest slot 3: original 0 or grafted 1. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        172,
+        173
+      ],
+      "name": "orchards.slot3.pollination",
+      "meaning": "orchards, nearest slot 3: active hive contributions 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        173,
+        174
+      ],
+      "name": "orchards.slot3.health",
+      "meaning": "orchards, nearest slot 3: tree or lock structural health 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        174,
+        175
+      ],
+      "name": "orchards.slot3.valve",
+      "meaning": "orchards, nearest slot 3: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        175,
+        176
+      ],
+      "name": "orchards.slot3.sales",
+      "meaning": "orchards, nearest slot 3: household cumulative fruit units sold 0..512. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        176,
+        177
+      ],
+      "name": "orchards.slot3.growth",
+      "meaning": "orchards, nearest slot 3: orchard grew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        177,
+        178
+      ],
+      "name": "orchards.slot3.pruned",
+      "meaning": "orchards, nearest slot 3: orchard pruned in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        178,
+        179
+      ],
+      "name": "hives.slot0.visible",
+      "meaning": "hives, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        179,
+        180
+      ],
+      "name": "hives.slot0.entity_id",
+      "meaning": "hives, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        180,
+        181
+      ],
+      "name": "hives.slot0.x",
+      "meaning": "hives, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        181,
+        182
+      ],
+      "name": "hives.slot0.y",
+      "meaning": "hives, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        182,
+        183
+      ],
+      "name": "hives.slot0.hive_carrier",
+      "meaning": "hives, nearest slot 0: person carrying hive, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        183,
+        184
+      ],
+      "name": "hives.slot0.flower_target",
+      "meaning": "hives, nearest slot 0: single serviced orchard ID, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        184,
+        185
+      ],
+      "name": "hives.slot0.distracted",
+      "meaning": "hives, nearest slot 0: hive distracted by a nearby lit lamp. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        185,
+        186
+      ],
+      "name": "hives.slot1.visible",
+      "meaning": "hives, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        186,
+        187
+      ],
+      "name": "hives.slot1.entity_id",
+      "meaning": "hives, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        187,
+        188
+      ],
+      "name": "hives.slot1.x",
+      "meaning": "hives, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        188,
+        189
+      ],
+      "name": "hives.slot1.y",
+      "meaning": "hives, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        189,
+        190
+      ],
+      "name": "hives.slot1.hive_carrier",
+      "meaning": "hives, nearest slot 1: person carrying hive, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        190,
+        191
+      ],
+      "name": "hives.slot1.flower_target",
+      "meaning": "hives, nearest slot 1: single serviced orchard ID, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        191,
+        192
+      ],
+      "name": "hives.slot1.distracted",
+      "meaning": "hives, nearest slot 1: hive distracted by a nearby lit lamp. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        192,
+        193
+      ],
+      "name": "hives.slot2.visible",
+      "meaning": "hives, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        193,
+        194
+      ],
+      "name": "hives.slot2.entity_id",
+      "meaning": "hives, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        194,
+        195
+      ],
+      "name": "hives.slot2.x",
+      "meaning": "hives, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        195,
+        196
+      ],
+      "name": "hives.slot2.y",
+      "meaning": "hives, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        196,
+        197
+      ],
+      "name": "hives.slot2.hive_carrier",
+      "meaning": "hives, nearest slot 2: person carrying hive, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        197,
+        198
+      ],
+      "name": "hives.slot2.flower_target",
+      "meaning": "hives, nearest slot 2: single serviced orchard ID, or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        198,
+        199
+      ],
+      "name": "hives.slot2.distracted",
+      "meaning": "hives, nearest slot 2: hive distracted by a nearby lit lamp. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        199,
+        200
+      ],
+      "name": "racks.slot0.visible",
+      "meaning": "racks, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        200,
+        201
+      ],
+      "name": "racks.slot0.entity_id",
+      "meaning": "racks, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        201,
+        202
+      ],
+      "name": "racks.slot0.x",
+      "meaning": "racks, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        202,
+        203
+      ],
+      "name": "racks.slot0.y",
+      "meaning": "racks, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        203,
+        204
+      ],
+      "name": "racks.slot0.rack_load",
+      "meaning": "racks, nearest slot 0: rack fruit units 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        204,
+        205
+      ],
+      "name": "racks.slot0.rack_quality",
+      "meaning": "racks, nearest slot 0: rack fruit quality 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        205,
+        206
+      ],
+      "name": "racks.slot0.rack_moved",
+      "meaning": "racks, nearest slot 0: rack moved in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        206,
+        207
+      ],
+      "name": "racks.slot0.breakage",
+      "meaning": "racks, nearest slot 0: rack fruit units broken in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        207,
+        208
+      ],
+      "name": "racks.slot1.visible",
+      "meaning": "racks, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        208,
+        209
+      ],
+      "name": "racks.slot1.entity_id",
+      "meaning": "racks, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        209,
+        210
+      ],
+      "name": "racks.slot1.x",
+      "meaning": "racks, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        210,
+        211
+      ],
+      "name": "racks.slot1.y",
+      "meaning": "racks, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        211,
+        212
+      ],
+      "name": "racks.slot1.rack_load",
+      "meaning": "racks, nearest slot 1: rack fruit units 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        212,
+        213
+      ],
+      "name": "racks.slot1.rack_quality",
+      "meaning": "racks, nearest slot 1: rack fruit quality 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        213,
+        214
+      ],
+      "name": "racks.slot1.rack_moved",
+      "meaning": "racks, nearest slot 1: rack moved in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        214,
+        215
+      ],
+      "name": "racks.slot1.breakage",
+      "meaning": "racks, nearest slot 1: rack fruit units broken in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        215,
+        216
+      ],
+      "name": "racks.slot2.visible",
+      "meaning": "racks, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        216,
+        217
+      ],
+      "name": "racks.slot2.entity_id",
+      "meaning": "racks, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        217,
+        218
+      ],
+      "name": "racks.slot2.x",
+      "meaning": "racks, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        218,
+        219
+      ],
+      "name": "racks.slot2.y",
+      "meaning": "racks, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        219,
+        220
+      ],
+      "name": "racks.slot2.rack_load",
+      "meaning": "racks, nearest slot 2: rack fruit units 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        220,
+        221
+      ],
+      "name": "racks.slot2.rack_quality",
+      "meaning": "racks, nearest slot 2: rack fruit quality 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        221,
+        222
+      ],
+      "name": "racks.slot2.rack_moved",
+      "meaning": "racks, nearest slot 2: rack moved in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        222,
+        223
+      ],
+      "name": "racks.slot2.breakage",
+      "meaning": "racks, nearest slot 2: rack fruit units broken in last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        223,
+        224
+      ],
+      "name": "fixtures.slot0.visible",
+      "meaning": "fixtures, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        224,
+        225
+      ],
+      "name": "fixtures.slot0.entity_id",
+      "meaning": "fixtures, nearest slot 0: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        225,
+        226
+      ],
+      "name": "fixtures.slot0.x",
+      "meaning": "fixtures, nearest slot 0: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        226,
+        227
+      ],
+      "name": "fixtures.slot0.y",
+      "meaning": "fixtures, nearest slot 0: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        227,
+        228
+      ],
+      "name": "fixtures.slot0.kind",
+      "meaning": "fixtures, nearest slot 0: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        228,
+        229
+      ],
+      "name": "fixtures.slot0.fixture_health",
+      "meaning": "fixtures, nearest slot 0: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        229,
+        230
+      ],
+      "name": "fixtures.slot0.held",
+      "meaning": "fixtures, nearest slot 0: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        230,
+        231
+      ],
+      "name": "fixtures.slot0.lit",
+      "meaning": "fixtures, nearest slot 0: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        231,
+        232
+      ],
+      "name": "fixtures.slot1.visible",
+      "meaning": "fixtures, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        232,
+        233
+      ],
+      "name": "fixtures.slot1.entity_id",
+      "meaning": "fixtures, nearest slot 1: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        233,
+        234
+      ],
+      "name": "fixtures.slot1.x",
+      "meaning": "fixtures, nearest slot 1: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        234,
+        235
+      ],
+      "name": "fixtures.slot1.y",
+      "meaning": "fixtures, nearest slot 1: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        235,
+        236
+      ],
+      "name": "fixtures.slot1.kind",
+      "meaning": "fixtures, nearest slot 1: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        236,
+        237
+      ],
+      "name": "fixtures.slot1.fixture_health",
+      "meaning": "fixtures, nearest slot 1: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        237,
+        238
+      ],
+      "name": "fixtures.slot1.held",
+      "meaning": "fixtures, nearest slot 1: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        238,
+        239
+      ],
+      "name": "fixtures.slot1.lit",
+      "meaning": "fixtures, nearest slot 1: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        239,
+        240
+      ],
+      "name": "fixtures.slot2.visible",
+      "meaning": "fixtures, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        240,
+        241
+      ],
+      "name": "fixtures.slot2.entity_id",
+      "meaning": "fixtures, nearest slot 2: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        241,
+        242
+      ],
+      "name": "fixtures.slot2.x",
+      "meaning": "fixtures, nearest slot 2: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        242,
+        243
+      ],
+      "name": "fixtures.slot2.y",
+      "meaning": "fixtures, nearest slot 2: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        243,
+        244
+      ],
+      "name": "fixtures.slot2.kind",
+      "meaning": "fixtures, nearest slot 2: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        244,
+        245
+      ],
+      "name": "fixtures.slot2.fixture_health",
+      "meaning": "fixtures, nearest slot 2: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        245,
+        246
+      ],
+      "name": "fixtures.slot2.held",
+      "meaning": "fixtures, nearest slot 2: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        246,
+        247
+      ],
+      "name": "fixtures.slot2.lit",
+      "meaning": "fixtures, nearest slot 2: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        247,
+        248
+      ],
+      "name": "fixtures.slot3.visible",
+      "meaning": "fixtures, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        248,
+        249
+      ],
+      "name": "fixtures.slot3.entity_id",
+      "meaning": "fixtures, nearest slot 3: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        249,
+        250
+      ],
+      "name": "fixtures.slot3.x",
+      "meaning": "fixtures, nearest slot 3: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        250,
+        251
+      ],
+      "name": "fixtures.slot3.y",
+      "meaning": "fixtures, nearest slot 3: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        251,
+        252
+      ],
+      "name": "fixtures.slot3.kind",
+      "meaning": "fixtures, nearest slot 3: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        252,
+        253
+      ],
+      "name": "fixtures.slot3.fixture_health",
+      "meaning": "fixtures, nearest slot 3: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        253,
+        254
+      ],
+      "name": "fixtures.slot3.held",
+      "meaning": "fixtures, nearest slot 3: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        254,
+        255
+      ],
+      "name": "fixtures.slot3.lit",
+      "meaning": "fixtures, nearest slot 3: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        255,
+        256
+      ],
+      "name": "fixtures.slot4.visible",
+      "meaning": "fixtures, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        256,
+        257
+      ],
+      "name": "fixtures.slot4.entity_id",
+      "meaning": "fixtures, nearest slot 4: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        257,
+        258
+      ],
+      "name": "fixtures.slot4.x",
+      "meaning": "fixtures, nearest slot 4: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        258,
+        259
+      ],
+      "name": "fixtures.slot4.y",
+      "meaning": "fixtures, nearest slot 4: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        259,
+        260
+      ],
+      "name": "fixtures.slot4.kind",
+      "meaning": "fixtures, nearest slot 4: fixture type: 0 footbridge,1 cold-store door,2 lamp. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        260,
+        261
+      ],
+      "name": "fixtures.slot4.fixture_health",
+      "meaning": "fixtures, nearest slot 4: fixture health 0..3; bridge at 3 needs no brace. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        261,
+        262
+      ],
+      "name": "fixtures.slot4.held",
+      "meaning": "fixtures, nearest slot 4: currently held brake, brace or door. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        262,
+        263
+      ],
+      "name": "fixtures.slot4.lit",
+      "meaning": "fixtures, nearest slot 4: lamp switched on. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        263,
+        264
+      ],
+      "name": "patch.dy-2.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        264,
+        265
+      ],
+      "name": "patch.dy-2.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        265,
+        266
+      ],
+      "name": "patch.dy-2.dx0",
+      "meaning": "Static map tile at self offset x=0, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        266,
+        267
+      ],
+      "name": "patch.dy-2.dx1",
+      "meaning": "Static map tile at self offset x=1, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        267,
+        268
+      ],
+      "name": "patch.dy-2.dx2",
+      "meaning": "Static map tile at self offset x=2, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        268,
+        269
+      ],
+      "name": "patch.dy-1.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        269,
+        270
+      ],
+      "name": "patch.dy-1.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        270,
+        271
+      ],
+      "name": "patch.dy-1.dx0",
+      "meaning": "Static map tile at self offset x=0, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        271,
+        272
+      ],
+      "name": "patch.dy-1.dx1",
+      "meaning": "Static map tile at self offset x=1, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        272,
+        273
+      ],
+      "name": "patch.dy-1.dx2",
+      "meaning": "Static map tile at self offset x=2, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        273,
+        274
+      ],
+      "name": "patch.dy0.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        274,
+        275
+      ],
+      "name": "patch.dy0.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        275,
+        276
+      ],
+      "name": "patch.dy0.dx0",
+      "meaning": "Static map tile at self offset x=0, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        276,
+        277
+      ],
+      "name": "patch.dy0.dx1",
+      "meaning": "Static map tile at self offset x=1, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        277,
+        278
+      ],
+      "name": "patch.dy0.dx2",
+      "meaning": "Static map tile at self offset x=2, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        278,
+        279
+      ],
+      "name": "patch.dy1.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        279,
+        280
+      ],
+      "name": "patch.dy1.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        280,
+        281
+      ],
+      "name": "patch.dy1.dx0",
+      "meaning": "Static map tile at self offset x=0, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        281,
+        282
+      ],
+      "name": "patch.dy1.dx1",
+      "meaning": "Static map tile at self offset x=1, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        282,
+        283
+      ],
+      "name": "patch.dy1.dx2",
+      "meaning": "Static map tile at self offset x=2, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        283,
+        284
+      ],
+      "name": "patch.dy2.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        284,
+        285
+      ],
+      "name": "patch.dy2.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        285,
+        286
+      ],
+      "name": "patch.dy2.dx0",
+      "meaning": "Static map tile at self offset x=0, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        286,
+        287
+      ],
+      "name": "patch.dy2.dx1",
+      "meaning": "Static map tile at self offset x=1, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        287,
+        288
+      ],
+      "name": "patch.dy2.dx2",
+      "meaning": "Static map tile at self offset x=2, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        288,
+        289
+      ],
+      "name": "public.t",
+      "meaning": "completed native transition count",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        289,
+        290
+      ],
+      "name": "public.done",
+      "meaning": "joint episode completion",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        290,
+        291
+      ],
+      "name": "public.terminated",
+      "meaning": "natural completion cause",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        291,
+        292
+      ],
+      "name": "public.community",
+      "meaning": "one-time community pollination milestone already awarded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        292,
+        297
+      ],
+      "name": "padding",
+      "meaning": "Explicit constant zero padding; contains no additional information.",
+      "visibility": "padding"
+    }
+  ]
+}

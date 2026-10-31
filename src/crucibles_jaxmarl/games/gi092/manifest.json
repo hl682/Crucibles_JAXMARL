@@ -1,0 +1,903 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00092",
+  "source_sha256": "6c3f3acbcd8f41c155ff02f5e78f4fa050fcb20678cb50867b5cba45e22b5155",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 154,
+  "num_actions": 10,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West surveyor: sees sensor 0 locally; operates lower gate using sensor 1's clue"
+    },
+    {
+      "id": "agent_1",
+      "role": "Middle keeper: sees sensor 1 locally; operates upper gate using sensor 0's clue"
+    },
+    {
+      "id": "agent_2",
+      "role": "East courier: moves cargo through both remote gates; sees neither sensor value directly"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait; operators recharge one energy only on own sensor"
+    },
+    {
+      "id": 1,
+      "label": "Move north attempt"
+    },
+    {
+      "id": 2,
+      "label": "Move east attempt"
+    },
+    {
+      "id": 3,
+      "label": "Move south attempt"
+    },
+    {
+      "id": 4,
+      "label": "Move west attempt"
+    },
+    {
+      "id": 5,
+      "label": "At your operator panel, pulse binary setting zero"
+    },
+    {
+      "id": 6,
+      "label": "At your operator panel, pulse binary setting one"
+    },
+    {
+      "id": 7,
+      "label": "Broadcast bit zero if cooldown is clear"
+    },
+    {
+      "id": 8,
+      "label": "Broadcast bit one if cooldown is clear"
+    },
+    {
+      "id": 9,
+      "label": "Courier: pick one colocated cargo, or release held cargo; delivery at goal"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_cooldown"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "panel_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "panel_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "panel_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "panel_value"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "jam"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "code_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "code_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "code_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "code_value"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "signal_value"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_delivered"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "events"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable room or courier corridor",
+          "color": "#283C56"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall separating physical roles",
+          "color": "#67798A"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "roles",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "energy"
+          ],
+          "meaning": "Panel pulse energy, max four; courier does not consume this field",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "signal_cooldown"
+          ],
+          "meaning": "Remaining steps before another signal may be sent",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "panels",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "panel_pos"
+      ],
+      "active": [
+        "panel_active"
+      ],
+      "visibility": [
+        "panel_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "panel_value"
+          ],
+          "meaning": "Last attempted panel bit, -1 before any pulse",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "meaning": "Remaining open time in steps",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Whether entry is currently permitted",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "jam"
+          ],
+          "meaning": "Remaining operator lockout after a wrong pulse",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "private_sensors",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "code_pos"
+      ],
+      "active": [
+        "code_active"
+      ],
+      "visibility": [
+        "code_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "code_value"
+          ],
+          "meaning": "Current bit, visible only to the assigned nearby operator",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "signals",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "signal_pos"
+      ],
+      "active": [
+        "signal_active"
+      ],
+      "visibility": [
+        "signal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "signal_value"
+          ],
+          "meaning": "Currently broadcast bit",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "meaning": "Remaining visible lifetime of this broadcast",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "meaning": "-1 on ground; 2 when held by courier",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cargo_delivered"
+          ],
+          "meaning": "Whether this cargo has reached the goal",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "destination",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices 0 to 5: any bit broadcast, correct gate pulse, wrong gate pulse, cargo pickup or release, cargo delivered, both private clues redrawn; last-step flags. The final two flags coincide because delivery redraws clues.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Current sensor bits in sensor order, with -1 when inaccessible; own sensor only within Manhattan distance one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        5,
+        7
+      ],
+      "meaning": "Visibility flags for those two sensor-value slots",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        7,
+        13
+      ],
+      "meaning": "All role positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "All pulse energy divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        20
+      ],
+      "meaning": "Both panel positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        22
+      ],
+      "meaning": "Last attempted panel bits; -1 before any pulse",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        26
+      ],
+      "meaning": "Gate positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        28
+      ],
+      "meaning": "Gate open timers divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        30
+      ],
+      "meaning": "Wrong-pulse jam timers divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        34
+      ],
+      "meaning": "Public sensor locations xy divided by 16; values are not included here",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Each role's signal bit, or -1 after signal expiry",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Signal lifetime divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        43
+      ],
+      "meaning": "Signal cooldown divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        47
+      ],
+      "meaning": "Cargo positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        47,
+        49
+      ],
+      "meaning": "Cargo owner plus one divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        51
+      ],
+      "meaning": "Delivered cargo flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        51,
+        53
+      ],
+      "meaning": "Goal xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        144
+      ],
+      "meaning": "Public wall layout flattened yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        145
+      ],
+      "meaning": "Clock divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        145,
+        151
+      ],
+      "meaning": "Last-step flags: send, correct pulse, wrong pulse, cargo interaction, delivery, clue redraw",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        154
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver both physical cargo objects from the east loading bay to the northern goal, using two cross-wired remote gate operators and brief binary broadcasts.",
+    "natural_termination": "All two cargo objects delivered ends naturally. Each delivery gives every role +0.5 and the final delivery adds +0.5. Otherwise truncate at step 128. Deliveries redraw both private sensor bits and close both gates.",
+    "interaction": "Sensor 0's bit is required at role 1's panel; sensor 1's bit is required at role 0's panel. Only local owners can directly read a sensor. A correct remote pulse opens the corresponding courier gate for six steps; a wrong pulse closes it and jams its operator. Binary messages change what other roles observe for four frames.",
+    "observation_access": "Map, role positions, panel attempts, cargo, gate timers, pulse energy, cooldowns and live broadcasts are public. Sensor values are masked to -1 unless the querying role is that sensor's owner and within Manhattan distance one. Role 2 never directly observes either bit. The sensor entity visibility uses exactly the same stored code_visible mask. Expired signal entities are inactive and their observation values are -1."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "energy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "signal_cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "jam"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "code_value"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "signal_ttl"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}
+

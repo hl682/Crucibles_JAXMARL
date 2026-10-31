@@ -1,0 +1,881 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00096",
+  "source_sha256": "dc0778d0198f820eb1619db6f0f6b666b6bca60afb7655ac7f1ba5ed4e83634f",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 133,
+  "num_actions": 8,
+  "max_steps": 64,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0,
+  "observation_high": 64,
+  "reward_low": -4,
+  "reward_high": 4,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "North flank starter; symmetric shepherd actions"
+    },
+    {
+      "id": "agent_1",
+      "role": "South flank starter; symmetric shepherd actions"
+    },
+    {
+      "id": "agent_2",
+      "role": "Gate-side starter; symmetric shepherd actions"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait with ordinary proximity pressure"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Whistle using one focus"
+    },
+    {
+      "id": 6,
+      "label": "Calm nearby animals and recover focus"
+    },
+    {
+      "id": 7,
+      "label": "Hold gate open when adjacent"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "focus"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "animal_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "animal_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "panic"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "saved"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lost"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_timer"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pen_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "saved_total"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lost_total"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "saved_now"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lost_now"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_opened"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "animal_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pen_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pen_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Meadow floor",
+          "color": "#C4D6A3"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid hedge",
+          "color": "#466D49"
+        },
+        {
+          "value": 2,
+          "meaning": "Gate tile; entity state controls passability",
+          "color": "#BC9D68"
+        },
+        {
+          "value": 3,
+          "meaning": "Ditch; panic permits dangerous entry",
+          "color": "#A4745C"
+        },
+        {
+          "value": 4,
+          "meaning": "Safe pen",
+          "color": "#81BD83"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "shepherds",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "focus"
+          ],
+          "meaning": "Whistle focus, maximum 4",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "signal"
+          ],
+          "meaning": "Signal: ordinary 0, whistle 1, calm 2, hold 3",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "meaning": "Last movement was blocked",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "herd",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "animal_pos"
+      ],
+      "active": [
+        "animal_active"
+      ],
+      "visibility": [
+        "animal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "panic"
+          ],
+          "meaning": "Panic: 0 to 4; second microstep at 3",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "saved"
+          ],
+          "meaning": "Saved permanently",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "lost"
+          ],
+          "meaning": "Lost permanently",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Gate passable",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "meaning": "Remaining hold timer, maximum 3",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "pens",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "pen_pos"
+      ],
+      "active": [
+        "pen_active"
+      ],
+      "visibility": [
+        "pen_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "ditches",
+      "kind": "hazard",
+      "count": 2,
+      "position": [
+        "hazard_pos"
+      ],
+      "active": [
+        "hazard_active"
+      ],
+      "visibility": [
+        "hazard_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "saved_now"
+      ],
+      "meaning": "Animals saved during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lost_now"
+      ],
+      "meaning": "Animals lost during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gate_opened"
+      ],
+      "meaning": "Gate changed to open during the last nonabsorbing step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "saved_total"
+      ],
+      "meaning": "Cumulative saved animals",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost_total"
+      ],
+      "meaning": "Cumulative lost animals",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "panic"
+      ],
+      "meaning": "Current bounded herd panic",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Current gate passability",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Shepherd positions [x,y].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "Whistle focus from 0 to 4; a whistle spends 1 and calm restores 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Last effective signal: 0 ordinary, 1 whistle, 2 calm, 3 gate hold.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Last nonabsorbing blocked shepherd movement flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        23
+      ],
+      "meaning": "Animal positions [x,y], including final saved or lost locations.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        27
+      ],
+      "meaning": "Animals still physically moving in the meadow.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        31
+      ],
+      "meaning": "Animal panic from 0 to 4; panic at least 3 permits a second microstep and ditch entry.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        35
+      ],
+      "meaning": "Persistent per-animal saved status.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        39
+      ],
+      "meaning": "Persistent per-animal lost status.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        41
+      ],
+      "meaning": "Gate position [5,3].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        42
+      ],
+      "meaning": "The gate entity is always present.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        43
+      ],
+      "meaning": "Actual passability of the gate during the most recent transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        44
+      ],
+      "meaning": "Open hold timer, 0 to 3; occupied gates remain open even at zero.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        48
+      ],
+      "meaning": "Safe pen positions [7,2] and [7,4].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        52
+      ],
+      "meaning": "Ditch positions [4,1] and [4,5].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        115
+      ],
+      "meaning": "Public y-major map: floor 0, hedge 1, gate 2, ditch 3, pen 4.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        115,
+        116
+      ],
+      "meaning": "Cumulative number of saved animals.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        117
+      ],
+      "meaning": "Cumulative number of lost animals.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        117,
+        118
+      ],
+      "meaning": "Elapsed nonabsorbing steps, 0 through 64.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        118,
+        122
+      ],
+      "meaning": "Which animals entered a safe pen on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        126
+      ],
+      "meaning": "Which animals entered a ditch in panic on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        127
+      ],
+      "meaning": "Gate changed from closed to open on the last nonabsorbing step.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        128
+      ],
+      "meaning": "Joint episode completion; true for natural completion or horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        129
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        129,
+        130
+      ],
+      "meaning": "Horizon cause; false when natural completion coincides with horizon.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        133
+      ],
+      "meaning": "Own agent identity as A-way one-hot in agent_0 through agent_2 order.",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Cooperate to guide four physical animals through the gate to either safe pen while limiting panic and ditch losses.",
+    "natural_termination": "All four animals are saved or lost. Horizon 64 otherwise, with natural completion taking priority on the same step.",
+    "interaction": "Animal force sums the proximity pressures of all shepherds. Multiple strong pressures raise panic; calm reduces it and an active gate holder is quiet. Cohesion acts without external pressure. High panic creates an extra microstep and permits dangerous ditch entry. Shepherds and herd physically block one another, and a gate helper spends actions on passability.",
+    "observation_access": "Complete public meadow state plus own-role one-hot, with exact panic, focus, gate timer and all active entity positions. All active entities and the fixed map are visible to every role; resolved animals' public status and final positions remain in the flat observation."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "animal_pos"
+      ],
+      "active_path": [
+        "animal_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "focus"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "panic"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "saved_total"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lost_total"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_semantics": "Every integer command in [0,U) is legal for every role before joint termination. Geometrically blocked or unavailable operations are deterministic failed attempts. Out-of-range commands become action 0. In absorbing states only action 0 is legal; raw_step ignores all supplied actions and preserves terminal state.",
+  "inactive_role_semantics": "No role is individually removed before joint termination. All A role slots remain physically active; every role has no-op action 0. At joint termination all dones are true and only 0 is legal.",
+  "reset_randomness": "Deterministic fixed initial state; supplied key is accepted but intentionally unused. Script seed identifies future replay provenance, not a source of hidden state.",
+  "interface_integration": "This immutable source supplies the requested flat native kernel. The agent-keyed JaxMARL-compatible public adapter is a separate coordinator-owned integration layer and was not executed by the author."
+}

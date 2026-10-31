@@ -1,0 +1,1439 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00077",
+  "source_sha256": "f9d8d714e8b4f58a2151a849916c2a638014ccd96a761eeb61b4f0d04bccbf74",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 2196,
+  "num_actions": 15,
+  "max_steps": 240,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -8,
+  "reward_high": 8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "surveyor",
+      "team": 0
+    },
+    {
+      "id": "agent_1",
+      "role": "excavator",
+      "team": 0
+    },
+    {
+      "id": "agent_2",
+      "role": "surveyor",
+      "team": 1
+    },
+    {
+      "id": "agent_3",
+      "role": "excavator",
+      "team": 1
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "step_north"
+    },
+    {
+      "id": 2,
+      "label": "step_east"
+    },
+    {
+      "id": 3,
+      "label": "step_south"
+    },
+    {
+      "id": 4,
+      "label": "step_west"
+    },
+    {
+      "id": 5,
+      "label": "turn_clockwise"
+    },
+    {
+      "id": 6,
+      "label": "dig_front"
+    },
+    {
+      "id": 7,
+      "label": "handle_front"
+    },
+    {
+      "id": 8,
+      "label": "bank"
+    },
+    {
+      "id": 9,
+      "label": "scan_near"
+    },
+    {
+      "id": 10,
+      "label": "scan_far"
+    },
+    {
+      "id": 11,
+      "label": "exchange_records"
+    },
+    {
+      "id": 12,
+      "label": "brace"
+    },
+    {
+      "id": 13,
+      "label": "shove_front"
+    },
+    {
+      "id": 14,
+      "label": "recharge"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "terrain"
+      ],
+      "dtype": "int32",
+      "shape": [
+        11,
+        13
+      ],
+      "meaning": "Immutable terrain codes 0..4."
+    },
+    {
+      "path": [
+        "base_owner"
+      ],
+      "dtype": "int32",
+      "shape": [
+        11,
+        13
+      ],
+      "meaning": "Immutable -1 neutral, 0 team 0 base, 1 team 1 base."
+    },
+    {
+      "path": [
+        "bank_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2,
+        2
+      ],
+      "meaning": "Immutable bank coordinates."
+    },
+    {
+      "path": [
+        "agent_team"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ],
+      "meaning": "Immutable [0,0,1,1]."
+    },
+    {
+      "path": [
+        "agent_role"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ],
+      "meaning": "Immutable [0,1,0,1]; 0 surveyor, 1 excavator."
+    },
+    {
+      "path": [
+        "agent_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        2
+      ],
+      "meaning": "Distinct passable positions for the corresponding teams."
+    },
+    {
+      "path": [
+        "agent_facing"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ],
+      "meaning": "0 north, 1 east, 2 south, 3 west."
+    },
+    {
+      "path": [
+        "agent_charge"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ],
+      "meaning": "Public when agent is visible; 0..8."
+    },
+    {
+      "path": [
+        "agent_stun"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ],
+      "meaning": "0 or 1; old value 1 forces wait this transition."
+    },
+    {
+      "path": [
+        "agent_shove_cooldown"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ],
+      "meaning": "0..2; old positive value prevents a new shove."
+    },
+    {
+      "path": [
+        "agent_cargo"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ],
+      "meaning": "Geode id or -1. Inverse of carried geode's carrier."
+    },
+    {
+      "path": [
+        "dig_depth"
+      ],
+      "dtype": "int32",
+      "shape": [
+        11,
+        13
+      ],
+      "meaning": "0..2 on soil, 0 on other terrain; visible only in current role view."
+    },
+    {
+      "path": [
+        "geode_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        8,
+        2
+      ],
+      "meaning": "Hidden position if buried, surface cell if exposed, carrier cell if carried, [-1,-1] if banked."
+    },
+    {
+      "path": [
+        "geode_colour"
+      ],
+      "dtype": "int32",
+      "shape": [
+        8
+      ],
+      "meaning": "0 amber or 1 teal; hidden while buried."
+    },
+    {
+      "path": [
+        "geode_status"
+      ],
+      "dtype": "int32",
+      "shape": [
+        8
+      ],
+      "meaning": "0 buried, 1 surface, 2 carried, 3 banked."
+    },
+    {
+      "path": [
+        "geode_carrier"
+      ],
+      "dtype": "int32",
+      "shape": [
+        8
+      ],
+      "meaning": "Agent id only when carried; otherwise -1."
+    },
+    {
+      "path": [
+        "team_scores"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2
+      ],
+      "meaning": "Public nonnegative scores; no more than 16."
+    },
+    {
+      "path": [
+        "scan_record_valid"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        6
+      ],
+      "meaning": "Private per-agent record occupancy."
+    },
+    {
+      "path": [
+        "scan_record_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        6,
+        2
+      ],
+      "meaning": "Private origin of each completed scan."
+    },
+    {
+      "path": [
+        "scan_record_radius"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        6
+      ],
+      "meaning": "Private recorded radius 2 or 4; 0 when invalid."
+    },
+    {
+      "path": [
+        "scan_record_counts"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        6,
+        2
+      ],
+      "meaning": "Private amber/teal buried counts as actually measured at record time, each 0..4."
+    },
+    {
+      "path": [
+        "scan_record_tick"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        6
+      ],
+      "meaning": "Private scan transition tick, -1 invalid."
+    },
+    {
+      "path": [
+        "scan_record_source"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        6
+      ],
+      "meaning": "Original scanner id, -1 invalid; copying does not change it."
+    },
+    {
+      "path": [
+        "t"
+      ],
+      "dtype": "int32",
+      "shape": [],
+      "meaning": "Completed active transitions, 0..240."
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "dtype": "bool",
+      "shape": [],
+      "meaning": "terminated OR truncated."
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "dtype": "bool",
+      "shape": [],
+      "meaning": "Natural score race or all-banked end."
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "dtype": "bool",
+      "shape": [],
+      "meaning": "Horizon reached without natural termination."
+    },
+    {
+      "path": [
+        "terminal_reason"
+      ],
+      "dtype": "int32",
+      "shape": [],
+      "meaning": "0 ongoing, 1 score race, 2 all banked, 3 horizon."
+    },
+    {
+      "path": [
+        "winner"
+      ],
+      "dtype": "int32",
+      "shape": [],
+      "meaning": "-2 ongoing, -3 unresolved truncation, -1 natural tie, 0 team 0 wins, 1 team 1 wins."
+    },
+    {
+      "path": [
+        "event_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        40
+      ],
+      "meaning": "Events committed in the last active transition; not a role-safe frame until projected."
+    },
+    {
+      "path": [
+        "event_kind"
+      ],
+      "dtype": "int32",
+      "shape": [
+        40
+      ],
+      "meaning": "Codes 0..14 in render descriptor."
+    },
+    {
+      "path": [
+        "event_actor"
+      ],
+      "dtype": "int32",
+      "shape": [
+        40
+      ],
+      "meaning": "Actor id or -1 system. Role projection must redact hidden actors."
+    },
+    {
+      "path": [
+        "event_object"
+      ],
+      "dtype": "int32",
+      "shape": [
+        40
+      ],
+      "meaning": "Geode id, partner/target agent id, or -1 as specified by kind."
+    },
+    {
+      "path": [
+        "event_from_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        40,
+        2
+      ],
+      "meaning": "World source coordinate or [-1,-1]. Hidden endpoints must be redacted before role rendering."
+    },
+    {
+      "path": [
+        "event_to_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        40,
+        2
+      ],
+      "meaning": "World destination/interaction coordinate or [-1,-1]."
+    },
+    {
+      "path": [
+        "event_value"
+      ],
+      "dtype": "int32",
+      "shape": [
+        40
+      ],
+      "meaning": "Kind-specific quantity; scan events contain radius only, never detector counts."
+    },
+    {
+      "path": [
+        "event_tick"
+      ],
+      "dtype": "int32",
+      "shape": [
+        40
+      ],
+      "meaning": "Newly completed transition tick; -1 inactive."
+    },
+    {
+      "path": [
+        "event_count"
+      ],
+      "dtype": "int32",
+      "shape": [],
+      "meaning": "Committed events in last active transition."
+    },
+    {
+      "path": [
+        "map_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        11,
+        13
+      ],
+      "meaning": "Each role's actual Chebyshev radius-4 dynamic view."
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4
+      ],
+      "meaning": "All four agents exist."
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        4
+      ],
+      "meaning": "Actual current role-to-agent visibility."
+    },
+    {
+      "path": [
+        "agent_facing_vector"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        2
+      ],
+      "meaning": "Unit vector from actual facing."
+    },
+    {
+      "path": [
+        "geode_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        8
+      ],
+      "meaning": "Unbanked physical geodes; buried geodes are active but invisible to all role views."
+    },
+    {
+      "path": [
+        "geode_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        8
+      ],
+      "meaning": "Only currently visible surface/carried geodes."
+    },
+    {
+      "path": [
+        "geode_number"
+      ],
+      "dtype": "int32",
+      "shape": [
+        8
+      ],
+      "meaning": "Stable object id; not exposed when invisible."
+    },
+    {
+      "path": [
+        "bank_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ],
+      "meaning": "Two public banks exist."
+    },
+    {
+      "path": [
+        "bank_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        2
+      ],
+      "meaning": "Public bank locations/scores."
+    },
+    {
+      "path": [
+        "bank_team"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2
+      ],
+      "meaning": "Bank ownership 0/1."
+    },
+    {
+      "path": [
+        "soil_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        143,
+        2
+      ],
+      "meaning": "Actual tile-centre coordinates for the terrain's cells."
+    },
+    {
+      "path": [
+        "soil_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        143
+      ],
+      "meaning": "True only for diggable soil cells."
+    },
+    {
+      "path": [
+        "soil_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        143
+      ],
+      "meaning": "Dynamic excavation depth visible only inside each role's current view."
+    },
+    {
+      "path": [
+        "soil_depth"
+      ],
+      "dtype": "int32",
+      "shape": [
+        143
+      ],
+      "meaning": "Actual excavation depth reshaped from dig_depth."
+    },
+    {
+      "path": [
+        "record_xy"
+      ],
+      "dtype": "int32",
+      "shape": [
+        24,
+        2
+      ],
+      "meaning": "Actual stored historical scan origins; not imagined deposit locations."
+    },
+    {
+      "path": [
+        "record_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        24
+      ],
+      "meaning": "Actual valid private record slots."
+    },
+    {
+      "path": [
+        "record_holder"
+      ],
+      "dtype": "int32",
+      "shape": [
+        24
+      ],
+      "meaning": "Agent whose current ledger holds this slot."
+    },
+    {
+      "path": [
+        "record_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        24
+      ],
+      "meaning": "Only the ledger holder can view the record, irrespective of current distance."
+    },
+    {
+      "path": [
+        "record_radius"
+      ],
+      "dtype": "int32",
+      "shape": [
+        24
+      ],
+      "meaning": "Stored measurement radius."
+    },
+    {
+      "path": [
+        "record_counts"
+      ],
+      "dtype": "int32",
+      "shape": [
+        24,
+        2
+      ],
+      "meaning": "Stored private amber/teal counts."
+    },
+    {
+      "path": [
+        "record_tick"
+      ],
+      "dtype": "int32",
+      "shape": [
+        24
+      ],
+      "meaning": "Original measurement tick."
+    },
+    {
+      "path": [
+        "record_source"
+      ],
+      "dtype": "int32",
+      "shape": [
+        24
+      ],
+      "meaning": "Original scanner id."
+    },
+    {
+      "path": [
+        "record_age"
+      ],
+      "dtype": "int32",
+      "shape": [
+        24
+      ],
+      "meaning": "t minus original scan tick; zero when invalid."
+    },
+    {
+      "path": [
+        "event_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        40
+      ],
+      "meaning": "Conservatively projected new-state-visible events plus public bank/end announcements."
+    },
+    {
+      "path": [
+        "event_from_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        40
+      ],
+      "meaning": "Each role's permitted source endpoints."
+    },
+    {
+      "path": [
+        "event_to_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        40
+      ],
+      "meaning": "Each role's permitted destination endpoints."
+    },
+    {
+      "path": [
+        "event_actor_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        40
+      ],
+      "meaning": "Actual visible actor identities."
+    },
+    {
+      "path": [
+        "event_object_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        40
+      ],
+      "meaning": "Current visibility of kind-specific geode/agent identities."
+    },
+    {
+      "path": [
+        "event_value_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        40
+      ],
+      "meaning": "Private exchange ledger size restricted to participants; hidden reveal colour also suppressed."
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      12.5,
+      10.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Diggable soil; dynamic depth is separately visibility-filtered",
+          "color": "#B8A07A"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall/boulder",
+          "color": "#3C4147"
+        },
+        {
+          "value": 2,
+          "meaning": "Team 0 bank",
+          "color": "#CE9636"
+        },
+        {
+          "value": 3,
+          "meaning": "Team 1 bank",
+          "color": "#2D9A9A"
+        },
+        {
+          "value": 4,
+          "meaning": "Protected paved base approach",
+          "color": "#BFC4C9"
+        }
+      ]
+    },
+    "dynamic_visibility_path": [
+      "map_visibility"
+    ],
+    "base_owner_path": [
+      "base_owner"
+    ],
+    "historical_measurement_fields": {
+      "entity_id": "private_records",
+      "origin_path": [
+        "record_xy"
+      ],
+      "radius_path": [
+        "record_radius"
+      ],
+      "counts_path": [
+        "record_counts"
+      ],
+      "visibility_path": [
+        "record_visibility"
+      ],
+      "geometry": "Manhattan radius; outline only, no hidden-truth heatmap"
+    },
+    "presentation_modes": {
+      "default": "role",
+      "role_label": "ROLE VIEW — current view and this role's own scan ledger",
+      "debug_label": "DEBUG FULL STATE — reveals underground geodes and every private ledger; never a policy observation"
+    },
+    "presentation_rule": "Only public terrain may persist outside current visibility. Role views must filter entities, attributes and each event endpoint/value before serialization; the debug view is separately labelled."
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_xy"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "meaning": "0 amber team;1 teal team.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "meaning": "0 surveyor;1 excavator.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_facing_vector"
+          ],
+          "meaning": "Actual front-cell direction.",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "agent_charge"
+          ],
+          "meaning": "Visible charge 0..8.",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_stun"
+          ],
+          "meaning": "One means forced wait on next raw input.",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "agent_shove_cooldown"
+          ],
+          "meaning": "Remaining shove lockout 0..2.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "geodes",
+      "kind": "resource",
+      "count": 8,
+      "position": [
+        "geode_xy"
+      ],
+      "active": [
+        "geode_active"
+      ],
+      "visibility": [
+        "geode_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "geode_number"
+          ],
+          "meaning": "Visible persistent geode id.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "geode_colour"
+          ],
+          "meaning": "0 amber;1 teal. Hidden while buried.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "geode_status"
+          ],
+          "meaning": "0 buried DEBUG ONLY;1 surface;2 carried;3 banked.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "geode_carrier"
+          ],
+          "meaning": "Actual carrier id or -1.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "banks",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "bank_xy"
+      ],
+      "active": [
+        "bank_active"
+      ],
+      "visibility": [
+        "bank_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "bank_team"
+          ],
+          "meaning": "Bank owner 0/1.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "team_scores"
+          ],
+          "meaning": "Public banked points; threshold 8.",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "excavation",
+      "kind": "object",
+      "count": 143,
+      "position": [
+        "soil_xy"
+      ],
+      "active": [
+        "soil_active"
+      ],
+      "visibility": [
+        "soil_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "soil_depth"
+          ],
+          "meaning": "0 smooth;1 scraped;2 open crater. Current view only.",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "private_records",
+      "kind": "landmark",
+      "count": 24,
+      "position": [
+        "record_xy"
+      ],
+      "active": [
+        "record_active"
+      ],
+      "visibility": [
+        "record_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "record_holder"
+          ],
+          "meaning": "Owner of this private ledger slot.",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "record_radius"
+          ],
+          "meaning": "Actual historical Manhattan scan radius.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "record_counts"
+          ],
+          "meaning": "Private historical [amber,teal] counts; never recomputed.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "record_tick"
+          ],
+          "meaning": "Original scan transition.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "record_source"
+          ],
+          "meaning": "Original scanner id.",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "record_age"
+          ],
+          "meaning": "Literal record age in transitions.",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_kind"
+      ],
+      "meaning": "Committed transition event codes, gated by event_active; payloads describe actual accepted changes, with documented force/rejected-attempt exceptions.",
+      "semantics": "per_step_flag",
+      "active_path": [
+        "event_active"
+      ],
+      "count_path": [
+        "event_count"
+      ],
+      "tick_path": [
+        "event_tick"
+      ],
+      "actor_path": [
+        "event_actor"
+      ],
+      "object_path": [
+        "event_object"
+      ],
+      "from_position_path": [
+        "event_from_xy"
+      ],
+      "to_position_path": [
+        "event_to_xy"
+      ],
+      "value_path": [
+        "event_value"
+      ],
+      "visibility_path": [
+        "event_visibility"
+      ],
+      "from_visibility_path": [
+        "event_from_visibility"
+      ],
+      "to_visibility_path": [
+        "event_to_visibility"
+      ],
+      "actor_visibility_path": [
+        "event_actor_visibility"
+      ],
+      "object_visibility_path": [
+        "event_object_visibility"
+      ],
+      "value_visibility_path": [
+        "event_value_visibility"
+      ],
+      "coordinate_spaces": {
+        "0": "world"
+      },
+      "identity": [
+        "candidate_id",
+        "event_tick",
+        "slot"
+      ],
+      "kinds": [
+        {
+          "code": 0,
+          "name": "unused",
+          "actor": "none",
+          "object": "none",
+          "from_to": "absent",
+          "value": "0",
+          "visual_lifetime": "none"
+        },
+        {
+          "code": 1,
+          "name": "step",
+          "actor": "moving agent",
+          "object": "-1",
+          "from_to": "old to accepted new world cell",
+          "value": "1 move",
+          "visual_lifetime": "0.75 transition interval, after endpoint filtering"
+        },
+        {
+          "code": 2,
+          "name": "turn",
+          "actor": "turning agent",
+          "object": "-1",
+          "from_to": "same cell",
+          "value": "new facing 0..3",
+          "visual_lifetime": "0.35 interval"
+        },
+        {
+          "code": 3,
+          "name": "dig",
+          "actor": "digging agent",
+          "object": "-1",
+          "from_to": "agent cell to addressed front soil cell",
+          "value": "role work units actually applied before depth capping, 1 or 2",
+          "visual_lifetime": "0.6 interval; dust at observed target, persistent crater from actual depth"
+        },
+        {
+          "code": 4,
+          "name": "reveal",
+          "actor": "-1",
+          "object": "newly exposed geode id",
+          "from_to": "same dig cell",
+          "value": "actual colour 0 or 1",
+          "visual_lifetime": "0.6 interval; sparkle only on a real newly exposed and visible object"
+        },
+        {
+          "code": 5,
+          "name": "pickup",
+          "actor": "accepted picker",
+          "object": "geode id",
+          "from_to": "surface cell to carrier cell",
+          "value": "1 picked geode",
+          "visual_lifetime": "0.6 interval"
+        },
+        {
+          "code": 6,
+          "name": "drop",
+          "actor": "voluntary dropper",
+          "object": "geode id",
+          "from_to": "carrier cell to valid front cell",
+          "value": "1 dropped geode",
+          "visual_lifetime": "0.6 interval"
+        },
+        {
+          "code": 7,
+          "name": "bank",
+          "actor": "depositor, redacted if hidden",
+          "object": "geode id, redacted if hidden",
+          "from_to": "same own bank cell",
+          "value": "1 or 2 actual banked points; team from that bank",
+          "visual_lifetime": "0.7 interval; public score pulse"
+        },
+        {
+          "code": 8,
+          "name": "scan",
+          "actor": "scanner",
+          "object": "-1",
+          "from_to": "same scanner cell",
+          "value": "radius 2 or 4, never counts",
+          "visual_lifetime": "0.8 interval; one clipped radius ring"
+        },
+        {
+          "code": 9,
+          "name": "exchange",
+          "actor": "lowest-id initiating teammate solely for event identification",
+          "object": "other teammate id",
+          "from_to": "actual adjacent team positions",
+          "value": "number of valid records in the resulting shared ledger, 0..6; disclose only to the participants",
+          "visual_lifetime": "0.7 interval; observed link arc, no outsider record text"
+        },
+        {
+          "code": 10,
+          "name": "brace",
+          "actor": "bracing agent",
+          "object": "-1",
+          "from_to": "same cell",
+          "value": "1 active brace",
+          "visual_lifetime": "one transition interval; no persistent protection is implied"
+        },
+        {
+          "code": 11,
+          "name": "shove",
+          "actor": "accepted shover",
+          "object": "target agent id",
+          "from_to": "target's pre-shove cell to accepted forced cell",
+          "value": "1 forced cell",
+          "visual_lifetime": "0.6 interval; draw only after event filtering"
+        },
+        {
+          "code": 12,
+          "name": "forced_drop",
+          "actor": "shoved carrier",
+          "object": "geode id",
+          "from_to": "same pre-shove carrier cell",
+          "value": "1 dropped geode",
+          "visual_lifetime": "0.5 interval; the new surface object then persists by state"
+        },
+        {
+          "code": 13,
+          "name": "recharge",
+          "actor": "recharging agent",
+          "object": "-1",
+          "from_to": "same own-base cell",
+          "value": "actual charge restored, 1..3; no event for zero",
+          "visual_lifetime": "0.5 interval"
+        },
+        {
+          "code": 14,
+          "name": "episode_end",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "absent",
+          "value": "winner code -3,-1,0 or 1",
+          "visual_lifetime": "one reveal; banner subsequently derives from done/winner/reason"
+        }
+      ],
+      "replay_rule": "Deduplicate tick/slot identities; interpolate actual stage endpoints only. Absorbing snapshots preserve events and must not replay them.",
+      "privacy_rule": "Source/to/actor/object/value each has its own actual role mask. A public bank value does not grant hidden actor or object identity."
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1296
+      ],
+      "meaning": "Agent-centred patch. Channels: visible, wall, soil, own bank, other bank, paved, depth/2, own-team occupancy, rival occupancy, surface amber count/8, surface teal count/8, carried amber presence, carried teal presence, visible dig event, visible scan event, visible shove event. Out-of-bounds or non-visible channels are zero. Buried deposits never contribute. Event channels use the same conservative returned-state visibility projection as the renderer, so old visibility alone cannot disclose an offscreen new event.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        1296,
+        2011
+      ],
+      "meaning": "Public one-hot terrain codes 0..4. This contains no depth, deposit or dynamic occupancy.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2011,
+        2051
+      ],
+      "meaning": "Per public agent id: visible, team, role, dx/4,dy/4, facing-vector x,y, charge/8, stun, cooldown/2. For hidden agents, only immutable team/role remain; all dynamic entries are zero and visible=0.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2051,
+        2115
+      ],
+      "meaning": "Per id: visible, amber flag, teal flag, dx/4,dy/4, carried flag, carrier_id/3 if carried else 0, public id/7. Populate only currently visible surface/carried geodes; all entries otherwise zero, including buried and banked objects.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2115,
+        2163
+      ],
+      "meaning": "Valid, origin x/12,y/10, radius/4, amber_count/4, teal_count/4, tick/240, original scanner id/3. Invalid rows zero. These are stored historical measurements, never recomputed from current underground state.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2163,
+        2178
+      ],
+      "meaning": "Self id one-hot4, role one-hot2, team one-hot2, charge, stun, cooldown, cargo empty, cargo colour one-hot2, cargo id.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2178,
+        2190
+      ],
+      "meaning": "t, own/rival scores, total banked, done/terminated/truncated, winner one-hot5.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2190,
+        2196
+      ],
+      "meaning": "Self world xy normalized and own facing one-hot4.",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Two rival two-person survey crews hunt eight buried geodes. A surveyor can measure counts of amber and teal deposits within a radius but cannot see their exact positions. An excavator opens soil faster. Private scan records can be exchanged only when teammates meet. Once exposed, a geode can be carried, deliberately handed off by dropping it, or knocked loose by a rival's shove. Banking preferred-colour geodes is worth more; the first team to reach eight points wins, with simultaneous finishes resolved from the same new state.",
+    "natural_termination": "After simultaneous deposits, score>=8 gives race ending; otherwise all eight banked ends the game. Compare complete new scores; ties allowed. Otherwise H240 is unresolved truncation.",
+    "interaction": "Several scan origins can constrain a hidden deposit more tightly than one count. Excavation changes later measurements because scans count only still-buried deposits, so timestamps and stale information matter. The surveyor can spend charge on information, while the excavator spends charge to open a suspected tile in one dig. A mistaken rendezvous or stale record can waste both travel and excavation effort. A teammate must physically approach to receive records; that meeting competes with carrying geodes back to bank and gathering new measurements. One agent can expose a deposit while an adjacent teammate picks it up in the same transition because excavation precedes handling. That interaction follows the declared state order rather than an invisible macro action. A dropped geode can be picked by a nearby teammate in the same transition, but simultaneous rival pickup requests cancel, leaving the contested object on the board. A shove can displace a carrier, force a real drop and cancel its pending bank/scan/dig action. Bracing, protected home approaches and shove cooldowns give counterplay. The two teams value colours differently, so visible cargo and public scores change the value of racing, intercepting, handing off or collecting an otherwise lower-value deposit.",
+    "observation_access": "Terrain, base ownership geometry, team/role assignment, scoring rules, total geode count, team scores and total banked count are public. Buried coordinates and colours are engine-only hidden state. Ordinary local visibility never reveals a buried geode. Scan counts and history are private to their record holder. Teammates receive them only through a successful exchange; opponents never receive them. A role sees other agents, their facing/charge/stun/cooldown, surface geodes, carried geode colours and excavation depth only inside its current radius-4 view. No exact position, inventory, depth update, event endpoint or scan readout outside the permitted projection is supplied to an actor or its rendered view. There is no persistent terrain/object memory in the numeric observation other than the six scan records. Policy recurrence may remember past observations; the renderer may not replace unknown current cells with hidden truth.",
+    "action_mask_semantics": "Masks permit attempts whose outcome depends on simultaneous partner/opponent actions. Static bounds/roles/resources are masked; raw transition rules resolve occupancy, new-object availability, adjacency and conflicts. Attempt validity does not guarantee an effect.",
+    "reward_definition": {
+      "formula": "Let dS0 and dS1 be new-minus-old public banked scores. Let b=+3 for a new natural team-0 win, -3 for a new natural team-1 win, 0 for a tie, ongoing state or truncation. r0=float32(dS0-dS1+b), r1=-r0. Return [r0,r0,r1,r1].",
+      "incentives": "No reward for merely scanning, digging, seeing a buried location, shoving, carrying or dropping. Banking is irreversible, so a geode cannot be scored repeatedly.",
+      "leakage_control": "The only reward-bearing events are deliberately public bank events and public natural outcomes.",
+      "horizon": "At truncation, retain any banking reward from that transition but do not invent a winner or a terminal win bonus.",
+      "empirical_status": "No attained reward, victory rate, exploit rate or learned strategy is claimed."
+    },
+    "turn_shove_clarification": {
+      "original_design_wording": [
+        "Apply effective facing changes, then construct four movement intents from old positions.",
+        "A target's non-movement effective action is canceled for this transition."
+      ],
+      "adopted_interpretation": "Facing/turn and movement changes committed in stage 1 remain. Accepted shoves in stages 2/3 cancel only still-pending operations. No turn rollback is performed.",
+      "authoritative_context": "The coordinator explicitly confirmed this interpretation in the current source-authoring task before any candidate execution and instructed that mechanism/scene/generation metadata all disclose it.",
+      "original_design_bytes_modified": false,
+      "fixed_before_execution": true,
+      "adjusted_using_outcomes": false,
+      "unresolved": false
+    }
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_xy"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "dig_depth"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "team_scores"
+      ]
+    }
+  ],
+  "declared_invariants": [
+    "These are normative implementation invariants, not tested assertions.",
+    "State numerics use int32/bool; observation and reward tensors use float32.",
+    "Four agents have distinct in-bounds positions passable for their own teams; no opponent can occupy a protected base cell.",
+    "Exactly eight geodes exist, with four of each colour. Each is in exactly one status. Banked status is irreversible.",
+    "Every carried geode has exactly one carrier and reciprocal agent_cargo link; every agent carries at most one; all non-carried geode_carrier entries are -1.",
+    "Carried coordinates equal carrier coordinates; banked coordinates are [-1,-1]. Surface stacks are allowed but initial buried cells are unique.",
+    "A buried geode's soil depth is less than 2; reaching depth 2 exposes it. Digging never regenerates a buried geode.",
+    "Charge remains 0..8, stun 0..1, cooldown 0..2, soil depth 0..2, and public scores 0..16.",
+    "Each valid private record is an immutable measurement of one completed scan; exchange preserves origin, counts and tick. A ledger contains at most six unique identities.",
+    "Raw scan counts, buried coordinates and unfiltered events never enter another role's observations or render frame.",
+    "At most 40 events are needed: at most four primary action events, four newly exposed geodes, four forced drops and one ending event form a conservative 13-event bound. Implementers must verify capacity instead of silently truncating.",
+    "done=terminated OR truncated, never both; natural outcomes take priority at the time limit; unresolved truncation is not labelled victory.",
+    "No action ordering chooses a pickup, move or shove winner by lower agent id. Lowest geode id is only a documented selection among already-visible co-located objects.",
+    "Ended raw states absorb with zero reward and no repeated animation events."
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json",
+    "state_driven_animation_required": true,
+    "role_view": "Use all actual visibility and event component masks before constructing the role frame.",
+    "debug_view_label": "DEBUG FULL STATE — engine-only underground/private information",
+    "event_playback": "Events are last-transition evidence with tick/slot identity. No invented paths or repeated effects on absorbing calls.",
+    "visual_requirement": "Render actual spatial board, moving agents and interactive objects. Numeric panels only supplement gameplay.",
+    "source_execution": 0
+  }
+}

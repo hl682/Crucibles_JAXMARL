@@ -1,0 +1,541 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "4514da16de62d922be1a440c0a7a41528f409b76bfd83b0316cfe13d7123aa47",
+  "manifest_sha256": "a0a5a3fc294bc7d2a21a799d9bdb1232a9c679e5e39f6e1b214d2f7b88fab9b5",
+  "title": "Sealed Routes",
+  "rules": [
+    "Each courier can carry one parcel. True depot and value are private until ownership, holding or paid adjacent inspection reveals them.",
+    "Messages claim a depot for five ticks and may be false. Posting copies that claim into a public quote without changing the sealed destination.",
+    "Only an owner carrying its own uncommitted parcel can post a one- or three-credit fee. The fee is locked immediately; acceptance must occur within five subsequent ticks.",
+    "An empty adjacent courier accepts an existing quote by locking one collateral credit. Delivery is due eighteen ticks after posting, regardless of acceptance time.",
+    "Timely delivery pays value to the original owner, fee and returned bond to the contractor. An overdue contract returns escrow and awards the bond to the owner.",
+    "Expired or cancelled pending offers cost the sponsor one credit. Inspection costs one credit. Neither action creates delivery progress.",
+    "Starting occupied cells and simultaneous same-cell destinations block walking. Agent requests resolve by cyclic priority; every offer is accepted at most once.",
+    "All parcels delivered ends the episode. Horizon: one hundred twenty-eight transitions. Claims, scripts and author reasoning are not execution evidence."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable interior",
+          "color": "#253440"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#111C26"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "glyph": "agent",
+      "label": "Couriers",
+      "color": "#4099CC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "credits"
+          ],
+          "label": "Spendable credits"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Occupied parcel capacity"
+        },
+        {
+          "state_path": [
+            "last_action"
+          ],
+          "label": "Latest sanitized action"
+        }
+      ]
+    },
+    {
+      "id": "parcels",
+      "glyph": "crate",
+      "label": "Public parcel shells and commitments",
+      "color": "#DEAF5C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "origin"
+          ],
+          "label": "Original owner"
+        },
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "label": "Current carrier"
+        },
+        {
+          "state_path": [
+            "status"
+          ],
+          "label": "Physical status"
+        },
+        {
+          "state_path": [
+            "offer_by"
+          ],
+          "label": "Pending sponsor"
+        },
+        {
+          "state_path": [
+            "fee"
+          ],
+          "label": "Quoted fee"
+        },
+        {
+          "state_path": [
+            "escrow"
+          ],
+          "label": "Locked fee"
+        },
+        {
+          "state_path": [
+            "offer_expiry"
+          ],
+          "label": "Acceptance expiry tick"
+        },
+        {
+          "state_path": [
+            "deadline"
+          ],
+          "label": "Delivery deadline tick"
+        },
+        {
+          "state_path": [
+            "contractor"
+          ],
+          "label": "Contracted courier"
+        },
+        {
+          "state_path": [
+            "bond"
+          ],
+          "label": "Collateral"
+        },
+        {
+          "state_path": [
+            "claim"
+          ],
+          "label": "Unverified quoted depot"
+        }
+      ]
+    },
+    {
+      "id": "sealed_labels",
+      "glyph": "key",
+      "label": "Known private manifests",
+      "color": "#A585D2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "destination"
+          ],
+          "label": "True destination depot"
+        },
+        {
+          "state_path": [
+            "value"
+          ],
+          "label": "True delivery value"
+        }
+      ]
+    },
+    {
+      "id": "signals",
+      "glyph": "beacon",
+      "label": "Courier broadcasts",
+      "color": "#68B899",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "Unverified claimed depot"
+        },
+        {
+          "state_path": [
+            "message_ttl"
+          ],
+          "label": "Remaining broadcast ticks"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "glyph": "flag",
+      "label": "Delivery depots",
+      "color": "#E18374",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "accepted"
+      ],
+      "meaning": "Contract accepted this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Parcel delivered this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "failed"
+      ],
+      "meaning": "Accepted contract missed deadline this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expired"
+      ],
+      "meaning": "Pending quote expired or cancelled this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "inspected"
+      ],
+      "meaning": "Courier purchased private manifest access this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fees_burned"
+      ],
+      "meaning": "Inspection and cancellation charges destroyed",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "minted"
+      ],
+      "meaning": "Delivery value introduced into the credit economy",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Drop uncommitted cargo or pick up nearby floor parcel"
+    },
+    {
+      "id": 6,
+      "label": "Deliver carried parcel at its true depot"
+    },
+    {
+      "id": 7,
+      "label": "Post one-credit contingent delivery fee"
+    },
+    {
+      "id": 8,
+      "label": "Post three-credit contingent delivery fee"
+    },
+    {
+      "id": 9,
+      "label": "Accept adjacent existing offer with one-credit bond"
+    },
+    {
+      "id": 10,
+      "label": "Broadcast claimed depot zero"
+    },
+    {
+      "id": 11,
+      "label": "Broadcast claimed depot one"
+    },
+    {
+      "id": 12,
+      "label": "Broadcast claimed depot two"
+    },
+    {
+      "id": 13,
+      "label": "Cancel own pending offer; lose one credit"
+    },
+    {
+      "id": 14,
+      "label": "Inspect nearby unknown manifest; pay one credit"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer role one-hot in fixed agent order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        80
+      ],
+      "meaning": "Public road map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        86
+      ],
+      "meaning": "All courier positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        89
+      ],
+      "meaning": "Spendable credits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        92
+      ],
+      "meaning": "Latest sanitized actions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Public current claimed depot or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        98
+      ],
+      "meaning": "Broadcast lifetime",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        104
+      ],
+      "meaning": "Parcel shell positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        107
+      ],
+      "meaning": "Original parcel owners",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        107,
+        110
+      ],
+      "meaning": "Current parcel carriers or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        113
+      ],
+      "meaning": "Parcel status: floor zero, carried one, delivered two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "Pending offer sponsor or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "Most recently quoted contingent fee",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        122
+      ],
+      "meaning": "Locked sponsor fee",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        125
+      ],
+      "meaning": "Last tick on which pending offer may be accepted",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        128
+      ],
+      "meaning": "Last tick for contracted delivery",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        131
+      ],
+      "meaning": "Bound courier or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        134
+      ],
+      "meaning": "Locked contractor collateral",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        137
+      ],
+      "meaning": "Claim captured when quote was posted; unverified",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        140
+      ],
+      "meaning": "Latest accepted contracts",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        143
+      ],
+      "meaning": "Latest parcel deliveries",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        146
+      ],
+      "meaning": "Latest deadline failures",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        149
+      ],
+      "meaning": "Latest offer expiration or cancellation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        152
+      ],
+      "meaning": "Couriers that bought an inspection this transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        158
+      ],
+      "meaning": "Public depot positions in depot ID order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        162
+      ],
+      "meaning": "Clock, joint done, cumulative burned credits and cumulative minted delivery value",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        165
+      ],
+      "meaning": "This observer knows each parcel true manifest",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        165,
+        171
+      ],
+      "meaning": "True destination and value for each parcel, masked to minus one when unknown to this observer",
+      "visibility": "local"
+    }
+  ]
+}

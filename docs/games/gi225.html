@@ -1,0 +1,596 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>四季牧场 · Seasonal Pasture Commons · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI225 / SPATIAL</p><h1>四季牧场 · Seasonal Pasture Commons</h1><p class="lead">种植、浇灌、放牧与互换工具，共享有限水源并照料邻地和牧群。</p><div class="stats"><span>64 agents</span><span>19 actions</span><span>1026 observation columns</span><span>768 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi225.gif" alt="Original saved demonstration gi225"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi225.gif" alt="Actual verification episode gi225"></section><section><h2>Run this game</h2><pre>crucibles play --game 225</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Give every homestead at least two stored grain while keeping all herds healthy and disease-free; manage competing water, pasture and corridor uses.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion when all pantry &gt;= 2, all herd health &gt;= 4, and no herd disease; otherwise truncate at 768. Herd health is bounded below by 1.&quot;,
+  &quot;interaction&quot;: &quot;Irrigating one plot consumes a shared row reservoir and sends one moisture downstream only through an open homestead gate. Herds physically deplete shared pasture and transmit disease by proximity. Gates direct migration and wear out; reserves improve recovery but forbid grazing. Tool exchange changes another actor&#x27;s legal affordances.&quot;,
+  &quot;observation_access&quot;: &quot;Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 2. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>64 actors form sixteen homesteads. Tools 0 farmer, 1 herder, 2 irrigator, 3 steward can be exchanged nearby or cycled at home.</li><li>Plant within three cells of a plot. Six moist growth ticks make a ripe crop; harvest creates two grain and one seed. Heat can wither unwatered immature crops.</li><li>Irrigation at a trough spends two units from its row reservoir. An open downstream gate shares one moisture with the next homestead.</li><li>Drive a nearby herd in the actor&#x27;s facing direction. Grazing every four ticks consumes actual cell grass; protected reserves cannot be grazed.</li><li>Spring and autumn restore pasture every 12 ticks; protected reserves restore it every eight. Fertilizer uses collected manure.</li><li>Nearby herds spread disease every eight ticks. An irrigator can spend compost to treat a herd; distance and routes can limit contact.</li><li>Gate crossings wear hinges. Occupied gates cannot close; worn empty gates close until repaired. A closed gate also stops downstream irrigation sharing.</li><li>Store harvested grain, feed hungry herds, or keep it for later work. Household welfare is rewarded periodically; every pantry and herd must meet the stated natural finish rule.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Seasonal Pasture Commons
+
+Status: AUTHORED_NOT_EXECUTED. Initial proposal, attempt 00, feedback_used=0. All scripts are unexecuted source-derived hypotheses.
+
+Native interface: A=64, O=1026, U=19, H=768. Every counted actor has a scalar int32 action and its own float32 observation/reward and bool done row. The family is rural_community.
+
+Give every homestead at least two stored grain while keeping all herds healthy and disease-free; manage competing water, pasture and corridor uses.
+
+Herds are interactive livestock objects, not counted native actors; the 64 controllable farmers each have native rows. A farm may prioritize pantry production, herd feeding, corridor access or reserves. All row users compete for the same finite-capacity reservoir, with at most 32 replenishments. Disease is Manhattan-distance transmission, including across a fence if herds remain within distance 2; closing a gate is not magical epidemiological immunity. Reset is deterministic with herd 0 initially diseased.
+
+Rules and physical meanings:
+
+- 64 actors form sixteen homesteads. Tools 0 farmer, 1 herder, 2 irrigator, 3 steward can be exchanged nearby or cycled at home.
+- Plant within three cells of a plot. Six moist growth ticks make a ripe crop; harvest creates two grain and one seed. Heat can wither unwatered immature crops.
+- Irrigation at a trough spends two units from its row reservoir. An open downstream gate shares one moisture with the next homestead.
+- Drive a nearby herd in the actor&#x27;s facing direction. Grazing every four ticks consumes actual cell grass; protected reserves cannot be grazed.
+- Spring and autumn restore pasture every 12 ticks; protected reserves restore it every eight. Fertilizer uses collected manure.
+- Nearby herds spread disease every eight ticks. An irrigator can spend compost to treat a herd; distance and routes can limit contact.
+- Gate crossings wear hinges. Occupied gates cannot close; worn empty gates close until repaired. A closed gate also stops downstream irrigation sharing.
+- Store harvested grain, feed hungry herds, or keep it for later work. Household welfare is rewarded periodically; every pantry and herd must meet the stated natural finish rule.
+
+Transition order and controls:
+
+The native joint vector is processed in rotating actor order (k+t) modulo A. An actor checks its action against current state at its turn; a resource lost to an earlier actor converts the action to wait. Out-of-range input becomes wait. Nonterminal movement codes always allow facing even when walking is blocked; occupancy and terrain control actual movement. Ties for nearby targets choose minimum Manhattan distance, then lowest index. No direction action teleports through a blocked walking cell.
+All spatial updates, resources and tool effects are in candidate.py:L157-L210 (actor). Movement/collision is in candidate.py:L54-L65 (move_actor) and candidate.py:L136-L138 (passable). Exact contextual masks are in candidate.py:L140-L155 (choices); mask assembly is in candidate.py:L23-L25 (mask_row) and candidate.py:L27-L29 (legal_actions).
+The world updates production/ecology/hazards after actor actions. These delayed effects and reward components are in candidate.py:L221-L253 (raw_step).
+
+Rewards and finite bounds:
+
+A harvest gives actors of the plot&#x27;s homestead 0.5 and all actors 0.01. Storing one grain gives its actor 0.25. Planting, irrigating, reserving, fertilizing, tending or repairing costs its actor 0.02. Every 32 ticks a healthy, fed, disease-free household herd gives its members 0.4 plus all actors 0.02 times the fraction of qualifying herds. Herd damage costs its household 0.1; crop withering costs its household 0.2. At most sixteen harvests per step plus these components fit [-1,2]. No reward clipping.
+Observation entries are float32 in [-2,65536]. This loose finite envelope includes coordinates, codes, quantities and cumulative counters; at most A*H &lt;= 49152 actor actions can contribute to a counter in one episode. It is a representational bound, never a performance threshold.
+
+Exact observation layout:
+
+- Columns [0,8): Self x,y,homestead,tool,seeds,grain,compost,face. Access: self.
+- Columns [8,12): t,season,total harvests,total stored grain. Access: public.
+- Columns [12,524): 64 actor slots width 8: visible,x,y,homestead,tool,seeds,grain,compost. Access: local.
+- Columns [524,652): 16 plot slots width 8: visible,x,y,crop stage,growth,moisture,pantry,harvest count. Access: local.
+- Columns [652,716): 16 trough slots width 4: visible,x,y,plot moisture. Access: local.
+- Columns [716,828): 16 herd slots width 7: visible,x,y,hunger,health,disease,manure. Access: local.
+- Columns [828,908): 16 gate slots width 5: visible,x,y,open,wear. Access: local.
+- Columns [908,928): 4 reservoir slots width 5: visible,x,y,water stock,remaining recharges. Access: local.
+- Columns [928,977): 7x7 terrain patch y-major, outside=-1; tiles include visible grass/reserve/trough/gate state. Access: local.
+- Columns [977,1026): 7x7 grass patch y-major, outside=-1. Access: local.
+
+Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance &lt;= 3 from the role&#x27;s current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition.
+The observer construction is candidate.py:L255-L264 (observe). Entity/map masks are regenerated in candidate.py:L31-L40 (refresh). Masked entity flattening and patch boundaries are candidate.py:L42-L44 (visible_rows) and candidate.py:L46-L52 (patch). No role-view animation may expose hidden state or use full-state event arrays as public announcements. Only the declared public counters are scene events.
+
+Declared persistent state and invariants:
+
+Initial arrays, positions, resource stocks and integer/bool representations are defined in candidate.py:L79-L114 (reset). The manifest declares every reset key exactly once. Every state leaf keeps a fixed shape; positions are [x,y], maps are indexed [y,x], and all actors remain active through termination. Native actor positions are unique; non-agent objects may share a cell with an actor when the mechanic permits it.
+Analytical ranges used during author review: seed in [0,4]; grain in [0,4]; compost in [0,3]; grass in [0,4]; crop in [0,3]; growth in [0,6]; moisture in [0,3]; pantry in [0,8]; hunger in [0,8]; health in [1,6]; wear in [0,3]; water_stock in [0,8]. These are source assertions awaiting independent native checking.
+
+Termination:
+
+Natural completion when all pantry &gt;= 2, all herd health &gt;= 4, and no herd disease; otherwise truncate at 768. Herd health is bounded below by 1.
+The terminal helper candidate.py:L67-L77 (end_step) increments t once for nonterminal input, gives natural completion priority over horizon truncation, and preserves all leaves and causes on already-terminal input with zero rewards. Joint dones agree with done_all. No reset occurs inside raw_step.
+
+Source-derived partner intervention:
+
+Irrigate (6) versus wait (0) at branch step 0.
+Open gate 0 is intended to send one moisture to plot 1 only in branch A. At the common fourth-tick growth boundary, neighboring homestead actors can observe a changed growth value. This is a source-derived dependency hypothesis, not a replay result.
+The two full literal diagnostic scripts and both paired suffixes are in playthrough.json. They are dimension/range-checked as JSON only. Prefix and branch actions were chosen from rules, not searched, simulated or replayed. They are not a solvability, success-rate or causal-effect receipt.
+
+Presentation and provenance:
+
+The scene binds the exact source and manifest hashes, actual position/active/visibility leaves, tile map, actions and observed attributes. Crew index, actor identity, current tool and object state support later camera/actor selection. Scene metadata is delivered; native animation, RGB rendering and a human-play UI have not been executed or accepted. Any human control must call the same native transition as a policy.
+The sanitized authority and scope files govern these initial ordinals and current counts. Historical count examples are not applied. All input files are enumerated with bytes/SHA256 and truthful semantic-read scope in author_input_freeze.json. Five allowed official reference snapshots were hashed for integrity only; their contents were not used as design/code inputs. No upstream code or commercial art was copied.
+All small integer quantities use int32; no uint32 PRNG key is duplicated in state. Requested model configuration is gpt-6-astra/max; this author self-report does not establish provider model identity or token/cost telemetry.
+
+Evidence boundary:
+
+Only source AST screening, data-schema checking, symbolic observation-width accounting, reset-key coverage and literal-script structure checking were performed. No candidate was imported or executed; no JAX/numpy simulation, native reset/step, R0, eager/JIT/vmap comparison, benchmark, training, heldout evaluation, browser or downstream feedback was used. Intra-author static corrections to whitelist-rejected constructs occurred before this initial freeze and are recorded in generation_record.json. Native compatibility, replay legality, strategic richness, solvability, learning, UI quality and transfer remain unestablished.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Face or move north</span></div><div class="action"><b>2</b><span>Face or move east</span></div><div class="action"><b>3</b><span>Face or move south</span></div><div class="action"><b>4</b><span>Face or move west</span></div><div class="action"><b>5</b><span>Plant nearby plot with farmer</span></div><div class="action"><b>6</b><span>Irrigate at trough with irrigator</span></div><div class="action"><b>7</b><span>Harvest ripe nearby crop</span></div><div class="action"><b>8</b><span>Feed nearby herd with grain</span></div><div class="action"><b>9</b><span>Drive nearby herd forward with herder</span></div><div class="action"><b>10</b><span>Toggle adjacent gate</span></div><div class="action"><b>11</b><span>Reserve current pasture with steward</span></div><div class="action"><b>12</b><span>Fertilize current pasture with compost</span></div><div class="action"><b>13</b><span>Tend nearby herd with irrigator</span></div><div class="action"><b>14</b><span>Exchange tools with nearest actor</span></div><div class="action"><b>15</b><span>Cycle tool at home</span></div><div class="action"><b>16</b><span>Collect nearby herd manure</span></div><div class="action"><b>17</b><span>Repair adjacent gate with compost</span></div><div class="action"><b>18</b><span>Store grain at home pantry</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> crew 0 / initial farmer / actor 0</p><p><b>agent_1</b> crew 0 / initial herder / actor 1</p><p><b>agent_2</b> crew 0 / initial irrigator / actor 2</p><p><b>agent_3</b> crew 0 / initial commons steward / actor 3</p><p><b>agent_4</b> crew 1 / initial farmer / actor 4</p><p><b>agent_5</b> crew 1 / initial herder / actor 5</p><p><b>agent_6</b> crew 1 / initial irrigator / actor 6</p><p><b>agent_7</b> crew 1 / initial commons steward / actor 7</p><p><b>agent_8</b> crew 2 / initial farmer / actor 8</p><p><b>agent_9</b> crew 2 / initial herder / actor 9</p><p><b>agent_10</b> crew 2 / initial irrigator / actor 10</p><p><b>agent_11</b> crew 2 / initial commons steward / actor 11</p><p><b>agent_12</b> crew 3 / initial farmer / actor 12</p><p><b>agent_13</b> crew 3 / initial herder / actor 13</p><p><b>agent_14</b> crew 3 / initial irrigator / actor 14</p><p><b>agent_15</b> crew 3 / initial commons steward / actor 15</p><p><b>agent_16</b> crew 4 / initial farmer / actor 16</p><p><b>agent_17</b> crew 4 / initial herder / actor 17</p><p><b>agent_18</b> crew 4 / initial irrigator / actor 18</p><p><b>agent_19</b> crew 4 / initial commons steward / actor 19</p><p><b>agent_20</b> crew 5 / initial farmer / actor 20</p><p><b>agent_21</b> crew 5 / initial herder / actor 21</p><p><b>agent_22</b> crew 5 / initial irrigator / actor 22</p><p><b>agent_23</b> crew 5 / initial commons steward / actor 23</p><p><b>agent_24</b> crew 6 / initial farmer / actor 24</p><p><b>agent_25</b> crew 6 / initial herder / actor 25</p><p><b>agent_26</b> crew 6 / initial irrigator / actor 26</p><p><b>agent_27</b> crew 6 / initial commons steward / actor 27</p><p><b>agent_28</b> crew 7 / initial farmer / actor 28</p><p><b>agent_29</b> crew 7 / initial herder / actor 29</p><p><b>agent_30</b> crew 7 / initial irrigator / actor 30</p><p><b>agent_31</b> crew 7 / initial commons steward / actor 31</p><p><b>agent_32</b> crew 8 / initial farmer / actor 32</p><p><b>agent_33</b> crew 8 / initial herder / actor 33</p><p><b>agent_34</b> crew 8 / initial irrigator / actor 34</p><p><b>agent_35</b> crew 8 / initial commons steward / actor 35</p><p><b>agent_36</b> crew 9 / initial farmer / actor 36</p><p><b>agent_37</b> crew 9 / initial herder / actor 37</p><p><b>agent_38</b> crew 9 / initial irrigator / actor 38</p><p><b>agent_39</b> crew 9 / initial commons steward / actor 39</p><p><b>agent_40</b> crew 10 / initial farmer / actor 40</p><p><b>agent_41</b> crew 10 / initial herder / actor 41</p><p><b>agent_42</b> crew 10 / initial irrigator / actor 42</p><p><b>agent_43</b> crew 10 / initial commons steward / actor 43</p><p><b>agent_44</b> crew 11 / initial farmer / actor 44</p><p><b>agent_45</b> crew 11 / initial herder / actor 45</p><p><b>agent_46</b> crew 11 / initial irrigator / actor 46</p><p><b>agent_47</b> crew 11 / initial commons steward / actor 47</p><p><b>agent_48</b> crew 12 / initial farmer / actor 48</p><p><b>agent_49</b> crew 12 / initial herder / actor 49</p><p><b>agent_50</b> crew 12 / initial irrigator / actor 50</p><p><b>agent_51</b> crew 12 / initial commons steward / actor 51</p><p><b>agent_52</b> crew 13 / initial farmer / actor 52</p><p><b>agent_53</b> crew 13 / initial herder / actor 53</p><p><b>agent_54</b> crew 13 / initial irrigator / actor 54</p><p><b>agent_55</b> crew 13 / initial commons steward / actor 55</p><p><b>agent_56</b> crew 14 / initial farmer / actor 56</p><p><b>agent_57</b> crew 14 / initial herder / actor 57</p><p><b>agent_58</b> crew 14 / initial irrigator / actor 58</p><p><b>agent_59</b> crew 14 / initial commons steward / actor 59</p><p><b>agent_60</b> crew 15 / initial farmer / actor 60</p><p><b>agent_61</b> crew 15 / initial herder / actor 61</p><p><b>agent_62</b> crew 15 / initial irrigator / actor 62</p><p><b>agent_63</b> crew 15 / initial commons steward / actor 63</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      8
+    ],
+    &quot;meaning&quot;: &quot;Self x,y,homestead,tool,seeds,grain,compost,face.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      12
+    ],
+    &quot;meaning&quot;: &quot;t,season,total harvests,total stored grain.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      524
+    ],
+    &quot;meaning&quot;: &quot;64 actor slots width 8: visible,x,y,homestead,tool,seeds,grain,compost.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      524,
+      652
+    ],
+    &quot;meaning&quot;: &quot;16 plot slots width 8: visible,x,y,crop stage,growth,moisture,pantry,harvest count.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      652,
+      716
+    ],
+    &quot;meaning&quot;: &quot;16 trough slots width 4: visible,x,y,plot moisture.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      716,
+      828
+    ],
+    &quot;meaning&quot;: &quot;16 herd slots width 7: visible,x,y,hunger,health,disease,manure.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      828,
+      908
+    ],
+    &quot;meaning&quot;: &quot;16 gate slots width 5: visible,x,y,open,wear.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      908,
+      928
+    ],
+    &quot;meaning&quot;: &quot;4 reservoir slots width 5: visible,x,y,water stock,remaining recharges.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      928,
+      977
+    ],
+    &quot;meaning&quot;: &quot;7x7 terrain patch y-major, outside=-1; tiles include visible grass/reserve/trough/gate state.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      977,
+      1026
+    ],
+    &quot;meaning&quot;: &quot;7x7 grass patch y-major, outside=-1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agent&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 64,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Native crew index&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;seed&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried seed units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;grain&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried grain units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;compost&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried compost units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;plot&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;plot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;plot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;plot_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crop&quot;
+        ],
+        &quot;meaning&quot;: &quot;Crop stage: empty, seed, growing, ripe&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Completed moist growth ticks&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;moisture&quot;
+        ],
+        &quot;meaning&quot;: &quot;Plot moisture units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pantry&quot;
+        ],
+        &quot;meaning&quot;: &quot;Grain stored for this household&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;harvests&quot;
+        ],
+        &quot;meaning&quot;: &quot;Crop harvest count&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;trough&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;trough_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;trough_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;trough_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;moisture&quot;
+        ],
+        &quot;meaning&quot;: &quot;Plot moisture units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;herd&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;herd_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;herd_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;herd_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;hunger&quot;
+        ],
+        &quot;meaning&quot;: &quot;Herd hunger level&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Herd health&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;disease&quot;
+        ],
+        &quot;meaning&quot;: &quot;Herd disease flag&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;manure&quot;
+        ],
+        &quot;meaning&quot;: &quot;Collectable manure units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;gate&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;gate_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;gate_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;gate_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;gate_open&quot;
+        ],
+        &quot;meaning&quot;: &quot;Gate open to traffic and irrigation&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wear&quot;
+        ],
+        &quot;meaning&quot;: &quot;Gate hinge condition&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;reservoir&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;reservoir_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;reservoir_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;reservoir_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;water_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shared row water stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;recharges&quot;
+        ],
+        &quot;meaning&quot;: &quot;Reservoir replenishments remaining&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi225&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;source_sha256&quot;: &quot;ad26795944fb92b0411a172a94432ccf5493e1bb4af1900f6d358e7b0f6b7ce1&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 64,
+    &quot;observation_size&quot;: 1026,
+    &quot;num_actions&quot;: 19,
+    &quot;max_steps&quot;: 768
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.6079063415527344
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7123825550079346
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.6389338970184326
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5233907699584961
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.052720785140991
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.004565238952636719
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5230622291564941
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.8513340950012207
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.8675899505615234
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 5.65528416633606
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 22.222326040267944,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;episode_steps&quot;: 768,
+  &quot;scripted_random_returns&quot;: [
+    -0.35000009695068,
+    -0.3500000745989382,
+    -0.2900000945664942,
+    -0.5500000887550414,
+    -5.090000119293109,
+    -4.990000121528283,
+    -4.950000122422352,
+    -5.010000124806538,
+    2.2299999825190753,
+    2.189999972237274,
+    2.189999983413145,
+    2.0499999860767275,
+    4.109999963315204,
+    4.229999960632995,
+    4.399999962421134,
+    4.129999962868169,
+    4.029999968362972,
+    3.989999972982332,
+    3.8099999658297747,
+    3.9499999701511115,
+    -0.3100000850390643,
+    -0.2500000826548785,
+    -0.27000008220784366,
+    -0.45000007818453014,
+    -0.9400000409223139,
+    -1.1500000492669642,
+    -1.3700000480748713,
+    -1.2300000470131636,
+    1.1499999784864485,
+    1.3099999781697989,
+    1.2899999786168337,
+    1.3099999781697989,
+    -2.75000009406358,
+    -2.9100000942125916,
+    -2.890000090934336,
+    -2.850000091828406,
+    3.1499999784864485,
+    3.029999981634319,
+    3.089999979827553,
+    3.1699999780394137,
+    -4.29000009316951,
+    -4.29000009316951,
+    -4.330000092275441,
+    -4.410000094212592,
+    -0.2900000521913171,
+    -0.67000005627051,
+    -0.8100000531412661,
+    -0.6500000567175448,
+    -4.550000090152025,
+    -4.430000092834234,
+    -4.350000098347664,
+    -4.4300000965595245,
+    3.6300000082701445,
+    3.470000011380762,
+    3.5300000100396574,
+    3.590000012656674,
+    -0.15000008256174624,
+    -0.05000008479692042,
+    -0.3300000785384327,
+    -0.09000008390285075,
+    1.5899999607354403,
+    1.4499999675899744,
+    1.6099999602884054,
+    1.7499999571591616
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 64
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi225&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 13.787287473678589
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 225,
+  &quot;key&quot;: &quot;gi225&quot;,
+  &quot;title&quot;: &quot;四季牧场 · Seasonal Pasture Commons&quot;,
+  &quot;summary&quot;: &quot;种植、浇灌、放牧与互换工具，共享有限水源并照料邻地和牧群。&quot;,
+  &quot;tags&quot;: [
+    &quot;田园生态&quot;,
+    &quot;64角色&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 64,
+    &quot;observation_size&quot;: 1026,
+    &quot;num_actions&quot;: 19,
+    &quot;max_steps&quot;: 768
+  },
+  &quot;source_sha256&quot;: &quot;ad26795944fb92b0411a172a94432ccf5493e1bb4af1900f6d358e7b0f6b7ce1&quot;,
+  &quot;manifest_sha256&quot;: &quot;db8fe4c89ed8b5dbff7bf264549c0b919ddf0bac15cfd5df9f82cfc513827e4e&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;ad26795944fb92b0411a172a94432ccf5493e1bb4af1900f6d358e7b0f6b7ce1&quot;,
+      &quot;bytes&quot;: 17689,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00225/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;db8fe4c89ed8b5dbff7bf264549c0b919ddf0bac15cfd5df9f82cfc513827e4e&quot;,
+      &quot;bytes&quot;: 25107,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00225/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;1453dc5ef465ff91460e2c21457ab2cd729aecac92782d498471eaafa2376380&quot;,
+      &quot;bytes&quot;: 9663,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00225/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;8cf7f6859236bc723e96ab520d68da06bc8b2636e5c19dd8abd061108d561681&quot;,
+      &quot;bytes&quot;: 9606,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00225/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;678d35d068133aa70292e07271525ccf1b413e7b95b7740a34c1856ab0052b0c&quot;,
+      &quot;bytes&quot;: 18982,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00225/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi225">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

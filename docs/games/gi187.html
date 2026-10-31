@@ -1,0 +1,433 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>余烬庇护所 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI187 / SPATIAL</p><h1>余烬庇护所</h1><p class="lead">收集木材、烧制内衬并搭建共用庇护所，墙体与保温共同影响夜间生存。</p><div class="stats"><span>3 agents</span><span>16 actions</span><span>96 observation columns</span><span>54 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi187.gif" alt="Original saved demonstration gi187"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi187.gif" alt="Actual verification episode gi187"></section><section><h2>Run this game</h2><pre>crucibles play --game 187</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Survive three finite day/night cycles by building and maintaining a shared insulated, fueled shelter; balance communal materials against individual private stash priorities.&quot;,
+  &quot;natural_termination&quot;: &quot;All workers reach zero health, or clock reaches the third sunrise at t=54. Sunrise is natural termination even though it equals H; truncation remains false then.&quot;,
+  &quot;interaction&quot;: &quot;A worker wall, lining or fuel contribution changes every nearby worker later weather protection; kiln production consumes common finite material and creates local smoke, while handoffs and stashing change partner inventory opportunities.&quot;,
+  &quot;observation_access&quot;: &quot;Map, bodies, inventories, node quantities, construction, kiln, public current weather and aggregate locker contents are public. Role i sees only its preferred material and forecast for night i. Other forecasts and priorities are never entity attributes.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 2. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Three foragers share a timber shelter and a clay kiln; each pack holds only three material units.</li><li>Build with timber and insulate with kiln lining. Both wall and lining must reach two for shared night protection.</li><li>The kiln consumes one timber and one clay, finishes after three transitions, and releases smoke.</li><li>A timber-fed hearth adds four shared heat. Night protection needs enough heat for the current cold severity.</li><li>Day lasts 12 ticks and night six; the third sunrise ends the expedition at tick 54.</li><li>At night, unprotected workers lose health. Shelter protection reaches Manhattan distance two from its footprint.</li><li>Night end wears one wall level. Thick kiln smoke hurts nearby workers and can wear walls.</li><li>Pass materials to adjacent workers or put your private preferred material into the locker for a personal bonus.</li><li>Use actual wall, lining, heat, smoke and weather state to depict a timber-block refuge, warm hearth and cold forest clearing.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Ember Shelter
+
+Status: AUTHORED_NOT_EXECUTED. Prospective initial-window source attempt 0; no candidate import, rollout, training, seed search or learned-policy result.
+
+A warm refuge is a public good assembled from complementary materials. Burning timber now can protect all three foragers later, but it can also consume a teammate wall supply and increase smoke at the kiln.
+
+## World, task and player interpretation
+
+A 7 by 7 original block-world clearing contains three six-unit timber stands, one six-unit clay deposit, shelter at (3,3), kiln at (5,3), and locker at (3,5). Stone rim, trunks, clay and the two structures are solid. The locker apron is walkable. Three workers start adjacent to shelter with packs [2 timber], [1 timber + 1 lining], [1 timber + 1 clay], and health eight. Materials are whole units; pack capacity three forces deliveries and handoffs.
+
+## Native controls and contextual feedback
+
+Supply one integer action per role to raw_step. Any legal action sequence is supported; no script ID or scripted policy is consulted by the kernel. Directional actions remain selectable for able characters before joint completion; blocked moves spend the tick and stay in place. Interaction masks show the current prerequisites. Simultaneous requests can still contend for the same finite item, tile or station.
+
+- 0: Wait. Let processing, weather and other workers advance.
+- 1: Walk north. One cardinal tile; solid fixtures and occupied tiles block entry.
+- 2: Walk east. One cardinal tile; solid fixtures and occupied tiles block entry.
+- 3: Walk south. One cardinal tile; solid fixtures and occupied tiles block entry.
+- 4: Walk west. One cardinal tile; solid fixtures and occupied tiles block entry.
+- 5: Gather nearby material. Within one cell of a finite timber/clay stand, take one material if the three-slot pack has room; lowest eligible node index breaks ties.
+- 6: Build shelter wall. Within distance two of shelter, spend one timber to add a wall level up to three.
+- 7: Load kiln with timber and clay. Beside the empty kiln, consume one timber and one clay to start three-tick lining production.
+- 8: Take kiln lining. Beside the kiln, take its finished lining if the pack has room.
+- 9: Install shelter lining. Within distance two of shelter, spend one lining to raise insulation up to three.
+- 10: Feed shelter hearth. Within distance two of shelter, burn one timber for four shared heat; requires heat at most eight.
+- 11: Vent kiln smoke. Beside the kiln, remove up to three smoke.
+- 12: Pass one material. Give the lowest-index carried material to the lowest-index adjacent conscious worker with pack capacity.
+- 13: Stash private-priority material. Beside the locker, remove one item matching your private preference for an individual reward; it leaves the common material economy.
+- 14: Repair shelter wall. Same one-timber wall operation as build, explicitly available after storm/fire wear.
+- 15: Rest in daytime shelter. During phase 0..11 and within two cells of shelter, regain one health up to eight.
+
+Movement uses conservative simultaneous occupancy: no swaps or entry into another role old cell. Same-destination ties rotate by t modulo three. Transactions rotate through all three workers and recheck current inventory, station, stock and capacity, so a mask is individual eligibility rather than a guarantee that all simultaneous claims succeed. No permanent player-index winner is built in.
+
+## Exact transition, costs and completion
+
+A cycle is 18 transitions: source states with phase 0..11 are daytime, 12..17 nighttime. Reset independently samples three cold severities in {1,2} and a permutation of material preferences. During a night transition a conscious worker is protected iff within distance two of shelter, wall&gt;=2, lining&gt;=2, and heat&gt;=that night severity. Unprotected night damage is one health. Smoke&gt;=6 additionally damages a worker within one of the kiln by one. Health is floored at zero; collapsed workers can only wait and do not auto-revive. Hearth fuel adds four heat up to 12; one heat is consumed each night transition. Smoke rises by two when kiln loading or stoking and falls by one every third tick or up to three on vent. Kiln timers include the loading transition. Night end or qualifying fire wear removes one existing wall level, with at most one wall loss per tick. Private stash gives +0.25 to its contributor, damage costs 0.1 per health unit, and a surviving worker receives +1 at t=54. Building itself is unrewarded.
+
+## Information and visible scene
+
+Every role sees physical inventory and shared construction. The locker aggregate is public in both observation and station attributes. The current weather level is public; each role privately knows exactly one night forecast indexed by its role, plus its own preferred stash resource. No renderer may reveal other forecasts or priority values. Zero-health bodies remain visible as collapsed characters and occupy their cells.
+
+Independent block-survival art direction: cedar trunks, layered clay, hand-built timber wall sections, woven lining on the refuge, a glowing hearth, a chimney with state-bound smoke and blue night frost over the clearing. Worker packs visibly carry timber, clay or lining rather than generic points. Shelter and kiln status rows are semantic render bindings: wall changes the built silhouette, lining changes its interior surface, heat lights the hearth, kiln timer changes processing, and smoke controls the local plume. These are desired faithful drawings, not a claim that frames were rendered.
+
+The scene is complete declarative presentation data with exact source/manifest identity. It does not implement a browser, keyboard or animation engine. A later trusted human-play adapter must separate Enter game from Watch replay, pass deliberate joint actions into this unchanged kernel, show legal controls, and preserve role visibility. Human play is separate from formal experiments.
+
+## Cross-agent mechanisms and alternative responses
+
+One worker wall investment changes the same cold transition for all nearby workers. A clay carrier can supply kiln production while a timber carrier chooses between lining fuel, hearth heat, wall repair and private stash. Venting can protect a nearby kiln operator but consumes a work tick; taking the finished lining can block a second batch until someone installs or moves it. The privately known night forecast can support anticipatory preparation through visible actions without exposing it directly. Candidate strategies include early shared refuge construction, staggered kiln/hearth labor, and private stockpiling with later repairs. Their relative value remains unmeasured.
+
+## Declared invariants and implementation limits
+
+Packs remain nonnegative with total at most three; health 0..8; wall and lining 0..3; heat 0..12; smoke 0..8; kiln output 0/1; kiln timer 0..3. Three construction/material ledgers support conservation: timber across nodes, packs, stash, wall, lost_wall and burned_timber; clay across nodes, packs, stash and processed_clay; lining equals the initial one plus completed kiln conversions across packs, installed lining, stash and output. A pending kiln conversion is represented by positive timer. Timber is spent on heat and kiln combustion; no resources regenerate. The model represents a shared shelter footprint and protection radius, not arbitrary wall placement or a fire-fluid simulator.
+
+State leaves use fixed-shape int32, bool and, where declared, float32 arrays. Small signed fields are represented as int32; no PRNG-key surrogate is stored. Only reset uses the supplied key where explicitly stated. raw_step is deterministic for a given state/action and ignores its unused key. Natural termination has priority over the horizon. A terminal input preserves every state leaf and observation, returns zero float32 rewards and joint dones, and preserves terminated/truncated causes. No autoreset occurs in the kernel.
+
+## Literal source evidence
+
+- Literal stocks, resources and private draws: candidate.py:12 (def reset).
+- Pack capacity and spatial interactions: candidate.py:43 (def legal_actions).
+- Finite complementary kiln inputs: candidate.py:100 (s[&quot;carry&quot;] = s[&quot;carry&quot;].at[i,0]).
+- Private stash competes with materials: candidate.py:116 (stash = act==13).
+- Exact weather protection: candidate.py:131 (protected = near_shelter).
+- Wall maintenance timing: candidate.py:137 (wear =).
+- Absorbing terminal transition: candidate.py:151 (s = jax.tree.map).
+- Required boundary signatures: candidate.py:12, candidate.py:64, candidate.py:43, candidate.py:73.
+
+## Frozen author hypotheses
+
+The build/heat/lining diagnostic spans the first night onset without searching a seed. It installs one wall and one lining, starts the kiln, feeds the hearth, adds a second wall, takes and installs kiln output, then waits through transition 13. Its paired version changes only agent_0 first wall contribution to wait. With identical later actions, source reasoning predicts two versus one wall at first cold exposure and therefore different partner health, while both branches have enough shared heat and lining.
+
+playthrough.json contains literal joint integer vectors, seed 0 and UNEXECUTED_AUTHOR_HYPOTHESIS statuses. Seed 0 is a fixed author convention, not an observed good seed. Script legality and effects are reasoned from source only. No execution, score, success guarantee, effect magnitude, solvability, non-isomorphism or learning/transfer claim is made.
+
+## Source and reference provenance
+
+All game rules and kernel code were authored for this assigned game. No upstream implementation or commercial game asset was copied. The human-play and independent-family requirements are recorded with actual paths, bytes and SHA256 in author_input_freeze.json, together with every other closed input consumed.
+
+- JaxMARL supplied README: parallel agent-keyed interfaces and __all__ for a later adapter. This package retains the assigned flat native kernel. https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md
+- Pgx supplied README: explicit legal masks, immutable game state and caller-supplied randomness are integration concepts; no board-game mechanic was copied. https://github.com/sotetsuk/pgx/blob/main/README.md
+- Craftax supplied README: block materials, consequential inventory and explicit raw/autoreset separation informed the category/integration discussion; no Craftax world or rule implementation is used. https://github.com/MichaelTMatthews/Craftax/blob/main/README.md
+- PureJaxRL README and Craftax_Baselines ppo_rnn.py were read as end-to-end JAX/recurrent-reset integration context. They are algorithm implementations, not a game library or replacement for the frozen experimental learner. No algorithm code, weights, dependencies or reported scores enter this game. https://github.com/luchris429/purejaxrl/blob/main/README.md ; https://github.com/MichaelTMatthews/Craftax_Baselines/blob/main/ppo_rnn.py
+
+This environment can supply a future cross-environment adaptation task only after independent hash-bound integration. Actual R0 interface checks, eager/JIT/vmap behavior, paired effects, human input, replay, visual fidelity, training, scientific comparisons and transfer remain unverified.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Walk north</span></div><div class="action"><b>2</b><span>Walk east</span></div><div class="action"><b>3</b><span>Walk south</span></div><div class="action"><b>4</b><span>Walk west</span></div><div class="action"><b>5</b><span>Gather nearby material</span></div><div class="action"><b>6</b><span>Build shelter wall</span></div><div class="action"><b>7</b><span>Load kiln with timber and clay</span></div><div class="action"><b>8</b><span>Take kiln lining</span></div><div class="action"><b>9</b><span>Install shelter lining</span></div><div class="action"><b>10</b><span>Feed shelter hearth</span></div><div class="action"><b>11</b><span>Vent kiln smoke</span></div><div class="action"><b>12</b><span>Pass one material</span></div><div class="action"><b>13</b><span>Stash private-priority material</span></div><div class="action"><b>14</b><span>Repair shelter wall</span></div><div class="action"><b>15</b><span>Rest in daytime shelter</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Cedar: starts with two timber</p><p><b>agent_1</b> Flax: starts with timber and lining</p><p><b>agent_2</b> Ash: starts with kiln timber and clay</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;t / 54&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;Day-night phase (t modulo 18) / 17&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;Current weather 0 daylight, 1 cold, 2 severe / 2&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      52
+    ],
+    &quot;meaning&quot;: &quot;Public tile map / 6, row-major yx&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      52,
+      58
+    ],
+    &quot;meaning&quot;: &quot;All worker xy positions / 6&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      58,
+      61
+    ],
+    &quot;meaning&quot;: &quot;All worker health / 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      61,
+      70
+    ],
+    &quot;meaning&quot;: &quot;Pack counts by worker then timber/clay/lining / 3&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      70,
+      74
+    ],
+    &quot;meaning&quot;: &quot;Material node stocks / 6&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      80
+    ],
+    &quot;meaning&quot;: &quot;Wall / 3, lining / 3, heat / 12, kiln timer / 3, kiln output, smoke / 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      80,
+      88
+    ],
+    &quot;meaning&quot;: &quot;Current transition event flags in declared order&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      88,
+      91
+    ],
+    &quot;meaning&quot;: &quot;Public locker totals by material / 24&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      91,
+      92
+    ],
+    &quot;meaning&quot;: &quot;Own private preferred material index / 2&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      92,
+      93
+    ],
+    &quot;meaning&quot;: &quot;Own forecast: role i alone initially knows night i severity / 2&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      93,
+      96
+    ],
+    &quot;meaning&quot;: &quot;Own role one-hot&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;foragers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Health 0..8; zero means immobile&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carry&quot;
+        ],
+        &quot;meaning&quot;: &quot;Three-slot pack counts [timber, clay, lining]&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;material_stands&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;resource_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;resource_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;resource_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;resource_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 timber, 1 clay&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining harvestable units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;camp_structures&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_status&quot;
+        ],
+        &quot;meaning&quot;: &quot;Rows: shelter [wall, lining, heat]; kiln [timer, output, smoke]; locker [stashed timber, clay, lining]&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi187&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;14ff1ed4371e402b595847aeb5c0aebb6ddb37a7e2bba3c40c0180399740631d&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 96,
+    &quot;num_actions&quot;: 16,
+    &quot;max_steps&quot;: 54
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.5544424057006836
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.0898544788360596
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.798524856567383
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.39351654052734375
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.4573469161987305
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.00103759765625
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.3852095603942871
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.5891945362091064
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.2100789546966553
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.1196441650390625
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 17.111196994781494,
+  &quot;float_parity_max_abs&quot;: 5.960464477539063e-08,
+  &quot;numerical_parity&quot;: &quot;UNDETERMINED_NONZERO_FLOAT_DIFFERENCE&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 34,
+  &quot;scripted_random_returns&quot;: [
+    -0.30000001192092896,
+    -0.9000000134110451,
+    -1.0000000149011612
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 18,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi187&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 5.678301095962524
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 187,
+  &quot;key&quot;: &quot;gi187&quot;,
+  &quot;title&quot;: &quot;余烬庇护所&quot;,
+  &quot;summary&quot;: &quot;收集木材、烧制内衬并搭建共用庇护所，墙体与保温共同影响夜间生存。&quot;,
+  &quot;tags&quot;: [
+    &quot;建造生存&quot;,
+    &quot;材料互补&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 96,
+    &quot;num_actions&quot;: 16,
+    &quot;max_steps&quot;: 54
+  },
+  &quot;source_sha256&quot;: &quot;14ff1ed4371e402b595847aeb5c0aebb6ddb37a7e2bba3c40c0180399740631d&quot;,
+  &quot;manifest_sha256&quot;: &quot;e4f2925cc43c41cae0c5ed991093416dc56143cfc5a64b9505e3c44b6e2b53e5&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;14ff1ed4371e402b595847aeb5c0aebb6ddb37a7e2bba3c40c0180399740631d&quot;,
+      &quot;bytes&quot;: 9880,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00187/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;e4f2925cc43c41cae0c5ed991093416dc56143cfc5a64b9505e3c44b6e2b53e5&quot;,
+      &quot;bytes&quot;: 13995,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00187/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;0dd666058210d48245532597c4ea0dcf832b492ea3e8e83d4fbafa0e0d0476b5&quot;,
+      &quot;bytes&quot;: 7633,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00187/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;0dcd6078b75c17ec275064e6b6afb84195799d32247cd54fd10e0b02a5a63cfc&quot;,
+      &quot;bytes&quot;: 11266,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00187/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;9a5ca83aaa294dae850ad2b4d15da185eec84b8a2c4727a7e1b5a13e39e8d213&quot;,
+      &quot;bytes&quot;: 3879,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00187/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi187">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

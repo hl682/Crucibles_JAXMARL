@@ -1,0 +1,365 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glacier Foundry Settlements · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI244 / SPATIAL</p><h1>Glacier Foundry Settlements</h1><p class="lead"></p><div class="stats"><span>384 agents</span><span>16 actions</span><span>4144 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 244</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Commission twenty-four settlements by lifting stone with a separate brake operator, then warming each delivered-load workshop for eight working ticks. Protect crews and shared routes.&quot;,
+  &quot;natural_termination&quot;: &quot;All twenty-four workshops have eight warm commissioned ticks, or no settler remains alive; otherwise H=896. Dropped loads remain failed and can leave the objective unfinished.&quot;,
+  &quot;interaction&quot;: &quot;A separate brake changes whether an actual moving load lands or blocks a route. Carried heat protects against cold and commissions workshops, while melting ice creates south-flowing water that weakens support and injures downstream actors. Physical resource handoffs and warning markers connect crews.&quot;,
+  &quot;observation_access&quot;: &quot;Self fields plus Chebyshev radius-three local map/entity fields; no within-square occlusion. Hidden rows and outside-map patch cells zero with presence. Dynamic remote state is not observed. Event rendering must suppress hidden entity events; debug/full-state view is separate. The explicitly listed own team score summaries are self information.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 2.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Every settler has an action row and a miner, fuelwright, mason or scout tool. Co-occupancy is allowed.</li><li>Attach carried stone at the hoist while another settler holds its separate brake. Release while suspended drops the actual load and blocks its cell.</li><li>Delivery creates a supported path. Eight heated ticks at the commissioned hoist turn its foundation into workshop shelter.</li><li>Heat cells warm their cell and melt ice. Water flows south, erodes supports and harms exposed settlers. Shelter rest restores health.</li><li>Build and heat at your feet. Scouts carry, place and recover physical markers; inventory handoffs require an adjacent waiting recipient.</li><li>Use only the selected role radius-three view. Hidden map cells/entities/events stay hidden; full-state debug is separate.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Glacier Foundry Settlements
+
+AUTHORED_NOT_EXECUTED. Candidate game-v3-00244, attempt00, train-only, feedback0, parentless blind authoring. Source SHA256 856975d66e3c07c06c8e3daf2be1c678affa83099a26696f7ebfff4b38868ec4. Native dimensions A=384, O=4144, U=16, H=896. Every actor has an independently supplied scalar action, observation/reward/done row, actual position and persistent spatial consequences. There are 24 groups of 16; grouping identifies affiliation, not a single controller for that group.
+
+## Task and interaction
+
+Commission twenty-four settlements by lifting stone with a separate brake operator, then warming each delivered-load workshop for eight working ticks. Protect crews and shared routes.
+
+A separate brake changes whether an actual moving load lands or blocks a route. Carried heat protects against cold and commissions workshops, while melting ice creates south-flowing water that weakens support and injures downstream actors. Physical resource handoffs and warning markers connect crews.
+
+Crews can rush brake relays and heat transport, or invest early stone in safe foundations/shelters. Heating ice creates a shortcut risk for downstream workers. Scouts can move warnings beyond the originating crew. Supporting a partner spends scarce materials and action time; abandoning a lift creates a persistent obstacle.
+
+The 48x32 grid uses integer [x,y] cell centers, y down. Positions govern movement, object work and transfer. Scene colors/glyphs are original declarative cues for the independent block_survival family. The shared platform can select arbitrary one/multiple actors and fill their unchanged native action rows. This package does not claim a working UI, animation or human acceptance.
+
+## Action meanings
+
+- 0: Wait / receive adjacent handoff.
+- 1: Move north.
+- 2: Move east.
+- 3: Move south.
+- 4: Move west.
+- 5: Rest; heals only on shelter.
+- 6: Miner: quarry self/cardinal-neighbor stone.
+- 7: Fuelwright: salvage self/cardinal-neighbor fuel.
+- 8: Mason: spend stone on support at feet.
+- 9: Hold separate brake while standing on pedal.
+- 10: Mason: attach carried stone at hoist.
+- 11: Fuelwright: consume carried heat cell at feet.
+- 12: Mason: spend stone to build shelter at feet.
+- 13: Scout: place carried marker or pick placed marker up.
+- 14: Miner: clear self/cardinal-neighbor rubble.
+- 15: Offer one stone, else fuel, to adjacent waiting settler.
+
+Invalid or out-of-range action IDs deterministically become action0. Wait remains legal for every actor, including disabled actors and terminal input. Individual masks expose local physical/tool conditions; partner cooperation is resolved by the joint transition. Finite-resource contention uses clock-rotating actor priority. The same masks and native actions apply to human and AI ownership.
+
+## Transition order, rewards and termination
+
+Old-state masks; co-occupancy-permitted movement; rotating finite-resource extraction/building; heat, melt and southward water; markers, hoist/brake and workshop; adjacent one-to-one inventory offers; cold/flood damage; reward and terminal causes.
+
+Clipped to [-1,2]. Before clipping: own-settlement landing +0.5; warm-workshop completion +0.2; construction +0.025; work -0.003; carried stone/fuel each -0.001; injury -0.04; tagged water-source heater -0.001 per flood victim; all actors +0.01 times fraction of new landings. The water-owner tag is flow bookkeeping, not a statistical causal estimate.
+
+Natural termination: All twenty-four workshops have eight warm commissioned ticks, or no settler remains alive; otherwise H=896. Dropped loads remain failed and can leave the objective unfinished. Natural completion or failure takes priority if it coincides with H. truncated=(next t&gt;=H) AND NOT terminated; done_all is their disjunction and equals episode_done. A nonterminal input advances t once. Already-terminal input is preserved by the final tree selection: clock, state, observation and terminal causes remain; reward is zero and all dones true. There is no internal reset.
+
+The reset key is external trajectory provenance; only the supplied key drives reset stochasticity. Authored steps are deterministic and do not consume their key. Small signed values are int32, booleans bool, persistent reals float32. The uint32 key is not duplicated in world state. Exact eager/JIT/vmap behavior and numerical parity are untested.
+
+## Exact observations and role rendering
+
+Local entity blocks use fixed ID order and explicit presence. Hidden payloads are zero. Map patches enumerate dy=-3..3, then dx=-3..3. The local square is not occlusion-limited. Debug/full-state views must be labeled and cannot become policy observations. Actual event flags/counters must be filtered by the related visible entity; their declaration does not authorize off-screen event disclosure.
+
+- Columns [0, 11): Time/896,ID/383,settlement/23,tool/3,x/47,y/31,stone/3,fuel/3,health/100,marker,alive.
+- Columns [11, 3467): 384 actor slots, nine fields each: x/47,y/31,team/23,tool/3,stone/3,fuel/3,health/100,marker,alive/presence. Invisible slots zero.
+- Columns [3467, 3635): 24 crane slots: x/47,y/31,phase/3,progress/3,brake,workshop/8,presence.
+- Columns [3635, 3731): 24 brake slots: x/47,y/31,held,presence.
+- Columns [3731, 3899): 24 moving-load slots: x/47,y/31,phase/3,progress/3,drop,delivery,presence.
+- Columns [3899, 4144): 7x7 dy-major patch (-3..3): each cell tiles/8,water/6,heat/8,support/24,in-bounds-and-alive. Other cells zero.
+
+All fixed-shape state leaves are listed in manifest.json. Entity attributes are represented by the corresponding native local block. The explicitly described own team score summaries are self information. Declared invariants include finite observations/rewards, coordinate bounds, resource nonnegativity under legal transitions, fixed state-tree shapes and absorbing terminal semantics. They remain source declarations, not passed runtime receipts.
+
+## Literal diagnostic proposals
+
+playthrough.json supplies two full-width literal scripts and one paired hypothesis. Every frame contains all 384 actions, including zeros. There is no adaptive policy, search or substitute dynamics. The branches have the same prefix and subsequent actions, and differ at exactly one actor/action/step. Intended differences come from source reasoning only. No script was imported, run, simulated, scored or accepted. Initial random details, multi-step legality, exact effects and rewards remain unverified; no solvability or learning result is claimed.
+
+## Literal source evidence
+
+- candidate.py:61: `def legal_actions(self, s):`
+- candidate.py:104: `gather = self.winner(target, (act == 6) | (act == 7) | (act == 14), 1536, s[&#x27;t&#x27;])`
+- candidate.py:111: `supports = s[&#x27;support&#x27;].reshape(-1).at[cell].add(jnp.where(build &amp; (act == 8), 12, 0)).reshape((32, 48))`
+- candidate.py:124: `water = jnp.clip(s[&#x27;water&#x27;] * 0.55 + incoming + melt.astype(jnp.float32) * heat * 0.7, 0, 6)`
+- candidate.py:138: `drop = suspended &amp; ~brake`
+- candidate.py:147: `workshop = jnp.minimum(s[&#x27;workshop&#x27;] + ((phase == 2) &amp; (heat[s[&#x27;crane_pos&#x27;][:, 1], s[&#x27;crane_pos&#x27;][:, 0]] &gt; 0.7)).astype(jnp.int32), 8)`
+- candidate.py:152: `can = (act[:, None] == 15) &amp; (act[None, :] == 0) &amp; s[&#x27;alive&#x27;][None, :] &amp; (dist &lt;= 1) &amp; (idx[:, None] != idx[None, :])`
+- candidate.py:167: `penalties = jnp.zeros((384,), jnp.float32).at[jnp.maximum(blamed, 0)].add((flood &amp; s[&#x27;alive&#x27;] &amp; (blamed &gt;= 0)).astype(jnp.float32) * 0.001)`
+- candidate.py:168: `reward = 0.5 * delivery[s[&#x27;team&#x27;]] + 0.2 * warmed[s[&#x27;team&#x27;]] + 0.025 * build - 0.003 * (act &gt;= 6) - 0.001 * (stone + fuel) - 0.04 * damage - penalties`
+- candidate.py:171: `terminated = ~jnp.any(alive) | jnp.all(workshop == 8)`
+- candidate.py:180: `def raw_step(self, key, state, actions):`
+- candidate.py:188: `def observe(self, s):`
+
+## Provenance and remaining evidence
+
+The supplied JaxMARL README informed parallel actor-interface expectations; Pgx informed legal masks, external keys and terminal states; Craftax README informed local materials/observation and no-autoreset boundaries. PureJaxRL README and Craftax_Baselines_ppo_rnn.py informed only learner/wrapper integration boundaries. No upstream code, assets, board layouts or game recipes were copied. No supplied external score was used as evidence for these authored games. Exact supplied reference bytes and uses are in author_input_freeze.json.
+
+Authority and scope hashes were verified. ROOT_INPUT_REFERENCE_CLARIFICATION247.json explicitly supersedes the missing inherited194 reference; that absent file was not searched or read. Current247 population/family and current design/request bytes control. Actual allowed paths, byte counts, SHA256 and uses are frozen in author_input_freeze.json. No MEMORY, prior candidate/results, other coordination, training/IR, selection, heldout or final-test evidence entered authoring.
+
+Author checks are AST parsing/whitelist-oriented text inspection, manifest/scene data inspection, literal script dimensions and single-action-difference counting, and byte/hash verification. Candidate code was never imported or executed. No NumPy/JAX/PRNG/runtime tests occurred. Runtime shape/parity/throughput, physical paired replay, native renderer/animation, arbitrary human play, learning and meta-learning transfer are UNKNOWN or UNEXECUTED. Independent immutable-source integration release is required.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait / receive adjacent handoff</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Rest; heals only on shelter</span></div><div class="action"><b>6</b><span>Miner: quarry self/cardinal-neighbor stone</span></div><div class="action"><b>7</b><span>Fuelwright: salvage self/cardinal-neighbor fuel</span></div><div class="action"><b>8</b><span>Mason: spend stone on support at feet</span></div><div class="action"><b>9</b><span>Hold separate brake while standing on pedal</span></div><div class="action"><b>10</b><span>Mason: attach carried stone at hoist</span></div><div class="action"><b>11</b><span>Fuelwright: consume carried heat cell at feet</span></div><div class="action"><b>12</b><span>Mason: spend stone to build shelter at feet</span></div><div class="action"><b>13</b><span>Scout: place carried marker or pick placed marker up</span></div><div class="action"><b>14</b><span>Miner: clear self/cardinal-neighbor rubble</span></div><div class="action"><b>15</b><span>Offer one stone, else fuel, to adjacent waiting settler</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> miner; group0, member0</p><p><b>agent_1</b> fuelwright; group0, member1</p><p><b>agent_2</b> mason; group0, member2</p><p><b>agent_3</b> scout; group0, member3</p><p><b>agent_4</b> miner; group0, member4</p><p><b>agent_5</b> fuelwright; group0, member5</p><p><b>agent_6</b> mason; group0, member6</p><p><b>agent_7</b> scout; group0, member7</p><p><b>agent_8</b> miner; group0, member8</p><p><b>agent_9</b> fuelwright; group0, member9</p><p><b>agent_10</b> mason; group0, member10</p><p><b>agent_11</b> scout; group0, member11</p><p><b>agent_12</b> miner; group0, member12</p><p><b>agent_13</b> fuelwright; group0, member13</p><p><b>agent_14</b> mason; group0, member14</p><p><b>agent_15</b> scout; group0, member15</p><p><b>agent_16</b> miner; group1, member0</p><p><b>agent_17</b> fuelwright; group1, member1</p><p><b>agent_18</b> mason; group1, member2</p><p><b>agent_19</b> scout; group1, member3</p><p><b>agent_20</b> miner; group1, member4</p><p><b>agent_21</b> fuelwright; group1, member5</p><p><b>agent_22</b> mason; group1, member6</p><p><b>agent_23</b> scout; group1, member7</p><p><b>agent_24</b> miner; group1, member8</p><p><b>agent_25</b> fuelwright; group1, member9</p><p><b>agent_26</b> mason; group1, member10</p><p><b>agent_27</b> scout; group1, member11</p><p><b>agent_28</b> miner; group1, member12</p><p><b>agent_29</b> fuelwright; group1, member13</p><p><b>agent_30</b> mason; group1, member14</p><p><b>agent_31</b> scout; group1, member15</p><p><b>agent_32</b> miner; group2, member0</p><p><b>agent_33</b> fuelwright; group2, member1</p><p><b>agent_34</b> mason; group2, member2</p><p><b>agent_35</b> scout; group2, member3</p><p><b>agent_36</b> miner; group2, member4</p><p><b>agent_37</b> fuelwright; group2, member5</p><p><b>agent_38</b> mason; group2, member6</p><p><b>agent_39</b> scout; group2, member7</p><p><b>agent_40</b> miner; group2, member8</p><p><b>agent_41</b> fuelwright; group2, member9</p><p><b>agent_42</b> mason; group2, member10</p><p><b>agent_43</b> scout; group2, member11</p><p><b>agent_44</b> miner; group2, member12</p><p><b>agent_45</b> fuelwright; group2, member13</p><p><b>agent_46</b> mason; group2, member14</p><p><b>agent_47</b> scout; group2, member15</p><p><b>agent_48</b> miner; group3, member0</p><p><b>agent_49</b> fuelwright; group3, member1</p><p><b>agent_50</b> mason; group3, member2</p><p><b>agent_51</b> scout; group3, member3</p><p><b>agent_52</b> miner; group3, member4</p><p><b>agent_53</b> fuelwright; group3, member5</p><p><b>agent_54</b> mason; group3, member6</p><p><b>agent_55</b> scout; group3, member7</p><p><b>agent_56</b> miner; group3, member8</p><p><b>agent_57</b> fuelwright; group3, member9</p><p><b>agent_58</b> mason; group3, member10</p><p><b>agent_59</b> scout; group3, member11</p><p><b>agent_60</b> miner; group3, member12</p><p><b>agent_61</b> fuelwright; group3, member13</p><p><b>agent_62</b> mason; group3, member14</p><p><b>agent_63</b> scout; group3, member15</p><p><b>agent_64</b> miner; group4, member0</p><p><b>agent_65</b> fuelwright; group4, member1</p><p><b>agent_66</b> mason; group4, member2</p><p><b>agent_67</b> scout; group4, member3</p><p><b>agent_68</b> miner; group4, member4</p><p><b>agent_69</b> fuelwright; group4, member5</p><p><b>agent_70</b> mason; group4, member6</p><p><b>agent_71</b> scout; group4, member7</p><p><b>agent_72</b> miner; group4, member8</p><p><b>agent_73</b> fuelwright; group4, member9</p><p><b>agent_74</b> mason; group4, member10</p><p><b>agent_75</b> scout; group4, member11</p><p><b>agent_76</b> miner; group4, member12</p><p><b>agent_77</b> fuelwright; group4, member13</p><p><b>agent_78</b> mason; group4, member14</p><p><b>agent_79</b> scout; group4, member15</p><p><b>agent_80</b> miner; group5, member0</p><p><b>agent_81</b> fuelwright; group5, member1</p><p><b>agent_82</b> mason; group5, member2</p><p><b>agent_83</b> scout; group5, member3</p><p><b>agent_84</b> miner; group5, member4</p><p><b>agent_85</b> fuelwright; group5, member5</p><p><b>agent_86</b> mason; group5, member6</p><p><b>agent_87</b> scout; group5, member7</p><p><b>agent_88</b> miner; group5, member8</p><p><b>agent_89</b> fuelwright; group5, member9</p><p><b>agent_90</b> mason; group5, member10</p><p><b>agent_91</b> scout; group5, member11</p><p><b>agent_92</b> miner; group5, member12</p><p><b>agent_93</b> fuelwright; group5, member13</p><p><b>agent_94</b> mason; group5, member14</p><p><b>agent_95</b> scout; group5, member15</p><p><b>agent_96</b> miner; group6, member0</p><p><b>agent_97</b> fuelwright; group6, member1</p><p><b>agent_98</b> mason; group6, member2</p><p><b>agent_99</b> scout; group6, member3</p><p><b>agent_100</b> miner; group6, member4</p><p><b>agent_101</b> fuelwright; group6, member5</p><p><b>agent_102</b> mason; group6, member6</p><p><b>agent_103</b> scout; group6, member7</p><p><b>agent_104</b> miner; group6, member8</p><p><b>agent_105</b> fuelwright; group6, member9</p><p><b>agent_106</b> mason; group6, member10</p><p><b>agent_107</b> scout; group6, member11</p><p><b>agent_108</b> miner; group6, member12</p><p><b>agent_109</b> fuelwright; group6, member13</p><p><b>agent_110</b> mason; group6, member14</p><p><b>agent_111</b> scout; group6, member15</p><p><b>agent_112</b> miner; group7, member0</p><p><b>agent_113</b> fuelwright; group7, member1</p><p><b>agent_114</b> mason; group7, member2</p><p><b>agent_115</b> scout; group7, member3</p><p><b>agent_116</b> miner; group7, member4</p><p><b>agent_117</b> fuelwright; group7, member5</p><p><b>agent_118</b> mason; group7, member6</p><p><b>agent_119</b> scout; group7, member7</p><p><b>agent_120</b> miner; group7, member8</p><p><b>agent_121</b> fuelwright; group7, member9</p><p><b>agent_122</b> mason; group7, member10</p><p><b>agent_123</b> scout; group7, member11</p><p><b>agent_124</b> miner; group7, member12</p><p><b>agent_125</b> fuelwright; group7, member13</p><p><b>agent_126</b> mason; group7, member14</p><p><b>agent_127</b> scout; group7, member15</p><p><b>agent_128</b> miner; group8, member0</p><p><b>agent_129</b> fuelwright; group8, member1</p><p><b>agent_130</b> mason; group8, member2</p><p><b>agent_131</b> scout; group8, member3</p><p><b>agent_132</b> miner; group8, member4</p><p><b>agent_133</b> fuelwright; group8, member5</p><p><b>agent_134</b> mason; group8, member6</p><p><b>agent_135</b> scout; group8, member7</p><p><b>agent_136</b> miner; group8, member8</p><p><b>agent_137</b> fuelwright; group8, member9</p><p><b>agent_138</b> mason; group8, member10</p><p><b>agent_139</b> scout; group8, member11</p><p><b>agent_140</b> miner; group8, member12</p><p><b>agent_141</b> fuelwright; group8, member13</p><p><b>agent_142</b> mason; group8, member14</p><p><b>agent_143</b> scout; group8, member15</p><p><b>agent_144</b> miner; group9, member0</p><p><b>agent_145</b> fuelwright; group9, member1</p><p><b>agent_146</b> mason; group9, member2</p><p><b>agent_147</b> scout; group9, member3</p><p><b>agent_148</b> miner; group9, member4</p><p><b>agent_149</b> fuelwright; group9, member5</p><p><b>agent_150</b> mason; group9, member6</p><p><b>agent_151</b> scout; group9, member7</p><p><b>agent_152</b> miner; group9, member8</p><p><b>agent_153</b> fuelwright; group9, member9</p><p><b>agent_154</b> mason; group9, member10</p><p><b>agent_155</b> scout; group9, member11</p><p><b>agent_156</b> miner; group9, member12</p><p><b>agent_157</b> fuelwright; group9, member13</p><p><b>agent_158</b> mason; group9, member14</p><p><b>agent_159</b> scout; group9, member15</p><p><b>agent_160</b> miner; group10, member0</p><p><b>agent_161</b> fuelwright; group10, member1</p><p><b>agent_162</b> mason; group10, member2</p><p><b>agent_163</b> scout; group10, member3</p><p><b>agent_164</b> miner; group10, member4</p><p><b>agent_165</b> fuelwright; group10, member5</p><p><b>agent_166</b> mason; group10, member6</p><p><b>agent_167</b> scout; group10, member7</p><p><b>agent_168</b> miner; group10, member8</p><p><b>agent_169</b> fuelwright; group10, member9</p><p><b>agent_170</b> mason; group10, member10</p><p><b>agent_171</b> scout; group10, member11</p><p><b>agent_172</b> miner; group10, member12</p><p><b>agent_173</b> fuelwright; group10, member13</p><p><b>agent_174</b> mason; group10, member14</p><p><b>agent_175</b> scout; group10, member15</p><p><b>agent_176</b> miner; group11, member0</p><p><b>agent_177</b> fuelwright; group11, member1</p><p><b>agent_178</b> mason; group11, member2</p><p><b>agent_179</b> scout; group11, member3</p><p><b>agent_180</b> miner; group11, member4</p><p><b>agent_181</b> fuelwright; group11, member5</p><p><b>agent_182</b> mason; group11, member6</p><p><b>agent_183</b> scout; group11, member7</p><p><b>agent_184</b> miner; group11, member8</p><p><b>agent_185</b> fuelwright; group11, member9</p><p><b>agent_186</b> mason; group11, member10</p><p><b>agent_187</b> scout; group11, member11</p><p><b>agent_188</b> miner; group11, member12</p><p><b>agent_189</b> fuelwright; group11, member13</p><p><b>agent_190</b> mason; group11, member14</p><p><b>agent_191</b> scout; group11, member15</p><p><b>agent_192</b> miner; group12, member0</p><p><b>agent_193</b> fuelwright; group12, member1</p><p><b>agent_194</b> mason; group12, member2</p><p><b>agent_195</b> scout; group12, member3</p><p><b>agent_196</b> miner; group12, member4</p><p><b>agent_197</b> fuelwright; group12, member5</p><p><b>agent_198</b> mason; group12, member6</p><p><b>agent_199</b> scout; group12, member7</p><p><b>agent_200</b> miner; group12, member8</p><p><b>agent_201</b> fuelwright; group12, member9</p><p><b>agent_202</b> mason; group12, member10</p><p><b>agent_203</b> scout; group12, member11</p><p><b>agent_204</b> miner; group12, member12</p><p><b>agent_205</b> fuelwright; group12, member13</p><p><b>agent_206</b> mason; group12, member14</p><p><b>agent_207</b> scout; group12, member15</p><p><b>agent_208</b> miner; group13, member0</p><p><b>agent_209</b> fuelwright; group13, member1</p><p><b>agent_210</b> mason; group13, member2</p><p><b>agent_211</b> scout; group13, member3</p><p><b>agent_212</b> miner; group13, member4</p><p><b>agent_213</b> fuelwright; group13, member5</p><p><b>agent_214</b> mason; group13, member6</p><p><b>agent_215</b> scout; group13, member7</p><p><b>agent_216</b> miner; group13, member8</p><p><b>agent_217</b> fuelwright; group13, member9</p><p><b>agent_218</b> mason; group13, member10</p><p><b>agent_219</b> scout; group13, member11</p><p><b>agent_220</b> miner; group13, member12</p><p><b>agent_221</b> fuelwright; group13, member13</p><p><b>agent_222</b> mason; group13, member14</p><p><b>agent_223</b> scout; group13, member15</p><p><b>agent_224</b> miner; group14, member0</p><p><b>agent_225</b> fuelwright; group14, member1</p><p><b>agent_226</b> mason; group14, member2</p><p><b>agent_227</b> scout; group14, member3</p><p><b>agent_228</b> miner; group14, member4</p><p><b>agent_229</b> fuelwright; group14, member5</p><p><b>agent_230</b> mason; group14, member6</p><p><b>agent_231</b> scout; group14, member7</p><p><b>agent_232</b> miner; group14, member8</p><p><b>agent_233</b> fuelwright; group14, member9</p><p><b>agent_234</b> mason; group14, member10</p><p><b>agent_235</b> scout; group14, member11</p><p><b>agent_236</b> miner; group14, member12</p><p><b>agent_237</b> fuelwright; group14, member13</p><p><b>agent_238</b> mason; group14, member14</p><p><b>agent_239</b> scout; group14, member15</p><p><b>agent_240</b> miner; group15, member0</p><p><b>agent_241</b> fuelwright; group15, member1</p><p><b>agent_242</b> mason; group15, member2</p><p><b>agent_243</b> scout; group15, member3</p><p><b>agent_244</b> miner; group15, member4</p><p><b>agent_245</b> fuelwright; group15, member5</p><p><b>agent_246</b> mason; group15, member6</p><p><b>agent_247</b> scout; group15, member7</p><p><b>agent_248</b> miner; group15, member8</p><p><b>agent_249</b> fuelwright; group15, member9</p><p><b>agent_250</b> mason; group15, member10</p><p><b>agent_251</b> scout; group15, member11</p><p><b>agent_252</b> miner; group15, member12</p><p><b>agent_253</b> fuelwright; group15, member13</p><p><b>agent_254</b> mason; group15, member14</p><p><b>agent_255</b> scout; group15, member15</p><p><b>agent_256</b> miner; group16, member0</p><p><b>agent_257</b> fuelwright; group16, member1</p><p><b>agent_258</b> mason; group16, member2</p><p><b>agent_259</b> scout; group16, member3</p><p><b>agent_260</b> miner; group16, member4</p><p><b>agent_261</b> fuelwright; group16, member5</p><p><b>agent_262</b> mason; group16, member6</p><p><b>agent_263</b> scout; group16, member7</p><p><b>agent_264</b> miner; group16, member8</p><p><b>agent_265</b> fuelwright; group16, member9</p><p><b>agent_266</b> mason; group16, member10</p><p><b>agent_267</b> scout; group16, member11</p><p><b>agent_268</b> miner; group16, member12</p><p><b>agent_269</b> fuelwright; group16, member13</p><p><b>agent_270</b> mason; group16, member14</p><p><b>agent_271</b> scout; group16, member15</p><p><b>agent_272</b> miner; group17, member0</p><p><b>agent_273</b> fuelwright; group17, member1</p><p><b>agent_274</b> mason; group17, member2</p><p><b>agent_275</b> scout; group17, member3</p><p><b>agent_276</b> miner; group17, member4</p><p><b>agent_277</b> fuelwright; group17, member5</p><p><b>agent_278</b> mason; group17, member6</p><p><b>agent_279</b> scout; group17, member7</p><p><b>agent_280</b> miner; group17, member8</p><p><b>agent_281</b> fuelwright; group17, member9</p><p><b>agent_282</b> mason; group17, member10</p><p><b>agent_283</b> scout; group17, member11</p><p><b>agent_284</b> miner; group17, member12</p><p><b>agent_285</b> fuelwright; group17, member13</p><p><b>agent_286</b> mason; group17, member14</p><p><b>agent_287</b> scout; group17, member15</p><p><b>agent_288</b> miner; group18, member0</p><p><b>agent_289</b> fuelwright; group18, member1</p><p><b>agent_290</b> mason; group18, member2</p><p><b>agent_291</b> scout; group18, member3</p><p><b>agent_292</b> miner; group18, member4</p><p><b>agent_293</b> fuelwright; group18, member5</p><p><b>agent_294</b> mason; group18, member6</p><p><b>agent_295</b> scout; group18, member7</p><p><b>agent_296</b> miner; group18, member8</p><p><b>agent_297</b> fuelwright; group18, member9</p><p><b>agent_298</b> mason; group18, member10</p><p><b>agent_299</b> scout; group18, member11</p><p><b>agent_300</b> miner; group18, member12</p><p><b>agent_301</b> fuelwright; group18, member13</p><p><b>agent_302</b> mason; group18, member14</p><p><b>agent_303</b> scout; group18, member15</p><p><b>agent_304</b> miner; group19, member0</p><p><b>agent_305</b> fuelwright; group19, member1</p><p><b>agent_306</b> mason; group19, member2</p><p><b>agent_307</b> scout; group19, member3</p><p><b>agent_308</b> miner; group19, member4</p><p><b>agent_309</b> fuelwright; group19, member5</p><p><b>agent_310</b> mason; group19, member6</p><p><b>agent_311</b> scout; group19, member7</p><p><b>agent_312</b> miner; group19, member8</p><p><b>agent_313</b> fuelwright; group19, member9</p><p><b>agent_314</b> mason; group19, member10</p><p><b>agent_315</b> scout; group19, member11</p><p><b>agent_316</b> miner; group19, member12</p><p><b>agent_317</b> fuelwright; group19, member13</p><p><b>agent_318</b> mason; group19, member14</p><p><b>agent_319</b> scout; group19, member15</p><p><b>agent_320</b> miner; group20, member0</p><p><b>agent_321</b> fuelwright; group20, member1</p><p><b>agent_322</b> mason; group20, member2</p><p><b>agent_323</b> scout; group20, member3</p><p><b>agent_324</b> miner; group20, member4</p><p><b>agent_325</b> fuelwright; group20, member5</p><p><b>agent_326</b> mason; group20, member6</p><p><b>agent_327</b> scout; group20, member7</p><p><b>agent_328</b> miner; group20, member8</p><p><b>agent_329</b> fuelwright; group20, member9</p><p><b>agent_330</b> mason; group20, member10</p><p><b>agent_331</b> scout; group20, member11</p><p><b>agent_332</b> miner; group20, member12</p><p><b>agent_333</b> fuelwright; group20, member13</p><p><b>agent_334</b> mason; group20, member14</p><p><b>agent_335</b> scout; group20, member15</p><p><b>agent_336</b> miner; group21, member0</p><p><b>agent_337</b> fuelwright; group21, member1</p><p><b>agent_338</b> mason; group21, member2</p><p><b>agent_339</b> scout; group21, member3</p><p><b>agent_340</b> miner; group21, member4</p><p><b>agent_341</b> fuelwright; group21, member5</p><p><b>agent_342</b> mason; group21, member6</p><p><b>agent_343</b> scout; group21, member7</p><p><b>agent_344</b> miner; group21, member8</p><p><b>agent_345</b> fuelwright; group21, member9</p><p><b>agent_346</b> mason; group21, member10</p><p><b>agent_347</b> scout; group21, member11</p><p><b>agent_348</b> miner; group21, member12</p><p><b>agent_349</b> fuelwright; group21, member13</p><p><b>agent_350</b> mason; group21, member14</p><p><b>agent_351</b> scout; group21, member15</p><p><b>agent_352</b> miner; group22, member0</p><p><b>agent_353</b> fuelwright; group22, member1</p><p><b>agent_354</b> mason; group22, member2</p><p><b>agent_355</b> scout; group22, member3</p><p><b>agent_356</b> miner; group22, member4</p><p><b>agent_357</b> fuelwright; group22, member5</p><p><b>agent_358</b> mason; group22, member6</p><p><b>agent_359</b> scout; group22, member7</p><p><b>agent_360</b> miner; group22, member8</p><p><b>agent_361</b> fuelwright; group22, member9</p><p><b>agent_362</b> mason; group22, member10</p><p><b>agent_363</b> scout; group22, member11</p><p><b>agent_364</b> miner; group22, member12</p><p><b>agent_365</b> fuelwright; group22, member13</p><p><b>agent_366</b> mason; group22, member14</p><p><b>agent_367</b> scout; group22, member15</p><p><b>agent_368</b> miner; group23, member0</p><p><b>agent_369</b> fuelwright; group23, member1</p><p><b>agent_370</b> mason; group23, member2</p><p><b>agent_371</b> scout; group23, member3</p><p><b>agent_372</b> miner; group23, member4</p><p><b>agent_373</b> fuelwright; group23, member5</p><p><b>agent_374</b> mason; group23, member6</p><p><b>agent_375</b> scout; group23, member7</p><p><b>agent_376</b> miner; group23, member8</p><p><b>agent_377</b> fuelwright; group23, member9</p><p><b>agent_378</b> mason; group23, member10</p><p><b>agent_379</b> scout; group23, member11</p><p><b>agent_380</b> miner; group23, member12</p><p><b>agent_381</b> fuelwright; group23, member13</p><p><b>agent_382</b> mason; group23, member14</p><p><b>agent_383</b> scout; group23, member15</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      11
+    ],
+    &quot;visibility&quot;: &quot;self&quot;,
+    &quot;meaning&quot;: &quot;Time/896,ID/383,settlement/23,tool/3,x/47,y/31,stone/3,fuel/3,health/100,marker,alive.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      3467
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;384 actor slots, nine fields each: x/47,y/31,team/23,tool/3,stone/3,fuel/3,health/100,marker,alive/presence. Invisible slots zero.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3467,
+      3635
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;24 crane slots: x/47,y/31,phase/3,progress/3,brake,workshop/8,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3635,
+      3731
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;24 brake slots: x/47,y/31,held,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3731,
+      3899
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;24 moving-load slots: x/47,y/31,phase/3,progress/3,drop,delivery,presence.&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3899,
+      4144
+    ],
+    &quot;visibility&quot;: &quot;local&quot;,
+    &quot;meaning&quot;: &quot;7x7 dy-major patch (-3..3): each cell tiles/8,water/6,heat/8,support/24,in-bounds-and-alive. Other cells zero.&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;settlers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 384,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;alive&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Settlement 0..23&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 miner;1 fuelwright;2 mason;3 scout&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stone&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried stone blocks, capacity three&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fuel&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried heat cells, capacity three&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Health 0..100&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;marker&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried physical warning marker&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;cranes&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;crane_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;crane_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;phase&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 parked;1 suspended;2 delivered;3 dropped&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Brake-held lift increments 0..3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;brake&quot;
+        ],
+        &quot;meaning&quot;: &quot;Brake held on latest step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;workshop&quot;
+        ],
+        &quot;meaning&quot;: &quot;Warm commissioned-workshop ticks 0..8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;brakes&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;brake_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;brake_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;brake&quot;
+        ],
+        &quot;meaning&quot;: &quot;Brake physically held on latest step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;loads&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;load_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;site_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;load_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;phase&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 parked;1 suspended;2 delivered;3 dropped&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Lift travel increment&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;drop&quot;
+        ],
+        &quot;meaning&quot;: &quot;Dropped this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;delivery&quot;
+        ],
+        &quot;meaning&quot;: &quot;Delivered this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 244,
+  &quot;key&quot;: &quot;gi244&quot;,
+  &quot;title&quot;: &quot;Glacier Foundry Settlements&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 384,
+    &quot;observation_size&quot;: 4144,
+    &quot;num_actions&quot;: 16,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;856975d66e3c07c06c8e3daf2be1c678affa83099a26696f7ebfff4b38868ec4&quot;,
+  &quot;manifest_sha256&quot;: &quot;d56b0540fa1d4071b467b4cbdc41a421312230a8066f32e0847714a8dde9f1f0&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;856975d66e3c07c06c8e3daf2be1c678affa83099a26696f7ebfff4b38868ec4&quot;,
+      &quot;bytes&quot;: 15005,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00244/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;d56b0540fa1d4071b467b4cbdc41a421312230a8066f32e0847714a8dde9f1f0&quot;,
+      &quot;bytes&quot;: 65085,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00244/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;6021d6dd1a4b671ca5005e0ac5d49339271ae39b1111dceaa0f3ccf7084d2def&quot;,
+      &quot;bytes&quot;: 8722,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00244/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;da2861bc50a669f4611f6e7968c315c470ca65d6c0b5b25486da58e7298acc8e&quot;,
+      &quot;bytes&quot;: 9367,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00244/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;09c5d5cac7cdb8c88df7c1e8d045bb01521747951ca108f166ce65a9a08aa028&quot;,
+      &quot;bytes&quot;: 127780,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00244/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi244">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

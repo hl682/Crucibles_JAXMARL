@@ -1,0 +1,269 @@
+{
+  "schema": "cr01-spatial-game-playthrough-v3",
+  "candidate_id": "game-v3-00137",
+  "source_sha256": "8cc580b11c98d57a0a62af45f3d974279e80f7832ad065e6c0abd03c2e7e1374",
+  "status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "seed": 0,
+  "key_schedule": {
+    "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+    "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+    "reset_calls": 1,
+    "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+    "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+  },
+  "scripts": [
+    {
+      "id": "decoys_and_split_extraction",
+      "scope": "Trace manipulation and extraction-route hypothesis under waiting trackers",
+      "intended_objective": "Request east/west false scent and actual runner travel along the two outer lanes toward extraction. No executed outcome or successful replay is claimed.",
+      "actions": [
+        [
+          0,
+          0,
+          8,
+          10
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      }
+    },
+    {
+      "id": "hide_does_not_stop_a_physical_sweep",
+      "scope": "Capture-order and concealment witness hypothesis",
+      "intended_objective": "Bring role 2 adjacent to tracker 0, then request runner hide and tracker tag on the same step. Observe actual capture only in separate execution.",
+      "actions": [
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0
+        ],
+        [
+          7,
+          0,
+          5,
+          0
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      }
+    }
+  ],
+  "paired_intervention_hypotheses": [
+    {
+      "id": "false_scent_changes_tracker_information",
+      "scope": "Persistent local information intervention",
+      "intended_difference": "With identical tracker positions and actions, an eastward decoy from role 2 should appear in tracker 0's local scent view and persist after decay; hiding in the other branch should not create that plume.",
+      "prefix": [
+        [
+          0,
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          2
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          0,
+          0,
+          8,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      },
+      "coupling": "Reset each branch independently with the identical reset key. Prefix and suffix use absolute k in the same step-key schedule. No policy search or candidate execution has occurred."
+    },
+    {
+      "id": "tag_versus_scan_against_same_hide",
+      "scope": "Equal-charge information/capture tradeoff",
+      "intended_difference": "A one-charge tag should physically resolve the adjacent hiding runner; a one-charge scan should improve visual information while leaving that runner active. Subsequent waits preserve the difference.",
+      "prefix": [
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          7,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          5,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "seed": 0,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "key_schedule": {
+        "reset_key": "jax.random.PRNGKey(0); legacy uint32[2] value [0, 0]",
+        "step_key": "For zero-based action index k, jax.random.fold_in(jax.random.PRNGKey(0), k + 1).",
+        "reset_calls": 1,
+        "raw_step_calls": "One per listed joint action; never auto-reset within a script.",
+        "candidate_step_randomness": "raw_step is deterministic given state/actions and accepts but does not consume its supplied key."
+      },
+      "coupling": "Reset each branch independently with the identical reset key. Prefix and suffix use absolute k in the same step-key schedule. No policy search or candidate execution has occurred."
+    }
+  ],
+  "legality_status": "AUTHOR_REASONED_ONLY_NOT_RUNTIME_VERIFIED",
+  "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "limits": "Integer vector dimensions and action ranges were checked as data only. Legality, state effects, terminal behavior and solvability require independent sealed execution. This is not a successful replay, validation result, performance score or learning claim."
+}

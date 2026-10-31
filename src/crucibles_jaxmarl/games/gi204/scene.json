@@ -1,0 +1,371 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "a74e8d88af913628370cfc79562afb2921c9e3a6f9ae45d49c5c3a8c7cd7720d",
+  "manifest_sha256": "755f95fdac3efaa31569f2ef4c86d8ce73d02ae545b2ab75c5855906a614e395",
+  "title": "Treaty Rail",
+  "rules": [
+    "Locomotives request one adjacent rail cell per action. A valid request may be stopped by the signal resolved in that joint step; no route is traversed automatically.",
+    "Red signals stop all crews. Green admits its owner or a foreign crew with a positive permit. Grants last eight transitions including their issue transition.",
+    "Signal ownership is fixed. Grant or toggle only within one cell of your own signal; other roles do not automatically see distant red/green states.",
+    "Each wagon holds one cargo unit and a train can attach at most two. Loan your own attached wagon to an adjacent peer; recall it only when physically within one cell.",
+    "Detached wagons occupy rail cells and block entry. Owners and designated borrowers can couple a loose wagon from within one cell.",
+    "Load at your own settlement. The central depot receives public deliveries; your home also accepts privately rewarded stock that removes cargo from the public task.",
+    "Old occupied cells block movement, including swaps and following. Rotating priority resolves competing destinations; visible passing loops provide alternative routes.",
+    "Public success requires two units from every origin. Source scripts and causal pairs remain unexecuted hypotheses."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Off-track terrain; locomotives cannot enter",
+          "color": "#D8D3B3"
+        },
+        {
+          "value": 1,
+          "meaning": "Western settlement rail and northern passing loop",
+          "color": "#B99062"
+        },
+        {
+          "value": 2,
+          "meaning": "Central settlement rail and southern passing loop",
+          "color": "#8EA28E"
+        },
+        {
+          "value": 3,
+          "meaning": "Eastern settlement rail",
+          "color": "#8498B6"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "robot",
+      "label": "Settlement locomotives and crews",
+      "color": "#4B6276",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "train_wagons"
+          ],
+          "label": "Number of attached wagons, at most two"
+        },
+        {
+          "state_path": [
+            "train_cargo"
+          ],
+          "label": "Number of loaded attached wagons"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "beacon",
+      "label": "Locally observed border signals",
+      "color": "#B38B4B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_owner"
+          ],
+          "label": "Settlement owning this physical signal"
+        },
+        {
+          "state_path": [
+            "green"
+          ],
+          "label": "Green permits authorized entry; red stops all crews"
+        },
+        {
+          "state_path": [
+            "permit"
+          ],
+          "label": "Remaining permissions for recipients zero, one and two"
+        }
+      ]
+    },
+    {
+      "id": "wagon",
+      "glyph": "crate",
+      "label": "Three owned and lendable wagons",
+      "color": "#977656",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wagon_owner"
+          ],
+          "label": "Permanent wagon owner"
+        },
+        {
+          "state_path": [
+            "wagon_lessee"
+          ],
+          "label": "Current designated borrower or owner"
+        },
+        {
+          "state_path": [
+            "wagon_train"
+          ],
+          "label": "Attached locomotive ID; -1 loose"
+        },
+        {
+          "state_path": [
+            "wagon_cargo"
+          ],
+          "label": "Cargo-origin settlement; -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "glyph": "flag",
+      "label": "Settlement loading and private-stock stops",
+      "color": "#6C8665",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bank"
+          ],
+          "label": "Remaining banked cargo of this settlement"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "glyph": "resource",
+      "label": "Public delivery depot",
+      "color": "#C5AB62",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "public_delivered"
+      ],
+      "meaning": "Public cargo accepted by origin settlement",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "private_stock"
+      ],
+      "meaning": "Announced cargo diverted to private stock by origin",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "delivery_now"
+      ],
+      "meaning": "Public deliveries made this step by cargo origin",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Request one rail cell north"
+    },
+    {
+      "id": 2,
+      "label": "Request one rail cell east"
+    },
+    {
+      "id": 3,
+      "label": "Request one rail cell south"
+    },
+    {
+      "id": 4,
+      "label": "Request one rail cell west"
+    },
+    {
+      "id": 5,
+      "label": "Grant next settlement eight ticks at own nearby signal"
+    },
+    {
+      "id": 6,
+      "label": "Grant previous settlement eight ticks at own nearby signal"
+    },
+    {
+      "id": 7,
+      "label": "Toggle own nearby red or green signal"
+    },
+    {
+      "id": 8,
+      "label": "Loan own attached wagon to lowest-ID adjacent peer with capacity"
+    },
+    {
+      "id": 9,
+      "label": "Locally recall own wagon from adjacent holder or loose position"
+    },
+    {
+      "id": 10,
+      "label": "Load one empty attached wagon at own settlement"
+    },
+    {
+      "id": 11,
+      "label": "Unload one wagon into the public depot"
+    },
+    {
+      "id": 12,
+      "label": "Put one wagon load into private stock at own settlement"
+    },
+    {
+      "id": 13,
+      "label": "Detach lowest-ID attached wagon at current rail cell"
+    },
+    {
+      "id": 14,
+      "label": "Couple a nearby loose owned or leased wagon"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "Public t, done, terminated, truncated, success, failure",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        97
+      ],
+      "meaning": "Public seven-by-thirteen fixed rail/territory map flattened by row",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        100
+      ],
+      "meaning": "Public delivered cargo counts by origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        103
+      ],
+      "meaning": "Announced private-stock cargo counts by origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        106
+      ],
+      "meaning": "Public delivery events this step by origin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        108
+      ],
+      "meaning": "Public depot x/y position",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        108,
+        116
+      ],
+      "meaning": "Self role ID, work, blocked, loan_now, recall_now, then three inbound permission TTLs ordered by signal owner; no distant green signal is revealed",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "Visibility flags for three locomotives under Manhattan radius three",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        119,
+        131
+      ],
+      "meaning": "Per visible locomotive: x,y,attached_wagon_count,loaded_wagon_count; four fields -1 when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        131,
+        134
+      ],
+      "meaning": "Local signal visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        134,
+        155
+      ],
+      "meaning": "Per visible signal: x,y,owner,green,permit_to_0,permit_to_1,permit_to_2; seven fields -1 when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        155,
+        158
+      ],
+      "meaning": "Local wagon visibility flags",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        158,
+        176
+      ],
+      "meaning": "Per visible wagon: x,y,permanent_owner,lessee,attached_train,cargo_origin; six fields -1 when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        176,
+        179
+      ],
+      "meaning": "Settlement visibility: local radius three or own settlement ledger",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        179,
+        188
+      ],
+      "meaning": "Per visible settlement: x,y,bank; three fields -1 when unseen",
+      "visibility": "local"
+    }
+  ]
+}

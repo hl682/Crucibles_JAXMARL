@@ -1,0 +1,298 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "7c3c8e794ed83a2103d086623f9c01a837de9a6a80d2b5ec06abcf278fee9aa6",
+  "manifest_sha256": "ccdc5f759a805787cbf2e84495dab735377e972f1a9e55288b421614f7c99e20",
+  "title": "Cinderline Commons",
+  "rules": [
+    "Three distinct roles protect all three seedbeds. Coordinates and movement are real; walls block movement and fire.",
+    "Actor 0 sprays adjacent cells using water and refills only at a well. Actor 1 cuts up to three brush fuel units. Actor 2 repairs a cool living bed using a kit and restocks only at the depot.",
+    "Spray is applied before cut/repair heat eligibility, enabling a joint cooling-and-tool interaction. Each actor selects only one action per step.",
+    "Dry existing fires consume one fuel unit and spread synchronously from one snapshot. Newly ignited cells cannot cascade again in the same step.",
+    "Heat and wetness bars, flame/brush/water active masks and bed health all come from actual state. Generic glyphs are not custom flame shaders or spray arcs.",
+    "Movement cannot enter old occupied cells or old heat above 1. All contenders for the same otherwise-free agent target remain in place.",
+    "Seedbeds lose health after fire update. Any zero-health bed causes failure; otherwise no fire causes success. At 144 steps an unfinished episode truncates.",
+    "Natural termination takes priority at the time limit. Ended raw states absorb; replay old events only once per episode, tick and slot.",
+    "All current state is public. Previous committed actions may be shown; never display another role's pending action or external reset key.",
+    "No rollout or rendered preview has occurred. This scene binds source state for a later trusted replay and supplies no canned successful trajectory."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      12.5,
+      10.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "solid stone wall",
+          "color": "#374151"
+        },
+        {
+          "value": 1,
+          "meaning": "flammable cuttable brush cell",
+          "color": "#4D7C0F"
+        },
+        {
+          "value": 2,
+          "meaning": "nonflammable path",
+          "color": "#D1D5DB"
+        },
+        {
+          "value": 3,
+          "meaning": "water refill well",
+          "color": "#38BDF8"
+        },
+        {
+          "value": 4,
+          "meaning": "repair-kit depot",
+          "color": "#A16207"
+        },
+        {
+          "value": 5,
+          "meaning": "fixed seedbed site; living health is an entity attribute",
+          "color": "#86EFAC"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "worker",
+      "label": "Sprayer / cutter / steward; actor ID and role category identify each",
+      "color": "#2563EB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "label": "0 sprayer; 1 cutter; 2 steward"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Actual carried water, 0..6; sprayer only"
+        },
+        {
+          "state_path": [
+            "repair_kits"
+          ],
+          "label": "Actual repair kits, 0..2; steward only"
+        },
+        {
+          "state_path": [
+            "tool_lock"
+          ],
+          "label": "One-step tool lock; movement still permitted"
+        },
+        {
+          "state_path": [
+            "last_actions"
+          ],
+          "label": "Last committed native action; no precommit visibility"
+        }
+      ]
+    },
+    {
+      "id": "seedbeds",
+      "glyph": "plant",
+      "label": "Living seedbeds; fixed ruined sites remain on map",
+      "color": "#22C55E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "seedbed_health"
+          ],
+          "label": "Remaining health 0..4; ruined sites remain marked by map tile"
+        }
+      ]
+    },
+    {
+      "id": "flames",
+      "glyph": "hazard",
+      "label": "Actual burning cells; heat bar is state intensity",
+      "color": "#F97316",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cell_heat"
+          ],
+          "label": "Actual heat 1..3 when active"
+        }
+      ]
+    },
+    {
+      "id": "brush",
+      "glyph": "plant",
+      "label": "Actual remaining brush fuel",
+      "color": "#4D7C0F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cell_fuel"
+          ],
+          "label": "Actual remaining brush fuel, 1..6 when active"
+        }
+      ]
+    },
+    {
+      "id": "wet_ground",
+      "glyph": "water",
+      "label": "Actual wet cells and remaining wetness",
+      "color": "#38BDF8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cell_wetness"
+          ],
+          "label": "Actual remaining wetness; disappearance follows integer decay"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_active"
+      ],
+      "meaning": "Active slots from the last non-absorbing transition; deduplicate by episode, event_tick and slot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_kind"
+      ],
+      "meaning": "Kind code describing the last committed transition event in each slot; see mechanism.md",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_value"
+      ],
+      "meaning": "Actual integer payload for each active event, including changes and gross repair/damage or capture progress",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_tick"
+      ],
+      "meaning": "Resulting tick per active event, -1 for inactive; not a counter that increments on redraw",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "t"
+      ],
+      "meaning": "Count of actual non-absorbing transitions",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint ending level; does not create another terminal event on absorbing calls",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "wind_direction"
+      ],
+      "meaning": "Current public wind 0 north,1 east,2 south,3 west",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "move north"
+    },
+    {
+      "id": 2,
+      "label": "move east"
+    },
+    {
+      "id": 3,
+      "label": "move south"
+    },
+    {
+      "id": 4,
+      "label": "move west"
+    },
+    {
+      "id": 5,
+      "label": "role tool north: sprayer spray / cutter cut / steward repair"
+    },
+    {
+      "id": 6,
+      "label": "role tool east: sprayer spray / cutter cut / steward repair"
+    },
+    {
+      "id": 7,
+      "label": "role tool south: sprayer spray / cutter cut / steward repair"
+    },
+    {
+      "id": 8,
+      "label": "role tool west: sprayer spray / cutter cut / steward repair"
+    },
+    {
+      "id": 9,
+      "label": "sprayer refill at well / steward restock at depot; cutter padding masked false"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1430
+      ],
+      "meaning": "board row-major [11,13,10]: wall indicator; brush indicator; path indicator; well indicator; depot indicator; seedbed indicator; fuel/6; heat/3; wetness/3; seedbed health/4 at B, else 0.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1430,
+        1457
+      ],
+      "meaning": "agent_table row-major [3,9]: row/10; column/12; role sprayer indicator; role cutter indicator; role steward indicator; water/6; repair kits/2; tool_lock; last_actions/9.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1457,
+        1468
+      ],
+      "meaning": "global row-major [11]: step_count/horizon; wind N; wind E; wind S; wind W; wind_phase/15; done; terminated; truncated; outcome as -1/0/1; episode_return.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1468,
+        1471
+      ],
+      "meaning": "One-hot observer actor ID.",
+      "visibility": "self"
+    }
+  ]
+}

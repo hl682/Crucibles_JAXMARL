@@ -1,0 +1,576 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "4ec20df24b7a26b841bd639502eb8b96fe327174700a07dba91360027cca04fb",
+  "manifest_sha256": "2176d7237b0a0a88b6a81bebc3c7a015ec2e4c7101cb112b0323bf31c1b1daf5",
+  "title": "Village Loom",
+  "rules": [
+    "Grow flax beside your own plot, cut it with a valid sickle, and gather dye berries. Each material inventory holds at most 2.",
+    "Reserve the spinner with 1 fiber, or the loom with 1 yarn and 1 dye while holding a valid shuttle. Each shared facility holds one job or one finished output.",
+    "A job needs 2 labor units. Commit beside its facility to work this step and the next; while committed, only Wait is legal.",
+    "Helpers can finish another makers reserved job. Only its owner collects the output: yarn at the spinner, cloth at the loom.",
+    "Starting a job consumes 1 machine condition. At zero condition work stalls. Spend 1 fiber beside a machine to restore up to 2 condition, capped at 3.",
+    "Sickle belongs to role 0 and shuttle to role 1. Owners may lend to an adjacent villager for 8 use steps. An expired tool stays physically with its holder but cannot be used by that borrower.",
+    "Return tools beside their owners. Owners may physically reclaim them from adjacent holders, including before a loan expires.",
+    "Give fiber, yarn or dye to an adjacent eligible villager. A handoff changes real inventories; it awards no artificial social score.",
+    "Sell cloth beside the market. Each of two personal orders earns 3 by your private deadline, otherwise 1. The fair closes at step 80.",
+    "Flax stalks, skeins, cloth, machine wear, busy workers and carried tools show actual state. Any legal human action sequence is accepted; scripted examples are unexecuted."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable village grass, garden plots and workshop paths",
+          "color": "#A7B682"
+        },
+        {
+          "value": 1,
+          "meaning": "Millpond edge: impassable water",
+          "color": "#598C9F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Village makers carrying flax, skeins and dyed cloth",
+      "color": "#B67B58",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fiber"
+          ],
+          "label": "Raw fiber"
+        },
+        {
+          "state_path": [
+            "yarn"
+          ],
+          "label": "Spun yarn"
+        },
+        {
+          "state_path": [
+            "dye"
+          ],
+          "label": "Dye berries"
+        },
+        {
+          "state_path": [
+            "cloth"
+          ],
+          "label": "Finished cloth"
+        },
+        {
+          "state_path": [
+            "seeds"
+          ],
+          "label": "Flax seed packets"
+        },
+        {
+          "state_path": [
+            "busy"
+          ],
+          "label": "Committed work steps remaining"
+        },
+        {
+          "state_path": [
+            "worksite"
+          ],
+          "label": "Worksite: -1 none,0 spinner,1 loom"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Personal orders delivered"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Order earnings"
+        }
+      ]
+    },
+    {
+      "id": "plot",
+      "glyph": "plant",
+      "label": "Flax beds with stalk growth and cut bundles",
+      "color": "#83A15D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "plot_stage"
+          ],
+          "label": "Flax: 0 bare,1 growing,2 ripe"
+        },
+        {
+          "state_path": [
+            "plot_clock"
+          ],
+          "label": "Growth steps remaining"
+        },
+        {
+          "state_path": [
+            "plot_yield"
+          ],
+          "label": "Fiber still in bed"
+        }
+      ]
+    },
+    {
+      "id": "facility",
+      "glyph": "tool",
+      "label": "Waterwheel spinner and timber weaving loom",
+      "color": "#9B7854",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Machine condition"
+        },
+        {
+          "state_path": [
+            "work_left"
+          ],
+          "label": "Labor units still required"
+        },
+        {
+          "state_path": [
+            "job_owner"
+          ],
+          "label": "Reserved maker: -1 idle, otherwise role"
+        },
+        {
+          "state_path": [
+            "output"
+          ],
+          "label": "Finished output waiting"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "glyph": "tool",
+      "label": "Owned sickle and shuttle, visibly carried or loaned",
+      "color": "#A8916E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_holder"
+          ],
+          "label": "Current holder role"
+        },
+        {
+          "state_path": [
+            "tool_owner"
+          ],
+          "label": "Original owner role"
+        },
+        {
+          "state_path": [
+            "loan_left"
+          ],
+          "label": "Borrowed-use steps remaining"
+        }
+      ]
+    },
+    {
+      "id": "dye",
+      "glyph": "plant",
+      "label": "Finite dye-berry hedge beside the millpond",
+      "color": "#996481",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "dye_stock"
+          ],
+          "label": "Dye berries remaining"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "glyph": "flag",
+      "label": "Village cloth fair with awning and folded bolts",
+      "color": "#BF8F58",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "e_move"
+      ],
+      "meaning": "Villager moved this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_cut"
+      ],
+      "meaning": "Fiber cut this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_gift"
+      ],
+      "meaning": "One-unit material handoff count by giver",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_sale"
+      ],
+      "meaning": "One cloth order delivered this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_pledge"
+      ],
+      "meaning": "Villager committed two labor steps",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_work"
+      ],
+      "meaning": "Actual labor units applied to each facility",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_complete"
+      ],
+      "meaning": "Facility finished its reserved job this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_repair"
+      ],
+      "meaning": "Facility repaired this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_loan"
+      ],
+      "meaning": "Tool lent this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_return"
+      ],
+      "meaning": "Tool returned or physically reclaimed this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; committed labor advances automatically"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Sow own adjacent flax plot"
+    },
+    {
+      "id": 6,
+      "label": "Cut own ripe flax using valid sickle"
+    },
+    {
+      "id": 7,
+      "label": "Gather adjacent dye berries"
+    },
+    {
+      "id": 8,
+      "label": "Reserve spinning job: 1 fiber"
+    },
+    {
+      "id": 9,
+      "label": "Reserve weaving job: 1 yarn, 1 dye, valid shuttle"
+    },
+    {
+      "id": 10,
+      "label": "Commit 2 work steps at adjacent active facility"
+    },
+    {
+      "id": 11,
+      "label": "Collect own completed workshop output"
+    },
+    {
+      "id": 12,
+      "label": "Repair adjacent facility: 1 fiber adds up to 2 condition"
+    },
+    {
+      "id": 13,
+      "label": "Lend owned sickle to adjacent lowest-index villager"
+    },
+    {
+      "id": 14,
+      "label": "Lend owned shuttle to adjacent lowest-index villager"
+    },
+    {
+      "id": 15,
+      "label": "Return borrowed tools to adjacent owners"
+    },
+    {
+      "id": 16,
+      "label": "Physically reclaim owned tools from adjacent holders"
+    },
+    {
+      "id": 17,
+      "label": "Give 1 fiber to eligible adjacent lowest-index villager"
+    },
+    {
+      "id": 18,
+      "label": "Give 1 yarn to eligible adjacent lowest-index villager"
+    },
+    {
+      "id": 19,
+      "label": "Give 1 dye to eligible adjacent lowest-index villager"
+    },
+    {
+      "id": 20,
+      "label": "Sell 1 cloth beside market for private order"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public t/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        7
+      ],
+      "meaning": "Villager x/8,y/8, roles 0..2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        10
+      ],
+      "meaning": "Fiber inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "Yarn inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "Dye inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        19
+      ],
+      "meaning": "Cloth inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        22
+      ],
+      "meaning": "Seed packets/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Committed labor steps/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Worksites plus 1 divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        31
+      ],
+      "meaning": "Personal order counts/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        34
+      ],
+      "meaning": "Flax stages/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Flax growth clocks/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Uncut flax yields/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        42
+      ],
+      "meaning": "Spinner/loom condition/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        44
+      ],
+      "meaning": "Spinner/loom labor remaining/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        46
+      ],
+      "meaning": "Job owners plus 1 divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        48
+      ],
+      "meaning": "Finished-output flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        50
+      ],
+      "meaning": "Sickle/shuttle holders plus 1 divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        52
+      ],
+      "meaning": "Sickle/shuttle loan-use steps/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        56
+      ],
+      "meaning": "Sickle/shuttle x/8,y/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "meaning": "Dye hedge stock/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        60
+      ],
+      "meaning": "Order scores/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        63
+      ],
+      "meaning": "Own role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        63,
+        64
+      ],
+      "meaning": "Own preferred delivery deadline/96; other deadlines withheld",
+      "visibility": "self"
+    }
+  ]
+}

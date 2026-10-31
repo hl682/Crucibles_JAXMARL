@@ -1,0 +1,724 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "50186c3827c2ed7b849f418b507321dc46a461cfea5019cfde89528c653d629b",
+  "manifest_sha256": "3c148bb60eadb22f7faca7c4f11cbb367566b5a912f65586adf66c3c420ec93f",
+  "title": "Meadow Rotations",
+  "rules": [
+    "Gates change real passage between three fenced meadows. Toggle from Manhattan distance at most one.",
+    "Herds move on even ticks toward visible grass or, when thirsty, a trough. They take one greedy legal step, not a hidden planned route.",
+    "A plot rests only with no herd within one cell. After two rest ticks it regenerates one grass per tick, up to six.",
+    "Hunger rises every two ticks and thirst every three. A herd eats only on a grass cell and drinks only on a trough.",
+    "Healthy fed herds produce one milk on every fourth tick, up to three stored. Carry one milk to the shared barn.",
+    "Every herd entry onto a gate consumes one condition. At zero the gate stays open until repaired and deliberately closed.",
+    "There is one bucket and one hammer. A held tool prevents carrying milk; drop tools for another shepherd to use.",
+    "Fill the bucket at the well and pour beside troughs. Repair with the hammer; spare board reloads at the barn are finite."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable village meadow ground",
+          "color": "#B5CD83"
+        },
+        {
+          "value": 1,
+          "meaning": "Fixed impassable fence",
+          "color": "#8C7054"
+        },
+        {
+          "value": 2,
+          "meaning": "Closed gate",
+          "color": "#A17E54"
+        },
+        {
+          "value": 3,
+          "meaning": "Open or worn-out gate",
+          "color": "#D4BA82"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "shepherds",
+      "glyph": "worker",
+      "label": "Village shepherds",
+      "color": "#DA8C55",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "toolcarry"
+          ],
+          "label": "toolcarry"
+        },
+        {
+          "state_path": [
+            "milkcargo"
+          ],
+          "label": "milkcargo"
+        },
+        {
+          "state_path": [
+            "milkowner"
+          ],
+          "label": "milkowner"
+        }
+      ]
+    },
+    {
+      "id": "herds",
+      "glyph": "circle",
+      "label": "Moving owned herds",
+      "color": "#F3E5C8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "herd_owner"
+          ],
+          "label": "herd owner"
+        },
+        {
+          "state_path": [
+            "hunger"
+          ],
+          "label": "hunger"
+        },
+        {
+          "state_path": [
+            "thirst"
+          ],
+          "label": "thirst"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "health"
+        },
+        {
+          "state_path": [
+            "milk"
+          ],
+          "label": "milk"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "glyph": "gate",
+      "label": "Repairable meadow gates",
+      "color": "#9B7850",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "gate open"
+        },
+        {
+          "state_path": [
+            "gate_wear"
+          ],
+          "label": "gate wear"
+        }
+      ]
+    },
+    {
+      "id": "meadows",
+      "glyph": "plant",
+      "label": "Regenerating grass patches",
+      "color": "#70A04A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "grass"
+          ],
+          "label": "grass"
+        },
+        {
+          "state_path": [
+            "rest"
+          ],
+          "label": "rest"
+        }
+      ]
+    },
+    {
+      "id": "troughs",
+      "glyph": "water",
+      "label": "Shared water troughs",
+      "color": "#69A7B2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "water"
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "glyph": "tool",
+      "label": "One bucket and one repair hammer",
+      "color": "#C4A064",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_kind"
+          ],
+          "label": "tool kind"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "holder"
+        },
+        {
+          "state_path": [
+            "charge"
+          ],
+          "label": "charge"
+        }
+      ]
+    },
+    {
+      "id": "village",
+      "glyph": "square",
+      "label": "Well and collection barn",
+      "color": "#B98F6A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "facility_kind"
+          ],
+          "label": "facility kind"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "gate_changed"
+      ],
+      "meaning": "Gate toggle during this step; not a persistent open-state event.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "herd_moved"
+      ],
+      "meaning": "Per-herd movement this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fed"
+      ],
+      "meaning": "Per-herd consumption of a grass portion this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "drank"
+      ],
+      "meaning": "Per-herd consumption of one trough serving this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "produced"
+      ],
+      "meaning": "Per-herd new milk portion this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Produce delivered this step by original herd owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "watered"
+      ],
+      "meaning": "A trough received bucket water this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "repaired"
+      ],
+      "meaning": "A gate received hammer repairs this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "milk_generated"
+      ],
+      "meaning": "Cumulative milk production per herd.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Toggle an adjacent gate with positive condition"
+    },
+    {
+      "id": 6,
+      "label": "Repair adjacent gate with charged held hammer"
+    },
+    {
+      "id": 7,
+      "label": "Collect one nearby herd milk portion with empty hands"
+    },
+    {
+      "id": 8,
+      "label": "Deliver held milk at barn (4,6)"
+    },
+    {
+      "id": 9,
+      "label": "Take tool on own cell or put held tool on an unoccupied tool cell"
+    },
+    {
+      "id": 10,
+      "label": "Fill held bucket at well (0,3), or load held hammer boards at barn"
+    },
+    {
+      "id": 11,
+      "label": "Pour held bucket into adjacent nonfull trough"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot in declared role order.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "t: Nonterminal clock, frozen after joint terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "done: Joint terminal latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "terminated: Natural cause latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "truncated: Cap-only latch, excluding natural termination. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        70
+      ],
+      "meaning": "tiles: Actual y-major terrain codes; see tile legend. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        76
+      ],
+      "meaning": "agent_pos: Agent [x,y] coordinates in role order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "agent_active: All roles remain present through joint terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        82
+      ],
+      "meaning": "toolcarry: -1 empty, 0 bucket, 1 hammer. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        85
+      ],
+      "meaning": "milkcargo: 0 or 1 milk portion in the agent's carrying slot. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        88
+      ],
+      "meaning": "milkowner: Herd-owner role of carried milk, -1 when empty. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        88,
+        94
+      ],
+      "meaning": "herd_pos: Actual herd [x,y] in herd order 0,1,2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "herd_active: Native herd active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        100
+      ],
+      "meaning": "herd_owner: Fixed herd owners 0,1,2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        103
+      ],
+      "meaning": "hunger: Hunger in 0..8; grows on even resulting t, feeding removes up to 3. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        106
+      ],
+      "meaning": "thirst: Thirst in 0..8; grows every third resulting t, drinking removes up to 4. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        109
+      ],
+      "meaning": "health: Health 0..3; care ticks at t divisible by 4 reduce it when a need is 8. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        109,
+        112
+      ],
+      "meaning": "milk: Stored milk 0..3 per herd. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        112,
+        120
+      ],
+      "meaning": "gate_pos: Gates (3,2),(6,4),(3,5),(6,1), in that order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        124
+      ],
+      "meaning": "gate_active: Native gate active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        128
+      ],
+      "meaning": "gate_open: Open state; condition zero forces open until repaired and toggled closed. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        132
+      ],
+      "meaning": "gate_wear: Remaining condition 0..6; herd entry costs one. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        144
+      ],
+      "meaning": "plot_pos: Actual grass patch centers in west-top, west-bottom, central-top, central-bottom, east-top, east-bottom order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        150
+      ],
+      "meaning": "plot_active: Native plot active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        156
+      ],
+      "meaning": "grass: Available grass portions 0..6. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        162
+      ],
+      "meaning": "rest: Unoccupied Manhattan-one neighborhood ticks, capped at two; saturated rest allows one regrowth per subsequent tick. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        166
+      ],
+      "meaning": "trough_pos: Actual trough [x,y] in west/east order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        166,
+        168
+      ],
+      "meaning": "trough_active: Native trough active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        170
+      ],
+      "meaning": "water: Available water portions 0..6 per trough. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        170,
+        174
+      ],
+      "meaning": "tool_pos: Actual bucket and hammer positions; held tools follow agents. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        174,
+        176
+      ],
+      "meaning": "tool_active: Native tool active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        176,
+        178
+      ],
+      "meaning": "tool_kind: 0 bucket, 1 hammer. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        178,
+        180
+      ],
+      "meaning": "holder: -1 loose tool; otherwise holder agent 0..2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        180,
+        182
+      ],
+      "meaning": "charge: Bucket water and hammer board charges, each 0..3. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        182,
+        186
+      ],
+      "meaning": "facility_pos: Well then barn [x,y]. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        186,
+        188
+      ],
+      "meaning": "facility_active: Native facility active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        188,
+        190
+      ],
+      "meaning": "facility_kind: 0 well, 1 barn. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        190,
+        191
+      ],
+      "meaning": "boards: Finite spare boards at barn, initially three. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        191,
+        194
+      ],
+      "meaning": "delivered: Cumulative deliveries credited to original owners. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        194,
+        198
+      ],
+      "meaning": "gate_changed: Per-gate toggle this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        198,
+        201
+      ],
+      "meaning": "herd_moved: Per-herd actual coordinate change this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        201,
+        204
+      ],
+      "meaning": "fed: Per-herd grass consumed this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        204,
+        207
+      ],
+      "meaning": "drank: Per-herd trough serving consumed this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        210
+      ],
+      "meaning": "produced: Per-herd milk generated this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        210,
+        213
+      ],
+      "meaning": "delivered_now: Deliveries this step, credited to original owners. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        213,
+        215
+      ],
+      "meaning": "watered: Per-trough bucket delivery this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        215,
+        219
+      ],
+      "meaning": "repaired: Per-gate repair this step. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        219,
+        222
+      ],
+      "meaning": "milk_generated: Cumulative production per herd, accounting for all stored, carried and delivered milk. Flattened row-major.",
+      "visibility": "public"
+    }
+  ]
+}

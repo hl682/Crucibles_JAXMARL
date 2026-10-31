@@ -1,0 +1,2128 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skyline Lunch Lifts · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI249 / SPATIAL</p><h1>Skyline Lunch Lifts</h1><p class="lead"></p><div class="stats"><span>20 agents</span><span>20 actions</span><span>196 observation columns</span><span>640 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 249</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Serve six correct recipes at each of five kitchens, using finite pantry stock and shared lifts while controlling spoilage and power use.&quot;,
+  &quot;natural_termination&quot;: &quot;Joint natural completion when all five kitchen delivery counters reach six. Otherwise H=640 ends the shift; all twenty cooks remain active until joint completion.&quot;,
+  &quot;interaction&quot;: &quot;Loading opens a real landing barrier that a different cook must secure. Freezers share paired-floor power with ovens and lift departures. Items, tickets, hot meals and dirty dishes physically travel in hands or lift cabins.&quot;,
+  &quot;observation_access&quot;: &quot;The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 2. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>20 independent cooks work on five connected floors. The left stairwell connects floors; two lifts transport one physical item each.</li><li>Raw ingredients are chopped, placed in an oven, collected after its timer reaches zero, and served only when their recipe matches the local ticket.</li><li>Loading or unloading opens the lift barrier. A different cook must secure it before departure; the open barrier also blocks entry to that cabin square.</li><li>Two neighboring kitchens share a circuit. Freezers prevent aging but reduce oven speed and can prevent lift departures.</li><li>Every served meal becomes a dirty dish in the server hand. Sinks empty carried dishes and clear local dish backlog.</li><li>Ticket knowledge may be carried or signaled locally. Two consenting neighboring cooks may hand an item, its recipe and age to one another.</li><li>This original kitchen uses warm counters, colored workers and steel lifts. Human control and replay must use these native transitions; none has been executed here.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Skyline Lunch Lifts
+
+Status: AUTHORED_NOT_EXECUTED. Initial parentless train candidate; feedback_used=0; source_attempt=0; final_test_used=false.
+
+Native A/O/U/H = 20/196/20/640. Source SHA-256: `d43097c9332aa5d61174c002bd33b649d88c7994e0dae8a761c0b93d1a038e58`.
+
+## Physical world and roles
+
+Twenty independently controlled cooks occupy five four-person kitchens in a 15 by 25 building. Floor f occupies y=5*f..5*f+4. The final row of each floor is a wall except the x=0 staircase. Relative stations are pantry (1,1), board (3,1), oven (4,3), freezer (5,1), counter (11,1), sink (11,3). Lift columns x=6 and x=8 have landing y=5*f+2. Each has one real cabin with item, recipe and age; cooks themselves use the staircase. Broad squares allow cooks to stand together.
+
+## Actions and timing
+
+- 0 waits. 1..4 move within bounds and around floor walls. The resulting lift barrier can additionally prevent entry to its cabin square.
+- 5 takes the current local recipe raw ingredient near a pantry, if empty-handed and stock remains. 6 chops raw food near a board. 7 deposits chopped food in an empty adjacent oven or collects a ready meal into an empty hand.
+- 8 loads an empty nearby stationary lift and opens its barrier. 9 secures only if the actor differs from its last loader/unloader. 10/11 request travel one floor higher/lower with the secured barrier shut and circuit capacity at least two; a simultaneous freezer toggle can prevent the request.
+- 12 unloads a nearby stationary lift into an empty hand and reopens its barrier. Food recipe and age travel with the physical item.
+- 13 toggles a nearby freezer. Floors 0/1 share one circuit, 2/3 another, and 4 its own. Capacity is 3 minus enabled freezers in that circuit. Ovens advance by min(capacity,2); lift departures need capacity&gt;=2.
+- 14 serves matching cooked food near the counter, turning it into a dirty dish in the server hand. 15 washes a carried dish or reduces local cleanup backlog near a sink. Backlog is a service-cleanup level, not another physical dish object.
+- 16 exchanges item, recipe and age when adjacent consenting actors form a reciprocal pair and exactly one hand is empty. 17 signals a cached recipe. 18 reads and carries the counter ticket when empty-handed or already carrying a ticket. 19 discards an item for a personal cost.
+
+Masks use the pre-state. Each pantry, oven, counter or lift interaction accepts the smallest actor ID. Freezer toggles set this tick power. Ovens update, then lift loading/unloading/securing/departure resolves. A departing lift takes three later raw transitions to arrive; until then its actual origin coordinate and travel countdown remain visible. Movement uses the resulting barrier. Handoffs, service, cleaning, messages and aging follow. Food spoils at age 32 into a dirty dish; rotten oven food is removed. Successful service alternates that local ticket between recipes 1 and 2. Lift direction and occupancy cannot be independently invented by a renderer.
+
+## Rewards and completion
+
+Each cook pays -0.005 per accepted non-wait action, -0.3 when its carried food spoils, -0.05 for discard, and -0.002 while its affiliated kitchen freezer is on. A matching delivery pays all four affiliated cooks 0.2*(32-meal_age)/32, with nonnegative quality. Every one of the twenty cooks also receives +0.01 per counter served that step. This explicitly separates personal waste, affiliated power cost, kitchen service and shared customer benefit. Conservative per-step bounds are [-2,2]. Washing provides empty hands and cleanup without a repeatable shaping bonus.
+
+Natural completion occurs when each of the five delivery counters reaches six; otherwise the shift ends at H=640. All twenty roles remain active until joint completion.
+
+## Dependence and strategies
+
+One schedule can batch secured freight trips and return dirty dishes; another sends stair runners to avoid contention at additional time and aging cost. Keeping neighboring freezers on preserves ingredients but can halt departures. Kitchens may help a rival secure a load, prioritize old meals or stagger power switches. These alternatives are encoded choices, not results from human or policy evaluation.
+
+## Interface, boundaries and completion
+
+The native boundary is reset(key), raw_step(key,state,actions), observe(state), and legal_actions(state). State is a fixed-key dictionary of fixed-shape int32/bool arrays. Observation and reward are float32. Every role has an action, observation, reward and done row. All out-of-range or masked actions deterministically become wait. A legal intention may still lose a simultaneous contest. Entity caps are fixed; no hidden controllers, callbacks, file access or global cache exists.
+
+A nonterminal raw call advances t exactly once. Natural completion has priority when it coincides with H. `truncated=(t&gt;=H)&amp;~terminated`, `done_all=terminated|truncated`, and every individual done equals joint done. Already-terminal input is absorbing: preserve state, observation, clock and cause; return zero rewards and all dones true. Raw auto-reset never occurs. Event flags describe the last actual transition and remain unchanged under absorbing calls; a renderer must not replay them as new events.
+
+## Exact observation and presentation contract
+
+The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.
+
+Every non-padding column has its own exact slice and meaning in `manifest.json:observation_fields`. Entity slots encode `[visible, entity_id, absolute_x, absolute_y, declared attributes...]`; a hidden slot is entirely -1. Sorting is ascending Manhattan distance, then entity ID. No value is normalized. Observations are float32 and conservatively bounded [-1,2048]. Explicit padding is zero. Each group visibility mask equals the selected local slots; actor masks additionally include the selected self, whose full attributes are in its self block.
+
+- self: [0, 12] end-exclusive; id, team, x, y, item, recipe, age, knowledge, message, event, recipient, spoil.
+- cooks: [12, 108] end-exclusive; visible, entity_id, x, y, team, item, recipe, age, message, event, recipient, spoil.
+- kitchens: [108, 144] end-exclusive; visible, entity_id, x, y, freezer, pot_recipe, pot_time, pot_age, order, stock, delivered, dirty.
+- lifts: [144, 168] end-exclusive; visible, entity_id, x, y, lift_item, lift_recipe, lift_age, barrier, secured, loader, target, travel.
+- map_patch: [168, 193] end-exclusive; 5x5 row-major dy=-2..2, dx=-2..2.
+
+The scene is safe declarative data with exact source and manifest hashes. Actual state coordinates, active masks, local visibility, resource levels, carried items and events determine drawing. Private forecasts are not exposed by a global scene HUD. Event vectors inherit their owning entity mask; full-state debugging is a separate labeled view. Static map layout is public. No narrative text substitutes for a transition. Every individual ID and affiliation is listed in the manifest.
+
+## Human control and unexecuted scripts
+
+A presentation layer should distinguish Enter game from Watch replay, offer native legal actions and pause/step, focus any actor/affiliation, and stage an arbitrary joint-action vector. A human can control one or many native rows; human participant count is not the role count. Human and policy decisions must call the same raw kernel. These files are interface metadata, not a claim that a browser UI, native animation or human session has been run.
+
+- `two_cook_freight_handoff`: 9 literal joint vectors. Cook 2 loads lift 0, cook 1 secures, cook 2 dispatches to floor 1, cook 6 unloads, cook 5 secures the empty cab.
+- `prepare_serve_and_wash`: 18 literal joint vectors. Cook 0 chops and deposits initial order-matched food; cook 1 collects, carries and serves it, then washes the resulting dish.
+- Paired `different_cook_secures_load`: 1 shared prefix vectors; 2 per suffix; exactly one scalar action differs. Securing by cook 1 should close the barrier and enable cook 2 departure affordance. Waiting leaves the same load unsecured. Compare state and actor-2 mask without forcing an illegal departure; unexecuted.
+
+The scripts are source-reasoned hypotheses, not runtime legality receipts, success trajectories, solvability certificates or effect estimates. Identical reset and step keys are required for paired replay.
+
+## Literal source evidence
+
+- `candidate.py:30`: `def reset(self, key):`; definition ends at line 68.
+- `candidate.py:83`: `def legal_actions(self, s):`; definition ends at line 101.
+- `candidate.py:103`: `def advance(self, key, s, actions):`; definition ends at line 212.
+- `candidate.py:214`: `def raw_step(self, key, state, actions):`; definition ends at line 217.
+- `candidate.py:225`: `def observe(self, s):`; definition ends at line 235.
+- `candidate.py:108`: `# Each station or lift accepts at most one actor, lowest ID first.`.
+- `candidate.py:135`: `# Loading opens a physical barrier. A different actor must secure the crate.`.
+- `candidate.py:166`: `# A reciprocal handoff transfers an item and its age, never duplicates it.`.
+- `candidate.py:194`: `spoil = (age &gt;= 32) &amp; (item &gt;= 1) &amp; (item &lt;= 3)`.
+- `candidate.py:203`: `reward = -0.005 * (a != 0) - 0.3 * spoil - 0.05 * (a == 19) + 0.2 * quality[s[&#x27;team&#x27;]] * served[s[&#x27;team&#x27;]] + 0.01 * jnp.sum(served) - 0.002 * freezer[s[&#x27;team&#x27;]]`.
+
+## Provenance, adaptations and limits
+
+`author_input_freeze.json` records all 25 actual allowed input files with absolute path, relative name, byte length, SHA-256 and use. Tool output could be excerpted; the freeze does not claim unseen content was semantically read. Only current 248-251 request/design and population/family251 control. Removed historical194 was not searched. No earlier candidate, result, heldout, memory or other coordination input was used. The batch contains only four already reserved IDs within the user cumulative 300-game ceiling.
+
+The supplied JaxMARL README informed parallel per-agent adapter expectations, including observation/action/reward/done dictionaries and `__all__`. This author supplies the native flat kernel; an external adapter is neither fabricated nor a change to the frozen learner. Pgx informed explicit masks and functional game-state presentation. Craftax informed the broad material/world-modification category. PureJaxRL and the supplied Craftax_Baselines PPO-RNN source were read only as integration/training context, not new game libraries, replacement learners or evidence of these games performance. No upstream code or commercial assets were copied. The four visual families remain independent.
+
+Representation adaptations: small integers are losslessly int32; refresh explicitly normalizes integer leaves even if a later process enables JAX x64; bool leaves remain bool; observations/rewards explicitly cast float32; the supplied uint32 key is not duplicated in state. Static Python loops only traverse fixed field-name tuples. Intended JIT/vmap/scan compatibility requires later sealed execution.
+
+No candidate/JAX/NumPy/PRNG, policy, training, throughput, browser or human-play execution occurred. Native/R0 acceptance, parity, resource use, deterministic replay, paired causal outcomes, rendered animation, solvability, strategic richness, learning and transfer remain UNKNOWN. Human-playability score is unmeasured. Negative, zero, failed and inconclusive outcomes must be preserved. This author produces no runtime/resource/release/native/PID/human receipt. After the final seven SHA-256 hashes are reported, this attempt is frozen; repairs require a separate dispatch.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>North</span></div><div class="action"><b>2</b><span>East</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>West</span></div><div class="action"><b>5</b><span>Take pantry ingredient</span></div><div class="action"><b>6</b><span>Chop ingredient</span></div><div class="action"><b>7</b><span>Load or collect oven</span></div><div class="action"><b>8</b><span>Load lift</span></div><div class="action"><b>9</b><span>Secure another cook load</span></div><div class="action"><b>10</b><span>Lift to next floor</span></div><div class="action"><b>11</b><span>Lift to previous floor</span></div><div class="action"><b>12</b><span>Unload lift</span></div><div class="action"><b>13</b><span>Toggle freezer</span></div><div class="action"><b>14</b><span>Serve matching meal</span></div><div class="action"><b>15</b><span>Wash dishes</span></div><div class="action"><b>16</b><span>Offer handoff</span></div><div class="action"><b>17</b><span>Signal recipe</span></div><div class="action"><b>18</b><span>Read and carry ticket</span></div><div class="action"><b>19</b><span>Discard carried item</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> kitchen 0: prep cook; independently controllable</p><p><b>agent_1</b> kitchen 0: oven cook; independently controllable</p><p><b>agent_2</b> kitchen 0: freight cook; independently controllable</p><p><b>agent_3</b> kitchen 0: ticket courier; independently controllable</p><p><b>agent_4</b> kitchen 1: prep cook; independently controllable</p><p><b>agent_5</b> kitchen 1: oven cook; independently controllable</p><p><b>agent_6</b> kitchen 1: freight cook; independently controllable</p><p><b>agent_7</b> kitchen 1: ticket courier; independently controllable</p><p><b>agent_8</b> kitchen 2: prep cook; independently controllable</p><p><b>agent_9</b> kitchen 2: oven cook; independently controllable</p><p><b>agent_10</b> kitchen 2: freight cook; independently controllable</p><p><b>agent_11</b> kitchen 2: ticket courier; independently controllable</p><p><b>agent_12</b> kitchen 3: prep cook; independently controllable</p><p><b>agent_13</b> kitchen 3: oven cook; independently controllable</p><p><b>agent_14</b> kitchen 3: freight cook; independently controllable</p><p><b>agent_15</b> kitchen 3: ticket courier; independently controllable</p><p><b>agent_16</b> kitchen 4: prep cook; independently controllable</p><p><b>agent_17</b> kitchen 4: oven cook; independently controllable</p><p><b>agent_18</b> kitchen 4: freight cook; independently controllable</p><p><b>agent_19</b> kitchen 4: ticket courier; independently controllable</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;name&quot;: &quot;self.id&quot;,
+    &quot;meaning&quot;: &quot;native zero-based actor ID&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;name&quot;: &quot;self.team&quot;,
+    &quot;meaning&quot;: &quot;kitchen affiliation 0..4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;name&quot;: &quot;self.x&quot;,
+    &quot;meaning&quot;: &quot;absolute grid x coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;name&quot;: &quot;self.y&quot;,
+    &quot;meaning&quot;: &quot;absolute grid y coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;name&quot;: &quot;self.item&quot;,
+    &quot;meaning&quot;: &quot;carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;name&quot;: &quot;self.recipe&quot;,
+    &quot;meaning&quot;: &quot;recipe ID 1 or 2; empty-hand residue has no item&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;name&quot;: &quot;self.age&quot;,
+    &quot;meaning&quot;: &quot;item age 0..32&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;name&quot;: &quot;self.knowledge&quot;,
+    &quot;meaning&quot;: &quot;private cached recipe 0 unknown or 1/2; may be stale&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      9
+    ],
+    &quot;name&quot;: &quot;self.message&quot;,
+    &quot;meaning&quot;: &quot;current local message, zero means silence&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      10
+    ],
+    &quot;name&quot;: &quot;self.event&quot;,
+    &quot;meaning&quot;: &quot;accepted action code for the last actual transition; not a success flag&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      11
+    ],
+    &quot;name&quot;: &quot;self.recipient&quot;,
+    &quot;meaning&quot;: &quot;consenting handoff/tool-exchange counterpart ID or -1&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      12
+    ],
+    &quot;name&quot;: &quot;self.spoil&quot;,
+    &quot;meaning&quot;: &quot;carried food spoiled in last transition&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      13
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      14
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      15
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      16
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      16,
+      17
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      17,
+      18
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      19
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      19,
+      20
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      20,
+      21
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      21,
+      22
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      22,
+      23
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      23,
+      24
+    ],
+    &quot;name&quot;: &quot;cooks.slot0.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 0: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      24,
+      25
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      25,
+      26
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      26,
+      27
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      27,
+      28
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      28,
+      29
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      29,
+      30
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      30,
+      31
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      31,
+      32
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      32,
+      33
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      33,
+      34
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      34,
+      35
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      35,
+      36
+    ],
+    &quot;name&quot;: &quot;cooks.slot1.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 1: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      36,
+      37
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      37,
+      38
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      38,
+      39
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      39,
+      40
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      40,
+      41
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      41,
+      42
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      42,
+      43
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      43,
+      44
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      44,
+      45
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      45,
+      46
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      46,
+      47
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      47,
+      48
+    ],
+    &quot;name&quot;: &quot;cooks.slot2.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 2: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      48,
+      49
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      49,
+      50
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      50,
+      51
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      51,
+      52
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      52,
+      53
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      54
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      54,
+      55
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      55,
+      56
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      56,
+      57
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      57,
+      58
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      58,
+      59
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      59,
+      60
+    ],
+    &quot;name&quot;: &quot;cooks.slot3.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 3: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      60,
+      61
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      61,
+      62
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      62,
+      63
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      63,
+      64
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      64,
+      65
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      65,
+      66
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      66,
+      67
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      67,
+      68
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      68,
+      69
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      69,
+      70
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      70,
+      71
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      71,
+      72
+    ],
+    &quot;name&quot;: &quot;cooks.slot4.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 4: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      72,
+      73
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      73,
+      74
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      75
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      75,
+      76
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      76,
+      77
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      77,
+      78
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      78,
+      79
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      79,
+      80
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      80,
+      81
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      81,
+      82
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      82,
+      83
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      83,
+      84
+    ],
+    &quot;name&quot;: &quot;cooks.slot5.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 5: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      84,
+      85
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      85,
+      86
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      86,
+      87
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      87,
+      88
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      88,
+      89
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      89,
+      90
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      90,
+      91
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      91,
+      92
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      92,
+      93
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      93,
+      94
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      94,
+      95
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      95,
+      96
+    ],
+    &quot;name&quot;: &quot;cooks.slot6.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 6: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      96,
+      97
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.visible&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      97,
+      98
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: zero-based entity ID within this group. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      98,
+      99
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.x&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: absolute grid x. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      99,
+      100
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.y&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: absolute grid y. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      100,
+      101
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.team&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: kitchen affiliation 0..4. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      101,
+      102
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.item&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      102,
+      103
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.recipe&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: recipe ID 1 or 2; empty-hand residue has no item. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      103,
+      104
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.age&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: item age 0..32. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      104,
+      105
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.message&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: current local message, zero means silence. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      105,
+      106
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.event&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: accepted action code for the last actual transition; not a success flag. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      106,
+      107
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.recipient&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: consenting handoff/tool-exchange counterpart ID or -1. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      107,
+      108
+    ],
+    &quot;name&quot;: &quot;cooks.slot7.spoil&quot;,
+    &quot;meaning&quot;: &quot;cooks, nearest slot 7: carried food spoiled in last transition. Manhattan radius 3; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      108,
+      109
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      109,
+      110
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      110,
+      111
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      111,
+      112
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      112,
+      113
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.freezer&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: floor freezer enabled. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      113,
+      114
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.pot_recipe&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: oven contents recipe, zero empty. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      114,
+      115
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.pot_time&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: oven time remaining 0..4. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      115,
+      116
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.pot_age&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: oven food age 0..32. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      116,
+      117
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.order&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: current counter recipe 1 or 2. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      117,
+      118
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.stock&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: remaining raw pantry stock. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      118,
+      119
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.delivered&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: cumulative local delivered units. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      119,
+      120
+    ],
+    &quot;name&quot;: &quot;kitchens.slot0.dirty&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 0: local dirty-dish backlog 0..20. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      120,
+      121
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      121,
+      122
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      122,
+      123
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      123,
+      124
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      124,
+      125
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.freezer&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: floor freezer enabled. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      125,
+      126
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.pot_recipe&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: oven contents recipe, zero empty. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      126,
+      127
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.pot_time&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: oven time remaining 0..4. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      127,
+      128
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.pot_age&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: oven food age 0..32. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      128,
+      129
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.order&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: current counter recipe 1 or 2. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      129,
+      130
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.stock&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: remaining raw pantry stock. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      130,
+      131
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.delivered&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: cumulative local delivered units. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      131,
+      132
+    ],
+    &quot;name&quot;: &quot;kitchens.slot1.dirty&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 1: local dirty-dish backlog 0..20. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      132,
+      133
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      133,
+      134
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: zero-based entity ID within this group. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      134,
+      135
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: absolute grid x. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      135,
+      136
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: absolute grid y. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      136,
+      137
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.freezer&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: floor freezer enabled. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      137,
+      138
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.pot_recipe&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: oven contents recipe, zero empty. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      138,
+      139
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.pot_time&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: oven time remaining 0..4. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      139,
+      140
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.pot_age&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: oven food age 0..32. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      140,
+      141
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.order&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: current counter recipe 1 or 2. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      141,
+      142
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.stock&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: remaining raw pantry stock. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      142,
+      143
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.delivered&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: cumulative local delivered units. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      143,
+      144
+    ],
+    &quot;name&quot;: &quot;kitchens.slot2.dirty&quot;,
+    &quot;meaning&quot;: &quot;kitchens, nearest slot 2: local dirty-dish backlog 0..20. Manhattan radius 6; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      144,
+      145
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      145,
+      146
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      146,
+      147
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      147,
+      148
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      148,
+      149
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.lift_item&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: cab item: same codes as carried item. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      149,
+      150
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.lift_recipe&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: cab recipe ID. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      150,
+      151
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.lift_age&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: cab food age 0..32. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      151,
+      152
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.barrier&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: landing safety barrier open and blocks entry. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      152,
+      153
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.secured&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: cab load secured by another cook. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      153,
+      154
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.loader&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: most recent loader/unloader actor ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      154,
+      155
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.target&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: destination floor 0..4. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      155,
+      156
+    ],
+    &quot;name&quot;: &quot;lifts.slot0.travel&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 0: remaining transit ticks 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      156,
+      157
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      157,
+      158
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: zero-based entity ID within this group. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      158,
+      159
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: absolute grid x. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      159,
+      160
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: absolute grid y. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      160,
+      161
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.lift_item&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: cab item: same codes as carried item. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      161,
+      162
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.lift_recipe&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: cab recipe ID. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      162,
+      163
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.lift_age&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: cab food age 0..32. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      163,
+      164
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.barrier&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: landing safety barrier open and blocks entry. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      164,
+      165
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.secured&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: cab load secured by another cook. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      165,
+      166
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.loader&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: most recent loader/unloader actor ID or -1. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      166,
+      167
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.target&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: destination floor 0..4. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      167,
+      168
+    ],
+    &quot;name&quot;: &quot;lifts.slot1.travel&quot;,
+    &quot;meaning&quot;: &quot;lifts, nearest slot 1: remaining transit ticks 0..3. Manhattan radius 4; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      168,
+      169
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      169,
+      170
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      170,
+      171
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      171,
+      172
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      172,
+      173
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      173,
+      174
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      174,
+      175
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      175,
+      176
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      176,
+      177
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      177,
+      178
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      178,
+      179
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      179,
+      180
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      180,
+      181
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      181,
+      182
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      182,
+      183
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      183,
+      184
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      184,
+      185
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      185,
+      186
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      186,
+      187
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      187,
+      188
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      188,
+      189
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      189,
+      190
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      190,
+      191
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      191,
+      192
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      192,
+      193
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      193,
+      194
+    ],
+    &quot;name&quot;: &quot;public.t&quot;,
+    &quot;meaning&quot;: &quot;completed native transition count&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      194,
+      195
+    ],
+    &quot;name&quot;: &quot;public.done&quot;,
+    &quot;meaning&quot;: &quot;joint episode completion&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      195,
+      196
+    ],
+    &quot;name&quot;: &quot;public.terminated&quot;,
+    &quot;meaning&quot;: &quot;natural completion cause&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;cooks&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 20,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;actor_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;kitchen affiliation 0..4&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;item&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried item: 0 empty,1 raw,2 chopped,3 meal,4 dirty dish,5 ticket&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;recipe ID 1 or 2; empty-hand residue has no item&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;age&quot;
+        ],
+        &quot;meaning&quot;: &quot;item age 0..32&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;current local message, zero means silence&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;event&quot;
+        ],
+        &quot;meaning&quot;: &quot;accepted action code for the last actual transition; not a success flag&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;recipient&quot;
+        ],
+        &quot;meaning&quot;: &quot;consenting handoff/tool-exchange counterpart ID or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;spoil&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried food spoiled in last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;kitchens&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 5,
+    &quot;position&quot;: [
+      &quot;kitchen_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;kitchen_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;kitchen_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;freezer&quot;
+        ],
+        &quot;meaning&quot;: &quot;floor freezer enabled&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pot_recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;oven contents recipe, zero empty&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pot_time&quot;
+        ],
+        &quot;meaning&quot;: &quot;oven time remaining 0..4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pot_age&quot;
+        ],
+        &quot;meaning&quot;: &quot;oven food age 0..32&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;order&quot;
+        ],
+        &quot;meaning&quot;: &quot;current counter recipe 1 or 2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;remaining raw pantry stock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;cumulative local delivered units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;dirty&quot;
+        ],
+        &quot;meaning&quot;: &quot;local dirty-dish backlog 0..20&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;lifts&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;lift_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;lift_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;lift_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;lift_item&quot;
+        ],
+        &quot;meaning&quot;: &quot;cab item: same codes as carried item&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;lift_recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;cab recipe ID&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;lift_age&quot;
+        ],
+        &quot;meaning&quot;: &quot;cab food age 0..32&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;barrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;landing safety barrier open and blocks entry&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;secured&quot;
+        ],
+        &quot;meaning&quot;: &quot;cab load secured by another cook&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;loader&quot;
+        ],
+        &quot;meaning&quot;: &quot;most recent loader/unloader actor ID or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;target&quot;
+        ],
+        &quot;meaning&quot;: &quot;destination floor 0..4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;travel&quot;
+        ],
+        &quot;meaning&quot;: &quot;remaining transit ticks 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 249,
+  &quot;key&quot;: &quot;gi249&quot;,
+  &quot;title&quot;: &quot;Skyline Lunch Lifts&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 20,
+    &quot;observation_size&quot;: 196,
+    &quot;num_actions&quot;: 20,
+    &quot;max_steps&quot;: 640
+  },
+  &quot;source_sha256&quot;: &quot;d43097c9332aa5d61174c002bd33b649d88c7994e0dae8a761c0b93d1a038e58&quot;,
+  &quot;manifest_sha256&quot;: &quot;b876d1a77a5ac7e59fbdd20ffdaa4b28e366a8b7ebbbef64cd754eb74c5ea7d2&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;d43097c9332aa5d61174c002bd33b649d88c7994e0dae8a761c0b93d1a038e58&quot;,
+      &quot;bytes&quot;: 16023,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00249/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;b876d1a77a5ac7e59fbdd20ffdaa4b28e366a8b7ebbbef64cd754eb74c5ea7d2&quot;,
+      &quot;bytes&quot;: 72520,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00249/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;82370dec46e332b9c02f796afb0979004b4a399495c7e75f4b9349c5a3920824&quot;,
+      &quot;bytes&quot;: 60076,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00249/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;b5b55cca93d66b2a2388c438adb69508ea8ecf24a8dac16fd850d9b25de03a54&quot;,
+      &quot;bytes&quot;: 12112,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00249/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;25bae489dfa1d495acf131de345a94d1678d474aa589c50686ecb785922c96e9&quot;,
+      &quot;bytes&quot;: 11438,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00249/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi249">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

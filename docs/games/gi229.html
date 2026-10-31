@@ -1,0 +1,437 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>节庆蒸汽厨房 · Festival Steam Kitchens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI229 / SPATIAL</p><h1>节庆蒸汽厨房 · Festival Steam Kitchens</h1><p class="lead">24角色的蒸汽双缓冲厨房保存回放；修复已观察cart与角色同格时的绘制遗漏。</p><div class="stats"><span>24 agents</span><span>23 actions</span><span>160 observation columns</span><span>512 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi229.gif" alt="Original saved demonstration gi229"></section><section><h2>Run this game</h2><pre>crucibles play --game 229</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Serve two orders from each of six kitchens using cooked, cooled food and physically recycled plates.&quot;,
+  &quot;natural_termination&quot;: &quot;Terminate once all six served counters reach 2; otherwise truncate at t=512. Expired orders reset their deadline and incur native loss; they do not reset the world.&quot;,
+  &quot;interaction&quot;: &quot;Valve siphoning reduces steam forwarded two buffers later to the next kitchen. Meals consume a clean plate; serving emits a blocking dirty-dish cart that must be retrieved, washed and returned to a pot. Ingredient substitutions change quality; tools and carried food can pass between adjacent workers.&quot;,
+  &quot;observation_access&quot;: &quot;Local 7x7 terrain/occupancy, self inventory, and three detailed nearby actors. Menus are private to Manhattan distance 1 until relayed as coarse messages over distance 6. Pot/valve state is local. No remote order list is shown.&quot;
+}</pre></details><p>Declared per-step reward bounds: -32 to 32. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Each of six kitchens has four separate actors: preparer, steamer, runner and engineer. Selecting a person means selecting its original native action row.</li><li>Colored counters are physical obstacles: pantry, board, pot, cooling rack, hatch, valve and sink. Turn toward a counter before interacting.</li><li>Use a knife to prepare roots or beans. A clean plate and prepared ingredient enter an empty pot; tongs or a tray lift the hot meal once progress reaches 4.</li><li>Carried heat falls one per tick. A zero-heat hot meal still needs the cooling-rack action before serving.</li><li>Serving the requested ingredient has quality 2; a substitution has quality 1. Only workers next to the hatch can read its current menu and deadline.</li><li>A served plate becomes a dirty dish cart in the lane. Push or pick it up, wash it at a sink, then return the clean plate to a pot.</li><li>An open valve draws at most two steam units. Unused steam advances through two buffers to the next kitchen; valve choices change downstream timing.</li><li>This source-bound kitchen scene and its literal scripts have not been run. Native animation, human play, causal effects and learning remain unverified.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Festival Steam Kitchens
+
+Status: AUTHORED_NOT_EXECUTED. Candidate game-v3-00229, source attempt 0, train-only prospective source stream. Assigned author identity: gpt-6-astra / max; root dispatch is the authority for actual model execution. A/O/U/H = 24/160/23/512. Source SHA-256: 97209e05ff4bc4806ce64dc4b090707c2c39e4874da15eae748c9af2ad077583.
+
+## Native game and dependencies
+
+Six kitchens share one connected 30 by 18 floor, a directed steam circuit and reusable dishes. Each kitchen has four individually controlled workers initially holding knife, tongs, tray and wrench tools. Seven physical counter types block movement: pantry, chopping board, pot, cooling rack, serving hatch, valve and sink. A worker can change job by swapping tools with a facing neighbor.
+
+The two ingredient choices are roots and beans. Raw ingredients must be chopped with a knife, then placed in an empty pot that has a clean plate. Progress reaches readiness at 4 steam units. Tongs or a tray can remove a ready meal; that removes the plate from the pot. A carried hot meal cools by one temperature unit per tick but still needs the explicit cooling-rack action before serving. A requested ingredient earns quality 2; substituting the other ingredient earns quality 1. Initial pots already contain one prepared requested meal, at progress zero; later meals use finite pantry stocks and the return-plate chain.
+
+Serving emits the used dirty dish into a reserved physical cart position in the serving lane. That cart blocks entry into its cell, though a worker already there can leave. Other workers can push it into a clear adjacent cell, pick up the dirty dish, wash it using sink water, and bring the clean plate back to a pot. One cart capacity per kitchen prevents overwriting an outstanding return. Cart pickup deactivates its world object; the same dish then exists in the carrier&#x27;s inventory.
+
+Steam is not a global scalar bonus. Each of six nodes has two transport buffers. An open valve draws at most two units from its arriving buffer. Remaining steam moves into the next node&#x27;s first buffer, while that node&#x27;s former first buffer becomes its second. The circuit&#x27;s node 0 additionally receives two units, capped at 6. A valve decision therefore changes another kitchen&#x27;s arriving steam after the declared transport delay. The circuit links nodes in index order, including its return from 5 to 0. Native station positions identify the endpoints; pipe buffering is an explicit physical-network rule.
+
+Ready food left on a heated pot accumulates one burn count per heated tick and spoils at 3. Spoiling clears the meal, retaining the pot&#x27;s plate. Sink water starts at 4, caps at 8, and receives condensation on each eighth tick if that kitchen drew heat. A closed upstream valve can aid a cooking neighbor, overheat its unattended meal, or change future washing capacity.
+
+Plausible plans include a specialist handoff line, swapping tools to follow a changing bottleneck, accepting lower-quality ingredient substitutions, sharing steam in phases, and spending local time to return dishes for another cook. Congestion, food heat, private menus, scarce plate circulation and finite stocks make these partner-dependent choices. Their quality has not been measured.
+
+## Actions, observations and presentation
+
+After common actions 0..8, actions 9..22 collect roots, collect beans, chop, load pot/plate, take cooked food, finish cooling, serve, toggle valve, hand off, swap tools, wash, collect cart contents, push cart and signal. The native mask controls tool and spatial conditions. A handoff also transfers hot-food temperature.
+
+The 160-column row contains 14 self values, a 49-cell two-channel patch, three detailed actor records, local pot/valve/menu records, pantry stock plus its visibility flag, and one explicit zero padding column. A menu is readable only within Manhattan distance 1. Coarse signals travel distance 6; the maximum code is heard. No remote order list, extra actor inventory or new policy information is supplied by the scene.
+
+The warm kitchen scene uses colored counter categories, native carried-item codes, actual pot progress/burn, valve buffers, local menus and movable return carts. Menu visibility is stricter than ordinary object visibility. This is declarative presentation metadata; human controls and animation have not been implemented or tested by this author.
+
+## Rewards and termination
+
+reward_parts has five columns.
+
+- Column 0 charges the actor 0.01 for a successful move, chop, wash or cart push.
+- Column 1 gives the serving actor 0.4 times the actual quality.
+- Column 2 gives each of the served kitchen&#x27;s four workers 0.25 times quality.
+- Column 3 charges each worker of a missed-deadline kitchen 0.2 and each worker of a spoiled-meal kitchen 0.075.
+- Column 4 charges each worker 0.005 per steam unit drawn by its kitchen. This makes the native energy tradeoff visible in payoffs as well as downstream state.
+
+A deadline starts at 80, counts down while that kitchen has fewer than two completed orders, and resets to 80 on service or expiry. It alternates the wanted ingredient after each service. Expiry does not reset the world. The post-action environmental pass can decrement a freshly reset deadline to 79.
+
+The reward interval [-32, 32] is a conservative bound from 24 action resolutions, quality at most 2, and one spoil/deadline/energy pass. It is not a reward target. Natural completion is two served orders at every kitchen; H=512 otherwise truncates. These order quantities are native task rules, not scientific admission criteria.
+
+## Hypotheses and limits
+
+The first literal script attempts one complete plate circulation: take the initial cooked meal, cool, serve, pick up the blocking dish, wash, and restore the plate. It does not claim to finish both orders. The second script coordinates bean preparation, hot-food handoff, a tool swap and the initial root delivery; its prepared bean remains intermediate inventory.
+
+The paired hypothesis changes only engineer 3&#x27;s first valve action. Both branches share the same seed and all waiting suffix actions. The intended delayed readout is node 1&#x27;s steam buffers, heat, pot progress and burn. More downstream heat need not be beneficial. No script, mask or effect was executed. JAX compilation, public adapter, animation, throughput, solvability, learning and transfer remain unverified.
+
+## Literal source evidence
+
+These line references identify authored implementation expressions, not measured effects.
+
+- Station/tool/plate conditions: candidate.py line 35, literal source: `def legal_row(self, s, i):`.
+- Local observation and menu restriction: candidate.py line 113, literal source: `def observe(self, s):`.
+- Ingredient substitution payoff: candidate.py line 197, literal source: `quality = 1 + ((old_carry - 6) == z[&quot;wanted&quot;][g]).astype(jnp.int32)`.
+- Physical returned dish location: candidate.py line 201, literal source: `z[&quot;cart_pos&quot;] = z[&quot;cart_pos&quot;].at[g].set(jnp.where(serve, z[&quot;menu_pos&quot;][g] + jnp.array([0, 1], jnp.int32), z[&quot;cart_pos&quot;][g]))`.
+- Steam siphoning: candidate.py line 231, literal source: `draw = jnp.where(z[&quot;valve&quot;], jnp.minimum(2, z[&quot;steam&quot;][:, 1]), 0)`.
+- Downstream delayed transport: candidate.py line 232, literal source: `stage0 = jnp.roll(z[&quot;steam&quot;][:, 1] - draw, 1)`.
+- Actual spoil event: candidate.py line 240, literal source: `z[&quot;spoiled&quot;] = cooking &amp; (z[&quot;burn&quot;] == 3)`.
+- Absorbing native boundary: candidate.py line 260, literal source: `def raw_step(self, key, state, actions):`.
+
+## Read-only reference use
+
+Only the current batch&#x27;s authorized files were read. author_input_freeze.json records all 26 actual input files, bytes, hashes and use. The 24 payload files include this batch&#x27;s four current designs/requests, shared contracts, current population/family control, general design and human-play requirements, and five named official reference snapshots. Three optional historical population addenda were not read. Earlier copied example numbers are noncontrolling.
+
+JaxMARL README informed the distinction between a simultaneous native action-row boundary and a later agent-keyed dictionary adapter. Pgx README informed explicit legal masks, separate termination causes and external key provenance; no Pgx game was copied. Craftax README informed bounded persistent world state and the separation between mechanics and rendering. PureJaxRL README and Craftax_Baselines_ppo_rnn.py were read only for JAX scan/vectorization and wrapper/algorithm separation. No upstream game code, PPO code, assets or performance claims were copied into this kernel. No reference links were opened, dependencies installed, local models invoked or scientific outcomes read.
+
+## Boundary and evidence status
+
+The native interface is reset(key), observe(state), legal_actions(state), and raw_step(key,state,actions). All state leaves are fixed-shape int32, bool or float32 arrays declared in manifest.json. Keys are accepted but intentionally unused: these original rules and layouts are deterministic. Small integer quantities use int32 at the boundary; there is no hidden PRNG key in state.
+
+The joint input is one int32 action per actor. Resolution uses rotating priority (k + input t) modulo A. Each actor&#x27;s action is rechecked against the current intermediate state, so contention can turn a previously legal intention into a deterministic wait. Environmental processes run once afterward. This is a simultaneous input interface with explicitly sequential conflict resolution, not a claim that actions commute.
+
+A nonterminal step advances the int32 clock once. Natural completion takes priority over H. An already-terminal raw call preserves the entire state, observation, clock and terminal causes and returns zero reward; it never auto-resets. Event flags refer to the last actual nonabsorbing step and are not new events on repeated absorbing calls. A separate trusted wrapper or public adapter remains outside this author package.
+
+No candidate was imported or executed. No JAX/NumPy runtime, validator, trajectory script, local model, remote job, HTTP endpoint, browser, training or evaluation was run. Standard-library AST parsing and data-only JSON/static consistency checks are not native validation. Source authoring is not an R0, causal, animation, solvability, learning or transfer receipt. No additional proposal or repair attempt was created.
+
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait; no movement</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Face north</span></div><div class="action"><b>6</b><span>Face east</span></div><div class="action"><b>7</b><span>Face south</span></div><div class="action"><b>8</b><span>Face west</span></div><div class="action"><b>9</b><span>Collect root ingredient at facing pantry</span></div><div class="action"><b>10</b><span>Collect bean ingredient at facing pantry</span></div><div class="action"><b>11</b><span>Chop carried raw ingredient with knife at board</span></div><div class="action"><b>12</b><span>Load prepared ingredient or clean plate into facing empty pot</span></div><div class="action"><b>13</b><span>Take cooked meal with tongs or tray</span></div><div class="action"><b>14</b><span>Finish cooling at rack after carried heat reaches zero</span></div><div class="action"><b>15</b><span>Serve cooled meal at facing menu station</span></div><div class="action"><b>16</b><span>Toggle steam valve using wrench</span></div><div class="action"><b>17</b><span>Hand carried item to empty-handed actor ahead</span></div><div class="action"><b>18</b><span>Swap tools with actor ahead</span></div><div class="action"><b>19</b><span>Wash carried dirty dish at sink using local water</span></div><div class="action"><b>20</b><span>Pick up facing dish cart contents</span></div><div class="action"><b>21</b><span>Push facing dish cart one clear cell</span></div><div class="action"><b>22</b><span>Signal readable order, or generic request</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> group 0 / knife preparer</p><p><b>agent_1</b> group 0 / tongs steamer</p><p><b>agent_2</b> group 0 / tray runner</p><p><b>agent_3</b> group 0 / valve engineer</p><p><b>agent_4</b> group 1 / knife preparer</p><p><b>agent_5</b> group 1 / tongs steamer</p><p><b>agent_6</b> group 1 / tray runner</p><p><b>agent_7</b> group 1 / valve engineer</p><p><b>agent_8</b> group 2 / knife preparer</p><p><b>agent_9</b> group 2 / tongs steamer</p><p><b>agent_10</b> group 2 / tray runner</p><p><b>agent_11</b> group 2 / valve engineer</p><p><b>agent_12</b> group 3 / knife preparer</p><p><b>agent_13</b> group 3 / tongs steamer</p><p><b>agent_14</b> group 3 / tray runner</p><p><b>agent_15</b> group 3 / valve engineer</p><p><b>agent_16</b> group 4 / knife preparer</p><p><b>agent_17</b> group 4 / tongs steamer</p><p><b>agent_18</b> group 4 / tray runner</p><p><b>agent_19</b> group 4 / valve engineer</p><p><b>agent_20</b> group 5 / knife preparer</p><p><b>agent_21</b> group 5 / tongs steamer</p><p><b>agent_22</b> group 5 / tray runner</p><p><b>agent_23</b> group 5 / valve engineer</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      14
+    ],
+    &quot;meaning&quot;: &quot;Self: x/29,y/17,facing/3,tool/3,carry/10,temperature/4,team/5,heard/3,t/512,served_event,washed,handoff,toggled,constant active marker 1.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      112
+    ],
+    &quot;meaning&quot;: &quot;7x7 row-major dy/dx patch; each cell [station tile/7 (outside=-1), occupancy: cart 1, otherwise actor 0.5, otherwise 0].&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      112,
+      136
+    ],
+    &quot;meaning&quot;: &quot;Nearest 3 other actors in Chebyshev 3: [visible,dx/3,dy/3,tool/3,carry/10,temperature/4,message/3,team/5], zero missing.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      136,
+      144
+    ],
+    &quot;meaning&quot;: &quot;Nearest local pot: [visible,dx/3,dy/3,recipe/2,progress/4,burn/3,plate,heat/2]; zero outside radius 3.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      144,
+      151
+    ],
+    &quot;meaning&quot;: &quot;Nearest local valve: [visible,dx/3,dy/3,open,steam buffer 0/6,steam buffer 1/6,sink water/8]; zero outside radius 3.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      151,
+      156
+    ],
+    &quot;meaning&quot;: &quot;Nearest menu only within Manhattan 1: [visible,wanted/2,deadline/80,served/2,team/5].&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      156,
+      158
+    ],
+    &quot;meaning&quot;: &quot;Pantry root and bean stock/8 for nearest pot kitchen only when its pantry is within Manhattan 3; otherwise zero.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      158,
+      159
+    ],
+    &quot;meaning&quot;: &quot;Pantry-stock visibility flag for preceding two columns.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      159,
+      160
+    ],
+    &quot;meaning&quot;: &quot;Explicit zero padding; never interpreted as extra information.&quot;,
+    &quot;visibility&quot;: &quot;padding&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;kitchen_teams&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 24,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Kitchen team 0..5&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 knife, 1 tongs, 2 tray, 3 wrench&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carry&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty; 1/2 raw root/bean; 3/4 prepared; 5/6 hot; 7/8 cooled; 9 dirty dish; 10 clean plate&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;temperature&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried meal heat; 0..4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 silent, 1/2 order ingredient, 3 general request&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;stations&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 42,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 pantry, 1 board, 2 pot, 3 rack, 4 hatch, 5 valve, 6 sink&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;steam_pots&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;pot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;pot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;pot_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty, 1 root, 2 bean&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cooking progress; ready at 4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;burn&quot;
+        ],
+        &quot;meaning&quot;: &quot;Overheating ticks; spoil at 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;plate&quot;
+        ],
+        &quot;meaning&quot;: &quot;Clean reusable plate is available&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;heat&quot;
+        ],
+        &quot;meaning&quot;: &quot;Steam drawn this tick; 0..2&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;steam_valves&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;valve_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;valve_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;valve_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;valve&quot;
+        ],
+        &quot;meaning&quot;: &quot;Open valve siphons passing steam&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;steam&quot;
+        ],
+        &quot;meaning&quot;: &quot;Two successive native steam buffers; each 0..6&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Sink water replenished by periodic condensation&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;order_menus&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;menu_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;menu_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;menu_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;wanted&quot;
+        ],
+        &quot;meaning&quot;: &quot;Requested ingredient: 1 root, 2 bean&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;deadline&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ticks until current order deadline; 0..80&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;served&quot;
+        ],
+        &quot;meaning&quot;: &quot;Completed orders; goal 2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;return_carts&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;cart_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cart_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cart_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;cart_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;Physical dirty dish awaiting pickup; code 9&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 229,
+  &quot;key&quot;: &quot;gi229&quot;,
+  &quot;title&quot;: &quot;节庆蒸汽厨房 · Festival Steam Kitchens&quot;,
+  &quot;summary&quot;: &quot;24角色的蒸汽双缓冲厨房保存回放；修复已观察cart与角色同格时的绘制遗漏。&quot;,
+  &quot;tags&quot;: [
+    &quot;24角色&quot;,
+    &quot;协作厨房&quot;,
+    &quot;保存回放&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 24,
+    &quot;observation_size&quot;: 160,
+    &quot;num_actions&quot;: 23,
+    &quot;max_steps&quot;: 512
+  },
+  &quot;source_sha256&quot;: &quot;97209e05ff4bc4806ce64dc4b090707c2c39e4874da15eae748c9af2ad077583&quot;,
+  &quot;manifest_sha256&quot;: &quot;61c53c9f2956d69c06fb006fa447e16b35b934f2d9fcdf70c7e5e74780ceeece&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;97209e05ff4bc4806ce64dc4b090707c2c39e4874da15eae748c9af2ad077583&quot;,
+      &quot;bytes&quot;: 17000,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00229/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;61c53c9f2956d69c06fb006fa447e16b35b934f2d9fcdf70c7e5e74780ceeece&quot;,
+      &quot;bytes&quot;: 23456,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00229/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;666e63c01c68b6c2a901345bf1336e517a54d2a1e399728d28c3a5d4c42cab73&quot;,
+      &quot;bytes&quot;: 11149,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00229/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;7687ffd3067f822d65b4fbc6131e45e5cab96eeeb23247be80cda28f4117a17c&quot;,
+      &quot;bytes&quot;: 10397,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00229/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;b7cb339b15d82127d4c821bec4292eb6d5369df6113d88a3b1931c51a460a0f5&quot;,
+      &quot;bytes&quot;: 17714,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00229/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi229">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

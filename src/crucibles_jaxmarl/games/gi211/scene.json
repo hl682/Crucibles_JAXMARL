@@ -1,0 +1,431 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "e94918b1eb2858a948ffa587cc52fc025b1154d346e3ba63bafaa9273cd2fc9f",
+  "manifest_sha256": "c0ceb7a98e0d37c808c5cd9b2e7a579b4f8319245d2c66c3e5041a1f39a72520",
+  "title": "Carousel Supper",
+  "rules": [
+    "Three cooks share six ingredients, three trays and one eight-slot serving carousel.",
+    "West board prepares vegetables; east board prepares protein. Add one prepared component of each type to a nearby unattended tray.",
+    "Any cook beside the ring can request rotation. Opposite requests cancel; net speed is capped at one slot per tick.",
+    "Putting or taking an item happens before rotation. Every attached item then moves with its logical slot.",
+    "A full tray at the north heat slot gains one heat per tick. A held full tray can also be heated manually beside that station.",
+    "Serve full trays at heat 3..6. Heat above six or filled-tray age 45 permanently spoils that tray.",
+    "Carrying items through the outer corridor avoids ring displacement but uses travel and inventory time.",
+    "Three served trays or exhaustion of unspoiled trays ends naturally; tick 180 otherwise truncates."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Kitchen floor and outer carrying corridor",
+          "color": "#FFF0D0"
+        },
+        {
+          "value": 2,
+          "meaning": "Raised carousel; workers cannot walk on it",
+          "color": "#C99976"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "cooks",
+      "glyph": "worker",
+      "label": "Kitchen cooks",
+      "color": "#D46A5E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "Held item index; -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "tool",
+      "label": "Vegetable / protein / heat / serve / bin",
+      "color": "#705A44",
+      "attribute_labels": []
+    },
+    {
+      "id": "carousel",
+      "glyph": "circle",
+      "label": "Rotating tray slots",
+      "color": "#B7855D",
+      "attribute_labels": []
+    },
+    {
+      "id": "food",
+      "glyph": "food",
+      "label": "Ingredients and three trays",
+      "color": "#90AC5A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "kind"
+          ],
+          "label": "1 vegetable, 2 protein, 3 tray"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "-1 unattended, >=0 cook, -2 used, -3 removed"
+        },
+        {
+          "state_path": [
+            "slot"
+          ],
+          "label": "Attached logical carousel slot, or -1"
+        },
+        {
+          "state_path": [
+            "prepared"
+          ],
+          "label": "Ingredient prepared"
+        },
+        {
+          "state_path": [
+            "filling"
+          ],
+          "label": "Tray mask: 1 vegetable, 2 protein, 3 both"
+        },
+        {
+          "state_path": [
+            "heat"
+          ],
+          "label": "Retained heat units; serve at 3..6"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "Filled-tray age; spoiled at 45 ticks"
+        },
+        {
+          "state_path": [
+            "spoiled"
+          ],
+          "label": "Tray unusable due to heat or age"
+        },
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "Last cook to pick up this object; -1 untouched"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Completed identical two-component orders served, 0..3",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "discarded"
+      ],
+      "meaning": "Objects discarded into the bin",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "rotations"
+      ],
+      "meaning": "Nonzero ring movement intervals",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "phase"
+      ],
+      "meaning": "Ring offset modulo eight",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index eligible item within one tile; hands must be empty"
+    },
+    {
+      "id": 6,
+      "label": "Drop held item at current floor tile"
+    },
+    {
+      "id": 7,
+      "label": "Request one clockwise carousel step from beside ring"
+    },
+    {
+      "id": 8,
+      "label": "Request one counterclockwise carousel step from beside ring"
+    },
+    {
+      "id": 9,
+      "label": "Put held item onto lowest-index adjacent empty slot"
+    },
+    {
+      "id": 10,
+      "label": "Prepare held vegetable at west board or protein at east board"
+    },
+    {
+      "id": 11,
+      "label": "Add held prepared ingredient to adjacent compatible unattended tray"
+    },
+    {
+      "id": 12,
+      "label": "Manually heat held full tray beside north heat station"
+    },
+    {
+      "id": 13,
+      "label": "Serve held full unspoiled tray with heat 3..6 beside south counter"
+    },
+    {
+      "id": 14,
+      "label": "Discard held item beside southwest bin"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        85
+      ],
+      "meaning": "terrain; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        91
+      ],
+      "meaning": "agent pos; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        94
+      ],
+      "meaning": "load; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        104
+      ],
+      "meaning": "Stations in order vegetable, protein, heat, serving, discard; x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        120
+      ],
+      "meaning": "slot pos; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        120,
+        121
+      ],
+      "meaning": "Rotation offset, 0..7",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        139
+      ],
+      "meaning": "Nine native item x,y coordinates; inactive items retain their final coordinate",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        148
+      ],
+      "meaning": "Nine item existence flags; inactive original slots remain in the fixed capacity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        157
+      ],
+      "meaning": "Item kinds: 1 vegetable, 2 protein, 3 reusable-location tray",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        166
+      ],
+      "meaning": "Item holders: -1 unattended, 0..2 cook, -2 combined ingredient, -3 served/discarded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        166,
+        175
+      ],
+      "meaning": "Item logical ring-slot attachment, -1 if not attached",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        175,
+        184
+      ],
+      "meaning": "prepared; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        184,
+        193
+      ],
+      "meaning": "Tray ingredient bit mask: 0 empty, 1 vegetable, 2 protein, 3 full",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        193,
+        202
+      ],
+      "meaning": "Retained tray heat units, capped at 9; serving requires 3..6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        202,
+        211
+      ],
+      "meaning": "Ticks since first ingredient, capped at 45",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        211,
+        220
+      ],
+      "meaning": "Irreversible heat >6 or age >=45 flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        220,
+        229
+      ],
+      "meaning": "Last cook to pick each object, -1 untouched",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        229,
+        230
+      ],
+      "meaning": "served; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        230,
+        231
+      ],
+      "meaning": "discarded; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        231,
+        232
+      ],
+      "meaning": "rotations; native state, row-major order",
+      "visibility": "public"
+    }
+  ]
+}

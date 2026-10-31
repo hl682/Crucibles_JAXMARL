@@ -1,0 +1,603 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "98ded10c93949b1019e15a9c920cdd76450fe055c69fc397a19ed80905c03534",
+  "manifest_sha256": "8a3b96f5f50b662f9b9fe49bb38c27d59888266a9156aae062eba6fb4e0fa97d",
+  "title": "Washwater Bistro",
+  "rules": [
+    "The cooking utensil prepares food; the brush washes empty bowls and scrubs the pan. Adjacent workers may exchange both reusable tools.",
+    "Preparing, washing and assembly each use clean water; pan scrubbing uses two units. The tank holds at most twelve.",
+    "Washing creates upstream dirt. Opening the drain sends one parcel per tick through the four physical channel cells.",
+    "An installed filter catches up to three parcels. Diversion sends parcels into a basin of capacity three; it drains one unit every twelve ticks.",
+    "A parcel reaching the third channel cell contaminates the cooking pan and blocks preparation/assembly until scrubbed.",
+    "Prepared ingredients beside the pan fill clean held bowls. Served bowls return dirty at the serving station.",
+    "Ingredients spoil at age 90; assembled soup spoils at age 18. Each customer has its own visible patience.",
+    "The queue ends when all customers are served or have left. No script or outcome has been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      6,
+      5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Kitchen walking floor",
+          "color": "#FFF0D4"
+        },
+        {
+          "value": 1,
+          "meaning": "Raised sink, drainage and cooking counter",
+          "color": "#A6C3C4"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Two bistro workers",
+      "color": "#D2775B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Held item index, -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "utensils",
+      "glyph": "tool",
+      "label": "0 Cooking utensil / 1 Cleaning brush",
+      "color": "#806A58",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool_holder"
+          ],
+          "label": "Worker currently equipped with this reusable utensil"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "glyph": "square",
+      "label": "Pan / sink / pump / serve / filter / bin / basin",
+      "color": "#7FAEB5",
+      "attribute_labels": []
+    },
+    {
+      "id": "kitchen_items",
+      "glyph": "food",
+      "label": "Two bowls, four ingredients and filter",
+      "color": "#C4A357",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "kind"
+          ],
+          "label": "0 reusable bowl, 1 ingredient, 2 filter"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "-1 unattended, 0..1 carried, -2 ingredient removed"
+        },
+        {
+          "state_path": [
+            "clean"
+          ],
+          "label": "Bowl clean enough for assembly and service"
+        },
+        {
+          "state_path": [
+            "prepared"
+          ],
+          "label": "Ingredient has been prepared"
+        },
+        {
+          "state_path": [
+            "filled"
+          ],
+          "label": "Bowl contains soup"
+        },
+        {
+          "state_path": [
+            "age"
+          ],
+          "label": "Ingredient age or assembled soup age"
+        },
+        {
+          "state_path": [
+            "spoiled"
+          ],
+          "label": "Ingredient or soup spoiled"
+        }
+      ]
+    },
+    {
+      "id": "drainage",
+      "glyph": "water",
+      "label": "Physical downstream wastewater cells",
+      "color": "#789B8C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "flow"
+          ],
+          "label": "Dirty water parcel currently in cell, 0 or 1"
+        }
+      ]
+    },
+    {
+      "id": "customers",
+      "glyph": "flag",
+      "label": "Four dated customer requests",
+      "color": "#AD7D9C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "order_status"
+          ],
+          "label": "0 waiting, 1 served, -1 left"
+        },
+        {
+          "state_path": [
+            "patience"
+          ],
+          "label": "Remaining waiting ticks"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tank"
+      ],
+      "meaning": "Clean-water tank, 0..12",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "sink_dirt"
+      ],
+      "meaning": "Stored dirty sink units, 0..3",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "basin"
+      ],
+      "meaning": "Diverted dirty-water units, 0..3",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "filter_installed"
+      ],
+      "meaning": "Filter is physically installed at valve",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "filter_charge"
+      ],
+      "meaning": "Filter capacity remaining, 0..3",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "pan_dirty"
+      ],
+      "meaning": "Drainage has contaminated pan",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Orders fulfilled",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "wasted"
+      ],
+      "meaning": "Fresh spoilage plus deliberate food-disposal events",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "contaminations"
+      ],
+      "meaning": "New downstream contamination episodes",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index adjacent loose bowl, ingredient or filter"
+    },
+    {
+      "id": 6,
+      "label": "Put held item on current floor tile"
+    },
+    {
+      "id": 7,
+      "label": "Use equipped utensil: prepare held food, wash held empty bowl, or scrub pan with empty hands"
+    },
+    {
+      "id": 8,
+      "label": "Pump two clean-water units, or wash a held filter using two units at pump"
+    },
+    {
+      "id": 9,
+      "label": "Toggle upstream sink drain"
+    },
+    {
+      "id": 10,
+      "label": "Toggle channel diversion into holding basin beside valve"
+    },
+    {
+      "id": 11,
+      "label": "Install held filter beside channel valve"
+    },
+    {
+      "id": 12,
+      "label": "Assemble a prepared nearby ingredient into a held clean bowl; cooking utensil required"
+    },
+    {
+      "id": 13,
+      "label": "Serve held fresh clean soup beside serving station"
+    },
+    {
+      "id": 14,
+      "label": "Discard food or empty a filled bowl beside bin"
+    },
+    {
+      "id": 15,
+      "label": "Exchange cooking and cleaning utensils with adjacent coworker"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        46
+      ],
+      "meaning": "terrain; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        50
+      ],
+      "meaning": "agent pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        52
+      ],
+      "meaning": "carrying; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        56
+      ],
+      "meaning": "tool pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        58
+      ],
+      "meaning": "Two tool identities: cooking utensil then brush; value is equipped worker",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        72
+      ],
+      "meaning": "Positions in order pan, washing sink, pump, serving, filter valve, bin, holding basin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        72,
+        86
+      ],
+      "meaning": "item pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        93
+      ],
+      "meaning": "Seven original item activity flags; bowls and filter persist",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        100
+      ],
+      "meaning": "0 bowl, 1 ingredient, 2 filter",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        107
+      ],
+      "meaning": "holder; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        107,
+        114
+      ],
+      "meaning": "clean; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        114,
+        121
+      ],
+      "meaning": "prepared; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        128
+      ],
+      "meaning": "filled; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        135
+      ],
+      "meaning": "Raw/prepared ingredient age caps at 90; filled-bowl age resets on assembly",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        142
+      ],
+      "meaning": "spoiled; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        150
+      ],
+      "meaning": "channel pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        154
+      ],
+      "meaning": "Four native dirty-water parcels, one cell downstream each advancing tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "meaning": "tank; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        156
+      ],
+      "meaning": "sink dirt; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        157
+      ],
+      "meaning": "draining; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "meaning": "divert; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        159
+      ],
+      "meaning": "basin; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        160
+      ],
+      "meaning": "filter installed; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        160,
+        161
+      ],
+      "meaning": "filter charge; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        161,
+        162
+      ],
+      "meaning": "pan dirty; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        163
+      ],
+      "meaning": "grease; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        163,
+        171
+      ],
+      "meaning": "order pos; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        171,
+        175
+      ],
+      "meaning": "Four queue outcomes: 0 pending, 1 served, -1 expired",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        175,
+        179
+      ],
+      "meaning": "patience; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        179,
+        180
+      ],
+      "meaning": "served; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        180,
+        181
+      ],
+      "meaning": "wasted; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        181,
+        182
+      ],
+      "meaning": "contaminations; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        182,
+        190
+      ],
+      "meaning": "Two rows of four float32 components: shared orders, shared contamination, shared food waste/disposal, own interaction effort",
+      "visibility": "public"
+    }
+  ]
+}

@@ -1,0 +1,803 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00075",
+  "source_sha256": "9d6038ab31845dc1f1ce782334c3c0dee39ee4a4be409739fc21be116f39a818",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 868,
+  "num_actions": 9,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 2,
+  "reward_low": -6,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "team_A_herder"
+    },
+    {
+      "id": "agent_1",
+      "role": "team_A_herder"
+    },
+    {
+      "id": "agent_2",
+      "role": "team_B_herder"
+    },
+    {
+      "id": "agent_3",
+      "role": "team_B_herder"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "move north"
+    },
+    {
+      "id": 2,
+      "label": "move east"
+    },
+    {
+      "id": 3,
+      "label": "move south"
+    },
+    {
+      "id": 4,
+      "label": "move west"
+    },
+    {
+      "id": 5,
+      "label": "place own lure puck"
+    },
+    {
+      "id": 6,
+      "label": "place own repeller puck"
+    },
+    {
+      "id": 7,
+      "label": "recover own adjacent puck"
+    },
+    {
+      "id": 8,
+      "label": "settle on own team's bench"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        9,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_actions"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "whistle_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "puck_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "puck_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "puck_kind"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "puck_lifetime"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "puck_cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "grazer_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "grazer_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grazer_capture_team"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "grazer_settle_progress"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "grazer_wander_phase"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "grazer_heading"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bank_score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "horizon"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "winner_team"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_team_reward"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "float32"
+    },
+    {
+      "path": [
+        "episode_team_return"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "float32"
+    },
+    {
+      "path": [
+        "event_active"
+      ],
+      "shape": [
+        32
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_kind"
+      ],
+      "shape": [
+        32
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "event_actor"
+      ],
+      "shape": [
+        32
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "event_from"
+      ],
+      "shape": [
+        32,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "event_to"
+      ],
+      "shape": [
+        32,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "event_value"
+      ],
+      "shape": [
+        32,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "event_tick"
+      ],
+      "shape": [
+        32
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map_distance"
+      ],
+      "shape": [
+        117,
+        117
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "puck_owner"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "puck_visibility"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grazer_visibility"
+      ],
+      "shape": [
+        4,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_bank_score"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      12.5,
+      8.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "solid stone wall",
+          "color": "#374151"
+        },
+        {
+          "value": 1,
+          "meaning": "walkable grass",
+          "color": "#BBF7D0"
+        },
+        {
+          "value": 2,
+          "meaning": "team A pen",
+          "color": "#93C5FD"
+        },
+        {
+          "value": 3,
+          "meaning": "team B pen",
+          "color": "#FCA5A5"
+        },
+        {
+          "value": 4,
+          "meaning": "team A settle bench",
+          "color": "#2563EB"
+        },
+        {
+          "value": 5,
+          "meaning": "team B settle bench",
+          "color": "#DC2626"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "meaning": "0 team A; 1 team B",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "whistle_active"
+          ],
+          "meaning": "Actual current committed settle action at own bench",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "last_actions"
+          ],
+          "meaning": "Previous committed action, not an unsubmitted intention",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_bank_score"
+          ],
+          "meaning": "Current team's actual bank score; copied from bank_score",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "pucks",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "puck_pos"
+      ],
+      "active": [
+        "puck_active"
+      ],
+      "visibility": [
+        "puck_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "puck_owner"
+          ],
+          "meaning": "Immutable owner actor ID, equal to slot ID",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "meaning": "Owner team of this same-indexed puck slot",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "puck_kind"
+          ],
+          "meaning": "1 attraction; 2 repulsion; no team-specific effect",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "puck_lifetime"
+          ],
+          "meaning": "Actual remaining lifetime after this step's aging",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "grazers",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "grazer_pos"
+      ],
+      "active": [
+        "grazer_active"
+      ],
+      "visibility": [
+        "grazer_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "grazer_settle_progress"
+          ],
+          "meaning": "0..2 pending steps; 3 means captured and inactive",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "grazer_capture_team"
+          ],
+          "meaning": "-1 no pending capture; 0 team A; 1 team B",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "grazer_heading"
+          ],
+          "meaning": "Last accepted move: 0 north,1 east,2 south,3 west",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "grazer_wander_phase"
+          ],
+          "meaning": "Public fixed initial phase, not an unseen behavior type",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_active"
+      ],
+      "meaning": "Active slots from the last non-absorbing transition; deduplicate by episode, event_tick and slot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_kind"
+      ],
+      "meaning": "Kind code describing the last committed transition event in each slot; see mechanism.md",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_value"
+      ],
+      "meaning": "Actual integer payload for each active event, including changes and gross repair/damage or capture progress",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_tick"
+      ],
+      "meaning": "Resulting tick per active event, -1 for inactive; not a counter that increments on redraw",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "t"
+      ],
+      "meaning": "Count of actual non-absorbing transitions",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint ending level; does not create another terminal event on absorbing calls",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "bank_score"
+      ],
+      "meaning": "Actual monotone captured-grazer counts for teams A and B",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "puck_cooldown"
+      ],
+      "meaning": "Actual per-owner rearming countdown including inactive pucks",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        702
+      ],
+      "meaning": "board row-major [9,13,6]: wall; grass; team A pen; team B pen; team A bench; team B bench.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        702,
+        726
+      ],
+      "meaning": "agent_table row-major [4,6]: row/8; column/12; team A indicator; team B indicator; whistle_active; last_actions/8.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        726,
+        762
+      ],
+      "meaning": "puck_table row-major [4,9]: row/8 or 0 if inactive; column/12 or 0 if inactive; active; kind lure indicator; kind repeller indicator; lifetime/24; cooldown/8; owner team A indicator; owner team B indicator.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        762,
+        852
+      ],
+      "meaning": "grazer_table row-major [6,15]: row/8 or 0 if inactive; column/12 or 0 if inactive; active; capture_team none indicator; capture_team A indicator; capture_team B indicator; settle_progress/3; wander_phase N; wander_phase E; wander_phase S; wander_phase W; heading N; heading E; heading S; heading W.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        852,
+        864
+      ],
+      "meaning": "global row-major [12]: step_count/horizon; score A/6; score B/6; active grazer count/6; done; terminated; truncated; winner none; winner A; winner B; winner tie; (step_count modulo 6)/5.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        864,
+        868
+      ],
+      "meaning": "One-hot observer actor ID.",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Bank the six autonomous neutral grazers for one's own team using position, attraction/repulsion pucks and a teammate's bench settling.",
+    "natural_termination": "Natural completion only when all six grazers have been banked; final actual counts determine winner or tie.",
+    "interaction": "Agents and objects occupy real cells. Wall-distance preferences drive simultaneous grazer proposals; rotating contention and consecutive teammate settling produce irreversible actual capture.",
+    "observation_access": "All current mechanism-relevant state is public. Each actor gets the exact declared flat observations and structural masks. Actions are public only after commitment; external PRNG provenance and future submitted actions are excluded. Derived scene arrays add no policy information."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "grazer_pos"
+      ],
+      "active_path": [
+        "grazer_active"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "puck_pos"
+      ],
+      "active_path": [
+        "puck_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "puck_lifetime"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "puck_cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "bank_score"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "grazer_settle_progress"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "interface_adaptations": [
+    "The v2 contracts apply to ordinals 74/75 by the source-stage request despite their historical 72/73 headings.",
+    "Design step_count is represented by scalar int32 state.t. All small signed counters, directions, codes and coordinates use int32; masks use bool; observations/rewards use float32.",
+    "All state entity positions and event endpoints use [x=design column,y=design row]. Terrain, heat/fuel/wetness and map indexing remain [y,x]. Observation columns retain the design's row-then-column order.",
+    "Reset PRNG key and provenance remain outside numeric state. Both original reset distributions are preserved by the source; no seed-conditioned override or canonical reset replacement is used.",
+    "The v2 done leaf is done. Ended raw calls preserve the entire state and causes, return zero reward, and do not advance t. Natural termination takes priority over truncation.",
+    "The exact graph distance geometry is held as an immutable derived int32[117,117] state leaf for static batching; it is computed from this map only and is not privileged information.",
+    "Visibility arrays, immutable puck_owner and per-agent bank-score views expose only already-public mechanism state. Placement masks retain joint recovery opportunities; raw_step resolves actual post-recovery occupancy."
+  ]
+}

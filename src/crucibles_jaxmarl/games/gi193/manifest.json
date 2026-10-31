@@ -1,0 +1,1271 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00193",
+  "source_sha256": "4ec20df24b7a26b841bd639502eb8b96fe327174700a07dba91360027cca04fb",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 64,
+  "num_actions": 21,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": 0,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Western flax grower and sickle owner"
+    },
+    {
+      "id": "agent_1",
+      "role": "Eastern weaver and shuttle owner"
+    },
+    {
+      "id": "agent_2",
+      "role": "Southern dyer and gardener"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait; committed labor advances automatically"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Sow own adjacent flax plot"
+    },
+    {
+      "id": 6,
+      "label": "Cut own ripe flax using valid sickle"
+    },
+    {
+      "id": 7,
+      "label": "Gather adjacent dye berries"
+    },
+    {
+      "id": 8,
+      "label": "Reserve spinning job: 1 fiber"
+    },
+    {
+      "id": 9,
+      "label": "Reserve weaving job: 1 yarn, 1 dye, valid shuttle"
+    },
+    {
+      "id": 10,
+      "label": "Commit 2 work steps at adjacent active facility"
+    },
+    {
+      "id": 11,
+      "label": "Collect own completed workshop output"
+    },
+    {
+      "id": 12,
+      "label": "Repair adjacent facility: 1 fiber adds up to 2 condition"
+    },
+    {
+      "id": 13,
+      "label": "Lend owned sickle to adjacent lowest-index villager"
+    },
+    {
+      "id": 14,
+      "label": "Lend owned shuttle to adjacent lowest-index villager"
+    },
+    {
+      "id": 15,
+      "label": "Return borrowed tools to adjacent owners"
+    },
+    {
+      "id": 16,
+      "label": "Physically reclaim owned tools from adjacent holders"
+    },
+    {
+      "id": 17,
+      "label": "Give 1 fiber to eligible adjacent lowest-index villager"
+    },
+    {
+      "id": 18,
+      "label": "Give 1 yarn to eligible adjacent lowest-index villager"
+    },
+    {
+      "id": 19,
+      "label": "Give 1 dye to eligible adjacent lowest-index villager"
+    },
+    {
+      "id": 20,
+      "label": "Sell 1 cloth beside market for private order"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fiber"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "yarn"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dye"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cloth"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "seeds"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "busy"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "worksite"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "deadline"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plot_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "plot_stage"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_clock"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "plot_yield"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facility_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facility_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "facility_visibility"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "work_left"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "job_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "output"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_visibility"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_holder"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "loan_left"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dye_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dye_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dye_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dye_stock"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "market_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "market_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "market_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_move"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_cut"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "e_gift"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "e_sale"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_pledge"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_work"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "e_complete"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_repair"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_loan"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_return"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable village grass, garden plots and workshop paths",
+          "color": "#A7B682"
+        },
+        {
+          "value": 1,
+          "meaning": "Millpond edge: impassable water",
+          "color": "#598C9F"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "fiber"
+          ],
+          "meaning": "Raw fiber",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "yarn"
+          ],
+          "meaning": "Spun yarn",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "dye"
+          ],
+          "meaning": "Dye berries",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cloth"
+          ],
+          "meaning": "Finished cloth",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "seeds"
+          ],
+          "meaning": "Flax seed packets",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "busy"
+          ],
+          "meaning": "Committed work steps remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "worksite"
+          ],
+          "meaning": "Worksite: -1 none,0 spinner,1 loom",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Personal orders delivered",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "meaning": "Order earnings",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "plot",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "plot_pos"
+      ],
+      "active": [
+        "plot_active"
+      ],
+      "visibility": [
+        "plot_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "plot_stage"
+          ],
+          "meaning": "Flax: 0 bare,1 growing,2 ripe",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "plot_clock"
+          ],
+          "meaning": "Growth steps remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "plot_yield"
+          ],
+          "meaning": "Fiber still in bed",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "facility",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "facility_pos"
+      ],
+      "active": [
+        "facility_active"
+      ],
+      "visibility": [
+        "facility_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Machine condition",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "work_left"
+          ],
+          "meaning": "Labor units still required",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "job_owner"
+          ],
+          "meaning": "Reserved maker: -1 idle, otherwise role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "output"
+          ],
+          "meaning": "Finished output waiting",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "tool_pos"
+      ],
+      "active": [
+        "tool_active"
+      ],
+      "visibility": [
+        "tool_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool_holder"
+          ],
+          "meaning": "Current holder role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tool_owner"
+          ],
+          "meaning": "Original owner role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "loan_left"
+          ],
+          "meaning": "Borrowed-use steps remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "dye",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "dye_pos"
+      ],
+      "active": [
+        "dye_active"
+      ],
+      "visibility": [
+        "dye_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "dye_stock"
+          ],
+          "meaning": "Dye berries remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "market_pos"
+      ],
+      "active": [
+        "market_active"
+      ],
+      "visibility": [
+        "market_visibility"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "e_move"
+      ],
+      "meaning": "Villager moved this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_cut"
+      ],
+      "meaning": "Fiber cut this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_gift"
+      ],
+      "meaning": "One-unit material handoff count by giver",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_sale"
+      ],
+      "meaning": "One cloth order delivered this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_pledge"
+      ],
+      "meaning": "Villager committed two labor steps",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_work"
+      ],
+      "meaning": "Actual labor units applied to each facility",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_complete"
+      ],
+      "meaning": "Facility finished its reserved job this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_repair"
+      ],
+      "meaning": "Facility repaired this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_loan"
+      ],
+      "meaning": "Tool lent this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_return"
+      ],
+      "meaning": "Tool returned or physically reclaimed this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public t/96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        7
+      ],
+      "meaning": "Villager x/8,y/8, roles 0..2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        10
+      ],
+      "meaning": "Fiber inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "Yarn inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "Dye inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        19
+      ],
+      "meaning": "Cloth inventories/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        22
+      ],
+      "meaning": "Seed packets/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Committed labor steps/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Worksites plus 1 divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        31
+      ],
+      "meaning": "Personal order counts/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        34
+      ],
+      "meaning": "Flax stages/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Flax growth clocks/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        40
+      ],
+      "meaning": "Uncut flax yields/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        42
+      ],
+      "meaning": "Spinner/loom condition/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        44
+      ],
+      "meaning": "Spinner/loom labor remaining/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        46
+      ],
+      "meaning": "Job owners plus 1 divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        48
+      ],
+      "meaning": "Finished-output flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        50
+      ],
+      "meaning": "Sickle/shuttle holders plus 1 divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        52
+      ],
+      "meaning": "Sickle/shuttle loan-use steps/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        56
+      ],
+      "meaning": "Sickle/shuttle x/8,y/8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "meaning": "Dye hedge stock/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        60
+      ],
+      "meaning": "Order scores/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        63
+      ],
+      "meaning": "Own role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        63,
+        64
+      ],
+      "meaning": "Own preferred delivery deadline/96; other deadlines withheld",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Supply two cloth orders per villager before the fair closes. Growing flax, borrowing tools, exchanging material, repairing shared machines and committing labor all compete with private delivery deadlines.",
+    "natural_termination": "Natural completion when every villager has delivered two orders, or at step 80 when the fair closes. H=96 is a separate upper bound; natural cause has priority and is absorbing.",
+    "interaction": "Actual adjacent tools can be lent, returned and recalled. Spinner and loom have exclusive job/output slots and depleting condition. Two-step labor promises may advance another owners job and block the helpers next action. Finite material gifts and repairs enable partners production.",
+    "observation_access": "Map, positions, materials, plots, machine condition, job reservation, output, labor and tool loans are public. A role alone knows its private early-delivery deadline. Tool owners are fixed common knowledge 0 for sickle and 1 for shuttle."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fiber"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "yarn"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "dye"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cloth"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "seeds"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "busy"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "plot_stage"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "plot_clock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "plot_yield"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "work_left"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tool_holder"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "tool_owner"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "loan_left"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "dye_stock"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

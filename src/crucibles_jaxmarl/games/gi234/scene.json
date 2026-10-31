@@ -1,0 +1,538 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "3c9ba1fadf57d1c220ae47e039601338757f0667af51de406fac1673428bdea1",
+  "manifest_sha256": "5a8d192863c3c84e4b4fc05ad6dcc48ba67ed8a5be12aba19257e458b92e9e10",
+  "title": "Terraced Watershed Republics",
+  "rules": [
+    "All 384 residents move and act separately. Tools distinguish workers, couriers, engineers, growers and guards and can be exchanged.",
+    "Sluices send at most canal capacity 1 or 2 per tick. Water traverses three native transit slots and arrives on a later step.",
+    "An engineer can divert new parcels east; parcels already traveling retain their original destination.",
+    "Top terraces receive rain every eight ticks. Reservoirs store more water; walls tolerate overflow and protect flooded roads.",
+    "Growers spend local water to irrigate and local provisions to plant. Growth requires moisture and time; floods damage crops.",
+    "Guards grant a nearby foreign crew entry while in their own territory. Revoking entry blocks future crossings, not motion within an occupied region.",
+    "Couriers physically load provisions at home and deliver them abroad; entry permissions and flood roads constrain travel.",
+    "This world ends at the finite evaluation horizon. Native scenes and fixed scripts are authored and have not been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      95,
+      63
+    ],
+    "map": {
+      "state_path": [
+        "territory"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Settlement 0 territory; public ownership",
+          "color": "#BCA66E"
+        },
+        {
+          "value": 1,
+          "meaning": "Settlement 1 territory; public ownership",
+          "color": "#A8B56B"
+        },
+        {
+          "value": 2,
+          "meaning": "Settlement 2 territory; public ownership",
+          "color": "#87A67E"
+        },
+        {
+          "value": 3,
+          "meaning": "Settlement 3 territory; public ownership",
+          "color": "#8DAAA1"
+        },
+        {
+          "value": 4,
+          "meaning": "Settlement 4 territory; public ownership",
+          "color": "#C1A48C"
+        },
+        {
+          "value": 5,
+          "meaning": "Settlement 5 territory; public ownership",
+          "color": "#B8A0B1"
+        },
+        {
+          "value": 6,
+          "meaning": "Settlement 6 territory; public ownership",
+          "color": "#BCA66E"
+        },
+        {
+          "value": 7,
+          "meaning": "Settlement 7 territory; public ownership",
+          "color": "#A8B56B"
+        },
+        {
+          "value": 8,
+          "meaning": "Settlement 8 territory; public ownership",
+          "color": "#87A67E"
+        },
+        {
+          "value": 9,
+          "meaning": "Settlement 9 territory; public ownership",
+          "color": "#8DAAA1"
+        },
+        {
+          "value": 10,
+          "meaning": "Settlement 10 territory; public ownership",
+          "color": "#C1A48C"
+        },
+        {
+          "value": 11,
+          "meaning": "Settlement 11 territory; public ownership",
+          "color": "#B8A0B1"
+        },
+        {
+          "value": 12,
+          "meaning": "Settlement 12 territory; public ownership",
+          "color": "#BCA66E"
+        },
+        {
+          "value": 13,
+          "meaning": "Settlement 13 territory; public ownership",
+          "color": "#A8B56B"
+        },
+        {
+          "value": 14,
+          "meaning": "Settlement 14 territory; public ownership",
+          "color": "#87A67E"
+        },
+        {
+          "value": 15,
+          "meaning": "Settlement 15 territory; public ownership",
+          "color": "#8DAAA1"
+        },
+        {
+          "value": 16,
+          "meaning": "Settlement 16 territory; public ownership",
+          "color": "#C1A48C"
+        },
+        {
+          "value": 17,
+          "meaning": "Settlement 17 territory; public ownership",
+          "color": "#B8A0B1"
+        },
+        {
+          "value": 18,
+          "meaning": "Settlement 18 territory; public ownership",
+          "color": "#BCA66E"
+        },
+        {
+          "value": 19,
+          "meaning": "Settlement 19 territory; public ownership",
+          "color": "#A8B56B"
+        },
+        {
+          "value": 20,
+          "meaning": "Settlement 20 territory; public ownership",
+          "color": "#87A67E"
+        },
+        {
+          "value": 21,
+          "meaning": "Settlement 21 territory; public ownership",
+          "color": "#8DAAA1"
+        },
+        {
+          "value": 22,
+          "meaning": "Settlement 22 territory; public ownership",
+          "color": "#C1A48C"
+        },
+        {
+          "value": 23,
+          "meaning": "Settlement 23 territory; public ownership",
+          "color": "#B8A0B1"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "worker",
+      "label": "384 controllable residents across 24 settlements",
+      "color": "#587C9D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 worker, 1 courier, 2 engineer, 3 grower, 4 guard tool"
+        },
+        {
+          "state_path": [
+            "material"
+          ],
+          "label": "Carried construction material, 0 to 4"
+        },
+        {
+          "state_path": [
+            "food"
+          ],
+          "label": "Carried provisions, 0 to 3"
+        },
+        {
+          "state_path": [
+            "signal"
+          ],
+          "label": "Gauge message lifetime, 0 to 4"
+        },
+        {
+          "state_path": [
+            "message_water"
+          ],
+          "label": "Broadcast gauge snapshot; meaningful while signal is positive"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "glyph": "gate",
+      "label": "Settlement sluices, crossings and local water gauges",
+      "color": "#638DA7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Local water level, at most 12"
+        },
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Open sluice"
+        },
+        {
+          "state_path": [
+            "canal"
+          ],
+          "label": "Outflow capacity, 1 or 2 units per tick"
+        },
+        {
+          "state_path": [
+            "route"
+          ],
+          "label": "0 downstream; 1 east diversion where available"
+        },
+        {
+          "state_path": [
+            "wall"
+          ],
+          "label": "Retaining wall and protected-road level, 0 to 3"
+        },
+        {
+          "state_path": [
+            "permission_count"
+          ],
+          "label": "Number of admitted settlement identities"
+        },
+        {
+          "state_path": [
+            "flow"
+          ],
+          "label": "Actual outflow this step, 0 to 2"
+        },
+        {
+          "state_path": [
+            "flood"
+          ],
+          "label": "Current overflow above reservoir and wall tolerance"
+        }
+      ]
+    },
+    {
+      "id": "reservoir",
+      "glyph": "water",
+      "label": "Reservoir expansion sites",
+      "color": "#6999B6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "reservoir"
+          ],
+          "label": "Reservoir level, 0 to 3; capacity 6 plus twice level"
+        }
+      ]
+    },
+    {
+      "id": "field",
+      "glyph": "plant",
+      "label": "Settlement fields and provisions",
+      "color": "#A0AE5D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crop"
+          ],
+          "label": "Crop growth stage, 0 empty to 8 ripe"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Soil moisture, 0 to 6"
+        },
+        {
+          "state_path": [
+            "grain"
+          ],
+          "label": "Settlement provisions, 0 to 40"
+        }
+      ]
+    },
+    {
+      "id": "quarry",
+      "glyph": "resource",
+      "label": "Finite construction quarries",
+      "color": "#ADAB9D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "quarry_stock"
+          ],
+          "label": "Remaining construction units, at most 48"
+        }
+      ]
+    },
+    {
+      "id": "packet",
+      "glyph": "water",
+      "label": "Native in-transit water parcels on actual source-destination channels",
+      "color": "#5BA7C7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "packet_amount"
+          ],
+          "label": "Water units in this transit slot, 0 to 2"
+        },
+        {
+          "state_path": [
+            "packet_target"
+          ],
+          "label": "Destination settlement ID; 24 is outside watershed"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_harvest"
+      ],
+      "meaning": "Actor harvested a ripe field",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_build"
+      ],
+      "meaning": "Actor spent a material on canal, reservoir or wall",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_grant"
+      ],
+      "meaning": "Guard granted or revoked local crossing permissions",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_delivery"
+      ],
+      "meaning": "Courier delivered provisions to a foreign settlement",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_water_revenue"
+      ],
+      "meaning": "Water delivered from this source to another settlement this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Quarry one construction unit with worker tool"
+    },
+    {
+      "id": 6,
+      "label": "Upgrade nearest canal with engineer and material"
+    },
+    {
+      "id": 7,
+      "label": "Expand nearby reservoir with engineer and material"
+    },
+    {
+      "id": 8,
+      "label": "Build retaining wall near sluice with engineer and material"
+    },
+    {
+      "id": 9,
+      "label": "Irrigate nearby field with grower tool"
+    },
+    {
+      "id": 10,
+      "label": "Plant empty nearby field using its provisions"
+    },
+    {
+      "id": 11,
+      "label": "Harvest ripe nearby field with grower tool"
+    },
+    {
+      "id": 12,
+      "label": "Toggle nearby sluice with engineer or guard tool"
+    },
+    {
+      "id": 13,
+      "label": "Grant nearby foreign crew entry while guarding own territory"
+    },
+    {
+      "id": 14,
+      "label": "Revoke foreign entry while guarding own territory"
+    },
+    {
+      "id": 15,
+      "label": "Read nearby water gauge into private memory"
+    },
+    {
+      "id": 16,
+      "label": "Broadcast remembered gauge for four ticks"
+    },
+    {
+      "id": 17,
+      "label": "Give one material to nearest adjacent resident"
+    },
+    {
+      "id": 18,
+      "label": "Give one carried provision to nearest adjacent resident"
+    },
+    {
+      "id": 19,
+      "label": "Load one provision at own field"
+    },
+    {
+      "id": 20,
+      "label": "Deliver one provision at foreign field with courier tool"
+    },
+    {
+      "id": 21,
+      "label": "Exchange tools with nearest adjacent resident"
+    },
+    {
+      "id": 22,
+      "label": "Switch nearby canal between downstream and east diversion"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        11
+      ],
+      "meaning": "Self: actor ID/383, x/95, y/63, settlement/23, tool/4, material/4, food/3, private gauge memory/12, signal/4, t/1024, own settlement grain/40",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        51
+      ],
+      "meaning": "Four nearest actor slots, 10 each: visible, ID/383, x/95, y/63, settlement/23, tool/4, material/4, food/3, signal/4, public remembered gauge/12",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        51,
+        339
+      ],
+      "meaning": "24 sluice rows, 12 each: visible, x/95, y/63, owner ID/23, water/12, open, canal/2, diversion, wall/3, permission count/24, outflow/2, flood",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        339,
+        435
+      ],
+      "meaning": "24 reservoir rows, 4 each: visible, x/95, y/63, reservoir level/3",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        435,
+        579
+      ],
+      "meaning": "24 field rows, 6 each: visible, x/95, y/63, crop/8, moisture/6, grain/40",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        579,
+        675
+      ],
+      "meaning": "24 quarry rows, 4 each: visible, x/95, y/63, stock/48",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        675,
+        1035
+      ],
+      "meaning": "72 transit parcel rows, 5 each: visible, x/95, y/63, amount/2, destination/24; slot position derives from source, stored destination and travel phase",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        1035,
+        1059
+      ],
+      "meaning": "Entry permits granted to own settlement, destination order 0..23, bool as float32",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1059,
+        1084
+      ],
+      "meaning": "Row-major 5 by 5 edge-clamped public territory patch; settlement ID/23",
+      "visibility": "local"
+    }
+  ]
+}

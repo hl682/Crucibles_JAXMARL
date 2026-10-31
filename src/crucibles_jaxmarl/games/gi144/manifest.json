@@ -1,0 +1,799 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00144",
+  "source_sha256": "4269d24c4659c474d5734959cd66e5504a11a772055437cc79b399d6c41b5768",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 148,
+  "num_actions": 8,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -0.007,
+  "reward_high": 2.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Courier or mobile switch operator"
+    },
+    {
+      "id": "agent_1",
+      "role": "West relay operator or courier"
+    },
+    {
+      "id": "agent_2",
+      "role": "East relay operator or courier"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait or serve operation commitment"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up or drop cargo at own cell"
+    },
+    {
+      "id": 6,
+      "label": "Hold local gate open; commit two future calls"
+    },
+    {
+      "id": 7,
+      "label": "Shift local gate phase by three; commit one future call"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lock_timer"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_id"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_phase"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_offset"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_override"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "switch_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "switch_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "switch_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "switch_gate"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_changed"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "commanded"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "picked"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dropped"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#ECE9DF"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable partition wall",
+          "color": "#555D69"
+        },
+        {
+          "value": 2,
+          "meaning": "Gate cell; entry depends on actual gate_open after current commands",
+          "color": "#BBA56C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "operators",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "lock_timer"
+          ],
+          "meaning": "Forced Wait calls remaining from station commitment",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Cargo id carried; -1 means empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_id"
+          ],
+          "meaning": "Cargo id and matching dock id",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "meaning": "Carrier agent index; -1 means on floor",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Delivered to the matching dock",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 4,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_phase"
+          ],
+          "meaning": "Current cycle phase 0 to 5; phases 0 and 1 are naturally open",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "gate_override"
+          ],
+          "meaning": "Current forced-open duration remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Gate is open for entry on the represented transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "switches",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "switch_pos"
+      ],
+      "active": [
+        "switch_active"
+      ],
+      "visibility": [
+        "switch_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "switch_gate"
+          ],
+          "meaning": "Index of the gate controlled from this station",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_id"
+          ],
+          "meaning": "Accepted cargo id",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Matching cargo has arrived",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "gate_changed"
+      ],
+      "meaning": "Gate entry-open flag changed from the previous frame",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "commanded"
+      ],
+      "meaning": "Hold or phase-shift command applied at this station index",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Cargo newly delivered to its matching dock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Cargo picked up on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Cargo voluntarily dropped on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent delivered status",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lock_timer"
+      ],
+      "meaning": "Current operator commitment countdown",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        12
+      ],
+      "meaning": "Agent-major 3 x [x/10,y/6,lock_timer/2,(carrying+1)/2], agent index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        20
+      ],
+      "meaning": "Cargo-major 2 x [x/10,y/6,(owner+1)/3,delivered]. Cargo identity is its row index.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        40
+      ],
+      "meaning": "Gate-major 4 x [x/10,y/6,phase/5,override/3,open]. The associated station is the same index.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        48
+      ],
+      "meaning": "Four station positions [x/10,y/6] in gate-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        52
+      ],
+      "meaning": "Two matching dock positions [x/10,y/6] in cargo-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        52,
+        55
+      ],
+      "meaning": "One-hot observing role identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        55,
+        56
+      ],
+      "meaning": "Elapsed calls t/96.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "meaning": "Joint episode_done.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        134
+      ],
+      "meaning": "Public 7x11 terrain, y-major, divided by two: floor 0, wall 0.5, gate cell 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        138
+      ],
+      "meaning": "Latest gate-open-state change flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        142
+      ],
+      "meaning": "Latest Hold or Shift command flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        144
+      ],
+      "meaning": "Latest cargo delivery flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        146
+      ],
+      "meaning": "Latest cargo pickup flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        148
+      ],
+      "meaning": "Latest cargo drop flags.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver cargo 0 from (1,1) to (9,1) and cargo 1 from (1,5) to (9,5), using periodic gates and distributed local station commands.",
+    "natural_termination": "Both cargo items are delivered; otherwise horizon 96 truncates. A matching delivery on the horizon retains natural-completion priority.",
+    "interaction": "An operator on a remote station changes another role cargo entry opportunity through a gate on the same transition, then pays a forced-stationary commitment. Phase shifts persist and alter future schedules. Cargo can be dropped for another carrier.",
+    "observation_access": "Map, positions, cargo ownership, gate phase/open/override, station mapping, commitment clocks, dock delivery status and latest events are public. Each role also observes own identity; no hidden phase is exposed only to a renderer."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lock_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_override"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_phase"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "integration_status": "RAW_ARRAY_KERNEL_AUTHORED_PUBLIC_ADAPTER_REQUIRES_SEPARATE_IMPLEMENTATION_AND_VALIDATION",
+  "native_information_boundary": "Policies receive only returned float32 observations and legal masks. A full-state debug renderer must be separately labelled."
+}

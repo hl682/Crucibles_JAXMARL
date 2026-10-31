@@ -1,0 +1,794 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00128",
+  "source_sha256": "c65118d8ecf1e89844561a43cfb4963d4f32076e80d6592c0d43c0df8e652f47",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "num_actions": 13,
+  "observation_size": 83,
+  "max_steps": 64,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -4,
+  "reward_high": 8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Upper west courier and sponsor"
+    },
+    {
+      "id": "agent_1",
+      "role": "Lower west courier and sponsor"
+    },
+    {
+      "id": "agent_2",
+      "role": "East courier and two-packet sponsor"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up packet at own cell"
+    },
+    {
+      "id": 6,
+      "label": "Offer carried packet to adjacent accepting role"
+    },
+    {
+      "id": 7,
+      "label": "Accept an adjacent offered packet"
+    },
+    {
+      "id": 8,
+      "label": "Reserve north cell"
+    },
+    {
+      "id": 9,
+      "label": "Reserve east cell"
+    },
+    {
+      "id": 10,
+      "label": "Reserve south cell"
+    },
+    {
+      "id": 11,
+      "label": "Reserve west cell"
+    },
+    {
+      "id": 12,
+      "label": "Drop carried packet"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "packet_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_status"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_carrier"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_destination"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_sponsor"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "packet_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reservation_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservation_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservation_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservation_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reservation_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "expiry_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "handoff_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pickup_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "blocked_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_total"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "expired_total"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Road or gate opening",
+          "color": "#C8C9B2"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable separator",
+          "color": "#52606D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_load"
+          ],
+          "meaning": "One-slot buffer occupied",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "packets",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "packet_pos"
+      ],
+      "active": [
+        "packet_active"
+      ],
+      "visibility": [
+        "packet_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "packet_status"
+          ],
+          "meaning": "0 ground; 1 carried; 2 delivered; 3 expired",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "packet_carrier"
+          ],
+          "meaning": "Carrier role; -1 none",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "packet_destination"
+          ],
+          "meaning": "Destination depot index, locally visible",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "packet_ttl"
+          ],
+          "meaning": "Remaining ticks, locally visible",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "packet_sponsor"
+          ],
+          "meaning": "Sponsor role, locally visible",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "route_reservations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "reservation_pos"
+      ],
+      "active": [
+        "reservation_active"
+      ],
+      "visibility": [
+        "reservation_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "reservation_ttl"
+          ],
+          "meaning": "Ticks remaining including current frame",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "reservation_owner"
+          ],
+          "meaning": "Only this role may enter the reserved cell",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public radio receipt for each packet newly delivered this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expiry_event"
+      ],
+      "meaning": "Public radio receipt for each packet newly expired this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Role one-hot in role index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Own [x,y] divided by 8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own one-slot buffer occupancy",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own movement request blocked on latest step",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        19
+      ],
+      "meaning": "Three couriers in index order, each [visible, x/8, y/8, load]; visible iff Manhattan distance <=3; hidden attributes zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        19,
+        51
+      ],
+      "meaning": "Four packet identities in index order, each [visible, x/8, y/8, destination/4, ttl/64, status/4, carrier/4, sponsor/4]; hidden attributes zero",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        51,
+        59
+      ],
+      "meaning": "Four depot [x,y] pairs divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        65
+      ],
+      "meaning": "Three current or historical reservation [x,y] pairs divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        68
+      ],
+      "meaning": "Reservation timers divided by 4, in owner role order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        68,
+        71
+      ],
+      "meaning": "Reservation active flags in owner role order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        75
+      ],
+      "meaning": "Per-packet public delivery receipt flags for latest step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        79
+      ],
+      "meaning": "Per-packet public expiry receipt flags for latest step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "meaning": "Clock t divided by 64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "meaning": "Total delivered packet count divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "meaning": "Total expired packet count divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        83
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Carry or relay four expiring packets to their privately assigned opposite-side depots through three shared openings.",
+    "natural_termination": "All four packets have been delivered or expired; otherwise truncate at 64 nonterminal steps.",
+    "interaction": "A consenting adjacent handoff transfers the sole packet slot and its destination information. Broadcast single-cell reservations deny entry to other roles for a bounded duration. Conservative simultaneous collision rules prevent swaps and create congestion. Packet sponsorship and last-handler bonuses make help compete with private delivery interests.",
+    "observation_access": "Fixed wall layout and depot identities are public. Roles observe themselves, couriers within Manhattan distance 3, and active packets within distance 2 or in their own custody. Every hidden packet value, including position, destination, timer, carrier and sponsor, is zeroed behind an explicit visible bit. Reservation locations/timers and delivery/expiry radio receipts are public. Inactive reservation positions remain public historical signals. Private handoff/pickup flags are not declared global scene events. The diagnostic full-state view must be separately labelled."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "packet_status"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "packet_carrier"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "packet_destination"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "packet_sponsor"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "packet_ttl"
+      ],
+      "low": 0,
+      "high": 44
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_load"
+      ],
+      "low": 0,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "reservation_ttl"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "packet_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "delivered_total"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "expired_total"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "invalid_action_policy": "Out-of-range action indices become action 0. Resource or movement requests whose prerequisites fail are deterministic no-ops for that request. Terminal raw input is absorbing. Disabled escorts in 127 are sanitized to action 0 and only action 0 is legal.",
+  "invariant_status": "SOURCE_DECLARATIONS_NOT_NUMERICALLY_TESTED"
+}

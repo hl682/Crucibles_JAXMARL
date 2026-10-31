@@ -1,0 +1,168 @@
+{
+  "schema": "cr01-spatial-game-playthrough-v3",
+  "candidate_id": "game-v3-00114",
+  "source_sha256": "16ebb97c9c761db5da08d58d3254d08995165d8b40b8c8222c044731c723a8ba",
+  "status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "seed": 11401,
+  "seed_convention": "reset key = jax.random.PRNGKey(seed); raw key at step i = jax.random.fold_in(reset_key, i+1); prospective only.",
+  "scripts": [
+    {
+      "id": "northern_escort_and_southern_relay",
+      "seed": 11401,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "Prospective finite replay of actual reset/raw_step states",
+      "intended_objective": "Attempt one physical evacuee pickup and shelter delivery while the runner transports a spare lamp and pulses the southern relay; no event has been executed.",
+      "actions": [
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          3
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          0,
+          2,
+          5
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          6,
+          0
+        ],
+        [
+          4,
+          3,
+          2
+        ],
+        [
+          4,
+          4,
+          2
+        ],
+        [
+          4,
+          4,
+          9
+        ],
+        [
+          4,
+          4,
+          0
+        ],
+        [
+          4,
+          4,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ]
+      ],
+      "stop_on_done": true,
+      "legality_claim": "All integers are declared command attempts for active roles. Stop at joint completion and replace no remaining actions; dynamic legality and outcomes have not been executed or certified.",
+      "expected_terminal": null
+    }
+  ],
+  "paired_intervention_hypotheses": [
+    {
+      "id": "continued_light_vs_switch_off",
+      "seed": 11401,
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "scope": "Paired raw trajectories from the identical reset key and literal shared prefix; replay both suffixes without policy learning.",
+      "prefix": [
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          3
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          0,
+          2,
+          5
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          6,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          7,
+          3,
+          0
+        ],
+        [
+          0,
+          4,
+          0
+        ]
+      ],
+      "intended_difference": "Only role 0 toggles in branch B. Intended effect: role 1 remains permitted to move west from (6,3) in A, but is blocked in B when no other source lights (5,3). Compare actual positions and visible-cell masks; health contrast is phase-dependent.",
+      "zero_or_negative_outcomes": [
+        "Both rewards can remain the same despite different positions.",
+        "No health difference is required; the shadow may not occupy the relevant cell.",
+        "If another source illuminates the target or the shared prefix did not reach the intended state, the movement contrast can be zero or indeterminate.",
+        "Switching off may save charge and can have a later benefit even while delaying the carrier."
+      ],
+      "stop_on_done": true,
+      "comparison_rule": "Record actual state/observation/action identities and both trajectories. Report intended effects as absent, negative, mixed, failed or indeterminate if that is what execution shows; do not replace the action script after observing a result."
+    }
+  ],
+  "source_only": true,
+  "numeric_execution_performed": false,
+  "success_claim": false
+}

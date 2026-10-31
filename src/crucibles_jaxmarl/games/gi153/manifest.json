@@ -1,0 +1,814 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00153",
+  "source_sha256": "e9d1a6de2281874cecfbf6b2f2ce57605925694d281ce97040c40634e54779c6",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 182,
+  "num_actions": 14,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 160,
+  "reward_low": -0.1,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "North bridge issuer and west-bank carrier; own travel needs south permission"
+    },
+    {
+      "id": "agent_1",
+      "role": "South bridge issuer and east-bank carrier; own travel needs north permission"
+    },
+    {
+      "id": "agent_2",
+      "role": "West-bank merchant carrying complementary cargo for agent 3"
+    },
+    {
+      "id": "agent_3",
+      "role": "East-bank merchant carrying complementary cargo for agent 0"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Request north bridge at its approach; quote current toll"
+    },
+    {
+      "id": 6,
+      "label": "Request south bridge at its approach; quote current toll"
+    },
+    {
+      "id": 7,
+      "label": "As issuer, grant one prior request at own control point and escrow one token"
+    },
+    {
+      "id": 8,
+      "label": "As issuer, toggle advertised own-bridge toll between zero and one"
+    },
+    {
+      "id": 9,
+      "label": "Hand carried parcel to adjacent empty agent 0"
+    },
+    {
+      "id": 10,
+      "label": "Hand carried parcel to adjacent empty agent 1"
+    },
+    {
+      "id": 11,
+      "label": "Hand carried parcel to adjacent empty agent 2"
+    },
+    {
+      "id": 12,
+      "label": "Hand carried parcel to adjacent empty agent 3"
+    },
+    {
+      "id": 13,
+      "label": "Attempt delivery of held parcel at its private target"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "target_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wallet"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "in_transit"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "entry_side"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_carrier"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_type"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "recipient"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "received"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "request_gate"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "request_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "request_price"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "toll"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beneficiary"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "permit_ttl"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "permit_price"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bond"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "target_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "deliver_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cross_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "target_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grant_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "expire_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Bank path",
+          "color": "#D6D4CB"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall or unbridged river",
+          "color": "#394652"
+        },
+        {
+          "value": 2,
+          "meaning": "Narrow bridge",
+          "color": "#BA8A45"
+        },
+        {
+          "value": 3,
+          "meaning": "Possible delivery depot; private contract selects row",
+          "color": "#6D95A6"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "carriers",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Parcel id carried; -1 means empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "wallet"
+          ],
+          "meaning": "Token balance; public on contract board",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "in_transit"
+          ],
+          "meaning": "Bridge entered, or -1 when on a bank",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo_type"
+          ],
+          "meaning": "Complementary cargo type equals immutable parcel id",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo_carrier"
+          ],
+          "meaning": "Current carrier, or -1 when delivered",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "recipient"
+          ],
+          "meaning": "Agent whose complementary demand this parcel fulfills",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_owner"
+          ],
+          "meaning": "Issuer: north 0, south 1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "toll"
+          ],
+          "meaning": "Advertised toll for new requests",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "beneficiary"
+          ],
+          "meaning": "Role with the current permit, or -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "permit_ttl"
+          ],
+          "meaning": "Remaining permit lifetime",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "permit_price"
+          ],
+          "meaning": "Quoted toll locked into the current or last permit",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "bond"
+          ],
+          "meaning": "Issuer token currently held in escrow",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "addresses",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "target_pos"
+      ],
+      "active": [
+        "target_active"
+      ],
+      "visibility": [
+        "target_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "recipient"
+          ],
+          "meaning": "Receiving agent for this bilateral private delivery contract",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "deliver_event"
+      ],
+      "meaning": "Public completed delivery notices by parcel",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cross_event"
+      ],
+      "meaning": "Public opposite-bank exits by carrier this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "grant_event"
+      ],
+      "meaning": "Public newly issued permit notices by bridge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "expire_event"
+      ],
+      "meaning": "Public expired unused permit notices by bridge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "received"
+      ],
+      "meaning": "Fulfilled complementary demands by receiving agent",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        7
+      ],
+      "visibility": "self",
+      "meaning": "Own x,y,id,carried parcel id,received count,clock,joint done."
+    },
+    {
+      "slice": [
+        7,
+        53
+      ],
+      "visibility": "public",
+      "meaning": "Contract board: wallets[4]; request triples gate,ttl,quote for four agents[12]; bridge records x,y,beneficiary,ttl,advertised toll,locked price,bond[14]; delivery flags[4],crossing flags[4],grant flags[2],expiry flags[2],received counts[4]."
+    },
+    {
+      "slice": [
+        53,
+        73
+      ],
+      "visibility": "local",
+      "meaning": "Four agent records: x,y,carried parcel,in-transit bridge,visible. Radius 3 without wall occlusion; hidden fields -1."
+    },
+    {
+      "slice": [
+        73,
+        93
+      ],
+      "visibility": "local",
+      "meaning": "Four parcel records: x,y,carrier,active,visible. Active parcels within radius 3; immutable type equals record id and recipients are [1,2,3,0]."
+    },
+    {
+      "slice": [
+        93,
+        105
+      ],
+      "visibility": "local",
+      "meaning": "Four private address records: x,y,visible. Known to original sender, named recipient and current carrier; otherwise -1. Delivered target becomes inactive and hidden."
+    },
+    {
+      "slice": [
+        105,
+        182
+      ],
+      "visibility": "public",
+      "meaning": "Static 7 by 11 public tile map, row-major yx."
+    }
+  ],
+  "task": {
+    "objective": "Transport four complementary parcels to their bilateral private target depots by negotiating scarce expiring bridge access; choose toll revenue, prompt passage and reciprocal delivery assistance.",
+    "natural_termination": "Terminate when all four unique parcels have been delivered. Otherwise truncate at 160; undelivered demands remain explicitly unsatisfied.",
+    "interaction": "Each issuer must use the other bridge to cross; neither can issue itself a permit. A grant escrows a scarce real token and an action near a control point. Permits constrain entering the only river crossings. Toll quotes, expiry, physical congestion and complementary recipient rewards create cross-agent opportunities and costs.",
+    "observation_access": "Public terrain and contract board includes wallets, requests, quotes, permit lifetimes, grants, expiries and receipts. Moving agents and active parcels have Manhattan-radius-3 visibility without wall occlusion. Each random delivery address is visible only to its original sender, named recipient and current carrier. Full-state debug views must be labeled separately."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "wallet"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "received"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "toll"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "permit_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "permit_price"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "bond"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "request_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "request_price"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

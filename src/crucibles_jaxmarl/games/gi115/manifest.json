@@ -1,0 +1,692 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00115",
+  "source_sha256": "dd21f93f71a3b24167e86e3dc1098b05bc286ee88e0cb5c489b32f83427dd360",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 100,
+  "num_actions": 11,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -1.0,
+  "reward_high": 10.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "entities": [
+    {
+      "id": "boats",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "boat_pos"
+      ],
+      "active": [
+        "boat_active"
+      ],
+      "visibility": [
+        "boat_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "meaning": "Undelivered freight units on this boat",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Whether this boat has completed its delivery",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "chambers",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "lock_pos"
+      ],
+      "active": [
+        "lock_active"
+      ],
+      "visibility": [
+        "lock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "level"
+          ],
+          "meaning": "Chamber water level: zero low, two high",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "flow"
+          ],
+          "meaning": "Net chamber water change on the last transition",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "last_operator"
+          ],
+          "meaning": "Chosen command issuer, minus one means none",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 4,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Passable gate state: low and high gate per chamber",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "dock_served"
+          ],
+          "meaning": "Destination delivery completed",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "shared_reservoir",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "reservoir_pos"
+      ],
+      "active": [
+        "reservoir_active"
+      ],
+      "visibility": [
+        "reservoir_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Available shared water units",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivery_count"
+      ],
+      "meaning": "Completed freight deliveries",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "flow"
+      ],
+      "meaning": "Net signed chamber water transfer during this transition, not a cumulative level",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "level"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cargo"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "boat_pos"
+      ],
+      "active_path": [
+        "boat_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      10.5,
+      4.5
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Navigable basin or lock chamber",
+          "color": "#A9D6E5"
+        },
+        {
+          "value": 1,
+          "meaning": "Bank or median, not navigable",
+          "color": "#6B705C"
+        },
+        {
+          "value": 2,
+          "meaning": "Destination dock",
+          "color": "#95D5B2"
+        }
+      ],
+      "public": true
+    }
+  },
+  "title": "Freight canal locks and shared water",
+  "action_mask_semantics": "Every listed action is a legal command attempt for an active role. Unmet physical, capability, inventory or consent prerequisites yield no effect. Out-of-range integers become wait. Inactive roles and absorbed episodes expose only action 0.",
+  "public_adapter_status": "NOT_DELIVERED_IN_AUTHOR_PACKAGE; the separate implementation layer must supply and validate agent-keyed dictionaries and __all__ without changing this flat kernel or the frozen learner.",
+  "authoring_status": "AUTHORED_NOT_EXECUTED",
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Eastbound freight boat for dock (9,1)"
+    },
+    {
+      "id": "agent_1",
+      "role": "Eastbound freight boat for dock (9,3)"
+    },
+    {
+      "id": "agent_2",
+      "role": "Westbound freight boat for dock (1,2)"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Open nearby low-side gate if chamber is low"
+    },
+    {
+      "id": 6,
+      "label": "Open nearby high-side gate if chamber is high"
+    },
+    {
+      "id": 7,
+      "label": "Close both gates of nearby chamber"
+    },
+    {
+      "id": 8,
+      "label": "Fill nearby closed chamber by one reservoir unit"
+    },
+    {
+      "id": 9,
+      "label": "Drain one chamber unit back to the reservoir"
+    },
+    {
+      "id": 10,
+      "label": "Transfer one unit from this closed chamber to the other closed chamber"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        5,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "turn_offset"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_total"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivery_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "boat_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "boat_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "boat_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lock_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "level"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flow"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_operator"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_served"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservoir_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservoir_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reservoir_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self boat identity one-hot; destination uses the same index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Elapsed ticks divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        59
+      ],
+      "meaning": "Row-major public terrain divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        71
+      ],
+      "meaning": "Three boat records: x/10,y/10,cargo,delivered; completed boats are inactive but their delivered position remains known",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        85
+      ],
+      "meaning": "Two chamber records: x/10,y/10,level/2,low gate open,high gate open,net flow/2,(chosen operator+1)/3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        94
+      ],
+      "meaning": "Three destination records: x/10,y/10,served",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "Shared reservoir record: x/10,y/10,stock/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        100
+      ],
+      "meaning": "One-hot first boat in the next rotating arbitration order",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver each boat cargo to its indexed dock using either lock lane and the two shared transferable water units.",
+    "natural_termination": "All three boats delivered; otherwise truncate at tick 128, with natural completion taking priority on that tick.",
+    "interaction": "A chamber may be opened at the low bank only at level zero and at the high bank only at level two. Filling or transferring water changes what the other chamber can do. Boats physically occupy cells, may form convoys and may need to yield an entrance to allow opposing traffic.",
+    "observation_access": "All map, boat, gate, chamber, reservoir and dock state is public. The flat row adds the acting boat identity. No private targets or unobserved resource fields are used.",
+    "transition_order": "Movement uses old gate states and rotating occupancy priority. Each chamber then selects one nearby boat command by the same rotating boat priority. Chambers settle their commands in alternating lane order, followed by delivery and termination."
+  },
+  "invariant_notes": [
+    "All active boats occupy distinct navigable cells. Finished boats are inactive and accept only wait.",
+    "At every reachable state, sum(level)+stock[0]=2; stock and each chamber level remain in [0,2].",
+    "A lane cannot have both gates open; an open low gate implies level zero and an open high gate implies level two.",
+    "The low and high basins are fixed reference elevations; the conserved two units model chamber service water, not an unbounded fluid solver.",
+    "For each boat cargo+delivered=1, and each indexed dock can be served once.",
+    "Selected unsuccessful pump/transfer attempts still incur the declared operator cost; commands are not promises of success.",
+    "Raw terminal state is absorbing; actual terminal cause and time are retained."
+  ]
+}

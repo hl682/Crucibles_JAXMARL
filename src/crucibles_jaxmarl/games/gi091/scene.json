@@ -1,0 +1,332 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "ecdc0a48686f6ef2675b5c36074a44339a2882bfef85950b50df836fd7e09d40",
+  "manifest_sha256": "59287cb65df99b9ab785b5a7878e560b532887f6b304ae3cde618bb7a940c57a",
+  "title": "Ember Weir: Shared Firebreaks",
+  "rules": [
+    "Fire occupies actual grid cells, lasts three steps and spreads into unused adjacent fuel every third step. Fuel never regrows.",
+    "Spend one water to spray your own and front cells, or two to build a two-strength firebreak. Firebreaks block workers and fire until removed or eroded.",
+    "A single finite depot serves all three workers. Adjacent workers may transfer one water; tanks hold three.",
+    "Facing follows directional attempts. Workers in fire lose water and have actions suppressed while stunned. Stone cells block workers and do not burn.",
+    "Protect at least one asset until no flame remains. Losing every asset ends in failure; the horizon is 96 steps."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Flammable traversable ground",
+          "color": "#566C41"
+        },
+        {
+          "value": 1,
+          "meaning": "Nonflammable stone barrier",
+          "color": "#606D7B"
+        },
+        {
+          "value": 2,
+          "meaning": "Nonflammable water depot",
+          "color": "#3B93B4"
+        },
+        {
+          "value": 3,
+          "meaning": "Flammable shared asset footprint",
+          "color": "#D3C786"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Containment workers",
+      "color": "#8ED2DB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Carried water units, capacity three"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "Front direction: 1 north, 2 east, 3 south, 4 west"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "label": "Remaining suppressed-action steps after fire exposure"
+        }
+      ]
+    },
+    {
+      "id": "flames",
+      "glyph": "hazard",
+      "label": "Live flame cells",
+      "color": "#F27744",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "fire"
+          ],
+          "label": "Remaining fire lifetime, zero to three"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "label": "Unignited fuel flag at this cell"
+        }
+      ]
+    },
+    {
+      "id": "firebreaks",
+      "glyph": "gate",
+      "label": "Built firebreak cells",
+      "color": "#B69D65",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "barrier"
+          ],
+          "label": "Remaining resistance to exposed spread ticks"
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "glyph": "plant",
+      "label": "Shared protected assets",
+      "color": "#78BA76",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "Remaining shared asset integrity"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "glyph": "water",
+      "label": "Shared water depot",
+      "color": "#5EADE2",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "Finite shared water supply remaining"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices 0 to 6: spray used, firebreak built, water transferred, firebreak dismantled, asset damaged, success, failure; flags refer to the most recent nonterminal transition.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north attempt; face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east attempt; face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south attempt; face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west attempt; face west"
+    },
+    {
+      "id": 5,
+      "label": "Spray current and front cell; spend one water"
+    },
+    {
+      "id": 6,
+      "label": "Build two-strength firebreak in front; spend two water"
+    },
+    {
+      "id": 7,
+      "label": "Draw one unit from the finite shared depot"
+    },
+    {
+      "id": 8,
+      "label": "Give one water to an adjacent teammate with capacity"
+    },
+    {
+      "id": 9,
+      "label": "Dismantle front firebreak; recover at most one water"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Identity one-hot in role order 0,1,2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "All worker xy positions divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Carried water divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Facing action IDs divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Stun duration divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        81
+      ],
+      "meaning": "Public terrain flattened yx divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        144
+      ],
+      "meaning": "All cells' fire lifetime divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        207
+      ],
+      "meaning": "All cells' remaining fuel flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        270
+      ],
+      "meaning": "All cells' firebreak strength divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        270,
+        276
+      ],
+      "meaning": "Asset xy positions divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        276,
+        279
+      ],
+      "meaning": "Asset integrity divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        279,
+        281
+      ],
+      "meaning": "Depot xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        281,
+        282
+      ],
+      "meaning": "Shared depot stock divided by 32",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        282,
+        283
+      ],
+      "meaning": "Clock divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        283,
+        290
+      ],
+      "meaning": "Last-step flags: spray, build, transfer, dismantle, damage, success, failure",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        290,
+        293
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ]
+}
+

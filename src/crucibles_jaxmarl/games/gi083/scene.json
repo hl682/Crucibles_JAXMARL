@@ -1,0 +1,245 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f13fabbc6d48ad8b92f984c905586710f64d4d48b07c984c253bcd18eebaebea",
+  "manifest_sha256": "dcc13bf011827886cf083bb95dbbffbb6260c4b910c8b04eac24b348742d3d8b",
+  "title": "Relay Bastions",
+  "rules": [
+    "Two teams of two contest three nodes; the center pays twice the outer nodes.",
+    "Attune within one tile. Operational opponents within one tile block progress and payment.",
+    "Only meter +3 or -3 is owned. Partial counter-attunement makes a node neutral.",
+    "Pulses spend one shared cell, selecting nearest eligible enemy on a clear cardinal ray of at most three tiles.",
+    "Hits resolve simultaneously. Cover, brace and a live support shield each absorb one hit that tick.",
+    "A disabling tag restores integrity to three and disables the next three decisions; the body remains an obstacle.",
+    "Support reaches a teammate within two tiles and lasts two ticks. Home recovery adds two cells, capped at eight.",
+    "Nodes pay every fourth tick. Twelve points ends naturally; horizon 96 otherwise truncates."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "grid"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open floor"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall blocks movement and cardinal pulse rays"
+        },
+        {
+          "value": 2,
+          "meaning": "Cover floor absorbs one hit per tick"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "operators",
+      "glyph": "robot",
+      "label": "Operators",
+      "color": "#60A5FA",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "0 west; 1 east"
+        },
+        {
+          "state_path": [
+            "hp"
+          ],
+          "label": "Integrity; resets to three on a disabling tag"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "label": "Disabled decision ticks remaining"
+        },
+        {
+          "state_path": [
+            "shield"
+          ],
+          "label": "Support-shield ticks remaining"
+        }
+      ]
+    },
+    {
+      "id": "relay_nodes",
+      "glyph": "flag",
+      "label": "Relay Nodes",
+      "color": "#FBBF24",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "meter"
+          ],
+          "label": "Control meter from -3 east to +3 west"
+        },
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "-1 neutral; 0 west; 1 east"
+        }
+      ]
+    },
+    {
+      "id": "home_batteries",
+      "glyph": "battery",
+      "label": "Home Batteries",
+      "color": "#34D399",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Shared energy pool for corresponding team"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Team relay points",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "energy"
+      ],
+      "meaning": "Shared battery pools",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "stun"
+      ],
+      "meaning": "Operator disable timers",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "owner"
+      ],
+      "meaning": "Relay node ownership",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Attune nearby objectives"
+    },
+    {
+      "id": 6,
+      "label": "Spend one shared cell to pulse the nearest eligible opposing operator"
+    },
+    {
+      "id": 7,
+      "label": "Brace this tick"
+    },
+    {
+      "id": 8,
+      "label": "Spend one shared cell to shield nearby teammate"
+    },
+    {
+      "id": 9,
+      "label": "Recover two cells at own home battery"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own team one-hot(2), then own within-team slot one-hot(2)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        9
+      ],
+      "meaning": "Clock, team scores (2), team energy pools (2)",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        33
+      ],
+      "meaning": "All operators: x,y,hp,stun,shield,team in fixed slot order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        45
+      ],
+      "meaning": "Three relay nodes: x,y,meter,owner per slot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        49
+      ],
+      "meaning": "Two home batteries x,y per slot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        112
+      ],
+      "meaning": "Public 7-by-9 map flattened row-major yx",
+      "visibility": "public"
+    }
+  ]
+}

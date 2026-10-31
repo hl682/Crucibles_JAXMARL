@@ -1,0 +1,1322 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00217",
+  "source_sha256": "78a651a4ff09f8353eddeb74fcd42a854cfc1f95df4cd61cbab49e1920161c66",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 8,
+  "observation_size": 1192,
+  "num_actions": 24,
+  "max_steps": 512,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -4,
+  "observation_high": 512,
+  "reward_low": -4,
+  "reward_high": 8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Western propagator: grafts dry seed traits"
+    },
+    {
+      "id": "agent_1",
+      "role": "Western forager: prunes or clears plants for timber"
+    },
+    {
+      "id": "agent_2",
+      "role": "Northern builder: windbreak construction and shed upgrade"
+    },
+    {
+      "id": "agent_3",
+      "role": "Northern waterkeeper: shared reservoir and watering"
+    },
+    {
+      "id": "agent_4",
+      "role": "Eastern propagator: grafts dry seed traits"
+    },
+    {
+      "id": "agent_5",
+      "role": "Eastern forager: prunes or clears plants for timber"
+    },
+    {
+      "id": "agent_6",
+      "role": "Southern builder: windbreak construction and shed upgrade"
+    },
+    {
+      "id": "agent_7",
+      "role": "Southern waterkeeper: shared reservoir and watering"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index adjacent unheld seed basket; hands must be free"
+    },
+    {
+      "id": 6,
+      "label": "Put held seed basket on current tile"
+    },
+    {
+      "id": 7,
+      "label": "Harvest adjacent ripe crop for fruit; collect wet seeds if carrying a basket with room"
+    },
+    {
+      "id": 8,
+      "label": "Plant selected dry seed into adjacent empty moist bed"
+    },
+    {
+      "id": 9,
+      "label": "Set held basket on adjacent empty shared drying slot"
+    },
+    {
+      "id": 10,
+      "label": "Fill carried water to three from shared reservoir at well; waterkeeper"
+    },
+    {
+      "id": 11,
+      "label": "Water adjacent needy bed with one carried unit; waterkeeper"
+    },
+    {
+      "id": 12,
+      "label": "Prune mature growth for two timber or clear young growth for one; forager"
+    },
+    {
+      "id": 13,
+      "label": "Build a front windbreak for two timber; builder"
+    },
+    {
+      "id": 14,
+      "label": "Rotate adjacent standing windbreak orientation"
+    },
+    {
+      "id": 15,
+      "label": "Lift adjacent windbreak with free hands"
+    },
+    {
+      "id": 16,
+      "label": "Place held windbreak on clear front cell"
+    },
+    {
+      "id": 17,
+      "label": "Graft nearby growing crop to hybrid using one dry seed of each base trait; propagator"
+    },
+    {
+      "id": 18,
+      "label": "Upgrade shared drying roof with two timber; builder"
+    },
+    {
+      "id": 19,
+      "label": "Select next seed trait: hardy, lush, hybrid"
+    },
+    {
+      "id": 20,
+      "label": "Give one selected dry seed to adjacent peer's carried basket"
+    },
+    {
+      "id": 21,
+      "label": "Mulch adjacent depleted soil with one timber"
+    },
+    {
+      "id": 22,
+      "label": "Dismantle adjacent windbreak and recover one timber; builder"
+    },
+    {
+      "id": 23,
+      "label": "Release one selected dry seed from held basket into the current wind"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        24,
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        8,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        8,
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wood"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carry_break"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "selected"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "achieved"
+      ],
+      "shape": [
+        8,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bed_pos"
+      ],
+      "shape": [
+        24,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bed_active"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bed_visible"
+      ],
+      "shape": [
+        8,
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bed_owner"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trait"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "growth"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "canopy"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "moisture"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fertility"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "seedbank"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shade"
+      ],
+      "shape": [
+        24
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "basket_pos"
+      ],
+      "shape": [
+        8,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "basket_active"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "basket_visible"
+      ],
+      "shape": [
+        8,
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "basket_holder"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "basket_slot"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wet"
+      ],
+      "shape": [
+        8,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dry"
+      ],
+      "shape": [
+        8,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dry_timer"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "break_pos"
+      ],
+      "shape": [
+        8,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "break_active"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "break_visible"
+      ],
+      "shape": [
+        8,
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "break_holder"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "break_axis"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "deployed"
+      ],
+      "shape": [
+        8
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "seed_pos"
+      ],
+      "shape": [
+        16,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "seed_active"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "seed_visible"
+      ],
+      "shape": [
+        8,
+        16
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "seed_trait"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "seed_owner"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "seed_age"
+      ],
+      "shape": [
+        16
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facility_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facility_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "facility_visible"
+      ],
+      "shape": [
+        8,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shed_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shed_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shed_visible"
+      ],
+      "shape": [
+        8,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wind"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "rain"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "daylight"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "wind_offset"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservoir"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "roof"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reward_parts"
+      ],
+      "shape": [
+        8,
+        5
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      23,
+      23
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Connected orchard ground",
+          "color": "#BBCB93"
+        },
+        {
+          "value": 1,
+          "meaning": "Permanent pond; not walkable",
+          "color": "#7AA9B7"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "gardeners",
+      "kind": "agent",
+      "count": 8,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "0 propagator, 1 forager, 2 builder, 3 waterkeeper",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "1 north, 2 east, 3 south, 4 west",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "meaning": "Carried timber, 0..6",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carried basket index, -1 none",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carry_break"
+          ],
+          "meaning": "Carried windbreak index, -1 none",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "meaning": "Carried watering units, 0..3",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "selected"
+          ],
+          "meaning": "Selected trait 0 hardy, 1 lush, 2 hybrid",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "plots",
+      "kind": "resource",
+      "count": 24,
+      "position": [
+        "bed_pos"
+      ],
+      "active": [
+        "bed_active"
+      ],
+      "visibility": [
+        "bed_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "bed_owner"
+          ],
+          "meaning": "Neighbor owning the plot, 0..7",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "trait"
+          ],
+          "meaning": "-1 empty, 0 hardy, 1 lush, 2 hybrid",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "meaning": "Crop stage, 0..6; six ripe",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "canopy"
+          ],
+          "meaning": "Stage-five/six canopy casts eastern shade",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "meaning": "Soil moisture, 0..6",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "fertility"
+          ],
+          "meaning": "Available growth nutrients, 0..6",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "seedbank"
+          ],
+          "meaning": "Ripe wet seeds available, 0..2",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "shade"
+          ],
+          "meaning": "Hedge or neighboring canopy currently shades bed",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "baskets",
+      "kind": "object",
+      "count": 8,
+      "position": [
+        "basket_pos"
+      ],
+      "active": [
+        "basket_active"
+      ],
+      "visibility": [
+        "basket_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "basket_holder"
+          ],
+          "meaning": "-1 unattended, 0..7 gardener",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "basket_slot"
+          ],
+          "meaning": "Shared drying slot, -1 none",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "wet"
+          ],
+          "meaning": "Wet seed counts by three traits",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "dry"
+          ],
+          "meaning": "Dry seed counts by three traits",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "dry_timer"
+          ],
+          "meaning": "Accumulated usable drying ticks, 0..6",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "windbreaks",
+      "kind": "object",
+      "count": 8,
+      "position": [
+        "break_pos"
+      ],
+      "active": [
+        "break_active"
+      ],
+      "visibility": [
+        "break_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "break_holder"
+          ],
+          "meaning": "-1 standing/unheld, 0..7 carrier",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "break_axis"
+          ],
+          "meaning": "0 blocks vertical wind; 1 blocks horizontal wind",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "deployed"
+          ],
+          "meaning": "Standing and able to block movement/wind",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "drifting_seeds",
+      "kind": "resource",
+      "count": 16,
+      "position": [
+        "seed_pos"
+      ],
+      "active": [
+        "seed_active"
+      ],
+      "visibility": [
+        "seed_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "seed_trait"
+          ],
+          "meaning": "Inherited seed trait 0..2",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "seed_owner"
+          ],
+          "meaning": "Source gardener bearing dispersal loss",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "seed_age"
+          ],
+          "meaning": "Airborne age, max eight ticks",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "facility_pos"
+      ],
+      "active": [
+        "facility_active"
+      ],
+      "visibility": [
+        "facility_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "drying_slots",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "shed_pos"
+      ],
+      "active": [
+        "shed_active"
+      ],
+      "visibility": [
+        "shed_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "wind"
+      ],
+      "meaning": "Actual public wind vector x,y",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "rain"
+      ],
+      "meaning": "Current public rainy phase",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "daylight"
+      ],
+      "meaning": "Current public daylight phase",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "reservoir"
+      ],
+      "meaning": "Shared well water units, 0..20",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "roof"
+      ],
+      "meaning": "Shared drying shelter level, 1 or 2",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        580
+      ],
+      "meaning": "Public 24x24 connected ground with a fixed impassable southeast pond; crops and current objects are separate local records",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        580,
+        584
+      ],
+      "meaning": "Public well and shared drying-shed center coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        584,
+        592
+      ],
+      "meaning": "Public four fixed drying-slot coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        592,
+        594
+      ],
+      "meaning": "Actual current public x,y wind vector, cardinal and unit length",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        594,
+        595
+      ],
+      "meaning": "rain; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        595,
+        596
+      ],
+      "meaning": "daylight; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        596,
+        597
+      ],
+      "meaning": "Seeded initial wind-cycle offset; only supplied reset key used",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        597,
+        598
+      ],
+      "meaning": "Shared finite-capacity well reservoir, 0..20, replenished by rain",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        598,
+        599
+      ],
+      "meaning": "Shared roof level: one permits dry-weather work; two also permits drying in rain",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        599,
+        608
+      ],
+      "meaning": "Self actor id, first-harvest trait achievements[3], native reward components[5]",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        608,
+        688
+      ],
+      "meaning": "Eight local gardener records: visible,x,y,role,facing,wood,carried basket,carried windbreak,water,selected trait; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        688,
+        952
+      ],
+      "meaning": "24 local bed records: visible,x,y,plot owner,trait,growth,canopy,moisture,fertility,seedbank,shade; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        952,
+        1048
+      ],
+      "meaning": "Eight local basket records: visible,x,y,holder,drying slot,wet[3],dry[3],dry timer; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        1048,
+        1096
+      ],
+      "meaning": "Eight local windbreak records: visible,x,y,holder,axis,deployed; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        1096,
+        1192
+      ],
+      "meaning": "16 local seed records: visible,x,y,trait,source owner,air age; hidden/inactive data -1",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Choose fruit-quality, seed propagation, grafting, plot renewal, shared shelter or water-support goals in a finite 24x24 eight-gardener ecological world.",
+    "natural_termination": "No mandatory harvest, construction or biodiversity threshold terminates this world. terminated remains false and tick 512 truncates; each harvest, dry cycle and planting leaves the world persistent.",
+    "interaction": "Harvesting removes a parent's canopy and ripe seedbank, changing neighboring shade and future windborne offspring. Windbreak placement/orientation changes other plots' seed access. Four shared drying slots, a finite reservoir and complementary pruning/building/grafting/watering abilities force spatial and temporal coordination.",
+    "observation_access": "The static ground map, facility/drying-slot locations, clock, wind/rain/daylight, wind offset, reservoir and roof are public. Dynamic gardeners, bed/canopy/soil/seed states, basket contents/holders, windbreaks and seed particles are visible only within Manhattan radius four. Every hidden record is -1 with an explicit visibility bit; inactive seed/windbreak capacities are also hidden. Each actor additionally sees only its own trait-achievement flags and five reward components. Shared establishment reward reveals an aggregate count, without a remote crop identity, trait or location. No distant current crop is exposed through public scene events or HUD fields."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 512
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wood"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "water"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "reservoir"
+      ],
+      "low": 0,
+      "high": 20
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "growth"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "moisture"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fertility"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "seedbank"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wet"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "dry"
+      ],
+      "low": 0,
+      "high": 6
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

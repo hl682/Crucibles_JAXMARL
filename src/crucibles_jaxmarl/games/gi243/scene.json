@@ -1,0 +1,486 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "3766628b843e2db382cb1f6066699330f3f2abe742ac8e583054e42f0899523d",
+  "manifest_sha256": "eb7ced0be3ccea9d879a2858fe4f2c020c6eeb94e58e63406df163eb0474bfd9",
+  "title": "Mountain Orchard Neighbours",
+  "rules": [
+    "Thirty-two households each provide four independently controllable people. Bees and herds are environmental entities.",
+    "Flowering compatible trees send wind pollen through a two-step queue. A healthy local hive and nearby visible bee are required.",
+    "Spray removes local pests but poisons neighboring trees and hurts nearby hives. Compost and carried water support delayed growth.",
+    "Hive care needs a beekeeper plus a partner shading the same hive. A beekeeper can carry a hive as a backpack to another terrace.",
+    "Bridge repair needs a mason with material and a nearby bracing partner. Erosion closes neglected crossings.",
+    "Harvest fruit and deliver it to village stores; quality travels with the carried cargo. Native human interaction remains unverified."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      -0.5,
+      -0.5,
+      63.5,
+      39.5
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "visibility": [
+        "map_visibility"
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "terrace grass",
+          "color": "#A7BD7B"
+        },
+        {
+          "value": 1,
+          "meaning": "mountain ravine",
+          "color": "#667C89"
+        },
+        {
+          "value": 2,
+          "meaning": "usable footbridge",
+          "color": "#BFA17A"
+        },
+        {
+          "value": 3,
+          "meaning": "broken footbridge",
+          "color": "#857568"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "worker",
+      "label": "household actors; select by native actor index",
+      "color": "#C67C75",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "fixed profession code"
+        },
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "home crew identifier"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "current exchangeable tool code"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "carried cargo kind"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "carried cargo units"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "stamina, 0 to 20"
+        },
+        {
+          "state_path": [
+            "memory"
+          ],
+          "label": "physically carried information code"
+        }
+      ]
+    },
+    {
+      "id": "tree",
+      "glyph": "plant",
+      "label": "compatible orchard trees",
+      "color": "#8DAD56",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "species"
+          ],
+          "label": "tree compatibility class"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "tree maturity"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "soil water"
+        },
+        {
+          "state_path": [
+            "pollen"
+          ],
+          "label": "received compatible pollen"
+        },
+        {
+          "state_path": [
+            "poison"
+          ],
+          "label": "spray residue"
+        },
+        {
+          "state_path": [
+            "pests"
+          ],
+          "label": "pest burden"
+        },
+        {
+          "state_path": [
+            "fruit"
+          ],
+          "label": "ripe fruit units"
+        },
+        {
+          "state_path": [
+            "tree_wind"
+          ],
+          "label": "wind side"
+        }
+      ]
+    },
+    {
+      "id": "hive",
+      "glyph": "square",
+      "label": "movable pollinator shelter",
+      "color": "#E1B357",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "label": "hive health"
+        },
+        {
+          "state_path": [
+            "nectar"
+          ],
+          "label": "hive food"
+        },
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "label": "backpack carrier actor index plus one or zero"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "glyph": "gate",
+      "label": "shared terrace footbridge",
+      "color": "#B39573",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge_health"
+          ],
+          "label": "bridge integrity"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "glyph": "crate",
+      "label": "compost and construction kits",
+      "color": "#9E785D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "label": "remaining depot units"
+        }
+      ]
+    },
+    {
+      "id": "well",
+      "glyph": "water",
+      "label": "terrace water basin",
+      "color": "#6FA8B7",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "basin water"
+        }
+      ]
+    },
+    {
+      "id": "store",
+      "glyph": "food",
+      "label": "village fruit store",
+      "color": "#CC8F68",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "deliveries"
+          ],
+          "label": "delivered fruit cargos"
+        }
+      ]
+    },
+    {
+      "id": "bee",
+      "glyph": "circle",
+      "label": "foraging pollinator swarm",
+      "color": "#E5C65E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bee_kind"
+          ],
+          "label": "current destination blossom class"
+        }
+      ]
+    },
+    {
+      "id": "herd",
+      "glyph": "circle",
+      "label": "roaming hillside animal",
+      "color": "#C1AB93",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "guided"
+          ],
+          "label": "animal guided this step"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "care_event"
+      ],
+      "meaning": "complementary hive care this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "repair_event"
+      ],
+      "meaning": "complementary bridge repair this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pollinated"
+      ],
+      "meaning": "queued wind pollen received this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "trampled"
+      ],
+      "meaning": "young tree damaged by animal this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "deliveries"
+      ],
+      "meaning": "cumulative fruit cargos delivered",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest"
+    },
+    {
+      "id": 1,
+      "label": "East"
+    },
+    {
+      "id": 2,
+      "label": "West"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "North"
+    },
+    {
+      "id": 5,
+      "label": "Collect compost or mason kit"
+    },
+    {
+      "id": 6,
+      "label": "Prune flowering tree"
+    },
+    {
+      "id": 7,
+      "label": "Spray pests"
+    },
+    {
+      "id": 8,
+      "label": "Water tree with carried flask"
+    },
+    {
+      "id": 9,
+      "label": "Add carried compost"
+    },
+    {
+      "id": 10,
+      "label": "Harvest fruit"
+    },
+    {
+      "id": 11,
+      "label": "Care for hive"
+    },
+    {
+      "id": 12,
+      "label": "Shade hive during partner care"
+    },
+    {
+      "id": 13,
+      "label": "Repair bridge with mason kit"
+    },
+    {
+      "id": 14,
+      "label": "Brace bridge for mason"
+    },
+    {
+      "id": 15,
+      "label": "Lift hive backpack"
+    },
+    {
+      "id": 16,
+      "label": "Set down hive backpack"
+    },
+    {
+      "id": 17,
+      "label": "Fill water flask"
+    },
+    {
+      "id": 18,
+      "label": "Guide nearby herd"
+    },
+    {
+      "id": 19,
+      "label": "Deliver fruit to village store"
+    },
+    {
+      "id": 20,
+      "label": "Exchange tools"
+    },
+    {
+      "id": 21,
+      "label": "Handoff cargo and fruit quality"
+    },
+    {
+      "id": 22,
+      "label": "Plant sapling with compost"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "native clock / H",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "own x / (width - 1)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "own y / (height - 1)",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "own stamina / 20",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "own tool / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "own cargo kind / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "own cargo units / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "own carried information / 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        858
+      ],
+      "meaning": "5 by 5 local patch, dy then dx from -2 through +2, then channel; outside world all -1. Channels: 0=terrain value / 10; 1=actor identity (id + 1) / A; 2=role (role + 1) / R; 3=home crew (team + 1) / C; 4=held tool / 4; 5=cargo type / 4; 6=cargo amount / 4; 7=stamina / 20; 8=carried message / 4; 9=tree identity (index + 1) / capacity; 10=tree compatibility class / 1; 11=tree maturity / 8; 12=soil water / 4; 13=received compatible pollen / 4; 14=spray residue / 6; 15=pest burden / 4; 16=ripe fruit units / 3; 17=wind side / 1; 18=hive identity (index + 1) / capacity; 19=hive health / 4; 20=hive food / 4; 21=backpack carrier actor index plus one or zero / 128; 22=bridge identity (index + 1) / capacity; 23=bridge integrity / 3; 24=depot identity (index + 1) / capacity; 25=remaining depot units / 16; 26=well identity (index + 1) / capacity; 27=basin water / 8; 28=store identity (index + 1) / capacity; 29=delivered fruit cargos / 64; 30=bee identity (index + 1) / capacity; 31=current destination blossom class / 1; 32=herd identity (index + 1) / capacity; 33=animal guided this step / 1",
+      "visibility": "local"
+    }
+  ]
+}

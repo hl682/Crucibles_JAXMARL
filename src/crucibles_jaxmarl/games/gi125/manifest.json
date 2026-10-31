@@ -1,0 +1,995 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00125",
+  "source_sha256": "892828a25bc9e7eee939ebe10ebde9c3d16ebcfc21767839a8ad32de2b3d7847",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 351,
+  "num_actions": 11,
+  "max_steps": 144,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -0.1,
+  "reward_high": 1.7,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Worker 0 with a private annealed, tempered or composite order"
+    },
+    {
+      "id": "agent_1",
+      "role": "Worker 1 with a private annealed, tempered or composite order"
+    },
+    {
+      "id": "agent_2",
+      "role": "Worker 2 with a private annealed, tempered or composite order"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait; also permits receiving an offered item or tool"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up nearest-index floor item or drop carried item"
+    },
+    {
+      "id": 6,
+      "label": "Use adjacent station with carried item: load, quench, assemble or deliver"
+    },
+    {
+      "id": 7,
+      "label": "Spend one shared fuel to raise nearby kiln heat by three"
+    },
+    {
+      "id": 8,
+      "label": "Vent nearby kiln heat by two"
+    },
+    {
+      "id": 9,
+      "label": "Offer carried item, otherwise held tongs, to an adjacent waiting partner"
+    },
+    {
+      "id": 10,
+      "label": "Pick up or drop the shared tongs"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        11,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_xy"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "completed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_kind"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_xy"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_stage"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_heat"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_peak"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_mass"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "item_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "item_visible"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_xy"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_timer"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_item"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "temperature"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "coolant"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_xy"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_owner"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "heat_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "quench_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "assembly_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#E4E8EC"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall; blocks movement",
+          "color": "#374151"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_xy"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carried item (-1 means empty)",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "completed"
+          ],
+          "meaning": "Personal order complete",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "workpieces",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "item_xy"
+      ],
+      "active": [
+        "item_active"
+      ],
+      "visibility": [
+        "item_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "item_owner"
+          ],
+          "meaning": "Carrier or machine owner code",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "item_stage"
+          ],
+          "meaning": "Raw/hot/annealed/tempered/composite",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "item_heat"
+          ],
+          "meaning": "Current item heat (0-8)",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "item_peak"
+          ],
+          "meaning": "Peak item heat (0-8)",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "item_mass"
+          ],
+          "meaning": "Material units (1 or 2)",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "station_xy"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_timer"
+          ],
+          "meaning": "Remaining operation/cooldown ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "station_item"
+          ],
+          "meaning": "Occupied item slot (-1 means empty)",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "tongs",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "tool_xy"
+      ],
+      "active": [
+        "tool_active"
+      ],
+      "visibility": [
+        "tool_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool_owner"
+          ],
+          "meaning": "Floor, worker or machine owner code",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "temperature"
+      ],
+      "meaning": "Current shared kiln heat; not a per-step event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "fuel"
+      ],
+      "meaning": "Remaining shared fuel; not a per-step event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "coolant"
+      ],
+      "meaning": "Current shared cooling reservoir; not a per-step event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "heat_event"
+      ],
+      "meaning": "Fuel was consumed or an adjacent vent was commanded this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "quench_event"
+      ],
+      "meaning": "A hot carried workpiece was quenched this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "assembly_event"
+      ],
+      "meaning": "Two annealed one-unit workpieces were committed to the shared press this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "A worker delivered the exact product required by its own order this transition",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        6
+      ],
+      "meaning": "All worker xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        27
+      ],
+      "meaning": "Each worker carried item one-hot: empty then six item slots",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        30
+      ],
+      "meaning": "Each worker completed-order flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        32
+      ],
+      "meaning": "Shared tongs xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        38
+      ],
+      "meaning": "Tongs owner one-hot: floor, worker 0,1,2, kiln, press",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        46
+      ],
+      "meaning": "Kiln, cooling, press and dispatch station xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        50
+      ],
+      "meaning": "Station operation/cooldown timers /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        78
+      ],
+      "meaning": "Each station item one-hot: empty then six item slots",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        78,
+        79
+      ],
+      "meaning": "Kiln temperature /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "meaning": "Shared remaining fuel /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "meaning": "Shared coolant /4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        93
+      ],
+      "meaning": "All six item-slot xy /12; inactive slots retained for provenance",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        141
+      ],
+      "meaning": "Each item owner one-hot: delivered, consumed, floor, worker 0,1,2, kiln, press",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        171
+      ],
+      "meaning": "Each item stage one-hot: raw, hot, annealed, tempered, composite",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        171,
+        177
+      ],
+      "meaning": "Item heat /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        177,
+        183
+      ],
+      "meaning": "Item peak heat /8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        183,
+        189
+      ],
+      "meaning": "Material units per item slot /2, including delivered units",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        189,
+        195
+      ],
+      "meaning": "Item active flags; consumed and delivered slots inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        198
+      ],
+      "meaning": "Own private order one-hot: annealed, tempered, composite",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        198,
+        201
+      ],
+      "meaning": "Own worker identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        201,
+        202
+      ],
+      "meaning": "Clock /144",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        202,
+        345
+      ],
+      "meaning": "Public 11 by 13 static tile map in yx order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        345,
+        348
+      ],
+      "meaning": "Latest fuel-or-vent, quench and assembly-start flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        348,
+        351
+      ],
+      "meaning": "Latest delivery flags per worker",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Fulfil three distinct private workshop orders using conserved raw stock, shared heat, cooling, a press and one transport/handling tool.",
+    "natural_termination": "All three order-completed flags true. Otherwise H=144 truncates; shortage is not automatically declared impossible.",
+    "interaction": "Any worker can spend or vent common heat, reserve shared machines/tongs, consume coolant, deliver or supply components, and change another worker future recipe timing. Transfers and two-piece assembly depend on partner positioning and waiting. Personal completion plus shared bonuses creates mixed incentives.",
+    "observation_access": "All physical positions, materials, machines, resources, ownership, thermal state and displayed events are public. Only each role own order_kind is returned as a private one-hot; other order values are omitted from both role observations and scene attributes. Public behavior may legitimately reveal information about an order."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_xy"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_xy"
+      ],
+      "low": 0,
+      "high": 12,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "item_xy"
+      ],
+      "low": 0,
+      "high": 12,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "carrying"
+      ],
+      "low": -1,
+      "high": 5,
+      "min": -1,
+      "max": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "item_owner"
+      ],
+      "low": -3,
+      "high": 4,
+      "min": -3,
+      "max": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "item_stage"
+      ],
+      "low": 0,
+      "high": 4,
+      "min": 0,
+      "max": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "item_heat"
+      ],
+      "low": 0,
+      "high": 8,
+      "min": 0,
+      "max": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "item_peak"
+      ],
+      "low": 0,
+      "high": 8,
+      "min": 0,
+      "max": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "item_mass"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_timer"
+      ],
+      "low": 0,
+      "high": 3,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "station_item"
+      ],
+      "low": -1,
+      "high": 5,
+      "min": -1,
+      "max": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "temperature"
+      ],
+      "low": 0,
+      "high": 8,
+      "min": 0,
+      "max": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel"
+      ],
+      "low": 0,
+      "high": 6,
+      "min": 0,
+      "max": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "coolant"
+      ],
+      "low": 0,
+      "high": 4,
+      "min": 0,
+      "max": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tool_owner"
+      ],
+      "low": -1,
+      "high": 4,
+      "min": -1,
+      "max": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "order_kind"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 144,
+      "min": 0,
+      "max": 144
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

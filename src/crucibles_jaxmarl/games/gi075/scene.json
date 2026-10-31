@@ -1,0 +1,321 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "9d6038ab31845dc1f1ce782334c3c0dee39ee4a4be409739fc21be116f39a818",
+  "manifest_sha256": "c8be8587f3b34b5344c24be147001292d5c8062076a5577bf91496d95b4dd91f",
+  "title": "Scentbank Scramble",
+  "rules": [
+    "Teams A and B each have two herders. Six neutral grazers move autonomously according to the combined public state.",
+    "Each actor has one actual scent puck slot. Puck category 1 attracts and category 2 repels; effects use shortest paths around walls and apply regardless of owner.",
+    "Non-settling herders repel nearby grazers. Public phase and nearby grazer crowding also affect candidate-cell scores.",
+    "Actors and grazers use simultaneous old-occupancy rules. Contested grazer targets use rotating priority, not ID-ordered updates.",
+    "Stand on the home bench and select settle to bank arrivals. Three consecutive valid settling transitions capture a grazer; interruptions clear progress.",
+    "An already-arrived grazer stays while home settling is active. Opponents cannot stand on your pen/bench or cancel settling merely by proximity.",
+    "New pucks act before their first aging decrement. Recovery starts cooldown 4; actual expiry starts cooldown 8. Charge and cooldown displays read these fields.",
+    "A captured grazer disappears only when its active mask turns false and the real bank count increases. No invented capture path or score is shown.",
+    "All six banked ends naturally with a winner/tie. At 128 steps an unfinished herd truncates with no claimed completed winner; natural completion has priority.",
+    "Team categories, puck categories, positions, charge, heading and progress are state bindings. Custom per-kind art, signed field contours and score-tray flights are not encoded by this generic scene.",
+    "All committed state is public; pending joint actions and reset keys are excluded. Old event buffers must not replay on an absorbing redraw.",
+    "No game or animation has been executed. These are declarative bindings for a later trusted replay, not observed outcomes."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      12.5,
+      8.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "solid stone wall",
+          "color": "#374151"
+        },
+        {
+          "value": 1,
+          "meaning": "walkable grass",
+          "color": "#BBF7D0"
+        },
+        {
+          "value": 2,
+          "meaning": "team A pen",
+          "color": "#93C5FD"
+        },
+        {
+          "value": 3,
+          "meaning": "team B pen",
+          "color": "#FCA5A5"
+        },
+        {
+          "value": 4,
+          "meaning": "team A settle bench",
+          "color": "#2563EB"
+        },
+        {
+          "value": 5,
+          "meaning": "team B settle bench",
+          "color": "#DC2626"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "agent",
+      "label": "Four herders; team category 0=A and 1=B",
+      "color": "#7C3AED",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "label": "0 team A; 1 team B"
+        },
+        {
+          "state_path": [
+            "whistle_active"
+          ],
+          "label": "Actual current committed settle action at own bench"
+        },
+        {
+          "state_path": [
+            "last_actions"
+          ],
+          "label": "Previous committed action, not an unsubmitted intention"
+        },
+        {
+          "state_path": [
+            "agent_bank_score"
+          ],
+          "label": "Current team's actual bank score; copied from bank_score"
+        }
+      ]
+    },
+    {
+      "id": "pucks",
+      "glyph": "beacon",
+      "label": "Active scent pucks; kind 1=lure and 2=repeller",
+      "color": "#14B8A6",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "puck_owner"
+          ],
+          "label": "Immutable owner actor ID, equal to slot ID"
+        },
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "label": "Owner team of this same-indexed puck slot"
+        },
+        {
+          "state_path": [
+            "puck_kind"
+          ],
+          "label": "1 attraction; 2 repulsion; no team-specific effect"
+        },
+        {
+          "state_path": [
+            "puck_lifetime"
+          ],
+          "label": "Actual remaining lifetime after this step's aging"
+        }
+      ]
+    },
+    {
+      "id": "grazers",
+      "glyph": "food",
+      "label": "Autonomous neutral grazers; progress and heading are actual",
+      "color": "#F59E0B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "grazer_settle_progress"
+          ],
+          "label": "0..2 pending steps; 3 means captured and inactive"
+        },
+        {
+          "state_path": [
+            "grazer_capture_team"
+          ],
+          "label": "-1 no pending capture; 0 team A; 1 team B"
+        },
+        {
+          "state_path": [
+            "grazer_heading"
+          ],
+          "label": "Last accepted move: 0 north,1 east,2 south,3 west"
+        },
+        {
+          "state_path": [
+            "grazer_wander_phase"
+          ],
+          "label": "Public fixed initial phase, not an unseen behavior type"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_active"
+      ],
+      "meaning": "Active slots from the last non-absorbing transition; deduplicate by episode, event_tick and slot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_kind"
+      ],
+      "meaning": "Kind code describing the last committed transition event in each slot; see mechanism.md",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_value"
+      ],
+      "meaning": "Actual integer payload for each active event, including changes and gross repair/damage or capture progress",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_tick"
+      ],
+      "meaning": "Resulting tick per active event, -1 for inactive; not a counter that increments on redraw",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "t"
+      ],
+      "meaning": "Count of actual non-absorbing transitions",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint ending level; does not create another terminal event on absorbing calls",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "bank_score"
+      ],
+      "meaning": "Actual monotone captured-grazer counts for teams A and B",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "puck_cooldown"
+      ],
+      "meaning": "Actual per-owner rearming countdown including inactive pucks",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "move north"
+    },
+    {
+      "id": 2,
+      "label": "move east"
+    },
+    {
+      "id": 3,
+      "label": "move south"
+    },
+    {
+      "id": 4,
+      "label": "move west"
+    },
+    {
+      "id": 5,
+      "label": "place own lure puck"
+    },
+    {
+      "id": 6,
+      "label": "place own repeller puck"
+    },
+    {
+      "id": 7,
+      "label": "recover own adjacent puck"
+    },
+    {
+      "id": 8,
+      "label": "settle on own team's bench"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        702
+      ],
+      "meaning": "board row-major [9,13,6]: wall; grass; team A pen; team B pen; team A bench; team B bench.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        702,
+        726
+      ],
+      "meaning": "agent_table row-major [4,6]: row/8; column/12; team A indicator; team B indicator; whistle_active; last_actions/8.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        726,
+        762
+      ],
+      "meaning": "puck_table row-major [4,9]: row/8 or 0 if inactive; column/12 or 0 if inactive; active; kind lure indicator; kind repeller indicator; lifetime/24; cooldown/8; owner team A indicator; owner team B indicator.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        762,
+        852
+      ],
+      "meaning": "grazer_table row-major [6,15]: row/8 or 0 if inactive; column/12 or 0 if inactive; active; capture_team none indicator; capture_team A indicator; capture_team B indicator; settle_progress/3; wander_phase N; wander_phase E; wander_phase S; wander_phase W; heading N; heading E; heading S; heading W.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        852,
+        864
+      ],
+      "meaning": "global row-major [12]: step_count/horizon; score A/6; score B/6; active grazer count/6; done; terminated; truncated; winner none; winner A; winner B; winner tie; (step_count modulo 6)/5.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        864,
+        868
+      ],
+      "meaning": "One-hot observer actor ID.",
+      "visibility": "self"
+    }
+  ]
+}

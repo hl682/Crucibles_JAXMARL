@@ -1,0 +1,55 @@
+name: Environment contracts
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: contracts-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux-all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python tools/verify_all.py --workers 2 --shard ${{ matrix.shard }}/8 --retry
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-shard-${{ matrix.shard }}
+          path: verification/
+  install-and-ui:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e ".[dev]"
+      - run: crucibles smoke --game 225
+      - run: python -m playwright install --with-deps chromium
+      - run: python tools/verify_browser.py --games gi000 gi072 gi225 gi226 gi227 gi251 --retry
+      - run: python tools/build_docs.py
+      - run: python tools/check_release.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-${{ matrix.os }}
+          path: verification/browser/

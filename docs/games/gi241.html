@@ -1,0 +1,441 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skyport Banquet Kitchens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI241 / SPATIAL</p><h1>Skyport Banquet Kitchens</h1><p class="lead"></p><div class="stats"><span>64 agents</span><span>17 actions</span><span>733 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 241</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Feed 32 passengers across eight kitchens before H=896, coordinating recipes, lifts, washing and departures.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion when cumulative accepted meals reaches 32; otherwise horizon truncation at 896.&quot;,
+  &quot;interaction&quot;: &quot;Loaded lifts need a nearby counterweight holder. Alternating passages govern access. Four shared wash reservoirs heat physically nearby benches after a delay. Orders are locally read and cargo/messages physically handed over.&quot;,
+  &quot;observation_access&quot;: &quot;Only own prefix and radius-two Chebyshev 5x5 patch with exact listed channels enter the policy. Visible actor identity, role, crew, tools, cargo, stamina and message are in the patch. Each object attribute is in its group channels. Hidden cells and entities remain hidden; global debugger must be labeled. Clock alone is public.&quot;
+}</pre></details><p>Declared per-step reward bounds: -8.0 to 8.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Eight workers per kitchen have individually selectable actions and exchangeable tools.</li><li>Chop raw ingredients into an empty bench, tend cooking, then plate a ready meal. Shared washing steam warms benches and can spoil old food.</li><li>A loaded lift moves only with a second worker at its counterweight. Moving opens one passage and closes the other.</li><li>Read a local departure order with empty hands. Serve a matching meal during its first eight ticks; service returns a dirty tray.</li><li>Wash reservoirs share water and heat between nearby benches. Adjacent consenting partners can exchange cargo and its order tag.</li><li>Role view shows a radius-two native patch. Human controls and animation await independent integration.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Skyport Banquet Kitchens
+
+Status: AUTHORED_NOT_EXECUTED. All gameplay, scripts and causal predictions below are source-derived author hypotheses, not measured results.
+
+## Rules and spatial task
+
+Eight eight-person kitchens share a 48 by 24 terminal. Tools 1/2 are the cooking knife and counterweight handle; tools can be traded. Each initial runner carries a prepared recipe-1 meal and each initial cook carries one raw ingredient. These are explicit reset endowments. Lockers contain 24 ingredients. Every action targets the nearest appropriate station within Manhattan distance one.
+
+Actions 5/6/7/8 take, chop, tend and plate. Chopping creates bench stage 1; tending or old washing steam advances stages to 4. At heat 4, food aged at least seven ticks spoils. Four reservoirs physically between kitchens heat benches at distance at most six on the following step. Washing consumes a water unit and creates three steam units; reservoirs refill four units every 16 ticks up to eight. Each contested station action selects the lowest actor index.
+
+Actions 9/10/11 load a tray, hold its counterweight and receive a tray. An already-loaded lift moves only with a same-step counterweight holder and no receiver. Newly loading does not move it immediately. The upper/lower platform alternation opens one passage tile and closes the other. Consenting adjacent partners exchange tools (15) or cargo and its message (16).
+
+Orders alternate every 12 ticks from a seeded reset code, only visible locally. Reading (14) requires empty hands and carries the code. A chopped dish inherits that message, defaulting to recipe 1; plating/receiving carry its physical tag. Serving (12) accepts only a matching tag while the local departure clock is less than eight; any service returns a dirty tray. The actual departure counter alternates between upper and lower positions.
+
+## Strategies, rewards and termination
+
+Dedicated manual tending competes with coordinated washing that accelerates several benches but risks overheating their old food. Lift staffing competes with foot routes and cooking labor. Runners must time changing local orders and communicate by physically carrying them. These alternatives remain unmeasured.
+
+Every nonrest action costs 0.01. Accepted service pays its actor 1 and every home-kitchen worker 0.05 per meal at that kitchen. Rejected service costs the actor 0.25. Spoiling costs home workers 0.05; moving a lift costs them 0.01. Visitors keep personal service rewards while station ownership fixes shared recipients. Natural completion occurs at 32 cumulative accepted meals; H=896 is the hard horizon.
+
+## Literal diagnostics
+
+Script one loads with runner 2, holds with operator 1, approaches the lower platform and receives. Script two chops, tends through readiness and plates with cook 0. The paired script changes only operator 1&#x27;s hold versus rest after loading; identical later rest actions are intended to reveal platform and passage differences. Neither script has been executed.
+
+
+## Native boundary and local information
+
+Every listed actor is an independently selectable row of the same int32 action vector. Human or AI control uses that unchanged row; a frontend, keyboard binding, animation, camera, agent-keyed adapter and human usability have not been implemented or verified by this author. All actors remain active. Rest restores one stamina unit; exertion consumes one, with documented game-specific additions. Movement is cardinal; destinations occupied at the start of a step cannot be entered. Simultaneous claims for an empty destination favor the lowest actor index. Spatial interactions use start-of-step positions and Manhattan distance at most one to the nearest relevant object, unless a specific rule says otherwise. Tool exchange requires both adjacent actors to choose exchange and mutually select each other. Invalid or out-of-range actions become rest deterministically.
+
+Each role receives the own-state prefix plus a 5x5 radius-two patch. The manifest lists every channel and normalization; the renderer&#x27;s entity masks and map mask are derived from the same radius. Out-of-world patch cells are all -1. There is no omniscient policy feed. Agent IDs, fixed role and home crew are public metadata; current tools, cargo, stamina, messages and world attributes are visible only in the patch. Entity positions are used by movement, proximity, ecology or construction; none are layout-only proxies.
+
+A nonterminal call advances the int32 clock once. Natural completion has priority over horizon truncation. A terminal raw call preserves every state leaf, observation and terminal cause, returns zero reward and all dones true, and does not reset. All boundary/state integers are int32; the supplied uint32 key is used only through JAX randomness and is not copied into state. State keys/shapes remain fixed. Rewards declare conservative [-8,8] bounds and observations [-1,1]; these are interface ranges, not scientific performance gates. Concurrency, bounds, terminal absorption, JIT/vmap, causal effects, throughput and numerical parity remain unverified.
+
+## Source-line evidence
+
+- candidate.py:115 &#x27;moved =&#x27;: loaded-lift counterweight dependency
+- candidate.py:102 &#x27;heat =&#x27;: delayed shared steam changes nearby benches
+- candidate.py:126 &#x27;accepted =&#x27;: dish tag and departure timing govern service
+- candidate.py:37 &#x27;s[&quot;order&quot;]&#x27;: seeded local order
+- candidate.py:122 &#x27;n[&quot;lift_pos&quot;]&#x27;: physical lift position changes
+
+## Provenance and limits
+
+The source is original for this batch and train split. Only current batch authority, four assigned design/request pairs, population/family direction, human-playability addendum and copied interface contracts/templates were read. No prior candidate, IR, result, training, heldout or memory was read; no remote query was made. Official repository references were allowed but not read or copied. The family inspiration comes solely from the supplied design direction: no commercial assets or upstream game implementation is included. PureJaxRL/Craftax baseline code is not used as a game or learner replacement.
+
+The two literal scripts and the paired single-action hypothesis in playthrough.json are unexecuted diagnostics, not a controller restriction or proof of task success. Source-authored invariants and bounds await the independent sealed validator. No candidate import, Python candidate execution, JAX/NumPy computation, validator, training, replay, browser session, human play, accepted R0/M0, solvability, learning, strategic richness, non-isomorphism or transfer result is claimed. Zero, negative, failed, missing and indeterminate outcomes remain admissible.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Rest</span></div><div class="action"><b>1</b><span>East</span></div><div class="action"><b>2</b><span>West</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>North</span></div><div class="action"><b>5</b><span>Take ingredient</span></div><div class="action"><b>6</b><span>Chop into prep bench</span></div><div class="action"><b>7</b><span>Tend cooking</span></div><div class="action"><b>8</b><span>Plate cooked meal</span></div><div class="action"><b>9</b><span>Load service lift</span></div><div class="action"><b>10</b><span>Hold counterweight</span></div><div class="action"><b>11</b><span>Receive lift tray</span></div><div class="action"><b>12</b><span>Serve local departure</span></div><div class="action"><b>13</b><span>Wash dirty tray</span></div><div class="action"><b>14</b><span>Read local order with empty hands</span></div><div class="action"><b>15</b><span>Exchange tools with adjacent partner</span></div><div class="action"><b>16</b><span>Handoff cargo and message with adjacent partner</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> cook of kitchen 0</p><p><b>agent_1</b> counterweight operator of kitchen 0</p><p><b>agent_2</b> runner of kitchen 0</p><p><b>agent_3</b> dish steward of kitchen 0</p><p><b>agent_4</b> cook of kitchen 0</p><p><b>agent_5</b> counterweight operator of kitchen 0</p><p><b>agent_6</b> runner of kitchen 0</p><p><b>agent_7</b> dish steward of kitchen 0</p><p><b>agent_8</b> cook of kitchen 1</p><p><b>agent_9</b> counterweight operator of kitchen 1</p><p><b>agent_10</b> runner of kitchen 1</p><p><b>agent_11</b> dish steward of kitchen 1</p><p><b>agent_12</b> cook of kitchen 1</p><p><b>agent_13</b> counterweight operator of kitchen 1</p><p><b>agent_14</b> runner of kitchen 1</p><p><b>agent_15</b> dish steward of kitchen 1</p><p><b>agent_16</b> cook of kitchen 2</p><p><b>agent_17</b> counterweight operator of kitchen 2</p><p><b>agent_18</b> runner of kitchen 2</p><p><b>agent_19</b> dish steward of kitchen 2</p><p><b>agent_20</b> cook of kitchen 2</p><p><b>agent_21</b> counterweight operator of kitchen 2</p><p><b>agent_22</b> runner of kitchen 2</p><p><b>agent_23</b> dish steward of kitchen 2</p><p><b>agent_24</b> cook of kitchen 3</p><p><b>agent_25</b> counterweight operator of kitchen 3</p><p><b>agent_26</b> runner of kitchen 3</p><p><b>agent_27</b> dish steward of kitchen 3</p><p><b>agent_28</b> cook of kitchen 3</p><p><b>agent_29</b> counterweight operator of kitchen 3</p><p><b>agent_30</b> runner of kitchen 3</p><p><b>agent_31</b> dish steward of kitchen 3</p><p><b>agent_32</b> cook of kitchen 4</p><p><b>agent_33</b> counterweight operator of kitchen 4</p><p><b>agent_34</b> runner of kitchen 4</p><p><b>agent_35</b> dish steward of kitchen 4</p><p><b>agent_36</b> cook of kitchen 4</p><p><b>agent_37</b> counterweight operator of kitchen 4</p><p><b>agent_38</b> runner of kitchen 4</p><p><b>agent_39</b> dish steward of kitchen 4</p><p><b>agent_40</b> cook of kitchen 5</p><p><b>agent_41</b> counterweight operator of kitchen 5</p><p><b>agent_42</b> runner of kitchen 5</p><p><b>agent_43</b> dish steward of kitchen 5</p><p><b>agent_44</b> cook of kitchen 5</p><p><b>agent_45</b> counterweight operator of kitchen 5</p><p><b>agent_46</b> runner of kitchen 5</p><p><b>agent_47</b> dish steward of kitchen 5</p><p><b>agent_48</b> cook of kitchen 6</p><p><b>agent_49</b> counterweight operator of kitchen 6</p><p><b>agent_50</b> runner of kitchen 6</p><p><b>agent_51</b> dish steward of kitchen 6</p><p><b>agent_52</b> cook of kitchen 6</p><p><b>agent_53</b> counterweight operator of kitchen 6</p><p><b>agent_54</b> runner of kitchen 6</p><p><b>agent_55</b> dish steward of kitchen 6</p><p><b>agent_56</b> cook of kitchen 7</p><p><b>agent_57</b> counterweight operator of kitchen 7</p><p><b>agent_58</b> runner of kitchen 7</p><p><b>agent_59</b> dish steward of kitchen 7</p><p><b>agent_60</b> cook of kitchen 7</p><p><b>agent_61</b> counterweight operator of kitchen 7</p><p><b>agent_62</b> runner of kitchen 7</p><p><b>agent_63</b> dish steward of kitchen 7</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;native clock / H&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;meaning&quot;: &quot;own x / (width - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;meaning&quot;: &quot;own y / (height - 1)&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;meaning&quot;: &quot;own stamina / 20&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;meaning&quot;: &quot;own tool / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;meaning&quot;: &quot;own cargo kind / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;meaning&quot;: &quot;own cargo units / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;meaning&quot;: &quot;own carried information / 4&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      733
+    ],
+    &quot;meaning&quot;: &quot;5 by 5 local patch, dy then dx from -2 through +2, then channel; outside world all -1. Channels: 0=terrain value / 10; 1=actor identity (id + 1) / A; 2=role (role + 1) / R; 3=home crew (team + 1) / C; 4=held tool / 4; 5=cargo type / 4; 6=cargo amount / 4; 7=stamina / 20; 8=carried message / 4; 9=supply identity (index + 1) / capacity; 10=remaining raw ingredients / 24; 11=prep identity (index + 1) / capacity; 12=food stage 0 empty to 4 ready / 4; 13=bench food age / 12; 14=bench allergy recipe tag / 2; 15=bench heat / 4; 16=lift identity (index + 1) / capacity; 17=loaded meal flag / 1; 18=loaded recipe tag / 2; 19=lift platform 0 upper or 1 lower / 1; 20=counter identity (index + 1) / capacity; 21=counterweight held this step / 1; 22=terminal identity (index + 1) / capacity; 23=local allergy order code / 2; 24=departure clock / 11; 25=accepted meals / 32; 26=wash identity (index + 1) / capacity; 27=water remaining / 8; 28=steam heat level / 4&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 64,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;role&quot;
+        ],
+        &quot;meaning&quot;: &quot;fixed profession code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;home crew identifier&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;current exchangeable tool code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo kind&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;load&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried cargo units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;energy&quot;
+        ],
+        &quot;meaning&quot;: &quot;stamina, 0 to 20&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;memory&quot;
+        ],
+        &quot;meaning&quot;: &quot;physically carried information code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;supply&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;supply_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;supply_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;supply_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;remaining raw ingredients&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;prep&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;prep_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;prep_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;prep_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;stage&quot;
+        ],
+        &quot;meaning&quot;: &quot;food stage 0 empty to 4 ready&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;age&quot;
+        ],
+        &quot;meaning&quot;: &quot;bench food age&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;bench allergy recipe tag&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;heat&quot;
+        ],
+        &quot;meaning&quot;: &quot;bench heat&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;lift&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;lift_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;lift_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;lift_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;tray&quot;
+        ],
+        &quot;meaning&quot;: &quot;loaded meal flag&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tray_tag&quot;
+        ],
+        &quot;meaning&quot;: &quot;loaded recipe tag&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;phase&quot;
+        ],
+        &quot;meaning&quot;: &quot;lift platform 0 upper or 1 lower&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;counter&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;counter_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;counter_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;counter_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;held&quot;
+        ],
+        &quot;meaning&quot;: &quot;counterweight held this step&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;terminal&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;terminal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;terminal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;terminal_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;order&quot;
+        ],
+        &quot;meaning&quot;: &quot;local allergy order code&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;window&quot;
+        ],
+        &quot;meaning&quot;: &quot;departure clock&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;served_total&quot;
+        ],
+        &quot;meaning&quot;: &quot;accepted meals&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;wash&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;wash_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;wash_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;wash_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;wash_water&quot;
+        ],
+        &quot;meaning&quot;: &quot;water remaining&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;steam&quot;
+        ],
+        &quot;meaning&quot;: &quot;steam heat level&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 241,
+  &quot;key&quot;: &quot;gi241&quot;,
+  &quot;title&quot;: &quot;Skyport Banquet Kitchens&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 64,
+    &quot;observation_size&quot;: 733,
+    &quot;num_actions&quot;: 17,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;28bcfc20a24ce6c51091ff12efd320c58b98d9eddb2a0d3015f66f2240a294c3&quot;,
+  &quot;manifest_sha256&quot;: &quot;b4a1c9ae7be103e2d2a045e0d00494cdc42410538b0fa7cd43b794c230b1a0c0&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;28bcfc20a24ce6c51091ff12efd320c58b98d9eddb2a0d3015f66f2240a294c3&quot;,
+      &quot;bytes&quot;: 16502,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00241/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;b4a1c9ae7be103e2d2a045e0d00494cdc42410538b0fa7cd43b794c230b1a0c0&quot;,
+      &quot;bytes&quot;: 28263,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00241/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;15196a7d20594b0b0b0967f56d523a2dc40e2733b4213f810554fcf935268880&quot;,
+      &quot;bytes&quot;: 9367,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00241/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;e81e110b6f770eae4558914ad32f0971565caa633c6ec60112a248a5389e3718&quot;,
+      &quot;bytes&quot;: 6662,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00241/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;3a56cd0b2bd3ea5ce2e5f5a6f6d83be56632ecbcb9cd58a42c2ab78f21406cac&quot;,
+      &quot;bytes&quot;: 17731,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00241/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi241">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

@@ -1,0 +1,243 @@
+{
+  "schema": "cr01-spatial-game-playthrough-v3",
+  "candidate_id": "game-v3-00086",
+  "source_sha256": "f1aed63c212284b84fd930524b3b404e66b775c0db0d550431329fe36664c0c2",
+  "status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+  "seed": 0,
+  "actions": [
+    [
+      5,
+      5,
+      7
+    ],
+    [
+      2,
+      2,
+      0
+    ],
+    [
+      2,
+      2,
+      0
+    ],
+    [
+      2,
+      2,
+      7
+    ],
+    [
+      2,
+      2,
+      0
+    ],
+    [
+      2,
+      2,
+      0
+    ],
+    [
+      2,
+      2,
+      7
+    ],
+    [
+      2,
+      2,
+      0
+    ]
+  ],
+  "intended_objectives": [
+    "Whole-task attempt: attach both ends and maintain the shutter while translating east to the dock."
+  ],
+  "intended_events": [
+    "pump_event",
+    "cargo_moved",
+    "move_count",
+    "success"
+  ],
+  "scripts": [
+    {
+      "id": "joint_delivery_hypothesis",
+      "seed": 0,
+      "actions": [
+        [
+          5,
+          5,
+          7
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          7
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          7
+        ],
+        [
+          2,
+          2,
+          0
+        ]
+      ],
+      "scope": "whole-task hypothesis; delivery is unconfirmed",
+      "intended_objective": "Whole-task attempt: attach both ends and maintain the shutter while translating east to the dock.",
+      "intended_events": [
+        "pump_event",
+        "cargo_moved",
+        "move_count",
+        "success"
+      ],
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "legality_status": "Manually reasoned from source; not replay-verified",
+      "success_or_solvability_claim": false
+    },
+    {
+      "id": "missed_refresh_hypothesis",
+      "seed": 0,
+      "actions": [
+        [
+          5,
+          5,
+          7
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ]
+      ],
+      "scope": "local mechanism witness",
+      "intended_objective": "Local failure witness: omit the refresh at step 4 and inspect whether expiry traps the assembly.",
+      "intended_events": [
+        "gate_timer",
+        "gate_open",
+        "jammed"
+      ],
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "legality_status": "Manually reasoned from source; not replay-verified",
+      "success_or_solvability_claim": false
+    },
+    {
+      "id": "disagree_then_align_hypothesis",
+      "seed": 0,
+      "actions": [
+        [
+          5,
+          5,
+          7
+        ],
+        [
+          2,
+          4,
+          0
+        ],
+        [
+          2,
+          2,
+          7
+        ]
+      ],
+      "scope": "local mechanism witness",
+      "intended_objective": "Local joint-command witness: opposing commands should hold the assembly, then aligned commands should permit motion.",
+      "intended_events": [
+        "cargo_moved",
+        "cargo_pos",
+        "pressure"
+      ],
+      "execution_status": "UNEXECUTED_AUTHOR_HYPOTHESIS",
+      "legality_status": "Manually reasoned from source; not replay-verified",
+      "success_or_solvability_claim": false
+    }
+  ],
+  "paired_intervention_hypotheses": [
+    {
+      "prefix": [
+        [
+          5,
+          5,
+          7
+        ],
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ]
+      ],
+      "branch_a_suffix": [
+        [
+          2,
+          2,
+          7
+        ],
+        [
+          2,
+          2,
+          0
+        ]
+      ],
+      "branch_b_suffix": [
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          2,
+          0
+        ]
+      ],
+      "single_intervention": "Role 2 pumps versus waits at step 4; carrier actions and other later actions stay identical.",
+      "intended_difference": "Gate timer, pressure and subsequent cargo feasibility/jam; this is a prospective state-effect hypothesis, not a measured result."
+    }
+  ],
+  "runner_notes": [
+    "Use fresh reset for every script; actions are ordered agent_0 through agent_(A-1).",
+    "Seed denotes the trusted reset PRNG seed; transition keys stay external to state.",
+    "Stop at an actual joint terminal state. Do not relabel absorption as further gameplay.",
+    "Check each requested action against the actual mask before stepping. A discrepancy is a failure record, not an author-approved silent repair.",
+    "No actions, rewards, events, termination, visibility or solvability in this file have been executed or confirmed."
+  ]
+}

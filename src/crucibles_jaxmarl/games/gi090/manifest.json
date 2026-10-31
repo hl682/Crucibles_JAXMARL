@@ -1,0 +1,661 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00090",
+  "source_sha256": "af94258741acd76dc181234a66519f6f40e7961555b369e484b0b98ba30cf989",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 126,
+  "num_actions": 8,
+  "max_steps": 128,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Team Amber runner 0; teammate is role 1"
+    },
+    {
+      "id": "agent_1",
+      "role": "Team Amber runner 1; teammate is role 0"
+    },
+    {
+      "id": "agent_2",
+      "role": "Team Indigo runner 2; teammate is role 3"
+    },
+    {
+      "id": "agent_3",
+      "role": "Team Indigo runner 3; teammate is role 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait; recover one stamina"
+    },
+    {
+      "id": 1,
+      "label": "Move north attempt"
+    },
+    {
+      "id": 2,
+      "label": "Move east attempt"
+    },
+    {
+      "id": 3,
+      "label": "Move south attempt"
+    },
+    {
+      "id": 4,
+      "label": "Move west attempt"
+    },
+    {
+      "id": 5,
+      "label": "Pass toward aligned teammate within four cells"
+    },
+    {
+      "id": 6,
+      "label": "Tackle adjacent opposing holder; costs two stamina"
+    },
+    {
+      "id": 7,
+      "label": "Brace against tackles; recover one stamina"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stamina"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_visible"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_owner"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_velocity"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flight_left"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_team"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "relay_ready"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hold"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_from"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "events"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Playable court",
+          "color": "#19384A"
+        },
+        {
+          "value": 1,
+          "meaning": "Midfield stone: blocks players and ball",
+          "color": "#516276"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "runners",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Team 0 or 1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "meaning": "Movement and pass budget, 0 to 4",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Currently holds the actual ball",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "ball_pos"
+      ],
+      "active": [
+        "ball_active"
+      ],
+      "visibility": [
+        "ball_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "ball_owner"
+          ],
+          "meaning": "Holder role, -1 means loose or flying",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "ball_velocity"
+          ],
+          "meaning": "One-cell flight direction in xy",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "flight_left"
+          ],
+          "meaning": "Remaining one-cell flight steps",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "ball_team"
+          ],
+          "meaning": "Last possession team, -1 before pickup",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "relay_ready"
+          ],
+          "meaning": "A teammate caught a pass in the current possession",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "hold"
+          ],
+          "meaning": "Consecutive owner steps before forced spill",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "pass_from"
+          ],
+          "meaning": "Source role of unresolved pass, -1 otherwise",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "goal_team"
+          ],
+          "meaning": "Team permitted to score at this goal",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices 0 to 4: pass launched, loose ball caught, opposing interception or tackle, forced spill, goal; each flag describes the most recent nonterminal transition.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Identity one-hot in role order 0,1,2,3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        12
+      ],
+      "meaning": "All runner positions flattened xy, divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        16
+      ],
+      "meaning": "All stamina divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        20
+      ],
+      "meaning": "Team labels for all runners",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        24
+      ],
+      "meaning": "Carrying flags for all runners",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        26
+      ],
+      "meaning": "Actual ball xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        27
+      ],
+      "meaning": "Ball holder plus one divided by 4; zero means no holder",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        29
+      ],
+      "meaning": "Ball xy velocity in -1,0,1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        30
+      ],
+      "meaning": "Remaining flight steps divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        31
+      ],
+      "meaning": "Last ball team -1,0,1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        32
+      ],
+      "meaning": "Relay-ready flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        33
+      ],
+      "meaning": "Owner hold clock divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        34
+      ],
+      "meaning": "Pass source role plus one divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        38
+      ],
+      "meaning": "Both goal positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        40
+      ],
+      "meaning": "Goal team labels",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "meaning": "Episode clock divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        46
+      ],
+      "meaning": "Last-step event flags: launch, catch, interception, spill, goal",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        49
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        126
+      ],
+      "meaning": "Public map flattened row-major yx; zero court, one stone",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Two teams of two compete to carry the ball into their own far goal after a teammate has caught a pass during the current possession.",
+    "natural_termination": "The first relay-qualified goal ends the episode. The scoring team's two roles receive +1 each and the other team -1 each; all other rewards are zero. Otherwise the episode truncates at step 128.",
+    "interaction": "Real one-cell ball flight can be intercepted; adjacent opposing tackles transfer possession. Passing changes the receiver's scoring opportunity. Body occupancy, stamina, brace timing and a four-step hold limit change partner and opponent routes.",
+    "observation_access": "Every actual game variable affecting transition is public or a fixed known constant. All entities and the entire map are visible to every role. Observations contain the full public physical state and own role identity; no renderer-only policy information."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}
+

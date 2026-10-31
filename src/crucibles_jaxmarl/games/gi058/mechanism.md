@@ -1,0 +1,15 @@
+# astra-d2-00058: Complementary planting, maturation and common harvest
+
+This is a parentless spatial resource proposal related to generic complementary public investment, common-pool harvesting and delayed biological growth. No benchmark or parent source was consulted. Whether it duplicates another mechanism, meets operational qualification or supports learning is unassessed.
+
+The world has eight beds arranged in a ring. Each agent supplies a different nutrient type. Actions are 0 rest, 1 move left, 2 move right, 3 plant one's nutrient in the current bed, and 4 harvest. All actions are legal; planting with less than 0.5 energy has no planting effect. Planting consumes energy; resting replenishes it faster than other actions. Motion changes position by one bed and has a small immediate cost.
+
+Growth depends on the minimum of the two nutrient stocks multiplied by soil fertility. Each unit of growth consumes both nutrient types. It enters the first maturation stage, subsequently flows into a second stage, and only then becomes ripe stock. Newly created growth cannot be harvested immediately. Nutrients and ripe biomass decay; harvesting and planting deplete soil, which recovers gradually. Small initial stocks of both nutrients make initial opportunities possible, but replenishing only one type eventually leaves the other as a limiting resource.
+
+Either agent may harvest crops regardless of who planted. If both harvest in the same bed, they split the amount removed equally; each can receive at most 0.8 units in that step. Harvesting uses ripe stock present before that step's maturation. Removing stock and degrading soil changes the other's later opportunities. Personal per-bed tastes are fixed private values drawn at reset, so the agents can value the same ripe crop differently.
+
+Observation is local except for both agent locations. An agent sees local nutrient quantities, combined immature biomass, ripe stock, soil and its own taste, plus adjacent ripe stock and soil. It cannot inspect the full field or the counterpart's private taste/energy. This permits movement, memory and timing to matter, without asserting that any learning method exploits them.
+
+Reward is tanh of 1.1 times personal taste times personal harvest, minus planting and movement costs; it is therefore bounded by [-1,1]. The incentives combine essential complementary contributions with opportunistic appropriation and soil recovery. Both agents alter persistent nutrients, position and crop availability, and can affect each other's eventual rewards.
+
+Observation columns are: elapsed time/32; own position/7; other's position/7; own energy/3; own nutrient at current bed/2; other nutrient there/2; total immature biomass there/6; ripe stock there/3; local soil; own local taste; ripe stock left/3; ripe stock right/3; soil left; soil right; own last harvest; role index. Reset uses only its supplied random key; transitions are deterministic conditional on state/actions and do not require further randomness. The post-step terminal state is retained at t=32. No compiler, validation or scientific result is claimed.

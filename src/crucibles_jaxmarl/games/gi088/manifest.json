@@ -1,0 +1,770 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00088",
+  "source_sha256": "cb67ed2f5c9bec408d29d029efc5c9d1eea8de24a22b4b49e96d709b504d38e3",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 54,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -1.0,
+  "reward_high": 9.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "initial dispatcher with private north order; must also complete service"
+    },
+    {
+      "id": "agent_1",
+      "role": "initial north customer; next order flips south"
+    },
+    {
+      "id": "agent_2",
+      "role": "initial south customer; next order flips north"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "WAIT"
+    },
+    {
+      "id": 1,
+      "label": "NORTH intent"
+    },
+    {
+      "id": 2,
+      "label": "EAST intent"
+    },
+    {
+      "id": 3,
+      "label": "SOUTH intent"
+    },
+    {
+      "id": 4,
+      "label": "WEST intent"
+    },
+    {
+      "id": 5,
+      "label": "CYCLE ROUTE at console"
+    },
+    {
+      "id": 6,
+      "label": "CRANK at generator"
+    },
+    {
+      "id": 7,
+      "label": "REQUEST SERVICE at matching station"
+    },
+    {
+      "id": 8,
+      "label": "RADIO private current order for three turns"
+    },
+    {
+      "id": 9,
+      "label": "DONATE one handcell unit at station"
+    },
+    {
+      "id": 10,
+      "label": "CHARGE handcell at generator using two grid units"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "dtype": "int32",
+      "shape": [
+        9,
+        13
+      ]
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": [
+        "handcell"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "order"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "completed"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "call_target"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "call_ttl"
+      ],
+      "dtype": "int32",
+      "shape": [
+        3
+      ]
+    },
+    {
+      "path": [
+        "generator_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "generator_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "generator_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        1
+      ]
+    },
+    {
+      "path": [
+        "buffer"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "console_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1,
+        2
+      ]
+    },
+    {
+      "path": [
+        "console_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "console_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        1
+      ]
+    },
+    {
+      "path": [
+        "route"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "dtype": "int32",
+      "shape": [
+        1
+      ]
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2,
+        2
+      ]
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "capacitor"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2,
+        2
+      ]
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "dtype": "bool",
+      "shape": [
+        3,
+        2
+      ]
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "switch_event"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "power_event"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "service_total"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable service floor",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "solid divider or boundary",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "power-consuming gate crossing",
+          "color": "#F59E0B"
+        },
+        {
+          "value": 3,
+          "meaning": "service station location",
+          "color": "#A7F3D0"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "operators",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "handcell"
+          ],
+          "meaning": "Portable charge, capacity 2",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "completed"
+          ],
+          "meaning": "Services completed, goal 2",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "call_target"
+          ],
+          "meaning": "Last radio request: 0 north, 1 south",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "call_ttl"
+          ],
+          "meaning": "Radio tracking turns remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "generator",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "generator_pos"
+      ],
+      "active": [
+        "generator_active"
+      ],
+      "visibility": [
+        "generator_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "buffer"
+          ],
+          "meaning": "Public shared grid buffer, capacity 10",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "console",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "console_pos"
+      ],
+      "active": [
+        "console_active"
+      ],
+      "visibility": [
+        "console_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "route"
+          ],
+          "meaning": "Route: 0 north, 1 south, 2 alternating",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "meaning": "Remaining supply interruption",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "stations",
+      "kind": "resource",
+      "count": 2,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "capacitor"
+          ],
+          "meaning": "Stored route energy, capacity 4",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Open from stored power or safety occupancy latch",
+          "display": "flag"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "switch_event"
+      ],
+      "meaning": "Public route-change indicator for the last live transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "power_event"
+      ],
+      "meaning": "Public per-route units delivered by the common generator this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "service_total"
+      ],
+      "meaning": "Public cumulative services delivered across all roles",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "All three roles have completed both of their services",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        5
+      ],
+      "meaning": "Own current private order (north=0,south=1) and own completed services /2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        13
+      ],
+      "meaning": "Public t/96, done, success, route/2, supply cooldown/2, buffer/10, switch event, service_total/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        15
+      ],
+      "meaning": "Public north/south gate-open indicators",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        17
+      ],
+      "meaning": "Public north/south supply pulse for last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        25
+      ],
+      "meaning": "Public generator, console, north gate and south gate [x/12,y/8] coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        46
+      ],
+      "meaning": "Three role slots: [x/12,y/8,handcell/2,completed/2,last_radio_target,radio_ttl/3,visible]; zero outside radius 3 unless role radio is live",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        46,
+        54
+      ],
+      "meaning": "Two station slots: [x/12,y/8,capacitor/4,visible]; zero outside Manhattan radius 3",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "All three operators must complete two services before 96 steps while supplying and traversing the shared network.",
+    "natural_termination": "Joint natural completion when every completed count equals two. No independent customer removal or artificial blackout failure is imposed.",
+    "interaction": "Routing allocates one common supply unit per turn; switching interrupts it, gate entry spends the same remote capacitor used for service, portable donations can enable a partner request, and private orders require timely radio coordination.",
+    "observation_access": "Fixed layout, route/buffer/cooldown, gate indicators, power pulses and total service count are public. Orders are self-only. Agents and capacitors are local within distance 3, except a live radio call tracks its sender and visible attributes globally for three turns."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "handcell"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "order"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "completed"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "call_target"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "call_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "buffer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "route"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "capacitor"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "power_event"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "service_total"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

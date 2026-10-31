@@ -1,0 +1,441 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fd4a347bdc58f26b246b58ab16d39d0868868117f6f88df13da5deb80ca743b6",
+  "manifest_sha256": "6627fac2a99b7c8362200f2c7d8cca5e3b0cff24e9787a945243351027fd5474",
+  "title": "Market Square Fermentation Kitchens",
+  "rules": [
+    "Pick up a vessel, fill it at a market crate, wash it, and grind grain before inoculation. Fruit does not require grinding.",
+    "Culture 0 ferments for six steps; culture 1 takes ten. Finish ripe food at a hob and match a customer's recipe and culture.",
+    "Dirty utensils contaminate shared stations and other food. Mills begin dirty; Clean changes the actual shared station and own tool.",
+    "Heavy pots need another actor choosing Brace within one tile of the carrier to be picked up or moved.",
+    "A cold store has two real container slots. Stored ripe food ages once every three ticks; occupied slots prevent other storage.",
+    "Carts move through the horizontal aisles and wait when people block them; people cannot step onto cart positions.",
+    "Tickets belong to one crew. Announce sends a visible four-tick snapshot; culture and vessel handoffs occur physically.",
+    "Scene and literal scripts are authored hypotheses; no actual play, trajectory or training has been executed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      31,
+      23
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable market floor and kitchen aisles",
+          "color": "#E8DCC6"
+        },
+        {
+          "value": 1,
+          "meaning": "Fixed kitchen partition and cold cabinet wall",
+          "color": "#846C68"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "worker",
+      "label": "32 individually controllable cooks and porters",
+      "color": "#E88B52",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "Carried vessel ID, -1 if empty-handed"
+        },
+        {
+          "state_path": [
+            "starter"
+          ],
+          "label": "Starter culture 0 or 1"
+        },
+        {
+          "state_path": [
+            "dirty_tool"
+          ],
+          "label": "Utensil contamination"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "Request announcement lifetime, 0 to 4"
+        },
+        {
+          "state_path": [
+            "message_recipe"
+          ],
+          "label": "Announced recipe, meaningful while message is positive"
+        },
+        {
+          "state_path": [
+            "message_culture"
+          ],
+          "label": "Announced culture, meaningful while message is positive"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "glyph": "tool",
+      "label": "Sinks, mills, finishing hobs and service counters",
+      "color": "#AB7955",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_kind"
+          ],
+          "label": "0 sink, 1 mill, 2 finish, 3 service counter"
+        },
+        {
+          "state_path": [
+            "station_dirty"
+          ],
+          "label": "Shared station contamination"
+        }
+      ]
+    },
+    {
+      "id": "pantry",
+      "glyph": "food",
+      "label": "Finite grain or fruit market crates",
+      "color": "#A7B85F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pantry_stock"
+          ],
+          "label": "Remaining portions, at most 24"
+        },
+        {
+          "state_path": [
+            "pantry_recipe"
+          ],
+          "label": "0 grain or 1 fruit supply"
+        }
+      ]
+    },
+    {
+      "id": "vessel",
+      "glyph": "crate",
+      "label": "Portable fermentation vessels; heavy pots need a partner",
+      "color": "#D99D65",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "vessel_stage"
+          ],
+          "label": "0 empty, 1 raw, 2 washed, 3 ground, 4 ferment, 5 ripe, 6 finished, 7 spoiled"
+        },
+        {
+          "state_path": [
+            "vessel_recipe"
+          ],
+          "label": "-1 empty, 0 grain or 1 fruit"
+        },
+        {
+          "state_path": [
+            "vessel_culture"
+          ],
+          "label": "Inoculated culture 0 or 1"
+        },
+        {
+          "state_path": [
+            "vessel_progress"
+          ],
+          "label": "Fermentation progress, 0 to 10"
+        },
+        {
+          "state_path": [
+            "vessel_age"
+          ],
+          "label": "Ripe-food exposure age, 0 to 25"
+        },
+        {
+          "state_path": [
+            "vessel_bad"
+          ],
+          "label": "Food contamination"
+        },
+        {
+          "state_path": [
+            "vessel_heavy"
+          ],
+          "label": "Paired transport required"
+        },
+        {
+          "state_path": [
+            "vessel_slot"
+          ],
+          "label": "Cold-store slot, -1 outside storage"
+        }
+      ]
+    },
+    {
+      "id": "cold",
+      "glyph": "battery",
+      "label": "Shared two-container cold stores",
+      "color": "#77BFC4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cold_used"
+          ],
+          "label": "Occupied physical slots, 0 to 2"
+        }
+      ]
+    },
+    {
+      "id": "cart",
+      "glyph": "crate",
+      "label": "Moving aisle carts that block people and wait for people",
+      "color": "#B494CE",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cart_direction"
+          ],
+          "label": "Horizontal travel direction -1 or 1"
+        }
+      ]
+    },
+    {
+      "id": "order",
+      "glyph": "flag",
+      "label": "Crew-private customer tickets",
+      "color": "#E9B84C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "order_recipe"
+          ],
+          "label": "Required recipe 0 or 1"
+        },
+        {
+          "state_path": [
+            "order_culture"
+          ],
+          "label": "Required culture 0 or 1"
+        },
+        {
+          "state_path": [
+            "order_count"
+          ],
+          "label": "Orders fulfilled, 0 to 3"
+        },
+        {
+          "state_path": [
+            "order_deadline"
+          ],
+          "label": "Current absolute deadline tick"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event_serve"
+      ],
+      "meaning": "Actor served a matching finished portion",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_contaminate"
+      ],
+      "meaning": "Actor processing newly contaminated a vessel",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_waste"
+      ],
+      "meaning": "Actor discarded a nonempty vessel",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_ripen"
+      ],
+      "meaning": "Vessel completed fermentation this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Fill carried empty vessel from nearby market crate"
+    },
+    {
+      "id": 6,
+      "label": "Brace a nearby heavy-pot carrier"
+    },
+    {
+      "id": 7,
+      "label": "Pick up nearby uncarried vessel"
+    },
+    {
+      "id": 8,
+      "label": "Put carried vessel down"
+    },
+    {
+      "id": 9,
+      "label": "Wash raw portion at a sink"
+    },
+    {
+      "id": 10,
+      "label": "Grind washed grain at a mill"
+    },
+    {
+      "id": 11,
+      "label": "Inoculate prepared portion with own starter"
+    },
+    {
+      "id": 12,
+      "label": "Finish ripe portion at a finishing hob"
+    },
+    {
+      "id": 13,
+      "label": "Serve matching finished portion at a counter"
+    },
+    {
+      "id": 14,
+      "label": "Clean nearest station and own utensil"
+    },
+    {
+      "id": 15,
+      "label": "Give starter culture to nearest adjacent cook"
+    },
+    {
+      "id": 16,
+      "label": "Store carried vessel in nearby available cold slot"
+    },
+    {
+      "id": 17,
+      "label": "Announce own crew's current customer request"
+    },
+    {
+      "id": 18,
+      "label": "Discard carried portion and empty vessel"
+    },
+    {
+      "id": 19,
+      "label": "Hand carried vessel to adjacent cook at a service counter"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        11
+      ],
+      "meaning": "Self: actor ID/31, x/31, y/23, crew/7, (carried vessel+1)/16, starter, dirty utensil, message/4, announced recipe, announced culture, t/640",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        55
+      ],
+      "meaning": "Four nearest actor slots, 11 each: visible, ID/31, x/31, y/23, crew/7, (vessel+1)/16, starter, dirty utensil, message/4, announced recipe, announced culture",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        55,
+        215
+      ],
+      "meaning": "32 station rows, 5 each: visible, x/31, y/23, kind/3, dirty",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        215,
+        255
+      ],
+      "meaning": "8 market rows, 5 each: visible, x/31, y/23, stock/24, recipe",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        255,
+        431
+      ],
+      "meaning": "16 vessel rows, 11 each: visible, x/31, y/23, stage/7, (recipe+1)/2, culture, progress/10, age/25, contaminated, heavy, (cold slot+1)/8",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        431,
+        447
+      ],
+      "meaning": "4 cold-store rows, 4 each: visible, x/31, y/23, occupied slots/2",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        447,
+        463
+      ],
+      "meaning": "4 cart rows, 4 each: visible, x/31, y/23, direction -1 or 1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        463,
+        519
+      ],
+      "meaning": "8 ticket rows, 7 each: own-crew visibility, x/31, y/23, recipe, culture, fulfilled/3, clipped(deadline-t,-640,640)/640; other crews hidden",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        519,
+        544
+      ],
+      "meaning": "Row-major 5 by 5 edge-clamped partition patch centered on actor; 0 floor, 1 wall",
+      "visibility": "local"
+    }
+  ]
+}

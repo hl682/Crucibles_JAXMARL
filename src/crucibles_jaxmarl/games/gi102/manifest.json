@@ -1,0 +1,903 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00102",
+  "source_sha256": "eeafa7f9a76b6a316579c22b3bed2abd8a4f116535dcec68bbc85e5bb1b7d9e3",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 181,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Team 0 scout: radar radius 4"
+    },
+    {
+      "id": "agent_1",
+      "role": "Team 0 courier: radar radius 2"
+    },
+    {
+      "id": "agent_2",
+      "role": "Team 1 scout: radar radius 4"
+    },
+    {
+      "id": "agent_3",
+      "role": "Team 1 courier: radar radius 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Interact with adjacent beacon: recover own or pick up enemy"
+    },
+    {
+      "id": 6,
+      "label": "Fire nearest hostile axial tag beam"
+    },
+    {
+      "id": 7,
+      "label": "Transmit own radar for three ticks"
+    },
+    {
+      "id": 8,
+      "label": "Deploy one-use physical reflector decoy"
+    },
+    {
+      "id": 9,
+      "label": "Offer carried enemy beacon to teammate"
+    },
+    {
+      "id": 10,
+      "label": "Receive adjacent teammate beacon"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_role"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_stun"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_stock"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_signal"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_carry"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "event_hit"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_deploy"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_signal"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_pickup"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_pass"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_return"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "event_capture"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#E2E8F0"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#334155"
+        },
+        {
+          "value": 2,
+          "meaning": "Team 0 return base",
+          "color": "#2563EB"
+        },
+        {
+          "value": 3,
+          "meaning": "Team 1 return base",
+          "color": "#EA580C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_team"
+          ],
+          "meaning": "Team: 0 blue, 1 orange",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_role"
+          ],
+          "meaning": "Role: 0 scout, 1 courier",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "agent_stun"
+          ],
+          "meaning": "Remaining forced-wait ticks",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_cooldown"
+          ],
+          "meaning": "Remaining tag cooldown ticks",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_stock"
+          ],
+          "meaning": "Remaining one-use decoy",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "agent_signal"
+          ],
+          "meaning": "Remaining public signal ticks",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_carry"
+          ],
+          "meaning": "Carried beacon owner; -1 means empty",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "beacons",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_owner"
+          ],
+          "meaning": "Original owning team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "beacon_carrier"
+          ],
+          "meaning": "Carrier role id; -1 means ground",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "base_pos"
+      ],
+      "active": [
+        "base_active"
+      ],
+      "visibility": [
+        "base_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "decoys",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "decoy_pos"
+      ],
+      "active": [
+        "decoy_active"
+      ],
+      "visibility": [
+        "decoy_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "decoy_team"
+          ],
+          "meaning": "Deploying team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "decoy_ttl"
+          ],
+          "meaning": "Remaining reflector lifetime",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Number of actual beacon captures by team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "event_hit"
+      ],
+      "meaning": "Public announcer: roles hit by a tag this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_deploy"
+      ],
+      "meaning": "Public announcer: roles deploying a reflector this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_signal"
+      ],
+      "meaning": "Public announcer: roles initiating a signal this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pickup"
+      ],
+      "meaning": "Public announcer: beacon ids picked up this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_pass"
+      ],
+      "meaning": "Public announcer: beacon ids passed between teammates this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_return"
+      ],
+      "meaning": "Public announcer: beacon ids returned to their home this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_capture"
+      ],
+      "meaning": "Public announcer: teams capturing an enemy beacon this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self role one-hot in fixed agent order, divided by 128",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        8
+      ],
+      "meaning": "Public [t, episode_done, terminated, truncated], each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        18
+      ],
+      "meaning": "Agent 0: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        18,
+        28
+      ],
+      "meaning": "Agent 1: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        28,
+        38
+      ],
+      "meaning": "Agent 2: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        38,
+        48
+      ],
+      "meaning": "Agent 3: [visible,x,y,team,role,stun,cooldown,decoy_stock,signal_ticks,carried_beacon]. Masked attributes are 0; carrier -1 means empty. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        48,
+        53
+      ],
+      "meaning": "Beacon 0: [visible,x,y,owner,carrier]; hidden values 0, ground carrier -1. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        58
+      ],
+      "meaning": "Beacon 1: [visible,x,y,owner,carrier]; hidden values 0, ground carrier -1. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        58,
+        63
+      ],
+      "meaning": "Decoy 0: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        63,
+        68
+      ],
+      "meaning": "Decoy 1: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        68,
+        73
+      ],
+      "meaning": "Decoy 2: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        73,
+        78
+      ],
+      "meaning": "Decoy 3: [visible,x,y,team,ttl]; inactive or unseen values 0. All divided by 128.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        78,
+        82
+      ],
+      "meaning": "Public base coordinates flattened in team order [x0,y0,x1,y1], divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        159
+      ],
+      "meaning": "Public 7x11 map flattened y then x, tile values divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        161
+      ],
+      "meaning": "Public capture counts in team order, divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        161,
+        165
+      ],
+      "meaning": "Public announcer tag-hit role flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        165,
+        169
+      ],
+      "meaning": "Public announcer decoy-deployment role flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        169,
+        173
+      ],
+      "meaning": "Public announcer signal-start role flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        173,
+        175
+      ],
+      "meaning": "Public announcer beacon-pickup flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        175,
+        177
+      ],
+      "meaning": "Public announcer beacon-handoff flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        177,
+        179
+      ],
+      "meaning": "Public announcer beacon-home-return flags, each divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        179,
+        181
+      ],
+      "meaning": "Public announcer team-capture flags, each divided by 128",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Two teams capture the enemy physical beacon and carry it onto their own base while their own beacon is on its home tile and uncarried.",
+    "natural_termination": "The first transition with any valid capture ends the joint episode; otherwise horizon 96 truncates. A natural capture on step 96 takes priority.",
+    "interaction": "Bodies block movement; axial tags stun opponents and drop their cargo; same-team pass plus receive transfers a beacon; signals share live radar but reveal the transmitter; decoys jam hostile radar near them and absorb a closest tag beam.",
+    "observation_access": "Public layout, bases, clock, score and announcer event ids. Scouts have Manhattan radar radius 4 and couriers 2, across walls. Hostile decoys hide agents and beacons within one tile of the decoy from observers more than one tile away. Active decoys themselves remain radar-visible. A signalling teammate shares its current masked radar; each signaller body is public. Scene masks equal these observation accesses; hidden attributes are zero."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_stun"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_signal"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "decoy_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

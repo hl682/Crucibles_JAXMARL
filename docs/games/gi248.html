@@ -1,0 +1,2493 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Basalt Tide Salvage · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI248 / SPATIAL</p><h1>Basalt Tide Salvage</h1><p class="lead"></p><div class="stats"><span>512 agents</span><span>16 actions</span><span>272 observation columns</span><span>1024 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 248</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Recover the 64 physical salvage crates before they rust away; building shelter, stable supports and rescue improve the shared routes. Cargo is claimed by its latest collecting crew.&quot;,
+  &quot;natural_termination&quot;: &quot;Joint natural completion when every crate has either been delivered to a shelter or lost to rust. Individual actors remain selectable; oxygen-zero actors only wait until rescue or dry recovery.&quot;,
+  &quot;interaction&quot;: &quot;Two separate harness operators hold each bridge; pump discharge reaches the adjacent paired crew, whose diversion valve can turn it into charge. Crates, reciprocal tool loans, rescue and persistent supports couple individually controlled people.&quot;,
+  &quot;observation_access&quot;: &quot;The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.&quot;
+}</pre></details><p>Declared per-step reward bounds: -16 to 16. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>512 independent people belong to 32 crews; select one actor or submit any joint 512-action vector.</li><li>Two harness users on the exact brake squares hold a bridge for this transition. Three supports make it permanent. High water otherwise prevents entry onto the bridge strip.</li><li>A wrench operator pumps one water unit using one charge. The adjacent paired dock receives it; its valve can divert it into charge.</li><li>Pick up a nearby crate, carry it through real coordinates, then deliver near a shelter. The collecting crew receives salvage credit; rust can destroy submerged crates.</li><li>Quarry with a pick, spend blocks near a bridge or shelter, exchange tools with a consenting neighbor, or rescue an oxygen-zero neighbor.</li><li>Nearby actors and objects are shown through their exact observation masks. Forecasts are learned at a shelter and may be passed to neighbors.</li><li>This gray basalt, ochre timber and blue water scene is an original block survival family. Replay, human play, runtime and learning are unverified.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Basalt Tide Salvage
+
+Status: AUTHORED_NOT_EXECUTED. Initial parentless train candidate; feedback_used=0; source_attempt=0; final_test_used=false.
+
+Native A/O/U/H = 512/272/16/1024. Source SHA-256: `a3f68f170bfd0a38bc5eff6e983461f9699121fa8b529c19b65d2ad9eb008e1b`.
+
+## Physical world and roles
+
+The 64 by 32 world has 32 adjoining 8 by 8 dock districts. District k starts at (8*(k mod 8),8*floor(k/8)). Relative locations are shelter (1,1), quarry (1,5), pump (3,4), brake stands (4,2)/(4,5), bridge x=5..7 at y=3, and diversion (5,5). District pairs 0/1,2/3 and so on are physically adjacent. Water affects the wet strip x&gt;=5,y=2..5. All 512 people have individual rows; their 32 crews are reward affiliations, not merged controllers. Broad working squares allow multiple people. Ground crates may share a cell, but every carried crate has exactly one carrier.
+
+## Actions and timing
+
+- 0 waits; dry oxygen recovers even during wait. At oxygen zero only wait remains legal until rescue or dry recovery.
+- 1..4 propose north/east/south/west within bounds. Entry onto a wet bridge strip at water&gt;1 needs both current brake holds or three supports. A legal movement intent can therefore be blocked by another actor releasing a brake this tick.
+- 5 requires tool 0 within distance one of a quarry and fewer than three blocks. 6 spends a block near an unfinished bridge support site (6,3) or unbuilt shelter (1,1). Simultaneous builders may spend redundant material at the cap; no refund is invented.
+- 7 requires tool 1 near a pump, positive water and charge. At most one unit is pumped per dock per tick; multiple operators each still pay effort. 8 toggles a nearby diversion; an even number of toggles cancels.
+- 9 requires tool 2 exactly on a brake stand. Both separate stands must be held each tick. 10 targets the lowest-index eligible adjacent ground crate; the smallest actor ID wins a contested claim. The collecting crew becomes owner. 11 drops a carried crate at the actual actor position.
+- 12 is a reciprocal adjacent tool-swap offer. 13 rescues a nearby oxygen-zero person; the smallest-ID successful helper gets credit. 14 delivers near a shelter location even before its shelter is built; construction is a separate comfort milestone.
+- 15 transmits cached tide knowledge to adjacent people. Near-shelter access updates private knowledge with the district next surge, which can become stale elsewhere.
+
+Masks read the pre-step state. Brake holds and supports resolve before movement. Pumps and diversion valves then change water, with a one-unit ebb each sixteenth tick and stored forecast surge each thirty-second tick. The next forecast is drawn only from the supplied key. Crate claims, drops and deliveries use real positions. A submerged crate gains rust each eighth tick and is lost at rust eight; delivery wins a simultaneous rust loss. Tool exchange, rescue, oxygen and local knowledge then update. A current actor event code is 0..15 for the accepted action, 16 for completed tool swap, or 17 for the credited rescuer; it is not a generic success indicator.
+
+## Rewards and completion
+
+Actor i receives -0.005 per accepted non-wait action and -0.01 if submerged after the water update. Every member of its 16-person crew receives +0.125 per crate delivered for that crew, -0.125 per crate lost for that crew, and +0.05 for that crew first shelter. The successful selected rescuer receives +0.2; the rescued person receives +0.1. Every one of the 512 actors receives +0.001 per bridge first reaching three supports. Conservative per-step returned bounds are [-16,16], based on at most 64 crates and 32 bridges, not an experimental success threshold.
+
+Natural joint completion occurs when every crate is delivered or rust-lost. Oxygen-zero people remain actual actors and can recover. The horizon is 1024.
+
+## Dependence and strategies
+
+A coalition can hold two brakes and salvage before the next surge, or quarry permanent supports to free future operators. Pumping protects a local hauler while imposing discharge on a neighbor; that neighbor can divert it for charge, accept it, or decline. Claiming an abandoned crate changes crew ownership. Rescue and tool loans can create temporary cooperation across rival crews. These are source-level incentive hypotheses; no equilibrium, learning or human fun has been established.
+
+## Interface, boundaries and completion
+
+The native boundary is reset(key), raw_step(key,state,actions), observe(state), and legal_actions(state). State is a fixed-key dictionary of fixed-shape int32/bool arrays. Observation and reward are float32. Every role has an action, observation, reward and done row. All out-of-range or masked actions deterministically become wait. A legal intention may still lose a simultaneous contest. Entity caps are fixed; no hidden controllers, callbacks, file access or global cache exists.
+
+A nonterminal raw call advances t exactly once. Natural completion has priority when it coincides with H. `truncated=(t&gt;=H)&amp;~terminated`, `done_all=terminated|truncated`, and every individual done equals joint done. Already-terminal input is absorbing: preserve state, observation, clock and cause; return zero rewards and all dones true. Raw auto-reset never occurs. Event flags describe the last actual transition and remain unchanged under absorbing calls; a renderer must not replay them as new events.
+
+## Exact observation and presentation contract
+
+The exact self fields, finite nearest-entity slots, local map patch and public clock are the only flat observations. Entity slots sort by Manhattan distance then ID; all columns of a hidden slot are -1. Actor rendering also exposes the selected actor through its self block even if crowding removes it from nearest-eight slots. The static map layout is public. Forecast/knowledge leaves are private unless explicitly observed or messaged. Masks expose local contextual affordances. Event rendering must inherit its owning entity visibility and cannot display hidden global vectors. No renderer state is an extra policy observation.
+
+Every non-padding column has its own exact slice and meaning in `manifest.json:observation_fields`. Entity slots encode `[visible, entity_id, absolute_x, absolute_y, declared attributes...]`; a hidden slot is entirely -1. Sorting is ascending Manhattan distance, then entity ID. No value is normalized. Observations are float32 and conservatively bounded [-1,2048]. Explicit padding is zero. Each group visibility mask equals the selected local slots; actor masks additionally include the selected self, whose full attributes are in its self block.
+
+- self: [0, 12] end-exclusive; id, crew, tool, x, y, oxygen, blocks, carry, knowledge, warning, event, rescued.
+- actors: [12, 108] end-exclusive; visible, entity_id, x, y, crew, tool, oxygen, blocks, carry, warning, event, rescued.
+- docks: [108, 160] end-exclusive; visible, entity_id, x, y, water, support, shelter, valve, charge, bridge, delivered, pumped, flood_loss.
+- cargo: [160, 188] end-exclusive; visible, entity_id, x, y, carrier, owner, rust.
+- brakes: [188, 208] end-exclusive; visible, entity_id, x, y, held.
+- map_patch: [208, 233] end-exclusive; 5x5 row-major dy=-2..2, dx=-2..2.
+
+The scene is safe declarative data with exact source and manifest hashes. Actual state coordinates, active masks, local visibility, resource levels, carried items and events determine drawing. Private forecasts are not exposed by a global scene HUD. Event vectors inherit their owning entity mask; full-state debugging is a separate labeled view. Static map layout is public. No narrative text substitutes for a transition. Every individual ID and affiliation is listed in the manifest.
+
+## Human control and unexecuted scripts
+
+A presentation layer should distinguish Enter game from Watch replay, offer native legal actions and pause/step, focus any actor/affiliation, and stage an arbitrary joint-action vector. A human can control one or many native rows; human participant count is not the role count. Human and policy decisions must call the same raw kernel. These files are interface metadata, not a claim that a browser UI, native animation or human session has been run.
+
+- `held_bridge_salvage`: 8 literal joint vectors. Actors 0 and 1 hold their brakes while actor 3 claims crate 0, walks to dry shelter access and delivers it.
+- `divert_flow_and_build_shelter`: 5 literal joint vectors. Actor 2 pumps twice; adjacent crew actor 23 diverts incoming flow; actor 4 quarries and builds shelter.
+- Paired `release_one_distant_brake`: 1 shared prefix vectors; 2 per suffix; exactly one scalar action differs. Keeping both brakes should permit actor 3 bridge entry at initial water 2; releasing actor 0 should block the same westward attempt. Compare actual coordinates, observation and bridge state; unexecuted.
+
+The scripts are source-reasoned hypotheses, not runtime legality receipts, success trajectories, solvability certificates or effect estimates. Identical reset and step keys are required for paired replay.
+
+## Literal source evidence
+
+- `candidate.py:33`: `def reset(self, key):`; definition ends at line 70.
+- `candidate.py:78`: `def legal_actions(self, s):`; definition ends at line 95.
+- `candidate.py:97`: `def advance(self, key, s, actions):`; definition ends at line 185.
+- `candidate.py:187`: `def raw_step(self, key, state, actions):`; definition ends at line 190.
+- `candidate.py:198`: `def observe(self, s):`; definition ends at line 210.
+- `candidate.py:104`: `# HOLD precedes movement: both distant brakes are needed every tick.`.
+- `candidate.py:118`: `# A pump spends local charge and pushes actual water into the paired adjacent dock.`.
+- `candidate.py:128`: `# Cargo arbitration uses the smallest actor ID; one physical crate per carrier.`.
+- `candidate.py:148`: `# Reciprocal neighboring lenders swap tools; rescue pays the helper and recipient.`.
+- `candidate.py:173`: `reward = -0.005 * (a != 0) - 0.01 * submerged + 0.125 * gains[s[&#x27;crew&#x27;]] - 0.125 * losses[s[&#x27;crew&#x27;]] + 0.05 * shelter_new[s[&#x27;crew&#x27;]] + 0.2 * helper_paid + 0.1 * rescued`.
+
+## Provenance, adaptations and limits
+
+`author_input_freeze.json` records all 25 actual allowed input files with absolute path, relative name, byte length, SHA-256 and use. Tool output could be excerpted; the freeze does not claim unseen content was semantically read. Only current 248-251 request/design and population/family251 control. Removed historical194 was not searched. No earlier candidate, result, heldout, memory or other coordination input was used. The batch contains only four already reserved IDs within the user cumulative 300-game ceiling.
+
+The supplied JaxMARL README informed parallel per-agent adapter expectations, including observation/action/reward/done dictionaries and `__all__`. This author supplies the native flat kernel; an external adapter is neither fabricated nor a change to the frozen learner. Pgx informed explicit masks and functional game-state presentation. Craftax informed the broad material/world-modification category. PureJaxRL and the supplied Craftax_Baselines PPO-RNN source were read only as integration/training context, not new game libraries, replacement learners or evidence of these games performance. No upstream code or commercial assets were copied. The four visual families remain independent.
+
+Representation adaptations: small integers are losslessly int32; refresh explicitly normalizes integer leaves even if a later process enables JAX x64; bool leaves remain bool; observations/rewards explicitly cast float32; the supplied uint32 key is not duplicated in state. Static Python loops only traverse fixed field-name tuples. Intended JIT/vmap/scan compatibility requires later sealed execution.
+
+No candidate/JAX/NumPy/PRNG, policy, training, throughput, browser or human-play execution occurred. Native/R0 acceptance, parity, resource use, deterministic replay, paired causal outcomes, rendered animation, solvability, strategic richness, learning and transfer remain UNKNOWN. Human-playability score is unmeasured. Negative, zero, failed and inconclusive outcomes must be preserved. This author produces no runtime/resource/release/native/PID/human receipt. After the final seven SHA-256 hashes are reported, this attempt is frozen; repairs require a separate dispatch.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>North</span></div><div class="action"><b>2</b><span>East</span></div><div class="action"><b>3</b><span>South</span></div><div class="action"><b>4</b><span>West</span></div><div class="action"><b>5</b><span>Quarry basalt</span></div><div class="action"><b>6</b><span>Build support or shelter</span></div><div class="action"><b>7</b><span>Pump dock</span></div><div class="action"><b>8</b><span>Toggle diversion</span></div><div class="action"><b>9</b><span>Hold brake</span></div><div class="action"><b>10</b><span>Pick up crate</span></div><div class="action"><b>11</b><span>Drop crate</span></div><div class="action"><b>12</b><span>Offer tool swap</span></div><div class="action"><b>13</b><span>Rescue neighbor</span></div><div class="action"><b>14</b><span>Deliver salvage</span></div><div class="action"><b>15</b><span>Share tide warning</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> crew 0: harness operator; independently controllable</p><p><b>agent_1</b> crew 0: harness operator; independently controllable</p><p><b>agent_2</b> crew 0: pump operator; independently controllable</p><p><b>agent_3</b> crew 0: signal worker; independently controllable</p><p><b>agent_4</b> crew 0: pick worker; independently controllable</p><p><b>agent_5</b> crew 0: pump operator; independently controllable</p><p><b>agent_6</b> crew 0: harness operator; independently controllable</p><p><b>agent_7</b> crew 0: signal worker; independently controllable</p><p><b>agent_8</b> crew 0: pick worker; independently controllable</p><p><b>agent_9</b> crew 0: pump operator; independently controllable</p><p><b>agent_10</b> crew 0: harness operator; independently controllable</p><p><b>agent_11</b> crew 0: signal worker; independently controllable</p><p><b>agent_12</b> crew 0: pick worker; independently controllable</p><p><b>agent_13</b> crew 0: pump operator; independently controllable</p><p><b>agent_14</b> crew 0: harness operator; independently controllable</p><p><b>agent_15</b> crew 0: signal worker; independently controllable</p><p><b>agent_16</b> crew 1: harness operator; independently controllable</p><p><b>agent_17</b> crew 1: harness operator; independently controllable</p><p><b>agent_18</b> crew 1: pump operator; independently controllable</p><p><b>agent_19</b> crew 1: signal worker; independently controllable</p><p><b>agent_20</b> crew 1: pick worker; independently controllable</p><p><b>agent_21</b> crew 1: pump operator; independently controllable</p><p><b>agent_22</b> crew 1: harness operator; independently controllable</p><p><b>agent_23</b> crew 1: signal worker; independently controllable</p><p><b>agent_24</b> crew 1: pick worker; independently controllable</p><p><b>agent_25</b> crew 1: pump operator; independently controllable</p><p><b>agent_26</b> crew 1: harness operator; independently controllable</p><p><b>agent_27</b> crew 1: signal worker; independently controllable</p><p><b>agent_28</b> crew 1: pick worker; independently controllable</p><p><b>agent_29</b> crew 1: pump operator; independently controllable</p><p><b>agent_30</b> crew 1: harness operator; independently controllable</p><p><b>agent_31</b> crew 1: signal worker; independently controllable</p><p><b>agent_32</b> crew 2: harness operator; independently controllable</p><p><b>agent_33</b> crew 2: harness operator; independently controllable</p><p><b>agent_34</b> crew 2: pump operator; independently controllable</p><p><b>agent_35</b> crew 2: signal worker; independently controllable</p><p><b>agent_36</b> crew 2: pick worker; independently controllable</p><p><b>agent_37</b> crew 2: pump operator; independently controllable</p><p><b>agent_38</b> crew 2: harness operator; independently controllable</p><p><b>agent_39</b> crew 2: signal worker; independently controllable</p><p><b>agent_40</b> crew 2: pick worker; independently controllable</p><p><b>agent_41</b> crew 2: pump operator; independently controllable</p><p><b>agent_42</b> crew 2: harness operator; independently controllable</p><p><b>agent_43</b> crew 2: signal worker; independently controllable</p><p><b>agent_44</b> crew 2: pick worker; independently controllable</p><p><b>agent_45</b> crew 2: pump operator; independently controllable</p><p><b>agent_46</b> crew 2: harness operator; independently controllable</p><p><b>agent_47</b> crew 2: signal worker; independently controllable</p><p><b>agent_48</b> crew 3: harness operator; independently controllable</p><p><b>agent_49</b> crew 3: harness operator; independently controllable</p><p><b>agent_50</b> crew 3: pump operator; independently controllable</p><p><b>agent_51</b> crew 3: signal worker; independently controllable</p><p><b>agent_52</b> crew 3: pick worker; independently controllable</p><p><b>agent_53</b> crew 3: pump operator; independently controllable</p><p><b>agent_54</b> crew 3: harness operator; independently controllable</p><p><b>agent_55</b> crew 3: signal worker; independently controllable</p><p><b>agent_56</b> crew 3: pick worker; independently controllable</p><p><b>agent_57</b> crew 3: pump operator; independently controllable</p><p><b>agent_58</b> crew 3: harness operator; independently controllable</p><p><b>agent_59</b> crew 3: signal worker; independently controllable</p><p><b>agent_60</b> crew 3: pick worker; independently controllable</p><p><b>agent_61</b> crew 3: pump operator; independently controllable</p><p><b>agent_62</b> crew 3: harness operator; independently controllable</p><p><b>agent_63</b> crew 3: signal worker; independently controllable</p><p><b>agent_64</b> crew 4: harness operator; independently controllable</p><p><b>agent_65</b> crew 4: harness operator; independently controllable</p><p><b>agent_66</b> crew 4: pump operator; independently controllable</p><p><b>agent_67</b> crew 4: signal worker; independently controllable</p><p><b>agent_68</b> crew 4: pick worker; independently controllable</p><p><b>agent_69</b> crew 4: pump operator; independently controllable</p><p><b>agent_70</b> crew 4: harness operator; independently controllable</p><p><b>agent_71</b> crew 4: signal worker; independently controllable</p><p><b>agent_72</b> crew 4: pick worker; independently controllable</p><p><b>agent_73</b> crew 4: pump operator; independently controllable</p><p><b>agent_74</b> crew 4: harness operator; independently controllable</p><p><b>agent_75</b> crew 4: signal worker; independently controllable</p><p><b>agent_76</b> crew 4: pick worker; independently controllable</p><p><b>agent_77</b> crew 4: pump operator; independently controllable</p><p><b>agent_78</b> crew 4: harness operator; independently controllable</p><p><b>agent_79</b> crew 4: signal worker; independently controllable</p><p><b>agent_80</b> crew 5: harness operator; independently controllable</p><p><b>agent_81</b> crew 5: harness operator; independently controllable</p><p><b>agent_82</b> crew 5: pump operator; independently controllable</p><p><b>agent_83</b> crew 5: signal worker; independently controllable</p><p><b>agent_84</b> crew 5: pick worker; independently controllable</p><p><b>agent_85</b> crew 5: pump operator; independently controllable</p><p><b>agent_86</b> crew 5: harness operator; independently controllable</p><p><b>agent_87</b> crew 5: signal worker; independently controllable</p><p><b>agent_88</b> crew 5: pick worker; independently controllable</p><p><b>agent_89</b> crew 5: pump operator; independently controllable</p><p><b>agent_90</b> crew 5: harness operator; independently controllable</p><p><b>agent_91</b> crew 5: signal worker; independently controllable</p><p><b>agent_92</b> crew 5: pick worker; independently controllable</p><p><b>agent_93</b> crew 5: pump operator; independently controllable</p><p><b>agent_94</b> crew 5: harness operator; independently controllable</p><p><b>agent_95</b> crew 5: signal worker; independently controllable</p><p><b>agent_96</b> crew 6: harness operator; independently controllable</p><p><b>agent_97</b> crew 6: harness operator; independently controllable</p><p><b>agent_98</b> crew 6: pump operator; independently controllable</p><p><b>agent_99</b> crew 6: signal worker; independently controllable</p><p><b>agent_100</b> crew 6: pick worker; independently controllable</p><p><b>agent_101</b> crew 6: pump operator; independently controllable</p><p><b>agent_102</b> crew 6: harness operator; independently controllable</p><p><b>agent_103</b> crew 6: signal worker; independently controllable</p><p><b>agent_104</b> crew 6: pick worker; independently controllable</p><p><b>agent_105</b> crew 6: pump operator; independently controllable</p><p><b>agent_106</b> crew 6: harness operator; independently controllable</p><p><b>agent_107</b> crew 6: signal worker; independently controllable</p><p><b>agent_108</b> crew 6: pick worker; independently controllable</p><p><b>agent_109</b> crew 6: pump operator; independently controllable</p><p><b>agent_110</b> crew 6: harness operator; independently controllable</p><p><b>agent_111</b> crew 6: signal worker; independently controllable</p><p><b>agent_112</b> crew 7: harness operator; independently controllable</p><p><b>agent_113</b> crew 7: harness operator; independently controllable</p><p><b>agent_114</b> crew 7: pump operator; independently controllable</p><p><b>agent_115</b> crew 7: signal worker; independently controllable</p><p><b>agent_116</b> crew 7: pick worker; independently controllable</p><p><b>agent_117</b> crew 7: pump operator; independently controllable</p><p><b>agent_118</b> crew 7: harness operator; independently controllable</p><p><b>agent_119</b> crew 7: signal worker; independently controllable</p><p><b>agent_120</b> crew 7: pick worker; independently controllable</p><p><b>agent_121</b> crew 7: pump operator; independently controllable</p><p><b>agent_122</b> crew 7: harness operator; independently controllable</p><p><b>agent_123</b> crew 7: signal worker; independently controllable</p><p><b>agent_124</b> crew 7: pick worker; independently controllable</p><p><b>agent_125</b> crew 7: pump operator; independently controllable</p><p><b>agent_126</b> crew 7: harness operator; independently controllable</p><p><b>agent_127</b> crew 7: signal worker; independently controllable</p><p><b>agent_128</b> crew 8: harness operator; independently controllable</p><p><b>agent_129</b> crew 8: harness operator; independently controllable</p><p><b>agent_130</b> crew 8: pump operator; independently controllable</p><p><b>agent_131</b> crew 8: signal worker; independently controllable</p><p><b>agent_132</b> crew 8: pick worker; independently controllable</p><p><b>agent_133</b> crew 8: pump operator; independently controllable</p><p><b>agent_134</b> crew 8: harness operator; independently controllable</p><p><b>agent_135</b> crew 8: signal worker; independently controllable</p><p><b>agent_136</b> crew 8: pick worker; independently controllable</p><p><b>agent_137</b> crew 8: pump operator; independently controllable</p><p><b>agent_138</b> crew 8: harness operator; independently controllable</p><p><b>agent_139</b> crew 8: signal worker; independently controllable</p><p><b>agent_140</b> crew 8: pick worker; independently controllable</p><p><b>agent_141</b> crew 8: pump operator; independently controllable</p><p><b>agent_142</b> crew 8: harness operator; independently controllable</p><p><b>agent_143</b> crew 8: signal worker; independently controllable</p><p><b>agent_144</b> crew 9: harness operator; independently controllable</p><p><b>agent_145</b> crew 9: harness operator; independently controllable</p><p><b>agent_146</b> crew 9: pump operator; independently controllable</p><p><b>agent_147</b> crew 9: signal worker; independently controllable</p><p><b>agent_148</b> crew 9: pick worker; independently controllable</p><p><b>agent_149</b> crew 9: pump operator; independently controllable</p><p><b>agent_150</b> crew 9: harness operator; independently controllable</p><p><b>agent_151</b> crew 9: signal worker; independently controllable</p><p><b>agent_152</b> crew 9: pick worker; independently controllable</p><p><b>agent_153</b> crew 9: pump operator; independently controllable</p><p><b>agent_154</b> crew 9: harness operator; independently controllable</p><p><b>agent_155</b> crew 9: signal worker; independently controllable</p><p><b>agent_156</b> crew 9: pick worker; independently controllable</p><p><b>agent_157</b> crew 9: pump operator; independently controllable</p><p><b>agent_158</b> crew 9: harness operator; independently controllable</p><p><b>agent_159</b> crew 9: signal worker; independently controllable</p><p><b>agent_160</b> crew 10: harness operator; independently controllable</p><p><b>agent_161</b> crew 10: harness operator; independently controllable</p><p><b>agent_162</b> crew 10: pump operator; independently controllable</p><p><b>agent_163</b> crew 10: signal worker; independently controllable</p><p><b>agent_164</b> crew 10: pick worker; independently controllable</p><p><b>agent_165</b> crew 10: pump operator; independently controllable</p><p><b>agent_166</b> crew 10: harness operator; independently controllable</p><p><b>agent_167</b> crew 10: signal worker; independently controllable</p><p><b>agent_168</b> crew 10: pick worker; independently controllable</p><p><b>agent_169</b> crew 10: pump operator; independently controllable</p><p><b>agent_170</b> crew 10: harness operator; independently controllable</p><p><b>agent_171</b> crew 10: signal worker; independently controllable</p><p><b>agent_172</b> crew 10: pick worker; independently controllable</p><p><b>agent_173</b> crew 10: pump operator; independently controllable</p><p><b>agent_174</b> crew 10: harness operator; independently controllable</p><p><b>agent_175</b> crew 10: signal worker; independently controllable</p><p><b>agent_176</b> crew 11: harness operator; independently controllable</p><p><b>agent_177</b> crew 11: harness operator; independently controllable</p><p><b>agent_178</b> crew 11: pump operator; independently controllable</p><p><b>agent_179</b> crew 11: signal worker; independently controllable</p><p><b>agent_180</b> crew 11: pick worker; independently controllable</p><p><b>agent_181</b> crew 11: pump operator; independently controllable</p><p><b>agent_182</b> crew 11: harness operator; independently controllable</p><p><b>agent_183</b> crew 11: signal worker; independently controllable</p><p><b>agent_184</b> crew 11: pick worker; independently controllable</p><p><b>agent_185</b> crew 11: pump operator; independently controllable</p><p><b>agent_186</b> crew 11: harness operator; independently controllable</p><p><b>agent_187</b> crew 11: signal worker; independently controllable</p><p><b>agent_188</b> crew 11: pick worker; independently controllable</p><p><b>agent_189</b> crew 11: pump operator; independently controllable</p><p><b>agent_190</b> crew 11: harness operator; independently controllable</p><p><b>agent_191</b> crew 11: signal worker; independently controllable</p><p><b>agent_192</b> crew 12: harness operator; independently controllable</p><p><b>agent_193</b> crew 12: harness operator; independently controllable</p><p><b>agent_194</b> crew 12: pump operator; independently controllable</p><p><b>agent_195</b> crew 12: signal worker; independently controllable</p><p><b>agent_196</b> crew 12: pick worker; independently controllable</p><p><b>agent_197</b> crew 12: pump operator; independently controllable</p><p><b>agent_198</b> crew 12: harness operator; independently controllable</p><p><b>agent_199</b> crew 12: signal worker; independently controllable</p><p><b>agent_200</b> crew 12: pick worker; independently controllable</p><p><b>agent_201</b> crew 12: pump operator; independently controllable</p><p><b>agent_202</b> crew 12: harness operator; independently controllable</p><p><b>agent_203</b> crew 12: signal worker; independently controllable</p><p><b>agent_204</b> crew 12: pick worker; independently controllable</p><p><b>agent_205</b> crew 12: pump operator; independently controllable</p><p><b>agent_206</b> crew 12: harness operator; independently controllable</p><p><b>agent_207</b> crew 12: signal worker; independently controllable</p><p><b>agent_208</b> crew 13: harness operator; independently controllable</p><p><b>agent_209</b> crew 13: harness operator; independently controllable</p><p><b>agent_210</b> crew 13: pump operator; independently controllable</p><p><b>agent_211</b> crew 13: signal worker; independently controllable</p><p><b>agent_212</b> crew 13: pick worker; independently controllable</p><p><b>agent_213</b> crew 13: pump operator; independently controllable</p><p><b>agent_214</b> crew 13: harness operator; independently controllable</p><p><b>agent_215</b> crew 13: signal worker; independently controllable</p><p><b>agent_216</b> crew 13: pick worker; independently controllable</p><p><b>agent_217</b> crew 13: pump operator; independently controllable</p><p><b>agent_218</b> crew 13: harness operator; independently controllable</p><p><b>agent_219</b> crew 13: signal worker; independently controllable</p><p><b>agent_220</b> crew 13: pick worker; independently controllable</p><p><b>agent_221</b> crew 13: pump operator; independently controllable</p><p><b>agent_222</b> crew 13: harness operator; independently controllable</p><p><b>agent_223</b> crew 13: signal worker; independently controllable</p><p><b>agent_224</b> crew 14: harness operator; independently controllable</p><p><b>agent_225</b> crew 14: harness operator; independently controllable</p><p><b>agent_226</b> crew 14: pump operator; independently controllable</p><p><b>agent_227</b> crew 14: signal worker; independently controllable</p><p><b>agent_228</b> crew 14: pick worker; independently controllable</p><p><b>agent_229</b> crew 14: pump operator; independently controllable</p><p><b>agent_230</b> crew 14: harness operator; independently controllable</p><p><b>agent_231</b> crew 14: signal worker; independently controllable</p><p><b>agent_232</b> crew 14: pick worker; independently controllable</p><p><b>agent_233</b> crew 14: pump operator; independently controllable</p><p><b>agent_234</b> crew 14: harness operator; independently controllable</p><p><b>agent_235</b> crew 14: signal worker; independently controllable</p><p><b>agent_236</b> crew 14: pick worker; independently controllable</p><p><b>agent_237</b> crew 14: pump operator; independently controllable</p><p><b>agent_238</b> crew 14: harness operator; independently controllable</p><p><b>agent_239</b> crew 14: signal worker; independently controllable</p><p><b>agent_240</b> crew 15: harness operator; independently controllable</p><p><b>agent_241</b> crew 15: harness operator; independently controllable</p><p><b>agent_242</b> crew 15: pump operator; independently controllable</p><p><b>agent_243</b> crew 15: signal worker; independently controllable</p><p><b>agent_244</b> crew 15: pick worker; independently controllable</p><p><b>agent_245</b> crew 15: pump operator; independently controllable</p><p><b>agent_246</b> crew 15: harness operator; independently controllable</p><p><b>agent_247</b> crew 15: signal worker; independently controllable</p><p><b>agent_248</b> crew 15: pick worker; independently controllable</p><p><b>agent_249</b> crew 15: pump operator; independently controllable</p><p><b>agent_250</b> crew 15: harness operator; independently controllable</p><p><b>agent_251</b> crew 15: signal worker; independently controllable</p><p><b>agent_252</b> crew 15: pick worker; independently controllable</p><p><b>agent_253</b> crew 15: pump operator; independently controllable</p><p><b>agent_254</b> crew 15: harness operator; independently controllable</p><p><b>agent_255</b> crew 15: signal worker; independently controllable</p><p><b>agent_256</b> crew 16: harness operator; independently controllable</p><p><b>agent_257</b> crew 16: harness operator; independently controllable</p><p><b>agent_258</b> crew 16: pump operator; independently controllable</p><p><b>agent_259</b> crew 16: signal worker; independently controllable</p><p><b>agent_260</b> crew 16: pick worker; independently controllable</p><p><b>agent_261</b> crew 16: pump operator; independently controllable</p><p><b>agent_262</b> crew 16: harness operator; independently controllable</p><p><b>agent_263</b> crew 16: signal worker; independently controllable</p><p><b>agent_264</b> crew 16: pick worker; independently controllable</p><p><b>agent_265</b> crew 16: pump operator; independently controllable</p><p><b>agent_266</b> crew 16: harness operator; independently controllable</p><p><b>agent_267</b> crew 16: signal worker; independently controllable</p><p><b>agent_268</b> crew 16: pick worker; independently controllable</p><p><b>agent_269</b> crew 16: pump operator; independently controllable</p><p><b>agent_270</b> crew 16: harness operator; independently controllable</p><p><b>agent_271</b> crew 16: signal worker; independently controllable</p><p><b>agent_272</b> crew 17: harness operator; independently controllable</p><p><b>agent_273</b> crew 17: harness operator; independently controllable</p><p><b>agent_274</b> crew 17: pump operator; independently controllable</p><p><b>agent_275</b> crew 17: signal worker; independently controllable</p><p><b>agent_276</b> crew 17: pick worker; independently controllable</p><p><b>agent_277</b> crew 17: pump operator; independently controllable</p><p><b>agent_278</b> crew 17: harness operator; independently controllable</p><p><b>agent_279</b> crew 17: signal worker; independently controllable</p><p><b>agent_280</b> crew 17: pick worker; independently controllable</p><p><b>agent_281</b> crew 17: pump operator; independently controllable</p><p><b>agent_282</b> crew 17: harness operator; independently controllable</p><p><b>agent_283</b> crew 17: signal worker; independently controllable</p><p><b>agent_284</b> crew 17: pick worker; independently controllable</p><p><b>agent_285</b> crew 17: pump operator; independently controllable</p><p><b>agent_286</b> crew 17: harness operator; independently controllable</p><p><b>agent_287</b> crew 17: signal worker; independently controllable</p><p><b>agent_288</b> crew 18: harness operator; independently controllable</p><p><b>agent_289</b> crew 18: harness operator; independently controllable</p><p><b>agent_290</b> crew 18: pump operator; independently controllable</p><p><b>agent_291</b> crew 18: signal worker; independently controllable</p><p><b>agent_292</b> crew 18: pick worker; independently controllable</p><p><b>agent_293</b> crew 18: pump operator; independently controllable</p><p><b>agent_294</b> crew 18: harness operator; independently controllable</p><p><b>agent_295</b> crew 18: signal worker; independently controllable</p><p><b>agent_296</b> crew 18: pick worker; independently controllable</p><p><b>agent_297</b> crew 18: pump operator; independently controllable</p><p><b>agent_298</b> crew 18: harness operator; independently controllable</p><p><b>agent_299</b> crew 18: signal worker; independently controllable</p><p><b>agent_300</b> crew 18: pick worker; independently controllable</p><p><b>agent_301</b> crew 18: pump operator; independently controllable</p><p><b>agent_302</b> crew 18: harness operator; independently controllable</p><p><b>agent_303</b> crew 18: signal worker; independently controllable</p><p><b>agent_304</b> crew 19: harness operator; independently controllable</p><p><b>agent_305</b> crew 19: harness operator; independently controllable</p><p><b>agent_306</b> crew 19: pump operator; independently controllable</p><p><b>agent_307</b> crew 19: signal worker; independently controllable</p><p><b>agent_308</b> crew 19: pick worker; independently controllable</p><p><b>agent_309</b> crew 19: pump operator; independently controllable</p><p><b>agent_310</b> crew 19: harness operator; independently controllable</p><p><b>agent_311</b> crew 19: signal worker; independently controllable</p><p><b>agent_312</b> crew 19: pick worker; independently controllable</p><p><b>agent_313</b> crew 19: pump operator; independently controllable</p><p><b>agent_314</b> crew 19: harness operator; independently controllable</p><p><b>agent_315</b> crew 19: signal worker; independently controllable</p><p><b>agent_316</b> crew 19: pick worker; independently controllable</p><p><b>agent_317</b> crew 19: pump operator; independently controllable</p><p><b>agent_318</b> crew 19: harness operator; independently controllable</p><p><b>agent_319</b> crew 19: signal worker; independently controllable</p><p><b>agent_320</b> crew 20: harness operator; independently controllable</p><p><b>agent_321</b> crew 20: harness operator; independently controllable</p><p><b>agent_322</b> crew 20: pump operator; independently controllable</p><p><b>agent_323</b> crew 20: signal worker; independently controllable</p><p><b>agent_324</b> crew 20: pick worker; independently controllable</p><p><b>agent_325</b> crew 20: pump operator; independently controllable</p><p><b>agent_326</b> crew 20: harness operator; independently controllable</p><p><b>agent_327</b> crew 20: signal worker; independently controllable</p><p><b>agent_328</b> crew 20: pick worker; independently controllable</p><p><b>agent_329</b> crew 20: pump operator; independently controllable</p><p><b>agent_330</b> crew 20: harness operator; independently controllable</p><p><b>agent_331</b> crew 20: signal worker; independently controllable</p><p><b>agent_332</b> crew 20: pick worker; independently controllable</p><p><b>agent_333</b> crew 20: pump operator; independently controllable</p><p><b>agent_334</b> crew 20: harness operator; independently controllable</p><p><b>agent_335</b> crew 20: signal worker; independently controllable</p><p><b>agent_336</b> crew 21: harness operator; independently controllable</p><p><b>agent_337</b> crew 21: harness operator; independently controllable</p><p><b>agent_338</b> crew 21: pump operator; independently controllable</p><p><b>agent_339</b> crew 21: signal worker; independently controllable</p><p><b>agent_340</b> crew 21: pick worker; independently controllable</p><p><b>agent_341</b> crew 21: pump operator; independently controllable</p><p><b>agent_342</b> crew 21: harness operator; independently controllable</p><p><b>agent_343</b> crew 21: signal worker; independently controllable</p><p><b>agent_344</b> crew 21: pick worker; independently controllable</p><p><b>agent_345</b> crew 21: pump operator; independently controllable</p><p><b>agent_346</b> crew 21: harness operator; independently controllable</p><p><b>agent_347</b> crew 21: signal worker; independently controllable</p><p><b>agent_348</b> crew 21: pick worker; independently controllable</p><p><b>agent_349</b> crew 21: pump operator; independently controllable</p><p><b>agent_350</b> crew 21: harness operator; independently controllable</p><p><b>agent_351</b> crew 21: signal worker; independently controllable</p><p><b>agent_352</b> crew 22: harness operator; independently controllable</p><p><b>agent_353</b> crew 22: harness operator; independently controllable</p><p><b>agent_354</b> crew 22: pump operator; independently controllable</p><p><b>agent_355</b> crew 22: signal worker; independently controllable</p><p><b>agent_356</b> crew 22: pick worker; independently controllable</p><p><b>agent_357</b> crew 22: pump operator; independently controllable</p><p><b>agent_358</b> crew 22: harness operator; independently controllable</p><p><b>agent_359</b> crew 22: signal worker; independently controllable</p><p><b>agent_360</b> crew 22: pick worker; independently controllable</p><p><b>agent_361</b> crew 22: pump operator; independently controllable</p><p><b>agent_362</b> crew 22: harness operator; independently controllable</p><p><b>agent_363</b> crew 22: signal worker; independently controllable</p><p><b>agent_364</b> crew 22: pick worker; independently controllable</p><p><b>agent_365</b> crew 22: pump operator; independently controllable</p><p><b>agent_366</b> crew 22: harness operator; independently controllable</p><p><b>agent_367</b> crew 22: signal worker; independently controllable</p><p><b>agent_368</b> crew 23: harness operator; independently controllable</p><p><b>agent_369</b> crew 23: harness operator; independently controllable</p><p><b>agent_370</b> crew 23: pump operator; independently controllable</p><p><b>agent_371</b> crew 23: signal worker; independently controllable</p><p><b>agent_372</b> crew 23: pick worker; independently controllable</p><p><b>agent_373</b> crew 23: pump operator; independently controllable</p><p><b>agent_374</b> crew 23: harness operator; independently controllable</p><p><b>agent_375</b> crew 23: signal worker; independently controllable</p><p><b>agent_376</b> crew 23: pick worker; independently controllable</p><p><b>agent_377</b> crew 23: pump operator; independently controllable</p><p><b>agent_378</b> crew 23: harness operator; independently controllable</p><p><b>agent_379</b> crew 23: signal worker; independently controllable</p><p><b>agent_380</b> crew 23: pick worker; independently controllable</p><p><b>agent_381</b> crew 23: pump operator; independently controllable</p><p><b>agent_382</b> crew 23: harness operator; independently controllable</p><p><b>agent_383</b> crew 23: signal worker; independently controllable</p><p><b>agent_384</b> crew 24: harness operator; independently controllable</p><p><b>agent_385</b> crew 24: harness operator; independently controllable</p><p><b>agent_386</b> crew 24: pump operator; independently controllable</p><p><b>agent_387</b> crew 24: signal worker; independently controllable</p><p><b>agent_388</b> crew 24: pick worker; independently controllable</p><p><b>agent_389</b> crew 24: pump operator; independently controllable</p><p><b>agent_390</b> crew 24: harness operator; independently controllable</p><p><b>agent_391</b> crew 24: signal worker; independently controllable</p><p><b>agent_392</b> crew 24: pick worker; independently controllable</p><p><b>agent_393</b> crew 24: pump operator; independently controllable</p><p><b>agent_394</b> crew 24: harness operator; independently controllable</p><p><b>agent_395</b> crew 24: signal worker; independently controllable</p><p><b>agent_396</b> crew 24: pick worker; independently controllable</p><p><b>agent_397</b> crew 24: pump operator; independently controllable</p><p><b>agent_398</b> crew 24: harness operator; independently controllable</p><p><b>agent_399</b> crew 24: signal worker; independently controllable</p><p><b>agent_400</b> crew 25: harness operator; independently controllable</p><p><b>agent_401</b> crew 25: harness operator; independently controllable</p><p><b>agent_402</b> crew 25: pump operator; independently controllable</p><p><b>agent_403</b> crew 25: signal worker; independently controllable</p><p><b>agent_404</b> crew 25: pick worker; independently controllable</p><p><b>agent_405</b> crew 25: pump operator; independently controllable</p><p><b>agent_406</b> crew 25: harness operator; independently controllable</p><p><b>agent_407</b> crew 25: signal worker; independently controllable</p><p><b>agent_408</b> crew 25: pick worker; independently controllable</p><p><b>agent_409</b> crew 25: pump operator; independently controllable</p><p><b>agent_410</b> crew 25: harness operator; independently controllable</p><p><b>agent_411</b> crew 25: signal worker; independently controllable</p><p><b>agent_412</b> crew 25: pick worker; independently controllable</p><p><b>agent_413</b> crew 25: pump operator; independently controllable</p><p><b>agent_414</b> crew 25: harness operator; independently controllable</p><p><b>agent_415</b> crew 25: signal worker; independently controllable</p><p><b>agent_416</b> crew 26: harness operator; independently controllable</p><p><b>agent_417</b> crew 26: harness operator; independently controllable</p><p><b>agent_418</b> crew 26: pump operator; independently controllable</p><p><b>agent_419</b> crew 26: signal worker; independently controllable</p><p><b>agent_420</b> crew 26: pick worker; independently controllable</p><p><b>agent_421</b> crew 26: pump operator; independently controllable</p><p><b>agent_422</b> crew 26: harness operator; independently controllable</p><p><b>agent_423</b> crew 26: signal worker; independently controllable</p><p><b>agent_424</b> crew 26: pick worker; independently controllable</p><p><b>agent_425</b> crew 26: pump operator; independently controllable</p><p><b>agent_426</b> crew 26: harness operator; independently controllable</p><p><b>agent_427</b> crew 26: signal worker; independently controllable</p><p><b>agent_428</b> crew 26: pick worker; independently controllable</p><p><b>agent_429</b> crew 26: pump operator; independently controllable</p><p><b>agent_430</b> crew 26: harness operator; independently controllable</p><p><b>agent_431</b> crew 26: signal worker; independently controllable</p><p><b>agent_432</b> crew 27: harness operator; independently controllable</p><p><b>agent_433</b> crew 27: harness operator; independently controllable</p><p><b>agent_434</b> crew 27: pump operator; independently controllable</p><p><b>agent_435</b> crew 27: signal worker; independently controllable</p><p><b>agent_436</b> crew 27: pick worker; independently controllable</p><p><b>agent_437</b> crew 27: pump operator; independently controllable</p><p><b>agent_438</b> crew 27: harness operator; independently controllable</p><p><b>agent_439</b> crew 27: signal worker; independently controllable</p><p><b>agent_440</b> crew 27: pick worker; independently controllable</p><p><b>agent_441</b> crew 27: pump operator; independently controllable</p><p><b>agent_442</b> crew 27: harness operator; independently controllable</p><p><b>agent_443</b> crew 27: signal worker; independently controllable</p><p><b>agent_444</b> crew 27: pick worker; independently controllable</p><p><b>agent_445</b> crew 27: pump operator; independently controllable</p><p><b>agent_446</b> crew 27: harness operator; independently controllable</p><p><b>agent_447</b> crew 27: signal worker; independently controllable</p><p><b>agent_448</b> crew 28: harness operator; independently controllable</p><p><b>agent_449</b> crew 28: harness operator; independently controllable</p><p><b>agent_450</b> crew 28: pump operator; independently controllable</p><p><b>agent_451</b> crew 28: signal worker; independently controllable</p><p><b>agent_452</b> crew 28: pick worker; independently controllable</p><p><b>agent_453</b> crew 28: pump operator; independently controllable</p><p><b>agent_454</b> crew 28: harness operator; independently controllable</p><p><b>agent_455</b> crew 28: signal worker; independently controllable</p><p><b>agent_456</b> crew 28: pick worker; independently controllable</p><p><b>agent_457</b> crew 28: pump operator; independently controllable</p><p><b>agent_458</b> crew 28: harness operator; independently controllable</p><p><b>agent_459</b> crew 28: signal worker; independently controllable</p><p><b>agent_460</b> crew 28: pick worker; independently controllable</p><p><b>agent_461</b> crew 28: pump operator; independently controllable</p><p><b>agent_462</b> crew 28: harness operator; independently controllable</p><p><b>agent_463</b> crew 28: signal worker; independently controllable</p><p><b>agent_464</b> crew 29: harness operator; independently controllable</p><p><b>agent_465</b> crew 29: harness operator; independently controllable</p><p><b>agent_466</b> crew 29: pump operator; independently controllable</p><p><b>agent_467</b> crew 29: signal worker; independently controllable</p><p><b>agent_468</b> crew 29: pick worker; independently controllable</p><p><b>agent_469</b> crew 29: pump operator; independently controllable</p><p><b>agent_470</b> crew 29: harness operator; independently controllable</p><p><b>agent_471</b> crew 29: signal worker; independently controllable</p><p><b>agent_472</b> crew 29: pick worker; independently controllable</p><p><b>agent_473</b> crew 29: pump operator; independently controllable</p><p><b>agent_474</b> crew 29: harness operator; independently controllable</p><p><b>agent_475</b> crew 29: signal worker; independently controllable</p><p><b>agent_476</b> crew 29: pick worker; independently controllable</p><p><b>agent_477</b> crew 29: pump operator; independently controllable</p><p><b>agent_478</b> crew 29: harness operator; independently controllable</p><p><b>agent_479</b> crew 29: signal worker; independently controllable</p><p><b>agent_480</b> crew 30: harness operator; independently controllable</p><p><b>agent_481</b> crew 30: harness operator; independently controllable</p><p><b>agent_482</b> crew 30: pump operator; independently controllable</p><p><b>agent_483</b> crew 30: signal worker; independently controllable</p><p><b>agent_484</b> crew 30: pick worker; independently controllable</p><p><b>agent_485</b> crew 30: pump operator; independently controllable</p><p><b>agent_486</b> crew 30: harness operator; independently controllable</p><p><b>agent_487</b> crew 30: signal worker; independently controllable</p><p><b>agent_488</b> crew 30: pick worker; independently controllable</p><p><b>agent_489</b> crew 30: pump operator; independently controllable</p><p><b>agent_490</b> crew 30: harness operator; independently controllable</p><p><b>agent_491</b> crew 30: signal worker; independently controllable</p><p><b>agent_492</b> crew 30: pick worker; independently controllable</p><p><b>agent_493</b> crew 30: pump operator; independently controllable</p><p><b>agent_494</b> crew 30: harness operator; independently controllable</p><p><b>agent_495</b> crew 30: signal worker; independently controllable</p><p><b>agent_496</b> crew 31: harness operator; independently controllable</p><p><b>agent_497</b> crew 31: harness operator; independently controllable</p><p><b>agent_498</b> crew 31: pump operator; independently controllable</p><p><b>agent_499</b> crew 31: signal worker; independently controllable</p><p><b>agent_500</b> crew 31: pick worker; independently controllable</p><p><b>agent_501</b> crew 31: pump operator; independently controllable</p><p><b>agent_502</b> crew 31: harness operator; independently controllable</p><p><b>agent_503</b> crew 31: signal worker; independently controllable</p><p><b>agent_504</b> crew 31: pick worker; independently controllable</p><p><b>agent_505</b> crew 31: pump operator; independently controllable</p><p><b>agent_506</b> crew 31: harness operator; independently controllable</p><p><b>agent_507</b> crew 31: signal worker; independently controllable</p><p><b>agent_508</b> crew 31: pick worker; independently controllable</p><p><b>agent_509</b> crew 31: pump operator; independently controllable</p><p><b>agent_510</b> crew 31: harness operator; independently controllable</p><p><b>agent_511</b> crew 31: signal worker; independently controllable</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;name&quot;: &quot;self.id&quot;,
+    &quot;meaning&quot;: &quot;native zero-based actor ID&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      2
+    ],
+    &quot;name&quot;: &quot;self.crew&quot;,
+    &quot;meaning&quot;: &quot;crew index 0..31&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      2,
+      3
+    ],
+    &quot;name&quot;: &quot;self.tool&quot;,
+    &quot;meaning&quot;: &quot;Tool: 0 pick,1 pump wrench,2 harness,3 signal flag&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      4
+    ],
+    &quot;name&quot;: &quot;self.x&quot;,
+    &quot;meaning&quot;: &quot;absolute grid x coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      4,
+      5
+    ],
+    &quot;name&quot;: &quot;self.y&quot;,
+    &quot;meaning&quot;: &quot;absolute grid y coordinate&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      6
+    ],
+    &quot;name&quot;: &quot;self.oxygen&quot;,
+    &quot;meaning&quot;: &quot;oxygen 0..12; zero disables all non-wait actions&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      6,
+      7
+    ],
+    &quot;name&quot;: &quot;self.blocks&quot;,
+    &quot;meaning&quot;: &quot;carried basalt blocks 0..3&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      7,
+      8
+    ],
+    &quot;name&quot;: &quot;self.carry&quot;,
+    &quot;meaning&quot;: &quot;carried crate ID or -1&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      9
+    ],
+    &quot;name&quot;: &quot;self.knowledge&quot;,
+    &quot;meaning&quot;: &quot;private cached forecast/recipe; may be stale&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      10
+    ],
+    &quot;name&quot;: &quot;self.warning&quot;,
+    &quot;meaning&quot;: &quot;current tide message: 0 silent, 1..3 encodes forecast 0..2&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      11
+    ],
+    &quot;name&quot;: &quot;self.event&quot;,
+    &quot;meaning&quot;: &quot;accepted action code for the last actual transition; not a success flag In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      12
+    ],
+    &quot;name&quot;: &quot;self.rescued&quot;,
+    &quot;meaning&quot;: &quot;received a rescue in the last transition&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      13
+    ],
+    &quot;name&quot;: &quot;actors.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      13,
+      14
+    ],
+    &quot;name&quot;: &quot;actors.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      15
+    ],
+    &quot;name&quot;: &quot;actors.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      16
+    ],
+    &quot;name&quot;: &quot;actors.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      16,
+      17
+    ],
+    &quot;name&quot;: &quot;actors.slot0.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      17,
+      18
+    ],
+    &quot;name&quot;: &quot;actors.slot0.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      19
+    ],
+    &quot;name&quot;: &quot;actors.slot0.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      19,
+      20
+    ],
+    &quot;name&quot;: &quot;actors.slot0.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      20,
+      21
+    ],
+    &quot;name&quot;: &quot;actors.slot0.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      21,
+      22
+    ],
+    &quot;name&quot;: &quot;actors.slot0.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      22,
+      23
+    ],
+    &quot;name&quot;: &quot;actors.slot0.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      23,
+      24
+    ],
+    &quot;name&quot;: &quot;actors.slot0.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 0: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      24,
+      25
+    ],
+    &quot;name&quot;: &quot;actors.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      25,
+      26
+    ],
+    &quot;name&quot;: &quot;actors.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      26,
+      27
+    ],
+    &quot;name&quot;: &quot;actors.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      27,
+      28
+    ],
+    &quot;name&quot;: &quot;actors.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      28,
+      29
+    ],
+    &quot;name&quot;: &quot;actors.slot1.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      29,
+      30
+    ],
+    &quot;name&quot;: &quot;actors.slot1.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      30,
+      31
+    ],
+    &quot;name&quot;: &quot;actors.slot1.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      31,
+      32
+    ],
+    &quot;name&quot;: &quot;actors.slot1.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      32,
+      33
+    ],
+    &quot;name&quot;: &quot;actors.slot1.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      33,
+      34
+    ],
+    &quot;name&quot;: &quot;actors.slot1.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      34,
+      35
+    ],
+    &quot;name&quot;: &quot;actors.slot1.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      35,
+      36
+    ],
+    &quot;name&quot;: &quot;actors.slot1.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 1: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      36,
+      37
+    ],
+    &quot;name&quot;: &quot;actors.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      37,
+      38
+    ],
+    &quot;name&quot;: &quot;actors.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      38,
+      39
+    ],
+    &quot;name&quot;: &quot;actors.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      39,
+      40
+    ],
+    &quot;name&quot;: &quot;actors.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      40,
+      41
+    ],
+    &quot;name&quot;: &quot;actors.slot2.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      41,
+      42
+    ],
+    &quot;name&quot;: &quot;actors.slot2.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      42,
+      43
+    ],
+    &quot;name&quot;: &quot;actors.slot2.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      43,
+      44
+    ],
+    &quot;name&quot;: &quot;actors.slot2.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      44,
+      45
+    ],
+    &quot;name&quot;: &quot;actors.slot2.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      45,
+      46
+    ],
+    &quot;name&quot;: &quot;actors.slot2.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      46,
+      47
+    ],
+    &quot;name&quot;: &quot;actors.slot2.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      47,
+      48
+    ],
+    &quot;name&quot;: &quot;actors.slot2.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 2: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      48,
+      49
+    ],
+    &quot;name&quot;: &quot;actors.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      49,
+      50
+    ],
+    &quot;name&quot;: &quot;actors.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      50,
+      51
+    ],
+    &quot;name&quot;: &quot;actors.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      51,
+      52
+    ],
+    &quot;name&quot;: &quot;actors.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      52,
+      53
+    ],
+    &quot;name&quot;: &quot;actors.slot3.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      54
+    ],
+    &quot;name&quot;: &quot;actors.slot3.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      54,
+      55
+    ],
+    &quot;name&quot;: &quot;actors.slot3.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      55,
+      56
+    ],
+    &quot;name&quot;: &quot;actors.slot3.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      56,
+      57
+    ],
+    &quot;name&quot;: &quot;actors.slot3.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      57,
+      58
+    ],
+    &quot;name&quot;: &quot;actors.slot3.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      58,
+      59
+    ],
+    &quot;name&quot;: &quot;actors.slot3.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      59,
+      60
+    ],
+    &quot;name&quot;: &quot;actors.slot3.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 3: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      60,
+      61
+    ],
+    &quot;name&quot;: &quot;actors.slot4.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      61,
+      62
+    ],
+    &quot;name&quot;: &quot;actors.slot4.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      62,
+      63
+    ],
+    &quot;name&quot;: &quot;actors.slot4.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      63,
+      64
+    ],
+    &quot;name&quot;: &quot;actors.slot4.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      64,
+      65
+    ],
+    &quot;name&quot;: &quot;actors.slot4.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      65,
+      66
+    ],
+    &quot;name&quot;: &quot;actors.slot4.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      66,
+      67
+    ],
+    &quot;name&quot;: &quot;actors.slot4.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      67,
+      68
+    ],
+    &quot;name&quot;: &quot;actors.slot4.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      68,
+      69
+    ],
+    &quot;name&quot;: &quot;actors.slot4.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      69,
+      70
+    ],
+    &quot;name&quot;: &quot;actors.slot4.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      70,
+      71
+    ],
+    &quot;name&quot;: &quot;actors.slot4.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      71,
+      72
+    ],
+    &quot;name&quot;: &quot;actors.slot4.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 4: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      72,
+      73
+    ],
+    &quot;name&quot;: &quot;actors.slot5.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      73,
+      74
+    ],
+    &quot;name&quot;: &quot;actors.slot5.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      74,
+      75
+    ],
+    &quot;name&quot;: &quot;actors.slot5.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      75,
+      76
+    ],
+    &quot;name&quot;: &quot;actors.slot5.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      76,
+      77
+    ],
+    &quot;name&quot;: &quot;actors.slot5.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      77,
+      78
+    ],
+    &quot;name&quot;: &quot;actors.slot5.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      78,
+      79
+    ],
+    &quot;name&quot;: &quot;actors.slot5.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      79,
+      80
+    ],
+    &quot;name&quot;: &quot;actors.slot5.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      80,
+      81
+    ],
+    &quot;name&quot;: &quot;actors.slot5.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      81,
+      82
+    ],
+    &quot;name&quot;: &quot;actors.slot5.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      82,
+      83
+    ],
+    &quot;name&quot;: &quot;actors.slot5.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      83,
+      84
+    ],
+    &quot;name&quot;: &quot;actors.slot5.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 5: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      84,
+      85
+    ],
+    &quot;name&quot;: &quot;actors.slot6.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      85,
+      86
+    ],
+    &quot;name&quot;: &quot;actors.slot6.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      86,
+      87
+    ],
+    &quot;name&quot;: &quot;actors.slot6.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      87,
+      88
+    ],
+    &quot;name&quot;: &quot;actors.slot6.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      88,
+      89
+    ],
+    &quot;name&quot;: &quot;actors.slot6.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      89,
+      90
+    ],
+    &quot;name&quot;: &quot;actors.slot6.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      90,
+      91
+    ],
+    &quot;name&quot;: &quot;actors.slot6.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      91,
+      92
+    ],
+    &quot;name&quot;: &quot;actors.slot6.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      92,
+      93
+    ],
+    &quot;name&quot;: &quot;actors.slot6.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      93,
+      94
+    ],
+    &quot;name&quot;: &quot;actors.slot6.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      94,
+      95
+    ],
+    &quot;name&quot;: &quot;actors.slot6.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      95,
+      96
+    ],
+    &quot;name&quot;: &quot;actors.slot6.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 6: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      96,
+      97
+    ],
+    &quot;name&quot;: &quot;actors.slot7.visible&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      97,
+      98
+    ],
+    &quot;name&quot;: &quot;actors.slot7.entity_id&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      98,
+      99
+    ],
+    &quot;name&quot;: &quot;actors.slot7.x&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      99,
+      100
+    ],
+    &quot;name&quot;: &quot;actors.slot7.y&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      100,
+      101
+    ],
+    &quot;name&quot;: &quot;actors.slot7.crew&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      101,
+      102
+    ],
+    &quot;name&quot;: &quot;actors.slot7.tool&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      102,
+      103
+    ],
+    &quot;name&quot;: &quot;actors.slot7.oxygen&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      103,
+      104
+    ],
+    &quot;name&quot;: &quot;actors.slot7.blocks&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      104,
+      105
+    ],
+    &quot;name&quot;: &quot;actors.slot7.carry&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      105,
+      106
+    ],
+    &quot;name&quot;: &quot;actors.slot7.warning&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      106,
+      107
+    ],
+    &quot;name&quot;: &quot;actors.slot7.event&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      107,
+      108
+    ],
+    &quot;name&quot;: &quot;actors.slot7.rescued&quot;,
+    &quot;meaning&quot;: &quot;actors, nearest slot 7: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      108,
+      109
+    ],
+    &quot;name&quot;: &quot;docks.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      109,
+      110
+    ],
+    &quot;name&quot;: &quot;docks.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      110,
+      111
+    ],
+    &quot;name&quot;: &quot;docks.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      111,
+      112
+    ],
+    &quot;name&quot;: &quot;docks.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      112,
+      113
+    ],
+    &quot;name&quot;: &quot;docks.slot0.water&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      113,
+      114
+    ],
+    &quot;name&quot;: &quot;docks.slot0.support&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      114,
+      115
+    ],
+    &quot;name&quot;: &quot;docks.slot0.shelter&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      115,
+      116
+    ],
+    &quot;name&quot;: &quot;docks.slot0.valve&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      116,
+      117
+    ],
+    &quot;name&quot;: &quot;docks.slot0.charge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      117,
+      118
+    ],
+    &quot;name&quot;: &quot;docks.slot0.bridge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      118,
+      119
+    ],
+    &quot;name&quot;: &quot;docks.slot0.delivered&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      119,
+      120
+    ],
+    &quot;name&quot;: &quot;docks.slot0.pumped&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      120,
+      121
+    ],
+    &quot;name&quot;: &quot;docks.slot0.flood_loss&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 0: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      121,
+      122
+    ],
+    &quot;name&quot;: &quot;docks.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      122,
+      123
+    ],
+    &quot;name&quot;: &quot;docks.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      123,
+      124
+    ],
+    &quot;name&quot;: &quot;docks.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      124,
+      125
+    ],
+    &quot;name&quot;: &quot;docks.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      125,
+      126
+    ],
+    &quot;name&quot;: &quot;docks.slot1.water&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      126,
+      127
+    ],
+    &quot;name&quot;: &quot;docks.slot1.support&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      127,
+      128
+    ],
+    &quot;name&quot;: &quot;docks.slot1.shelter&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      128,
+      129
+    ],
+    &quot;name&quot;: &quot;docks.slot1.valve&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      129,
+      130
+    ],
+    &quot;name&quot;: &quot;docks.slot1.charge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      130,
+      131
+    ],
+    &quot;name&quot;: &quot;docks.slot1.bridge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      131,
+      132
+    ],
+    &quot;name&quot;: &quot;docks.slot1.delivered&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      132,
+      133
+    ],
+    &quot;name&quot;: &quot;docks.slot1.pumped&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      133,
+      134
+    ],
+    &quot;name&quot;: &quot;docks.slot1.flood_loss&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 1: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      134,
+      135
+    ],
+    &quot;name&quot;: &quot;docks.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      135,
+      136
+    ],
+    &quot;name&quot;: &quot;docks.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      136,
+      137
+    ],
+    &quot;name&quot;: &quot;docks.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      137,
+      138
+    ],
+    &quot;name&quot;: &quot;docks.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      138,
+      139
+    ],
+    &quot;name&quot;: &quot;docks.slot2.water&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      139,
+      140
+    ],
+    &quot;name&quot;: &quot;docks.slot2.support&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      140,
+      141
+    ],
+    &quot;name&quot;: &quot;docks.slot2.shelter&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      141,
+      142
+    ],
+    &quot;name&quot;: &quot;docks.slot2.valve&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      142,
+      143
+    ],
+    &quot;name&quot;: &quot;docks.slot2.charge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      143,
+      144
+    ],
+    &quot;name&quot;: &quot;docks.slot2.bridge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      144,
+      145
+    ],
+    &quot;name&quot;: &quot;docks.slot2.delivered&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      145,
+      146
+    ],
+    &quot;name&quot;: &quot;docks.slot2.pumped&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      146,
+      147
+    ],
+    &quot;name&quot;: &quot;docks.slot2.flood_loss&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 2: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      147,
+      148
+    ],
+    &quot;name&quot;: &quot;docks.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      148,
+      149
+    ],
+    &quot;name&quot;: &quot;docks.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      149,
+      150
+    ],
+    &quot;name&quot;: &quot;docks.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      150,
+      151
+    ],
+    &quot;name&quot;: &quot;docks.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      151,
+      152
+    ],
+    &quot;name&quot;: &quot;docks.slot3.water&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      152,
+      153
+    ],
+    &quot;name&quot;: &quot;docks.slot3.support&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      153,
+      154
+    ],
+    &quot;name&quot;: &quot;docks.slot3.shelter&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      154,
+      155
+    ],
+    &quot;name&quot;: &quot;docks.slot3.valve&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      155,
+      156
+    ],
+    &quot;name&quot;: &quot;docks.slot3.charge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      156,
+      157
+    ],
+    &quot;name&quot;: &quot;docks.slot3.bridge&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      157,
+      158
+    ],
+    &quot;name&quot;: &quot;docks.slot3.delivered&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      158,
+      159
+    ],
+    &quot;name&quot;: &quot;docks.slot3.pumped&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      159,
+      160
+    ],
+    &quot;name&quot;: &quot;docks.slot3.flood_loss&quot;,
+    &quot;meaning&quot;: &quot;docks, nearest slot 3: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      160,
+      161
+    ],
+    &quot;name&quot;: &quot;cargo.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      161,
+      162
+    ],
+    &quot;name&quot;: &quot;cargo.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      162,
+      163
+    ],
+    &quot;name&quot;: &quot;cargo.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      163,
+      164
+    ],
+    &quot;name&quot;: &quot;cargo.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      164,
+      165
+    ],
+    &quot;name&quot;: &quot;cargo.slot0.carrier&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 0: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      165,
+      166
+    ],
+    &quot;name&quot;: &quot;cargo.slot0.owner&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 0: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      166,
+      167
+    ],
+    &quot;name&quot;: &quot;cargo.slot0.rust&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 0: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      167,
+      168
+    ],
+    &quot;name&quot;: &quot;cargo.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      168,
+      169
+    ],
+    &quot;name&quot;: &quot;cargo.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      169,
+      170
+    ],
+    &quot;name&quot;: &quot;cargo.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      170,
+      171
+    ],
+    &quot;name&quot;: &quot;cargo.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      171,
+      172
+    ],
+    &quot;name&quot;: &quot;cargo.slot1.carrier&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 1: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      172,
+      173
+    ],
+    &quot;name&quot;: &quot;cargo.slot1.owner&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 1: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      173,
+      174
+    ],
+    &quot;name&quot;: &quot;cargo.slot1.rust&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 1: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      174,
+      175
+    ],
+    &quot;name&quot;: &quot;cargo.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      175,
+      176
+    ],
+    &quot;name&quot;: &quot;cargo.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      176,
+      177
+    ],
+    &quot;name&quot;: &quot;cargo.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      177,
+      178
+    ],
+    &quot;name&quot;: &quot;cargo.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      178,
+      179
+    ],
+    &quot;name&quot;: &quot;cargo.slot2.carrier&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 2: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      179,
+      180
+    ],
+    &quot;name&quot;: &quot;cargo.slot2.owner&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 2: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      180,
+      181
+    ],
+    &quot;name&quot;: &quot;cargo.slot2.rust&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 2: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      181,
+      182
+    ],
+    &quot;name&quot;: &quot;cargo.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      182,
+      183
+    ],
+    &quot;name&quot;: &quot;cargo.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 3: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      183,
+      184
+    ],
+    &quot;name&quot;: &quot;cargo.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 3: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      184,
+      185
+    ],
+    &quot;name&quot;: &quot;cargo.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 3: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      185,
+      186
+    ],
+    &quot;name&quot;: &quot;cargo.slot3.carrier&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 3: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      186,
+      187
+    ],
+    &quot;name&quot;: &quot;cargo.slot3.owner&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 3: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      187,
+      188
+    ],
+    &quot;name&quot;: &quot;cargo.slot3.rust&quot;,
+    &quot;meaning&quot;: &quot;cargo, nearest slot 3: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      188,
+      189
+    ],
+    &quot;name&quot;: &quot;brakes.slot0.visible&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      189,
+      190
+    ],
+    &quot;name&quot;: &quot;brakes.slot0.entity_id&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      190,
+      191
+    ],
+    &quot;name&quot;: &quot;brakes.slot0.x&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      191,
+      192
+    ],
+    &quot;name&quot;: &quot;brakes.slot0.y&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      192,
+      193
+    ],
+    &quot;name&quot;: &quot;brakes.slot0.held&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 0: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      193,
+      194
+    ],
+    &quot;name&quot;: &quot;brakes.slot1.visible&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      194,
+      195
+    ],
+    &quot;name&quot;: &quot;brakes.slot1.entity_id&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      195,
+      196
+    ],
+    &quot;name&quot;: &quot;brakes.slot1.x&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      196,
+      197
+    ],
+    &quot;name&quot;: &quot;brakes.slot1.y&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      197,
+      198
+    ],
+    &quot;name&quot;: &quot;brakes.slot1.held&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 1: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      198,
+      199
+    ],
+    &quot;name&quot;: &quot;brakes.slot2.visible&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      199,
+      200
+    ],
+    &quot;name&quot;: &quot;brakes.slot2.entity_id&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      200,
+      201
+    ],
+    &quot;name&quot;: &quot;brakes.slot2.x&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      201,
+      202
+    ],
+    &quot;name&quot;: &quot;brakes.slot2.y&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      202,
+      203
+    ],
+    &quot;name&quot;: &quot;brakes.slot2.held&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 2: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      203,
+      204
+    ],
+    &quot;name&quot;: &quot;brakes.slot3.visible&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      204,
+      205
+    ],
+    &quot;name&quot;: &quot;brakes.slot3.entity_id&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 3: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      205,
+      206
+    ],
+    &quot;name&quot;: &quot;brakes.slot3.x&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 3: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      206,
+      207
+    ],
+    &quot;name&quot;: &quot;brakes.slot3.y&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 3: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      207,
+      208
+    ],
+    &quot;name&quot;: &quot;brakes.slot3.held&quot;,
+    &quot;meaning&quot;: &quot;brakes, nearest slot 3: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      208,
+      209
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      209,
+      210
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      210,
+      211
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      211,
+      212
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      212,
+      213
+    ],
+    &quot;name&quot;: &quot;patch.dy-2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      213,
+      214
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      214,
+      215
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      215,
+      216
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      216,
+      217
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      217,
+      218
+    ],
+    &quot;name&quot;: &quot;patch.dy-1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=-1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      218,
+      219
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      219,
+      220
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      220,
+      221
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      221,
+      222
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      222,
+      223
+    ],
+    &quot;name&quot;: &quot;patch.dy0.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=0; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      223,
+      224
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      224,
+      225
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      225,
+      226
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      226,
+      227
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      227,
+      228
+    ],
+    &quot;name&quot;: &quot;patch.dy1.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=1; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      228,
+      229
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      229,
+      230
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx-1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=-1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      230,
+      231
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx0&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=0, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      231,
+      232
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx1&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=1, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      232,
+      233
+    ],
+    &quot;name&quot;: &quot;patch.dy2.dx2&quot;,
+    &quot;meaning&quot;: &quot;Static map tile at self offset x=2, y=2; -1 outside bounds. See world.map.legend.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      233,
+      234
+    ],
+    &quot;name&quot;: &quot;public.t&quot;,
+    &quot;meaning&quot;: &quot;completed native transition count&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      234,
+      235
+    ],
+    &quot;name&quot;: &quot;public.done&quot;,
+    &quot;meaning&quot;: &quot;joint episode completion&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      235,
+      236
+    ],
+    &quot;name&quot;: &quot;public.terminated&quot;,
+    &quot;meaning&quot;: &quot;natural completion cause&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      236,
+      272
+    ],
+    &quot;name&quot;: &quot;padding&quot;,
+    &quot;meaning&quot;: &quot;Explicit constant zero padding; contains no additional information.&quot;,
+    &quot;visibility&quot;: &quot;padding&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;actors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 512,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;actor_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;crew index 0..31&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tool: 0 pick,1 pump wrench,2 harness,3 signal flag&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;oxygen&quot;
+        ],
+        &quot;meaning&quot;: &quot;oxygen 0..12; zero disables all non-wait actions&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;blocks&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried basalt blocks 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carry&quot;
+        ],
+        &quot;meaning&quot;: &quot;carried crate ID or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;warning&quot;
+        ],
+        &quot;meaning&quot;: &quot;current tide message: 0 silent, 1..3 encodes forecast 0..2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;event&quot;
+        ],
+        &quot;meaning&quot;: &quot;0..15 accepted action,16 completed tool swap,17 credited rescuer; other codes are not success flags&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rescued&quot;
+        ],
+        &quot;meaning&quot;: &quot;received a rescue in the last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;docks&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;dock_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;dock_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;dock_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;local water level 0..4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;support&quot;
+        ],
+        &quot;meaning&quot;: &quot;persistent bridge supports 0..3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;shelter&quot;
+        ],
+        &quot;meaning&quot;: &quot;shelter built flag&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;valve&quot;
+        ],
+        &quot;meaning&quot;: &quot;diversion/irrigation switch state&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;charge&quot;
+        ],
+        &quot;meaning&quot;: &quot;stored pump charge 0..8&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;bridge&quot;
+        ],
+        &quot;meaning&quot;: &quot;bridge currently usable from two holds or three supports&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;cumulative local delivered units&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pumped&quot;
+        ],
+        &quot;meaning&quot;: &quot;one actual pump discharge in the last transition&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;flood_loss&quot;
+        ],
+        &quot;meaning&quot;: &quot;crate losses assigned to this crew in last transition&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;cargo&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 64,
+    &quot;position&quot;: [
+      &quot;cargo_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cargo_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cargo_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;native carrier actor ID or -1&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;current cargo or barge owner group&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;rust&quot;
+        ],
+        &quot;meaning&quot;: &quot;rust damage 0..8&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;brakes&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 64,
+    &quot;position&quot;: [
+      &quot;brake_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;brake_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;brake_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;held&quot;
+        ],
+        &quot;meaning&quot;: &quot;currently held brake, brace or door&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 248,
+  &quot;key&quot;: &quot;gi248&quot;,
+  &quot;title&quot;: &quot;Basalt Tide Salvage&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 512,
+    &quot;observation_size&quot;: 272,
+    &quot;num_actions&quot;: 16,
+    &quot;max_steps&quot;: 1024
+  },
+  &quot;source_sha256&quot;: &quot;a3f68f170bfd0a38bc5eff6e983461f9699121fa8b529c19b65d2ad9eb008e1b&quot;,
+  &quot;manifest_sha256&quot;: &quot;dbbd179949f0b81ab82b5964c24204a4ea968f00cdf615f6fcdb2c6679b02475&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;a3f68f170bfd0a38bc5eff6e983461f9699121fa8b529c19b65d2ad9eb008e1b&quot;,
+      &quot;bytes&quot;: 15530,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00248/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;dbbd179949f0b81ab82b5964c24204a4ea968f00cdf615f6fcdb2c6679b02475&quot;,
+      &quot;bytes&quot;: 158103,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00248/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;b475d6420d89e99d37ca49f90326286540d83e1642cb3de278fd6d5d87473501&quot;,
+      &quot;bytes&quot;: 71518,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00248/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;26e1805ca0ab253e3fba4f0259b725b57e036a055b880184d306754dc9d95516&quot;,
+      &quot;bytes&quot;: 12321,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00248/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;a78ddbf390279fc24938053e5922e7ba38b61d9733c1e66df80d55b8065d2c9f&quot;,
+      &quot;bytes&quot;: 122644,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00248/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi248">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

@@ -1,0 +1,924 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00145",
+  "source_sha256": "aa5903c6cb30959ab9fd8def84eb0a7688a47ac2f0bad8105671f7e765f1ff4c",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 153,
+  "num_actions": 10,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -1.0,
+  "reward_high": 2.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Miner role 0 with private sampled ore claim"
+    },
+    {
+      "id": "agent_1",
+      "role": "Miner role 1 with private sampled ore claim"
+    },
+    {
+      "id": "agent_2",
+      "role": "Miner role 2 with private sampled ore claim"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Extract one nearby ore if inventory empty"
+    },
+    {
+      "id": 6,
+      "label": "Pick up or drop a portable canister"
+    },
+    {
+      "id": 7,
+      "label": "Offer own canister to an adjacent consenting miner"
+    },
+    {
+      "id": 8,
+      "label": "Accept an offered canister and/or draw portable oxygen"
+    },
+    {
+      "id": 9,
+      "label": "Refill at the shared station, at most four units"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "oxygen"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ore"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying_canister"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "claim"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "claim_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "memorial_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "vein_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "vein_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "vein_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "vein_type"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "vein_remaining"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "canister_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "canister_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "canister_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "canister_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "canister_volume"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_stock"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_occupant"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered_counts"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lost_counts"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "mined"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "transferred"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "used"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "died"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "refilled"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "picked"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dropped"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable asteroid cell; oxygen is consumed except at station (1,3)",
+          "color": "#DFE1E6"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable rock",
+          "color": "#595968"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "miners",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "oxygen"
+          ],
+          "meaning": "Personal oxygen, 0 to 12",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "ore"
+          ],
+          "meaning": "Carried ore type; -1 means empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "carrying_canister"
+          ],
+          "meaning": "Portable canister index; -1 means none",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "private_claims",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "claim_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "claim"
+          ],
+          "meaning": "Private rewarded ore type; visible only to its owner",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "memorials",
+      "kind": "hazard",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "memorial_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "veins",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "vein_pos"
+      ],
+      "active": [
+        "vein_active"
+      ],
+      "visibility": [
+        "vein_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "vein_type"
+          ],
+          "meaning": "Ore type",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "vein_remaining"
+          ],
+          "meaning": "Units remaining, 0 to 2",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "canisters",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "canister_pos"
+      ],
+      "active": [
+        "canister_active"
+      ],
+      "visibility": [
+        "canister_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "canister_owner"
+          ],
+          "meaning": "Carrier agent index; -1 means on the ground",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "canister_volume"
+          ],
+          "meaning": "Portable oxygen units remaining, 0 to 6",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "station_stock"
+          ],
+          "meaning": "Finite station oxygen units remaining, initially 24",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "station_occupant"
+          ],
+          "meaning": "Current live occupant; -1 means empty",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "mined"
+      ],
+      "meaning": "Agent extracted one actual ore unit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Agent delivered its carried ore at the station",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transferred"
+      ],
+      "meaning": "Canister changed owner by simultaneous Offer and Accept consent",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "used"
+      ],
+      "meaning": "Positive oxygen amount drawn from this canister",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "died"
+      ],
+      "meaning": "Agent newly exhausted oxygen",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "refilled"
+      ],
+      "meaning": "Agent or its canister received positive gas from finite station stock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Portable canister picked up",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Portable canister dropped voluntarily or by carrier death",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_counts"
+      ],
+      "meaning": "Cumulative delivered units by ore type",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost_counts"
+      ],
+      "meaning": "Cumulative carried units lost on death by ore type",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        18
+      ],
+      "meaning": "Miner-major 3 x [x/10,y/6,active,oxygen/12,(ore+1)/3,(canister_index+1)/2]. Dead miners keep their last public position.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        30
+      ],
+      "meaning": "Vein-major 3 x [x/10,y/6,type/2,remaining/2]. Depleted veins remain visibly present.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        38
+      ],
+      "meaning": "Canister-major 2 x [x/10,y/6,(owner+1)/3,volume/6]. Empty canisters persist.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        42
+      ],
+      "meaning": "Shared station [x/10,y/6,stock/24,(occupant+1)/3].",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Delivered ore counts by type divided by six.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Ore lost on death by type divided by six.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        51
+      ],
+      "meaning": "One-hot of this observing miner own private claim type only; other miners claims are absent.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        51,
+        54
+      ],
+      "meaning": "One-hot observing miner identity.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        54,
+        55
+      ],
+      "meaning": "Elapsed calls t/80.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        55,
+        56
+      ],
+      "meaning": "Joint episode_done.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        133
+      ],
+      "meaning": "Public 7x11 terrain in y-major order: 0 traversable, 1 impassable rock.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        136
+      ],
+      "meaning": "Latest per-agent mining flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        139
+      ],
+      "meaning": "Latest per-agent delivery flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        141
+      ],
+      "meaning": "Latest per-canister consent-transfer flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        143
+      ],
+      "meaning": "Latest per-canister positive gas-use flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        146
+      ],
+      "meaning": "Latest per-agent oxygen-death flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        149
+      ],
+      "meaning": "Latest per-agent station-refill flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        151
+      ],
+      "meaning": "Latest per-canister pickup flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        153
+      ],
+      "meaning": "Latest per-canister voluntary/death drop flags.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Bring finite ore to (1,3). Each miner privately values one randomly assigned ore type; all share delivery benefits and survival losses. Maintain oxygen using two portable canisters and finite shared station stock.",
+    "natural_termination": "All miners are dead, or every vein is empty and nobody carries ore. Delivered and lost ore both count as removed resources; horizon 80 otherwise truncates.",
+    "interaction": "Shared veins are depleted by extraction; the station admits one occupant; a portable canister moves only through physical pickup/drop or simultaneous adjacent Offer/Accept consent. Resource transfers and station occupation change other miners feasible trip lengths and delivery payoffs.",
+    "observation_access": "Terrain, live/dead positions, oxygen, ore inventories, canisters, veins, station stock/occupancy and events are public. Only the observing role own private claim is returned. claim_visible is the identity matrix, so each role scene must hide other claims; a full-state debug view must be labelled separately."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "oxygen"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "vein_remaining"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "canister_volume"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "station_stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered_counts"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "lost_counts"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "integration_status": "RAW_ARRAY_KERNEL_AUTHORED_PUBLIC_ADAPTER_REQUIRES_SEPARATE_IMPLEMENTATION_AND_VALIDATION",
+  "native_information_boundary": "Policies receive only returned float32 observations and legal masks. A full-state debug renderer must be separately labelled."
+}

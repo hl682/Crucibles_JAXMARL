@@ -1,0 +1,1056 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00127",
+  "source_sha256": "01edcd481554df610ae6898ea2319f7235ebc6b4144ffa7298b7b013a7aab205",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "num_actions": 12,
+  "observation_size": 145,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -4,
+  "reward_high": 4,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Upper escort and charge donor"
+    },
+    {
+      "id": "agent_1",
+      "role": "Lower escort and charge donor"
+    },
+    {
+      "id": "agent_2",
+      "role": "Central driver and mobile repairer"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Rest and recharge near station"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Guard north"
+    },
+    {
+      "id": 6,
+      "label": "Guard east"
+    },
+    {
+      "id": 7,
+      "label": "Guard south"
+    },
+    {
+      "id": 8,
+      "label": "Guard west"
+    },
+    {
+      "id": 9,
+      "label": "Transfer charge to nearby least-charged role"
+    },
+    {
+      "id": 10,
+      "label": "Repair adjacent supply cart"
+    },
+    {
+      "id": 11,
+      "label": "Escort adjacent carts east"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_health"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_energy"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_facing"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_guard"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cart_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cart_health"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cart_delivered"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cart_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cart_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_velocity"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_ttl"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hazard_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hazard_visible"
+      ],
+      "shape": [
+        3,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shield_pos"
+      ],
+      "shape": [
+        9,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shield_direction"
+      ],
+      "shape": [
+        9,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shield_owner"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shield_active"
+      ],
+      "shape": [
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shield_visible"
+      ],
+      "shape": [
+        3,
+        9
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "intercept_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "transfer_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "receive_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_hit_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cart_hit_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "progress_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "arrival_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "spawn_event"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ]
+  },
+  "entities": [
+    {
+      "id": "escorts",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "agent_health"
+          ],
+          "meaning": "Remaining health, maximum 3",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_energy"
+          ],
+          "meaning": "Charge units, maximum 6",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "agent_facing"
+          ],
+          "meaning": "Actual movement or guard direction",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "agent_guard"
+          ],
+          "meaning": "Directional guard request on latest step",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "supply_carts",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "cart_pos"
+      ],
+      "active": [
+        "cart_active"
+      ],
+      "visibility": [
+        "cart_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cart_health"
+          ],
+          "meaning": "Supply health, maximum 4",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "cart_delivered"
+          ],
+          "meaning": "Delivered at east edge",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "charge_stations",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "projectiles",
+      "kind": "hazard",
+      "count": 4,
+      "position": [
+        "hazard_pos"
+      ],
+      "active": [
+        "hazard_active"
+      ],
+      "visibility": [
+        "hazard_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "hazard_velocity"
+          ],
+          "meaning": "Projectile motion each tick",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "hazard_ttl"
+          ],
+          "meaning": "Remaining active flight ticks before expiry",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "shield_arc_cells",
+      "kind": "object",
+      "count": 9,
+      "position": [
+        "shield_pos"
+      ],
+      "active": [
+        "shield_active"
+      ],
+      "visibility": [
+        "shield_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "shield_direction"
+          ],
+          "meaning": "Incoming direction opposed by this shield",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "shield_owner"
+          ],
+          "meaning": "Role supplying this actual intercept cell",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "intercept_event"
+      ],
+      "meaning": "Number of projectiles intercepted by each role this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transfer_event"
+      ],
+      "meaning": "Charge units sent by each role this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "receive_event"
+      ],
+      "meaning": "Charge units received by each role this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "agent_hit_event"
+      ],
+      "meaning": "Hits on each role this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cart_hit_event"
+      ],
+      "meaning": "Hits on each supply cart this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "progress_event"
+      ],
+      "meaning": "Each cart escorted one cell east this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "arrival_event"
+      ],
+      "meaning": "Each cart newly arrived alive at the east edge this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spawn_event"
+      ],
+      "meaning": "Projectile slots newly spawned this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Role one-hot in role index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "state_path": [
+        "agent_pos"
+      ],
+      "meaning": "escorts positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "state_path": [
+        "agent_health"
+      ],
+      "meaning": "Remaining health, maximum 3; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "state_path": [
+        "agent_energy"
+      ],
+      "meaning": "Charge units, maximum 6; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        21
+      ],
+      "state_path": [
+        "agent_facing"
+      ],
+      "meaning": "Actual movement or guard direction; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "state_path": [
+        "agent_guard"
+      ],
+      "meaning": "Directional guard request on latest step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "state_path": [
+        "agent_active"
+      ],
+      "meaning": "Role has positive health; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        31
+      ],
+      "state_path": [
+        "cart_pos"
+      ],
+      "meaning": "supply carts positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        33
+      ],
+      "state_path": [
+        "cart_health"
+      ],
+      "meaning": "Supply health, maximum 4; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "state_path": [
+        "cart_delivered"
+      ],
+      "meaning": "Delivered at east edge; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        37
+      ],
+      "state_path": [
+        "cart_active"
+      ],
+      "meaning": "Cart still alive and not yet delivered; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        43
+      ],
+      "state_path": [
+        "station_pos"
+      ],
+      "meaning": "charge stations positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        51
+      ],
+      "state_path": [
+        "hazard_pos"
+      ],
+      "meaning": "projectiles positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        51,
+        59
+      ],
+      "state_path": [
+        "hazard_velocity"
+      ],
+      "meaning": "Projectile motion each tick; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        59,
+        63
+      ],
+      "state_path": [
+        "hazard_ttl"
+      ],
+      "meaning": "Remaining active flight ticks before expiry; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        63,
+        67
+      ],
+      "state_path": [
+        "hazard_active"
+      ],
+      "meaning": "Projectile slot currently active; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        85
+      ],
+      "state_path": [
+        "shield_pos"
+      ],
+      "meaning": "shield arc cells positions in entity index order, each [x,y]; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        103
+      ],
+      "state_path": [
+        "shield_direction"
+      ],
+      "meaning": "Incoming direction opposed by this shield; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        112
+      ],
+      "state_path": [
+        "shield_active"
+      ],
+      "meaning": "Native shield cell currently enabled; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        112,
+        121
+      ],
+      "state_path": [
+        "shield_owner"
+      ],
+      "meaning": "Role supplying this actual intercept cell; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        124
+      ],
+      "state_path": [
+        "intercept_event"
+      ],
+      "meaning": "Number of projectiles intercepted by each role this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        127
+      ],
+      "state_path": [
+        "transfer_event"
+      ],
+      "meaning": "Charge units sent by each role this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        130
+      ],
+      "state_path": [
+        "receive_event"
+      ],
+      "meaning": "Charge units received by each role this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        133
+      ],
+      "state_path": [
+        "agent_hit_event"
+      ],
+      "meaning": "Hits on each role this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        135
+      ],
+      "state_path": [
+        "cart_hit_event"
+      ],
+      "meaning": "Hits on each supply cart this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        135,
+        137
+      ],
+      "state_path": [
+        "progress_event"
+      ],
+      "meaning": "Each cart escorted one cell east this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        139
+      ],
+      "state_path": [
+        "arrival_event"
+      ],
+      "meaning": "Each cart newly arrived alive at the east edge this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        139,
+        143
+      ],
+      "state_path": [
+        "spawn_event"
+      ],
+      "meaning": "Projectile slots newly spawned this step; row-major flattening divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        144
+      ],
+      "meaning": "Clock t divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        145
+      ],
+      "meaning": "Joint episode completion flag, unscaled",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Escort two living supply carts to the east edge while allocating directional shielding, energy, repairs and movement.",
+    "natural_termination": "Every cart is delivered or destroyed, or every escort is disabled; otherwise truncate at 80 nonterminal steps.",
+    "interaction": "A facing-matched three-cell shield intercepts a projectile before it can damage a teammate or supply cart, consuming one charge. Nearby charge donors change future blocking and repair opportunities. Escort, guard, transfer and repair occupy the same action slot. Carts advance only with nearby escort requests.",
+    "observation_access": "All entity positions and declared attributes are public. Role identity is self information. Fixed maps, constant labels and redundant derived geometry add no hidden information. Only native observations and legal masks enter a learner."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_health"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_energy"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cart_health"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "hazard_ttl"
+      ],
+      "low": 0,
+      "high": 7
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "shield_owner"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_pos"
+      ],
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cart_pos"
+      ],
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "hazard_pos"
+      ],
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "shield_pos"
+      ],
+      "low": 0,
+      "high": 10
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "invalid_action_policy": "Out-of-range action indices become action 0. Resource or movement requests whose prerequisites fail are deterministic no-ops for that request. Terminal raw input is absorbing. Disabled escorts in 127 are sanitized to action 0 and only action 0 is legal.",
+  "invariant_status": "SOURCE_DECLARATIONS_NOT_NUMERICALLY_TESTED"
+}

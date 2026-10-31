@@ -1,0 +1,892 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00190",
+  "source_sha256": "86f9f8fa43ec4f1331a753ef095c4f7d7c0e001374a2e58b7a02f93eceb87dac",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 49,
+  "num_actions": 14,
+  "max_steps": 88,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": 0,
+  "reward_high": 10,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Upper-river polity envoy"
+    },
+    {
+      "id": "agent_1",
+      "role": "Middle-river polity envoy"
+    },
+    {
+      "id": "agent_2",
+      "role": "Lower-river polity envoy"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Build own bridge: 2 grain at own dock"
+    },
+    {
+      "id": 6,
+      "label": "Toggle own diversion at dock; unavailable during pledge"
+    },
+    {
+      "id": 7,
+      "label": "Pledge open sluice for 2 floods: 1 grain at own dock"
+    },
+    {
+      "id": 8,
+      "label": "Load 1 grain at own town; cargo capacity 2"
+    },
+    {
+      "id": 9,
+      "label": "Launch all cargo downstream at own dock"
+    },
+    {
+      "id": 10,
+      "label": "Unload all cargo into the town underfoot"
+    },
+    {
+      "id": 11,
+      "label": "Toggle own bridge toll at own dock"
+    },
+    {
+      "id": 12,
+      "label": "Eat 1 stored grain at own town"
+    },
+    {
+      "id": 13,
+      "label": "Sell all carried grain at eastern market"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "season"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "source_water"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "grain"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "taste"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "town_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "town_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "town_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "divert"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pledge"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bridge_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bridge_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "built"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "toll"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "boat_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "boat_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "boat_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "boat_load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "market_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "market_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "market_visibility"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_move"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_cross"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_flow"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "e_arrival"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "e_pledge"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_payoff"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 1,
+          "meaning": "Upper polity: walkable terraced farmland",
+          "color": "#9FAD71"
+        },
+        {
+          "value": 2,
+          "meaning": "Middle polity: walkable clay plains",
+          "color": "#C7AC73"
+        },
+        {
+          "value": 3,
+          "meaning": "Lower polity: walkable reed lowlands",
+          "color": "#8AA895"
+        },
+        {
+          "value": 4,
+          "meaning": "River: enter only built bridge cells at y=1,4,7",
+          "color": "#4F92B1"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "grain"
+          ],
+          "meaning": "Stored grain",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "meaning": "Carried grain",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "meaning": "Consumed/export utility",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "town",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "town_pos"
+      ],
+      "active": [
+        "town_active"
+      ],
+      "visibility": [
+        "town_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "grain"
+          ],
+          "meaning": "Town granary",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "kind": "gate",
+      "count": 3,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "divert"
+          ],
+          "meaning": "Diversion: 0 release, 1 take up to 2",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "pledge"
+          ],
+          "meaning": "Floods still committed open",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "kind": "gate",
+      "count": 3,
+      "position": [
+        "bridge_pos"
+      ],
+      "active": [
+        "bridge_active"
+      ],
+      "visibility": [
+        "bridge_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "built"
+          ],
+          "meaning": "Bridge constructed",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "toll"
+          ],
+          "meaning": "Foreign entry toll: grain units",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "boat",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "boat_pos"
+      ],
+      "active": [
+        "boat_active"
+      ],
+      "visibility": [
+        "boat_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "boat_load"
+          ],
+          "meaning": "Grain aboard",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "market_pos"
+      ],
+      "active": [
+        "market_active"
+      ],
+      "visibility": [
+        "market_visibility"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "e_move"
+      ],
+      "meaning": "Envoy moved this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_cross"
+      ],
+      "meaning": "Envoy entered a built river bridge",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_flow"
+      ],
+      "meaning": "Grain produced by each polity at this flood only",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_arrival"
+      ],
+      "meaning": "Grain arriving from each barge this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_pledge"
+      ],
+      "meaning": "Envoy bought an open-sluice commitment",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_payoff"
+      ],
+      "meaning": "Utility actually paid this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Public t/88, completed floods/8, source water/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "Public envoy x/10,y/8, ordered roles 0,1,2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Town grain/64, roles 0,1,2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Envoy cargo/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Diversion settings: 0 release, 1 divert",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        21
+      ],
+      "meaning": "Open-sluice pledge floods remaining/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        24
+      ],
+      "meaning": "Bridge built flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "meaning": "Bridge tolls, 0 or 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        33
+      ],
+      "meaning": "Barge x/10,y/8, indexed by sender; inactive slots remain declared",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        36
+      ],
+      "meaning": "Barge active flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        39
+      ],
+      "meaning": "Grain on each barge/2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        42
+      ],
+      "meaning": "This-step flood intakes/2; zero off flood steps",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Cumulative utility/256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Own role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        48,
+        49
+      ],
+      "meaning": "Own grain-consumption taste/2; other tastes withheld",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Manage a finite eight-flood river economy. Earn personal utility by eating grain or exporting it, while diversion, bridge access and shipments change other polities resources and opportunities.",
+    "natural_termination": "Natural completion is eight completed floods and no barge still in transit. Otherwise H=88 truncates, with natural priority and absorbing terminal state.",
+    "interaction": "Envoys walk the real map. Foreign bridge entry transfers a grain toll; sluice settings allocate a shared four-unit upstream flow; physical barges deliver downstream; town unloads transfer grain without gift reward.",
+    "observation_access": "Static terrain, settlement ownership by index, all physical positions, stocks, bridges and flow are public. Every role observes only its own reset taste. Fixed landmark coordinates are common map knowledge. No role gets another taste from a glyph or attribute."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "grain"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cargo"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pledge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "boat_load"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "e_flow"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "e_arrival"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "e_payoff"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

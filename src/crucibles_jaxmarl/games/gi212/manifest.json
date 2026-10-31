@@ -1,0 +1,846 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00212",
+  "source_sha256": "addbf61f680e09e17fbfdf0a28637beb2594f8e5d23804606c7903259bd01204",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 145,
+  "num_actions": 12,
+  "max_steps": 150,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -4,
+  "observation_high": 150,
+  "reward_low": -2.0,
+  "reward_high": 4.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Northwest settlement caravan; destination northeast"
+    },
+    {
+      "id": "agent_1",
+      "role": "Southwest settlement caravan; destination southeast"
+    },
+    {
+      "id": "agent_2",
+      "role": "Southeast settlement caravan; destination west market"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Travel north"
+    },
+    {
+      "id": 2,
+      "label": "Travel east"
+    },
+    {
+      "id": 3,
+      "label": "Travel south"
+    },
+    {
+      "id": 4,
+      "label": "Travel west"
+    },
+    {
+      "id": 5,
+      "label": "Reserve an unclaimed five-tick crossing lease near own home or a beacon; spend one fuel"
+    },
+    {
+      "id": 6,
+      "label": "Relinquish own crossing lease"
+    },
+    {
+      "id": 7,
+      "label": "Escort lowest-index adjacent loaded peer for three ticks; spend one fuel"
+    },
+    {
+      "id": 8,
+      "label": "Read nearest adjacent beacon report into own memory if at least as recent"
+    },
+    {
+      "id": 9,
+      "label": "Relay own dated report from nearest adjacent beacon; spend one fuel"
+    },
+    {
+      "id": 10,
+      "label": "Unload own cargo within one tile of own destination market"
+    },
+    {
+      "id": 11,
+      "label": "Collect two fuel from own home's finite stock when fuel <= 7"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "guard"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "load"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "report"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stamp"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "settlement_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "settlement_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "settlement_visible"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "beacon_report"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "beacon_stamp"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pending_report"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pending_stamp"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delay"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pass_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "weather"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cargo_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "holder"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reservation"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lease"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Valley travel and settlement land",
+          "color": "#D9D2B0"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable mountain spine",
+          "color": "#756D83"
+        },
+        {
+          "value": 2,
+          "meaning": "Single-cell mountain crossing",
+          "color": "#AA9264"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "caravans",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "meaning": "Caravan fuel, 0..9",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Home fuel bundles remaining, 0..2",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "meaning": "Escort protection ticks remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "load"
+          ],
+          "meaning": "Original shipment still aboard",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "kind": "landmark",
+      "count": 6,
+      "position": [
+        "settlement_pos"
+      ],
+      "active": [
+        "settlement_active"
+      ],
+      "visibility": [
+        "settlement_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "beacons",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "beacon_pos"
+      ],
+      "active": [
+        "beacon_active"
+      ],
+      "visibility": [
+        "beacon_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "beacon_report"
+          ],
+          "meaning": "Published dated report: -1 unknown, 0 clear, 1 storm",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "beacon_stamp"
+          ],
+          "meaning": "Original observation tick; not current truth",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "mountain_pass",
+      "kind": "hazard",
+      "count": 1,
+      "position": [
+        "pass_pos"
+      ],
+      "active": [
+        "pass_active"
+      ],
+      "visibility": [
+        "pass_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "weather"
+          ],
+          "meaning": "Actual local closure ticks remaining; 0 clear",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "shipments",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "cargo_pos"
+      ],
+      "active": [
+        "cargo_active"
+      ],
+      "visibility": [
+        "cargo_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "holder"
+          ],
+          "meaning": "Owning caravan 0..2; -1 unloaded",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Public market receipt per settlement, 0 or 1",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "reservation"
+      ],
+      "meaning": "Public council crossing owner, -1 unreserved",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lease"
+      ],
+      "meaning": "Public crossing lease ticks remaining",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        67
+      ],
+      "meaning": "Public 7x9 topology; 0 valley, 1 mountain, 2 pass",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        79
+      ],
+      "meaning": "Public six positions: homes 0..2 followed by matching destination markets 3..5; x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "meaning": "Public council lease owner, -1 none, 0..2 settlement",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "meaning": "Public remaining lease ticks, 0..5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        84
+      ],
+      "meaning": "Public market delivery receipt vector, one per settlement",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        90
+      ],
+      "meaning": "Self: actor index, fuel, home bundles, remembered closure report (-1/0/1), original report tick, escort ticks",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        90,
+        111
+      ],
+      "meaning": "Three local caravan records: visible, x, y, fuel, escort ticks, home bundles, cargo aboard; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        111,
+        126
+      ],
+      "meaning": "Three local beacon records: visible, x, y, published report, original report tick; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        126,
+        130
+      ],
+      "meaning": "Local pass record: visible, x, y, actual closure ticks; hidden data -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        130,
+        145
+      ],
+      "meaning": "Three local cargo records: visible, x, y, holder, active; hidden data -1",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Carry each settlement's finite shipment to its assigned market, using fuel, temporary crossing reservations, escorts and dated signals to manage the single mountain pass.",
+    "natural_termination": "Natural completion when all three original shipments are delivered; otherwise truncate at tick 150.",
+    "interaction": "A reservation delays competing entry; relinquishing it enables others. An escort spends one actor's fuel/action to protect another caravan against closed-pass entry. Relay fuel buys a delayed observation for remote peers; simultaneous entry contests block all contenders.",
+    "observation_access": "Public information is the map, settlement/market locations, clock/terminal causes, council reservation/lease and market receipts. Agents, their visible fuel/guard/stock/load, beacons and cargo are observed only within Manhattan radius two. Current pass weather is shown only within radius two of its physical position. Each actor additionally receives its own report and original timestamp. Beacon payloads and timestamps are local; pending packets are never observed. Visibility masks suppress all hidden record data to -1. Legal movement does not reveal hidden actors; weather/lease entry checks only occur when the acting caravan is already adjacent to the pass and can directly see it."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 150
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "settlement_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "beacon_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "pass_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cargo_pos"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel"
+      ],
+      "low": 0,
+      "high": 9
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stock"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "guard"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "weather"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "lease"
+      ],
+      "low": 0,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "delay"
+      ],
+      "low": 0,
+      "high": 6
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

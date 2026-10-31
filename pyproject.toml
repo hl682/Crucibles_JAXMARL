@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crucibles-jaxmarl"
+version = "0.1.0"
+description = "Source-preserving JAX multi-agent Crucibles environments and local play"
+requires-python = ">=3.10,<3.13"
+dependencies = ["jax==0.4.38", "jaxlib==0.4.38", "numpy==1.26.4", "Pillow>=10.4,<12"]
+license = "Apache-2.0"
+readme = "README.md"
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "build>=1.2", "playwright>=1.48,<2"]
+
+[project.scripts]
+crucibles = "crucibles_jaxmarl.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+crucibles_jaxmarl = ["catalog.json", "games/*/*.py", "games/*/*.json", "games/*/*.md", "web/*"]

@@ -1,0 +1,1294 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00207",
+  "source_sha256": "54b637caa92235dfa2ca57b8bef6da72e69269b5e281ca8d21e63a2204c56932",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 172,
+  "num_actions": 17,
+  "max_steps": 180,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 180,
+  "reward_low": -6,
+  "reward_high": 6,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Upper-tier cook"
+    },
+    {
+      "id": "agent_1",
+      "role": "Lower-tier cook"
+    },
+    {
+      "id": "agent_2",
+      "role": "Rolling-counter and water porter"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick nearest accessible basket or rolling pin"
+    },
+    {
+      "id": 6,
+      "label": "Put held basket or pin on current cell"
+    },
+    {
+      "id": 7,
+      "label": "Fill empty basket with vegetable filling at pantry"
+    },
+    {
+      "id": 8,
+      "label": "Fill empty basket with dense filling at pantry"
+    },
+    {
+      "id": 9,
+      "label": "Roll raw basket at counter while holding the pin"
+    },
+    {
+      "id": 10,
+      "label": "Toggle nearest steamer tier lid"
+    },
+    {
+      "id": 11,
+      "label": "Toggle nearby burner"
+    },
+    {
+      "id": 12,
+      "label": "Pour carried flask water into nearby boiler"
+    },
+    {
+      "id": 13,
+      "label": "Load prepared basket into nearest open empty tier"
+    },
+    {
+      "id": 14,
+      "label": "Serve ready basket beside hatch"
+    },
+    {
+      "id": 15,
+      "label": "Wash carried dirty or filled basket at sink"
+    },
+    {
+      "id": 16,
+      "label": "Refill one flask unit at sink"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "success"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "failure"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "held"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flask"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "work"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "basket_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "basket_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "basket_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "basket_holder"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tier_of"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stage"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "filling"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "prep"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cook"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wet"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "batch_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_holder"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tool_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tier_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tier_open"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tier_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tier_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_pos"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "station_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "station_vis"
+      ],
+      "shape": [
+        3,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pressure"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "burner"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "danger"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pantry"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wrappers"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "well_water"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "served"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "waste"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_lost"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "served_now"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "vented"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "spill"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "spoiled"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable kitchen floor and station cells",
+          "color": "#EFE1C3"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid central counter partition",
+          "color": "#997D62"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "held"
+          ],
+          "meaning": "-1 empty; 0-2 basket; 3 rolling pin",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "flask"
+          ],
+          "meaning": "Carried water, zero through two",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "work"
+          ],
+          "meaning": "Accepted non-wait action count",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "blocked"
+          ],
+          "meaning": "Invalid action or lost movement contention",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "basket",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "basket_pos"
+      ],
+      "active": [
+        "basket_active"
+      ],
+      "visibility": [
+        "basket_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "basket_holder"
+          ],
+          "meaning": "Carrier ID or -1",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "tier_of"
+          ],
+          "meaning": "Steamer tier index or -1 outside",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stage"
+          ],
+          "meaning": "0 empty, 1 raw, 2 prepared, 3 ready, 4 spoiled, 5 dirty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "filling"
+          ],
+          "meaning": "0 vegetable, 1 dense, -1 no batch",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "prep"
+          ],
+          "meaning": "Rolling work; vegetable needs one, dense two",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cook"
+          ],
+          "meaning": "Accumulated qualifying steam ticks",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "wet"
+          ],
+          "meaning": "Excess moisture; three spoils a prepared or ready batch",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "batch_owner"
+          ],
+          "meaning": "Worker who filled this batch; -1 none",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "tool_pos"
+      ],
+      "active": [
+        "tool_active"
+      ],
+      "visibility": [
+        "tool_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tool_holder"
+          ],
+          "meaning": "Carrier ID or -1 on floor",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "tier",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "tier_pos"
+      ],
+      "active": [
+        "tier_active"
+      ],
+      "visibility": [
+        "tier_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "tier_open"
+          ],
+          "meaning": "Open for loading and removal; vents common steam",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "station",
+      "kind": "landmark",
+      "count": 5,
+      "position": [
+        "station_pos"
+      ],
+      "active": [
+        "station_active"
+      ],
+      "visibility": [
+        "station_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Accepted orders by filling",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "waste"
+      ],
+      "meaning": "Discarded batches by filling",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "served_now"
+      ],
+      "meaning": "Worker served on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill"
+      ],
+      "meaning": "Boiler overflow on this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spoiled"
+      ],
+      "meaning": "Newly spoiled basket",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pressure"
+      ],
+      "meaning": "Shared pressure level",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "vented"
+      ],
+      "meaning": "At least one tier currently open",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Public elapsed nonterminal transitions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Natural completion flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Cap completion flag with natural priority",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Natural task success flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Natural task failure flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        83
+      ],
+      "meaning": "Actual public tile map flattened y then x",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        89
+      ],
+      "meaning": "Actual Kitchen workers positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        92
+      ],
+      "meaning": "-1 empty; 0-2 basket; 3 rolling pin",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Carried water, zero through two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        98
+      ],
+      "meaning": "Accepted non-wait action count",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        101
+      ],
+      "meaning": "Invalid action or lost movement contention",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        107
+      ],
+      "meaning": "Actual Three reusable steam baskets positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        107,
+        110
+      ],
+      "meaning": "Carrier ID or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        110,
+        113
+      ],
+      "meaning": "Steamer tier index or -1 outside",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "0 empty, 1 raw, 2 prepared, 3 ready, 4 spoiled, 5 dirty",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "0 vegetable, 1 dense, -1 no batch",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        122
+      ],
+      "meaning": "Rolling work; vegetable needs one, dense two",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        125
+      ],
+      "meaning": "Accumulated qualifying steam ticks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        128
+      ],
+      "meaning": "Excess moisture; three spoils a prepared or ready batch",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        131
+      ],
+      "meaning": "Worker who filled this batch; -1 none",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        131,
+        133
+      ],
+      "meaning": "Actual Shared rolling pin positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        133,
+        134
+      ],
+      "meaning": "Carrier ID or -1 on floor",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        138
+      ],
+      "meaning": "Actual Upper and lower steam tiers positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        140
+      ],
+      "meaning": "Open for loading and removal; vents common steam",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        150
+      ],
+      "meaning": "Actual Pantry, counter, boiler, sink, hatch positions, x/y interleaved in entity index order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        151
+      ],
+      "meaning": "Shared steam pressure, zero through three",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        152
+      ],
+      "meaning": "Boiler water units, zero through six",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        153
+      ],
+      "meaning": "Remaining finite burner fuel ticks",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        153,
+        154
+      ],
+      "meaning": "Burner on flag",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "meaning": "Dry-heating danger, zero through three",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        157
+      ],
+      "meaning": "Remaining vegetable and dense filling portions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "meaning": "Remaining finite clean wrappers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        159
+      ],
+      "meaning": "Remaining sink water supply",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        159,
+        161
+      ],
+      "meaning": "Accepted baskets by filling",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        161,
+        163
+      ],
+      "meaning": "Discarded batches by filling",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        163,
+        164
+      ],
+      "meaning": "Cumulative boiler spill and evaporation units; excludes wash use",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        167
+      ],
+      "meaning": "Workers serving a basket this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        167,
+        168
+      ],
+      "meaning": "At least one tier is open on this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        169
+      ],
+      "meaning": "Boiler overflow happened this step",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        169,
+        172
+      ],
+      "meaning": "Baskets newly overcooked or waterlogged this step",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Serve two vegetable and two dense baskets using finite ingredients, wrappers, fuel and wash water.",
+    "natural_termination": "Success is two accepted orders of each filling. Dry-heating danger three or insufficient remaining unspoiled portions for either order is failure unless success. Otherwise cap at 180.",
+    "interaction": "Opening one physical tier permits peer handling while venting pressure used by the other. The rolling pin, finite wrappers, single counter and boiler water create shared preparation/cooking choices; overfilling can spoil another cook's basket.",
+    "observation_access": "Fully observable map, objects, carried items, clocks, water/fuel ledgers and events. Tier lids restrict physical access rather than hiding policy information."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 180
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "held"
+      ],
+      "low": -1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "flask"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stage"
+      ],
+      "low": 0,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "filling"
+      ],
+      "low": -1,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "tier_of"
+      ],
+      "low": -1,
+      "high": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "prep"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cook"
+      ],
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wet"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "pressure"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "water"
+      ],
+      "low": 0,
+      "high": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel"
+      ],
+      "low": 0,
+      "high": 24
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "danger"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wrappers"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "well_water"
+      ],
+      "low": 0,
+      "high": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "served"
+      ],
+      "low": 0,
+      "high": 2
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

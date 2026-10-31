@@ -1,0 +1,606 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "00c7314e75f48ee9438cb033535b2a7ce28d8be8fe51f9d2f19f9152f6ea4f8e",
+  "manifest_sha256": "847a273ee389e851da91fbec5919c31932de520c5f28bf15dceb102c5f95858a",
+  "title": "Lightkeepers and Shared Shadow Corridors",
+  "rules": [
+    "Movement is simultaneous. Old occupied cells, duplicate destinations and closed shutters block entry.",
+    "Near lamps, rotate clockwise or toggle power. Closed shutters stop both beams and entry. Each lamp emits at most twelve ray segments and pays one charge per emitting turn.",
+    "Deployed slash and backslash mirrors redirect real beam segments; carried mirrors do not reflect. Mirror custody and conflicting device actions use cyclic role priority.",
+    "Caches require a matching code and actual light for pickup. Codes and cargo records obey owner tracking, distance and illumination visibility.",
+    "A lit watched corridor cell gives one exposure and two turns of stun, and drops carried cache cargo. Three exposures disable a role.",
+    "Carry caches to the shared socket. Owners receive deadline bonuses, carriers and all roles receive delivery rewards. All displayed light cells come from the native ray computation."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Ordinary floor",
+          "color": "#D3D0BD"
+        },
+        {
+          "value": 1,
+          "meaning": "Watched corridor column: dangerous when lit",
+          "color": "#AE8A91"
+        },
+        {
+          "value": 2,
+          "meaning": "Delivery and charge socket",
+          "color": "#8BAEA2"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "lightkeepers",
+      "glyph": "agent",
+      "label": "Locally visible or illuminated lightkeepers",
+      "color": "#F0C35C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pack"
+          ],
+          "label": "Portable charge units"
+        },
+        {
+          "state_path": [
+            "exposure"
+          ],
+          "label": "Accumulated captures; three disables the role"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "label": "Remaining no-action turns"
+        }
+      ]
+    },
+    {
+      "id": "lamps",
+      "glyph": "beacon",
+      "label": "Public wired directional lamps",
+      "color": "#F2D86A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lamp_direction"
+          ],
+          "label": "Direction: north, east, south, west"
+        },
+        {
+          "state_path": [
+            "lamp_on"
+          ],
+          "label": "Operator switch; empty batteries emit nothing"
+        },
+        {
+          "state_path": [
+            "lamp_energy"
+          ],
+          "label": "Remaining charge after the displayed emission"
+        }
+      ]
+    },
+    {
+      "id": "shutters",
+      "glyph": "door",
+      "label": "Public wired shutters",
+      "color": "#665B86",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "shutter_open"
+          ],
+          "label": "Open for light and walking"
+        }
+      ]
+    },
+    {
+      "id": "mirrors",
+      "glyph": "tool",
+      "label": "Visible portable reflectors",
+      "color": "#91B6CC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "mirror_orientation"
+          ],
+          "label": "Zero slash; one backslash reflection"
+        },
+        {
+          "state_path": [
+            "mirror_carrier"
+          ],
+          "label": "Minus one deployed; otherwise carrying role"
+        }
+      ]
+    },
+    {
+      "id": "caches",
+      "glyph": "key",
+      "label": "Owner-tracked or visible coded caches",
+      "color": "#BA9650",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cache_code"
+          ],
+          "label": "Native two-valued access code"
+        },
+        {
+          "state_path": [
+            "cache_status"
+          ],
+          "label": "Zero waiting; one carried; two delivered"
+        },
+        {
+          "state_path": [
+            "cache_carrier"
+          ],
+          "label": "Minus one uncarried; otherwise carrying role"
+        }
+      ]
+    },
+    {
+      "id": "light_cells",
+      "glyph": "circle",
+      "label": "Native beam and shadow raster",
+      "color": "#E8D881",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "beam"
+          ],
+          "label": "Number of lamps visiting this cell in the displayed emission"
+        },
+        {
+          "state_path": [
+            "shadow"
+          ],
+          "label": "True exactly when no lamp visited this cell"
+        }
+      ]
+    },
+    {
+      "id": "socket",
+      "glyph": "battery",
+      "label": "Shared charge and delivery socket",
+      "color": "#68A996",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "socket_stock"
+          ],
+          "label": "Finite refill charge units"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "last_capture"
+      ],
+      "meaning": "Public alarm: role exposed in a watched lit cell this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_collected"
+      ],
+      "meaning": "Public alarm: cache picked up this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_delivered"
+      ],
+      "meaning": "Public announcement: cache delivered this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spent_energy"
+      ],
+      "meaning": "Total lamp emissions paid in charge units",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Rotate nearby lamp clockwise"
+    },
+    {
+      "id": 6,
+      "label": "Toggle nearby lamp switch"
+    },
+    {
+      "id": 7,
+      "label": "Toggle nearby shutter"
+    },
+    {
+      "id": 8,
+      "label": "Pick up or deploy one portable mirror"
+    },
+    {
+      "id": 9,
+      "label": "Flip held or nearby mirror orientation"
+    },
+    {
+      "id": 10,
+      "label": "Charge nearby lamp or refill pack at socket"
+    },
+    {
+      "id": 11,
+      "label": "Enter code zero on a lit nearby cache"
+    },
+    {
+      "id": 12,
+      "label": "Enter code one on a lit nearby cache"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role identity, one-hot in declared agent index order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Live transition clock, starting at zero",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "t"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Joint episode completion flag",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "done"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Natural terminal cause",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "terminated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Horizon cause only when natural termination is false",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "truncated"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        7,
+        84
+      ],
+      "meaning": "Native tile map flattened in y-major order; see the public world legend",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "tile"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        84,
+        88
+      ],
+      "meaning": "lamp pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "lamp_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        88,
+        90
+      ],
+      "meaning": "Direction: north, east, south, west",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "lamp_direction"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        90,
+        92
+      ],
+      "meaning": "Operator switch; empty batteries emit nothing",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "lamp_on"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        92,
+        94
+      ],
+      "meaning": "Remaining charge after the displayed emission",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "lamp_energy"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        94,
+        98
+      ],
+      "meaning": "shutter pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "shutter_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        98,
+        100
+      ],
+      "meaning": "Open for light and walking",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "shutter_open"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        100,
+        102
+      ],
+      "meaning": "socket pos in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "socket_pos"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        102,
+        103
+      ],
+      "meaning": "Finite refill charge units",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "socket_stock"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        103,
+        104
+      ],
+      "meaning": "Cumulative paid lamp emissions",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "spent_energy"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        104,
+        181
+      ],
+      "meaning": "Number of distinct lamp beams visiting each grid cell, y-major order",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "beam"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        181,
+        258
+      ],
+      "meaning": "Native shadow flag, exactly beam == 0, y-major order",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "shadow"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        258,
+        261
+      ],
+      "meaning": "cache deadline in fixed entity-index order; positions flatten x then y",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "cache_deadline"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        261,
+        264
+      ],
+      "meaning": "Public alarm: role exposed in a watched lit cell this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_capture"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        264,
+        267
+      ],
+      "meaning": "Public alarm: cache picked up this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_collected"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        267,
+        270
+      ],
+      "meaning": "Public announcement: cache delivered this turn",
+      "visibility": "public",
+      "state_paths": [
+        [
+          "last_delivered"
+        ]
+      ]
+    },
+    {
+      "slice": [
+        270,
+        273
+      ],
+      "meaning": "agent_vis row: one bit per role",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        273,
+        288
+      ],
+      "meaning": "Three agent records in index order: x, y, pack, exposure, stun; unseen values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        288,
+        290
+      ],
+      "meaning": "mirror_vis row: one bit per reflector",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        290,
+        298
+      ],
+      "meaning": "Two mirror records: x, y, orientation, carrier; unseen values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        298,
+        301
+      ],
+      "meaning": "cache_vis row: one bit per cache, including own tracker",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        301,
+        316
+      ],
+      "meaning": "Three cache records: x, y, code, status, carrier; unseen values -1",
+      "visibility": "local"
+    }
+  ]
+}

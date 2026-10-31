@@ -1,0 +1,392 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "0244f67cdef89da4cb9d7a95a74283dae30b507653861cf212e14ed28d204f2c",
+  "manifest_sha256": "e1f006da93c3c0a1c9db7fb34016a70db6ccc8fe519d5ff43217c25d21620f8f",
+  "title": "Crossing Accord",
+  "rules": [
+    "Agents 0/1 and 2/3 form two opposing controlled teams with individual delivery cells across the river.",
+    "Upper and lower bridges slide between two rows and allow entry only in their current direction.",
+    "An occupied bridge cannot be moved or reversed; its occupant must exit or continue blocking it.",
+    "Agents cannot enter currently occupied cells or swap. Ties for an empty cell use a public rotating priority.",
+    "Adjacent switch operators spend energy; owning the local plaza discounts a crank from two units to one.",
+    "Claim a plaza by applying team pressure, recover energy by waiting on the home bank, or yield by moving aside.",
+    "Two completed cargos win for a team; territory provides a small periodic opposing payoff."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable bank",
+          "color": "#4A5944"
+        },
+        {
+          "value": 1,
+          "meaning": "impassable river",
+          "color": "#2E719E"
+        },
+        {
+          "value": 2,
+          "meaning": "actual movable bridge deck",
+          "color": "#B58A54"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "agent",
+      "label": "Controlled couriers",
+      "color": "#E5B563",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Controlled team"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "label": "Crank and claim energy"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Cargo already delivered"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "glyph": "gate",
+      "label": "Movable capacity-one bridges",
+      "color": "#C99A59",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge_direction"
+          ],
+          "label": "Entry: east=0 west=1"
+        },
+        {
+          "state_path": [
+            "occupant"
+          ],
+          "label": "Bridge occupant, empty=-1"
+        }
+      ]
+    },
+    {
+      "id": "zone",
+      "glyph": "beacon",
+      "label": "Contested switch plazas",
+      "color": "#9A88CC",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "control"
+          ],
+          "label": "Territorial pressure"
+        },
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "Owning team or neutral=-1"
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "glyph": "flag",
+      "label": "Individual delivery cells",
+      "color": "#6FB98C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Delivery completed"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "blocked"
+      ],
+      "meaning": "Per-step legal move intentions prevented by a simultaneous bridge change or collision tie.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cranked"
+      ],
+      "meaning": "Per-step winning bridge-control operators.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "claimed"
+      ],
+      "meaning": "Per-step plaza ownership changes.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "arrived"
+      ],
+      "meaning": "Per-step delivery flags, in agent order.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "entered"
+      ],
+      "meaning": "Per-step entries onto a physical bridge.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait and recover energy on home bank"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "shift upper bridge rail"
+    },
+    {
+      "id": 6,
+      "label": "shift lower bridge rail"
+    },
+    {
+      "id": 7,
+      "label": "reverse upper bridge entry"
+    },
+    {
+      "id": 8,
+      "label": "reverse lower bridge entry"
+    },
+    {
+      "id": 9,
+      "label": "claim current switch plaza"
+    },
+    {
+      "id": 10,
+      "label": "deliver own cargo"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own acting role as one-hot in agent-index order.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Raw step clock; also determines public rotating priorities and periodic updates.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        13
+      ],
+      "meaning": "All agent [x,y] positions in agent-index order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        17
+      ],
+      "meaning": "Static team identities: agents 0/1 team zero; agents 2/3 team one.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        21
+      ],
+      "meaning": "Personal crank/claim energy, capacity six.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        25
+      ],
+      "meaning": "Persistent individual delivery-completion flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        29
+      ],
+      "meaning": "Actual upper and lower bridge [x,y] positions; these determine passability.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        31
+      ],
+      "meaning": "Permitted entry direction per bridge: 0 eastward, 1 westward.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        31,
+        33
+      ],
+      "meaning": "Agent physically occupying each bridge, -1 when empty.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "meaning": "Territory pressure at each switch plaza, from -2 to +2.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        37
+      ],
+      "meaning": "Persistent plaza owner: -1 neutral, 0 team zero, 1 team one.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        45
+      ],
+      "meaning": "Public role-specific delivery [x,y] coordinates.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        47
+      ],
+      "meaning": "Number of completed deliveries for each team.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        47,
+        51
+      ],
+      "meaning": "Per-step legal move intentions prevented by a simultaneous bridge change or collision tie.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        51,
+        55
+      ],
+      "meaning": "Per-step winning bridge-control operators.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        55,
+        57
+      ],
+      "meaning": "Per-step plaza ownership changes.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        57,
+        61
+      ],
+      "meaning": "Per-step delivery flags, in agent order.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        61,
+        65
+      ],
+      "meaning": "Per-step entries onto a physical bridge.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        66
+      ],
+      "meaning": "Joint terminal state, including natural completion or time limit.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        66,
+        67
+      ],
+      "meaning": "Natural terminal cause, preserved by absorbing calls.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        68
+      ],
+      "meaning": "Time-limit cause only when no natural termination occurs.",
+      "visibility": "public"
+    }
+  ]
+}

@@ -1,0 +1,967 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00123",
+  "source_sha256": "a68e16ea61f5486530ed5dbdd03805b0985192578932dbf91634ce11ae39e814",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 356,
+  "num_actions": 8,
+  "max_steps": 112,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": 0,
+  "observation_high": 1,
+  "reward_low": -2,
+  "reward_high": 3,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Locksmith with one gate-opening tool and shared extraction duty"
+    },
+    {
+      "id": "agent_1",
+      "role": "Courier with lure charges and radio channels"
+    },
+    {
+      "id": "agent_2",
+      "role": "Courier with lure charges and radio channels"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait quietly"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Emit lure if charges remain"
+    },
+    {
+      "id": 6,
+      "label": "Interact: unlock, hand off, collect or deliver"
+    },
+    {
+      "id": 7,
+      "label": "Open three-tick radio channel if charges remain"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        11,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_xy"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lure_charges"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "radio_charges"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool_remaining"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "radio_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "patrol_xy"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "patrol_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "patrol_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "patrol_target"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "patrol_attention"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_xy"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "object_xy"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "object_owner"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "object_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "object_visible"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_xy"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "exit_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exit_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "noise_xy"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "noise_strength"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "noise_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "noise_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "field_xy"
+      ],
+      "shape": [
+        143,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "field_value"
+      ],
+      "shape": [
+        143
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "field_active"
+      ],
+      "shape": [
+        143
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "field_visible"
+      ],
+      "shape": [
+        3,
+        143
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "alarm"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "exposed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "lure_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "radio_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "handoff_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      10
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#E4E8EC"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall; blocks movement",
+          "color": "#374151"
+        },
+        {
+          "value": 2,
+          "meaning": "Public gate location; passable only when gate_open is true",
+          "color": "#B8860B"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_xy"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carried object (-1 means empty)",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "radio_ttl"
+          ],
+          "meaning": "Open radio ticks remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "patrols",
+      "kind": "hazard",
+      "count": 2,
+      "position": [
+        "patrol_xy"
+      ],
+      "active": [
+        "patrol_active"
+      ],
+      "visibility": [
+        "patrol_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "patrol_attention"
+          ],
+          "meaning": "Persistent attention ticks",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_xy"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "Gate open",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "objects",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "object_xy"
+      ],
+      "active": [
+        "object_active"
+      ],
+      "visibility": [
+        "object_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "object_owner"
+          ],
+          "meaning": "Owner (-1 floor; 0-2 carrier)",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "exit_xy"
+      ],
+      "active": [
+        "exit_active"
+      ],
+      "visibility": [
+        "exit_visible"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "noise_sources",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "noise_xy"
+      ],
+      "active": [
+        "noise_active"
+      ],
+      "visibility": [
+        "noise_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "noise_strength"
+          ],
+          "meaning": "Source strength (1-6)",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "acoustic_cells",
+      "kind": "hazard",
+      "count": 143,
+      "position": [
+        "field_xy"
+      ],
+      "active": [
+        "field_active"
+      ],
+      "visibility": [
+        "field_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "field_value"
+          ],
+          "meaning": "Acoustic intensity (1-6)",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "alarm"
+      ],
+      "meaning": "Current shared alarm; not a newly occurring event",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "radio_ttl"
+      ],
+      "meaning": "Current open radio-channel durations; not newly occurring events",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own xy divided by 12",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        5
+      ],
+      "meaning": "Own lure charges /3, radio charges /2 and locksmith tool remaining",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        8
+      ],
+      "meaning": "Own carried-object one-hot: empty, object 0, object 1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        26
+      ],
+      "meaning": "Three agent blocks: xy /12, visible flag, carried-object one-hot; whole block zero unless Chebyshev range <=3 or that agent has an open radio",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        26,
+        34
+      ],
+      "meaning": "Two patrol blocks: xy /12, visible flag, attention /3; visible locally or through an active sender local to that patrol",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        34,
+        46
+      ],
+      "meaning": "Three sound-source blocks: xy /12, strength /6, visible flag; zero unless active and own or strictly audible",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        46,
+        54
+      ],
+      "meaning": "Two mission-object blocks: xy /12, visible flag, (owner+2)/4; zero unless active and locally seen or carried by a visible agent",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        54,
+        58
+      ],
+      "meaning": "Gate xy /12, visible flag, open flag; zero unless local or visible via an active radio sender",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        58,
+        60
+      ],
+      "meaning": "Public exit xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        63
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        63,
+        64
+      ],
+      "meaning": "Shared alarm /5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        65
+      ],
+      "meaning": "Clock /112",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        67
+      ],
+      "meaning": "Public extraction-completed flags per mission object",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        70
+      ],
+      "meaning": "Public radio-channel TTL per agent /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        213
+      ],
+      "meaning": "Public static 11 by 13 map in yx order /2; the gate tile denotes location, not current open state",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        213,
+        356
+      ],
+      "meaning": "Actual acoustic intensity /6 at cells within own Chebyshev radius 2, zero elsewhere; visible domain follows own position",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Return both mission cases to the public western extraction point before alarm failure or H=112.",
+    "natural_termination": "Both cases extracted, or shared alarm >=5. Natural completion takes precedence over horizon; any simultaneous success and failure indicators retain their specified reward contributions.",
+    "interaction": "Lures and carrying noise redirect shared patrols and can expose nearby teammates; radio actions share actual local information; locksmith gate opening changes all roles future routes; object transfers change who must risk noisy movement.",
+    "observation_access": "Own resources and carrying state are private. Local radius is Chebyshev 3 without wall occlusion; audible source coordinates are revealed when strength exceeds Manhattan distance. Active radios broadcast sender position/carried object and sender-local patrol/gate information. Acoustic field values are visible only within radius 2. Map layout, exit, shared alarm, extraction status and radio TTL are public."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_xy"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_xy"
+      ],
+      "low": 0,
+      "high": 12,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "patrol_xy"
+      ],
+      "low": 0,
+      "high": 12,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "object_owner"
+      ],
+      "low": -2,
+      "high": 2,
+      "min": -2,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "carrying"
+      ],
+      "low": -1,
+      "high": 1,
+      "min": -1,
+      "max": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "noise_strength"
+      ],
+      "low": 0,
+      "high": 6,
+      "min": 0,
+      "max": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "field_value"
+      ],
+      "low": 0,
+      "high": 6,
+      "min": 0,
+      "max": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "alarm"
+      ],
+      "low": 0,
+      "high": 5,
+      "min": 0,
+      "max": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "lure_charges"
+      ],
+      "low": 0,
+      "high": 3,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "radio_charges"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "radio_ttl"
+      ],
+      "low": 0,
+      "high": 3,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "patrol_attention"
+      ],
+      "low": 0,
+      "high": 3,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 112,
+      "min": 0,
+      "max": 112
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

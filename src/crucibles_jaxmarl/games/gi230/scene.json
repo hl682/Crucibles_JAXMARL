@@ -1,0 +1,428 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "4131c3b22a610ef51cb5cd6ee32ff15fc21f4355ce0d90c7c98906edd7635d39",
+  "manifest_sha256": "f43190fa531a2cd0c42d65f8016e79e51c5176d1e509670243438f906b4aac2e",
+  "title": "Winter Road Confederation",
+  "rules": [
+    "The map is a square-grid territorial plain with 16 settlements and 192 independently controlled actors. Twelve consecutive IDs share one allegiance; traveling haulers begin at a neighboring checkpoint.",
+    "Build roads with material collected from home. Roads remove the plain's one-tick movement recovery, but each loaded entry consumes one durability level.",
+    "Bridge entry needs strength 2; during deep frost it needs 3. Every 64 ticks the season advances through sailing, deep frost and thaw; ferries sail only in season 0.",
+    "Diplomats at their own checkpoint can open it or change the foreign toll. A visitor may buy an eight-tick team permit to use a closed crossing, while still paying its entry toll.",
+    "Ferry operators spend construction material to add two trips. Every rider consumes one trip; foreign riders also pay one coin to the landing's settlement.",
+    "Import a provision from another settlement to satisfy its order. Scouts may raid stored provisions or sabotage a road; these are physical state changes with competing rewards.",
+    "Surveyors and scouts can inspect one cell four steps ahead and relay its stored location and condition to actors within eight steps.",
+    "This territorial scene is authored data only. No replay, JAX compatibility, throughput, strategic quality or learning result is claimed."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      63,
+      47
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Plain; off-road travel takes a recovery tick",
+          "color": "#C9CBA1"
+        },
+        {
+          "value": 1,
+          "meaning": "River cell",
+          "color": "#83AFBD"
+        },
+        {
+          "value": 2,
+          "meaning": "Settlement depot",
+          "color": "#D4B26D"
+        },
+        {
+          "value": 3,
+          "meaning": "Bridge crossing; inspect actual road strength",
+          "color": "#AA8D68"
+        },
+        {
+          "value": 4,
+          "meaning": "Owned checkpoint causeway",
+          "color": "#9F7863"
+        },
+        {
+          "value": 5,
+          "meaning": "Ferry landing corridor; cross via ride action",
+          "color": "#587F9C"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "settlement_actors",
+      "glyph": "agent",
+      "label": "Settlement expeditions",
+      "color": "#725E55",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Settlement allegiance 0..15"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 survey, 1 build, 2 ferry, 3 haul, 4 scout, 5 diplomacy"
+        },
+        {
+          "state_path": [
+            "material"
+          ],
+          "label": "Carried construction material; 0..3"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "label": "One provision crate carried"
+        },
+        {
+          "state_path": [
+            "gold"
+          ],
+          "label": "Actor coin purse; 0..8"
+        }
+      ]
+    },
+    {
+      "id": "checkpoints",
+      "glyph": "gate",
+      "label": "Territorial toll checkpoints",
+      "color": "#A77455",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "label": "Open passage; closed passage needs a valid permit"
+        },
+        {
+          "state_path": [
+            "toll"
+          ],
+          "label": "Foreign-entry fee; 0..2"
+        },
+        {
+          "state_path": [
+            "bank"
+          ],
+          "label": "Settlement crossing revenue; capped at 4096"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "glyph": "square",
+      "label": "Seasonal road bridges",
+      "color": "#B0906B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bridge_strength"
+          ],
+          "label": "Actual road strength at the bridge; 0..3"
+        }
+      ]
+    },
+    {
+      "id": "ferries",
+      "glyph": "water",
+      "label": "Supplied ferry crossings",
+      "color": "#4C829F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ferry_charge"
+          ],
+          "label": "Supplied ferry trips remaining; 0..4"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "glyph": "flag",
+      "label": "Settlement provision depots",
+      "color": "#C9A957",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "provisions"
+          ],
+          "label": "Local stored provisions"
+        },
+        {
+          "state_path": [
+            "materials"
+          ],
+          "label": "Local construction stock"
+        },
+        {
+          "state_path": [
+            "received"
+          ],
+          "label": "Imported provisions received; goal 2"
+        }
+      ]
+    },
+    {
+      "id": "roads",
+      "glyph": "square",
+      "label": "Built road network",
+      "color": "#9B8B70",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "road_level"
+          ],
+          "label": "Persistent road durability at this actual tile; 1..3"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "blocked"
+      ],
+      "meaning": "Requested movement was unavailable when actor's turn resolved",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "built"
+      ],
+      "meaning": "Actor repaired or constructed a road level",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Actor delivered a provision abroad",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "crossed"
+      ],
+      "meaning": "Actor entered a checkpoint or rode a ferry",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "damaged"
+      ],
+      "meaning": "Actor sabotaged one road level",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "negotiated"
+      ],
+      "meaning": "Actor bought a temporary team permit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "received"
+      ],
+      "meaning": "Cumulative imported provisions received",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "bank"
+      ],
+      "meaning": "Cumulative crossing and permit receipts, capped at 4096",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; no movement"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Face north"
+    },
+    {
+      "id": 6,
+      "label": "Face east"
+    },
+    {
+      "id": 7,
+      "label": "Face south"
+    },
+    {
+      "id": 8,
+      "label": "Face west"
+    },
+    {
+      "id": 9,
+      "label": "Survey the cell four steps ahead; surveyor or scout"
+    },
+    {
+      "id": 10,
+      "label": "Collect construction material at own settlement"
+    },
+    {
+      "id": 11,
+      "label": "Build or repair facing land road or bridge with material"
+    },
+    {
+      "id": 12,
+      "label": "Load provisions at home or deliver carried provisions abroad"
+    },
+    {
+      "id": 13,
+      "label": "Ride an available ferry in season 0"
+    },
+    {
+      "id": 14,
+      "label": "Supply ferry charges using one material; ferry operator"
+    },
+    {
+      "id": 15,
+      "label": "Open or close owned checkpoint; diplomat"
+    },
+    {
+      "id": 16,
+      "label": "Cycle owned checkpoint toll 0/1/2; diplomat"
+    },
+    {
+      "id": 17,
+      "label": "Buy an eight-tick team permit at foreign checkpoint"
+    },
+    {
+      "id": 18,
+      "label": "Raid provisions from foreign settlement; scout"
+    },
+    {
+      "id": 19,
+      "label": "Damage one facing road or bridge level; scout"
+    },
+    {
+      "id": 20,
+      "label": "Give cargo first, otherwise material, to facing actor"
+    },
+    {
+      "id": 21,
+      "label": "Broadcast the actor's surveyed report"
+    },
+    {
+      "id": 22,
+      "label": "Swap tools with actor ahead"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        16
+      ],
+      "meaning": "Self: x/63,y/47,facing/3,tool/5,team/15,material/3,cargo,origin/15,gold/8,cooldown/2,t/896,season/2,report/3,report_x/63,report_y/47,blocked. Survey reports are 1 plain, 2 road or river, 3 road+river; coordinates disambiguate remembered site.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        16,
+        163
+      ],
+      "meaning": "7x7 row-major patch [terrain/5,road durability/3,occupancy: 0 empty, 0.5 empty-handed actor, 1 actor with provision]; outside terrain and road are -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        163,
+        195
+      ],
+      "meaning": "Nearest 4 other actors within Chebyshev 3: [visible,dx/3,dy/3,team/15,tool/5,material/3,cargo,gold/8]; missing rows zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        195,
+        203
+      ],
+      "meaning": "Nearest local checkpoint: [visible,dx/3,dy/3,owner/15,open,toll/2,this actor team's permit TTL/8,bank/4096]. Other teams' permits are not exposed.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        203,
+        210
+      ],
+      "meaning": "Nearest local settlement: [visible,dx/3,dy/3,owner/15,provisions/32,materials/24,received/2].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        210,
+        215
+      ],
+      "meaning": "Nearest local ferry: [visible,dx/3,dy/3,charge/4,season allows sailing].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        215,
+        220
+      ],
+      "meaning": "Nearest local bridge: [visible,dx/3,dy/3,strength/3,currently traversable under season].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        220,
+        224
+      ],
+      "meaning": "Latest current-tick report heard within Manhattan 8: [has report,value/3,x/63,y/47]. Lowest-index current sender wins; absent report uses own coordinates and value 0.",
+      "visibility": "local"
+    }
+  ]
+}
+

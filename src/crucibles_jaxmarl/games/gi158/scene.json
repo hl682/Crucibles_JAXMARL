@@ -1,0 +1,512 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "cc0e1733768baa6628b753304337966e59738a9cc364bc6738d8e2625250f592",
+  "manifest_sha256": "d2dc4e9dcfb4faf8200984bcc6653fef38209f43ceee5188eb826befdc32b2da",
+  "title": "Pressure Relay",
+  "rules": [
+    "Engineer patches the east leak, operator pumps air, and porter shields carried artifacts from pressure shocks.",
+    "All crew may open doors, hold vents, transfer oxygen, and carry artifacts. A closed door can open safely only when its pressure difference is at most four.",
+    "Forcing a door spends two oxygen. Open doors transfer up to three air units per tick; a held closed-door vent transfers up to one. The east leak then drains one.",
+    "Pumping and tank refills draw from the same thirty-two-unit initial reserve. Low room pressure drains personal oxygen after movement.",
+    "Non-porter cargo loses integrity when its carrier experiences a pressure jump of at least three. A handoff changes who bears that risk.",
+    "Occupied starting cells and simultaneous destination conflicts block movement. Adjacent door/resource requests use rotating agent priority.",
+    "Deliver both artifacts for success; zero oxygen or shattered cargo otherwise ends the expedition. Horizon: one hundred sixty transitions."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable interior",
+          "color": "#253440"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable wall",
+          "color": "#111C26"
+        },
+        {
+          "value": 2,
+          "meaning": "Door or gate tile; passability follows its actual state",
+          "color": "#526B78"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "crew",
+      "glyph": "worker",
+      "label": "Expedition crew",
+      "color": "#3DA5D9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "label": "Equipment role"
+        },
+        {
+          "state_path": [
+            "oxygen"
+          ],
+          "label": "Breathing oxygen"
+        },
+        {
+          "state_path": [
+            "room_id"
+          ],
+          "label": "Current room index"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Number of carried artifacts"
+        },
+        {
+          "state_path": [
+            "last_action"
+          ],
+          "label": "Latest sanitized action"
+        }
+      ]
+    },
+    {
+      "id": "panels",
+      "glyph": "beacon",
+      "label": "Room pressure and pump panel",
+      "color": "#7AC7C4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "pressure"
+          ],
+          "label": "Pressure of this room"
+        }
+      ]
+    },
+    {
+      "id": "doors",
+      "glyph": "door",
+      "label": "Pressure doors",
+      "color": "#DFB45A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "door_open"
+          ],
+          "label": "Open and passable"
+        },
+        {
+          "state_path": [
+            "flow"
+          ],
+          "label": "Latest signed eastward air transfer"
+        },
+        {
+          "state_path": [
+            "door_changed"
+          ],
+          "label": "Changed this transition"
+        }
+      ]
+    },
+    {
+      "id": "leak",
+      "glyph": "hazard",
+      "label": "Repairable east-room leak",
+      "color": "#DB6B69",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "leaking"
+          ],
+          "label": "Active leak"
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "glyph": "battery",
+      "label": "Delivery dock and air store",
+      "color": "#77B36A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "reservoir"
+          ],
+          "label": "Shared air reservoir"
+        }
+      ]
+    },
+    {
+      "id": "artifacts",
+      "glyph": "crate",
+      "label": "Artifacts",
+      "color": "#C78DD4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "label": "Carrier ID or minus one"
+        },
+        {
+          "state_path": [
+            "cargo_status"
+          ],
+          "label": "Artifact status"
+        },
+        {
+          "state_path": [
+            "integrity"
+          ],
+          "label": "Remaining integrity"
+        },
+        {
+          "state_path": [
+            "shock"
+          ],
+          "label": "Latest pressure shock"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "door_changed"
+      ],
+      "meaning": "Door state changed on latest transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "shock"
+      ],
+      "meaning": "Artifact shocked on latest transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_step"
+      ],
+      "meaning": "Artifact delivered on latest transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "flow"
+      ],
+      "meaning": "Signed door air flux on latest transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "air_given"
+      ],
+      "meaning": "Donated oxygen on latest transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "pumped"
+      ],
+      "meaning": "Air pumped on latest transition",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "patches"
+      ],
+      "meaning": "Remaining engineer patches",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Toggle nearest adjacent door safely"
+    },
+    {
+      "id": 6,
+      "label": "Force nearest adjacent door open; spend two oxygen"
+    },
+    {
+      "id": 7,
+      "label": "Operator pump current room at panel"
+    },
+    {
+      "id": 8,
+      "label": "Engineer patch leak"
+    },
+    {
+      "id": 9,
+      "label": "Refill breathing tank at panel"
+    },
+    {
+      "id": 10,
+      "label": "Pick up nearby floor artifact"
+    },
+    {
+      "id": 11,
+      "label": "Hand artifact to adjacent empty teammate; otherwise drop"
+    },
+    {
+      "id": 12,
+      "label": "Give up to three oxygen to adjacent teammate"
+    },
+    {
+      "id": 13,
+      "label": "Deliver carried artifact at dock"
+    },
+    {
+      "id": 14,
+      "label": "Hold gentle equalization vent at adjacent door"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer role one-hot in fixed agent order",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        94
+      ],
+      "meaning": "Public room walls and door tiles, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        100
+      ],
+      "meaning": "All crew positions in agent order, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        103
+      ],
+      "meaning": "Crew breathing reserves, zero to twenty-four",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        106
+      ],
+      "meaning": "Equipment roles: engineer, operator, porter",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        109
+      ],
+      "meaning": "Room air pressure: west, middle, east",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        109,
+        115
+      ],
+      "meaning": "Room pump-panel positions, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        115,
+        119
+      ],
+      "meaning": "Door positions, xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        121
+      ],
+      "meaning": "Current door passability",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        121,
+        122
+      ],
+      "meaning": "Shared air stock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        123
+      ],
+      "meaning": "East-room leak still open",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        124
+      ],
+      "meaning": "Engineer patches remaining",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        126
+      ],
+      "meaning": "Actual patch location",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        128
+      ],
+      "meaning": "Delivery dock location",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        128,
+        132
+      ],
+      "meaning": "Artifact physical positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        134
+      ],
+      "meaning": "Artifact holder ID or minus one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        136
+      ],
+      "meaning": "Artifact status: floor zero, carried one, delivered two, shattered three",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        138
+      ],
+      "meaning": "Artifact integrity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        141
+      ],
+      "meaning": "Latest sanitized crew commands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        141,
+        144
+      ],
+      "meaning": "Oxygen donated on latest transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        146
+      ],
+      "meaning": "Door changed on latest transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        148
+      ],
+      "meaning": "Latest signed air transfer across each door, positive eastward",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        150
+      ],
+      "meaning": "Latest pressure shock to each artifact",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        152
+      ],
+      "meaning": "Latest artifact deliveries",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        155
+      ],
+      "meaning": "Clock, joint done flag, and air pumped on latest transition",
+      "visibility": "public"
+    }
+  ]
+}

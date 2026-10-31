@@ -1,0 +1,403 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "16a92c71fbadfe28e2e2cfced0a1fb27c1a3d57bd2a4ff1fd35f4c784325cad3",
+  "manifest_sha256": "8667728c5cb32f195f6625e7e65b81ae57b12d449563c9f3bb91431778c70840",
+  "title": "Orchard Watershed Commons",
+  "rules": [
+    "Three moving stewards each seek six fruits in their own storehouse; carried fruit can instead fund planting or be gifted.",
+    "Harvest one fruit from the nearest adjacent living patch. Taking its last fruit damages one root.",
+    "Plant spends one carried fruit to restore one root, one fruit and one moisture, within capacities.",
+    "Water a rooted patch using one carried water; refill a two-unit bag beside the central spring.",
+    "Every four ticks, moist living patches regenerate using retained fruit or a nearby seed-rich patch.",
+    "A moisture-three patch sends moisture to nearby patches on a pulse. This incoming moisture can support their growth only on a later pulse.",
+    "Give plus an adjacent partner receive action transfers one fruit. Store deposits pay only the depositing role.",
+    "Patch and gift contests rotate first-mover priority by the clock; simultaneous collision rules prevent overlapping bodies.",
+    "All stores at six ends with a shared +2 bonus. Complete loss of roots and planting fruit ends with -2. Otherwise step 128 truncates.",
+    "The scene and policy both see the actual public map, positions, inventories, ecological levels and event flags."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable commons ground",
+          "color": "#ECFCCB"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable boundary",
+          "color": "#365314"
+        },
+        {
+          "value": 2,
+          "meaning": "Public water spring",
+          "color": "#0284C7"
+        },
+        {
+          "value": 3,
+          "meaning": "Personal storehouse position",
+          "color": "#A16207"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "stewards",
+      "glyph": "worker",
+      "label": "Moving commons stewards",
+      "color": "#B45309",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "agent_fruit"
+          ],
+          "label": "Carried fruit, capacity four"
+        },
+        {
+          "state_path": [
+            "agent_water"
+          ],
+          "label": "Carried water, capacity two"
+        },
+        {
+          "state_path": [
+            "agent_bank"
+          ],
+          "label": "Fruit stored toward personal quota six"
+        }
+      ]
+    },
+    {
+      "id": "orchards",
+      "glyph": "plant",
+      "label": "Interconnected renewable orchard patches",
+      "color": "#65A30D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "patch_stock"
+          ],
+          "label": "Available fruit, capacity five"
+        },
+        {
+          "state_path": [
+            "patch_roots"
+          ],
+          "label": "Living root strength, capacity four"
+        },
+        {
+          "state_path": [
+            "patch_soil"
+          ],
+          "label": "Local moisture, capacity three"
+        }
+      ]
+    },
+    {
+      "id": "storehouses",
+      "glyph": "crate",
+      "label": "Personal deposit locations",
+      "color": "#92400E",
+      "attribute_labels": []
+    },
+    {
+      "id": "spring",
+      "glyph": "water",
+      "label": "Shared refill spring",
+      "color": "#0284C7",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "All three personal storehouse quotas satisfied",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "collapse"
+      ],
+      "meaning": "All roots and carried planting fruit exhausted without success",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "event_harvest"
+      ],
+      "meaning": "Roles that actually harvested one fruit this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_plant"
+      ],
+      "meaning": "Roles that actually invested one fruit in an orchard this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_water"
+      ],
+      "meaning": "Roles that actually irrigated a rooted patch this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_gift"
+      ],
+      "meaning": "Roles that actually gave one fruit to a receiving partner this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_deposit"
+      ],
+      "meaning": "Roles that actually deposited fruit this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "event_growth"
+      ],
+      "meaning": "Patch ids that grew one fruit on this ecological pulse",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Harvest one fruit from nearest adjacent patch"
+    },
+    {
+      "id": 6,
+      "label": "Plant one carried fruit to restore roots, stock and soil"
+    },
+    {
+      "id": 7,
+      "label": "Irrigate nearest adjacent rooted patch with one water"
+    },
+    {
+      "id": 8,
+      "label": "Refill water bag beside public spring"
+    },
+    {
+      "id": 9,
+      "label": "Deposit fruit at your own storehouse up to quota six"
+    },
+    {
+      "id": 10,
+      "label": "Give one fruit to an adjacent receiver"
+    },
+    {
+      "id": 11,
+      "label": "Receive one offered fruit"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot, divided by 256",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "Public [t,episode_done,terminated,truncated,success,collapse], divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        14
+      ],
+      "meaning": "Steward 0: [x,y,carried_fruit,carried_water,stored_fruit], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        19
+      ],
+      "meaning": "Steward 1: [x,y,carried_fruit,carried_water,stored_fruit], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        19,
+        24
+      ],
+      "meaning": "Steward 2: [x,y,carried_fruit,carried_water,stored_fruit], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        29
+      ],
+      "meaning": "Orchard 0: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        34
+      ],
+      "meaning": "Orchard 1: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        39
+      ],
+      "meaning": "Orchard 2: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        44
+      ],
+      "meaning": "Orchard 3: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        49
+      ],
+      "meaning": "Orchard 4: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        54
+      ],
+      "meaning": "Orchard 5: [x,y,fruit_stock,root_strength,soil_moisture], divided by 256.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        60
+      ],
+      "meaning": "Three storehouse [x,y] coordinates in role order, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        60,
+        62
+      ],
+      "meaning": "Public spring [x,y] coordinate, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        143
+      ],
+      "meaning": "Public 9x9 map flattened y then x, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        143,
+        146
+      ],
+      "meaning": "Public actual harvest flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        146,
+        149
+      ],
+      "meaning": "Public actual plant flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        149,
+        152
+      ],
+      "meaning": "Public actual irrigate flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        155
+      ],
+      "meaning": "Public actual give flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        158
+      ],
+      "meaning": "Public actual deposit flags, divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        164
+      ],
+      "meaning": "Public actual patch growth flags, divided by 256",
+      "visibility": "public"
+    }
+  ]
+}

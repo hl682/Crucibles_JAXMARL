@@ -1,0 +1,531 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "a2c2ae21a48b7ed1950ed96f636e2f62b404ec99bd7c09be2ab337aba4227b28",
+  "manifest_sha256": "335c9823e15eb644a53d0b9a3024b8d86f889f23e34c3ff8d67be65daf43ab12",
+  "title": "Counterweight Yard",
+  "rules": [
+    "Cargo cannot be carried upward on ladders; a crank operator raises it on a shared lift.",
+    "Resting blocks and bracing workers on the opposite ballast pad support each loaded platform.",
+    "Removing ballast can drop a loaded lift and stun its riders. Controlled lowering avoids that jolt.",
+    "The shared brake stops both useful lift motion and automatic drops for its bounded duration.",
+    "Bolt blocks into the three bridge sockets to create solid support; reclaiming a block opens a hole.",
+    "Install one block at each side station and two in the middle. Material committed to private work is unavailable as ballast or bridge support."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Air or open yard",
+          "color": "#E8EEF2"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid foundation or fixed ledge",
+          "color": "#536173"
+        },
+        {
+          "value": 2,
+          "meaning": "Ladder; passable and supports workers",
+          "color": "#BC9357"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Agent",
+      "color": "#3E79AE",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carried block identity or -1"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "label": "Immobilization after a falling load or lift jolt"
+        },
+        {
+          "state_path": [
+            "braced"
+          ],
+          "label": "Supplying two units of live ballast on a pad this tick"
+        }
+      ]
+    },
+    {
+      "id": "block",
+      "glyph": "crate",
+      "label": "Block",
+      "color": "#CA9453",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "block_weight"
+          ],
+          "label": "Mass of this reusable physical block: one or two"
+        },
+        {
+          "state_path": [
+            "block_carrier"
+          ],
+          "label": "Carrier role or -1 loose/bolted"
+        },
+        {
+          "state_path": [
+            "block_anchored"
+          ],
+          "label": "Bolted into a load-bearing bridge cell"
+        }
+      ]
+    },
+    {
+      "id": "lift",
+      "glyph": "gate",
+      "label": "Lift",
+      "color": "#70879D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lift_load"
+          ],
+          "label": "Current workers plus cargo mass resting on this lift"
+        },
+        {
+          "state_path": [
+            "lift_support"
+          ],
+          "label": "Opposite-pad block mass plus active live ballast"
+        }
+      ]
+    },
+    {
+      "id": "ballast",
+      "glyph": "square",
+      "label": "Ballast",
+      "color": "#998565",
+      "attribute_labels": []
+    },
+    {
+      "id": "station",
+      "glyph": "flag",
+      "label": "Station",
+      "color": "#559A72",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "station_count"
+          ],
+          "label": "Materials installed at this work station"
+        },
+        {
+          "state_path": [
+            "station_required"
+          ],
+          "label": "Materials required: one, one, two"
+        }
+      ]
+    },
+    {
+      "id": "crank",
+      "glyph": "tool",
+      "label": "Crank",
+      "color": "#B577B5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "brake"
+          ],
+          "label": "Shared brake timer; stops commanded motion and automatic drops"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "lift_up_event"
+      ],
+      "meaning": "Balanced platforms raised one cell by an operator",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lift_down_event"
+      ],
+      "meaning": "Platforms safely lowered one cell by an operator",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lift_drop_event"
+      ],
+      "meaning": "Underbalanced platforms dropped one cell, jolting riders",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "block_fall_event"
+      ],
+      "meaning": "Loose blocks fell one real cell under discrete gravity",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "impact_event"
+      ],
+      "meaning": "Workers jolted or struck this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "build_event"
+      ],
+      "meaning": "Blocks converted into real bolted support cells",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "reclaim_event"
+      ],
+      "meaning": "Bolted support cells removed for reuse",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Work stations receiving material this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "braced"
+      ],
+      "meaning": "Workers currently adding live ballast",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "brake_event"
+      ],
+      "meaning": "Crank operator engaged the shared brake",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Climb north one cell on a ladder only when empty-handed"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lift loose block; if carrying, install at an unfinished station or drop"
+    },
+    {
+      "id": 6,
+      "label": "Bolt carried block into an adjacent supported bridge socket"
+    },
+    {
+      "id": 7,
+      "label": "At crank: raise left lift if counterweight supports its load"
+    },
+    {
+      "id": 8,
+      "label": "At crank: raise right lift if counterweight supports its load"
+    },
+    {
+      "id": 9,
+      "label": "On ballast pad: brace; at crank: brake both lifts for two ticks"
+    },
+    {
+      "id": 10,
+      "label": "Reclaim nearest bolted block within distance two when empty-handed"
+    },
+    {
+      "id": 11,
+      "label": "At crank: safely lower left lift one cell"
+    },
+    {
+      "id": 12,
+      "label": "At crank: safely lower right lift one cell"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Observer builder identity; each benefits most from its matching work station",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Clock, done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        11
+      ],
+      "meaning": "Worker x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        14
+      ],
+      "meaning": "Carried block index or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        17
+      ],
+      "meaning": "Worker immobilization timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        35
+      ],
+      "meaning": "Nine real block x,y positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        44
+      ],
+      "meaning": "Block active flags; installed material inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        53
+      ],
+      "meaning": "Block masses",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        53,
+        62
+      ],
+      "meaning": "Block carriers; -1 loose or bolted",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        71
+      ],
+      "meaning": "Bolted bridge flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        71,
+        75
+      ],
+      "meaning": "Lift-platform x,y; rider surface is one cell above",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        77
+      ],
+      "meaning": "Actual load on each platform",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        77,
+        79
+      ],
+      "meaning": "Actual counterweight support from the opposite pad",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        83
+      ],
+      "meaning": "Counterweight-pad x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        83,
+        89
+      ],
+      "meaning": "Work-station x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        92
+      ],
+      "meaning": "Installed units at each work station",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Required units at each work station",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        97
+      ],
+      "meaning": "Shared crank x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        98
+      ],
+      "meaning": "Brake time remaining",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        100
+      ],
+      "meaning": "Lifts raised one cell this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        102
+      ],
+      "meaning": "Lifts safely lowered one cell by crank this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        104
+      ],
+      "meaning": "Lifts dropping one cell due to insufficient ballast this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        104,
+        113
+      ],
+      "meaning": "Loose blocks falling one cell this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "Workers hit by falling cargo or jolted by automatic lift drop",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        125
+      ],
+      "meaning": "Blocks bolted into bridge cells this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        125,
+        134
+      ],
+      "meaning": "Bolted blocks reclaimed this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        137
+      ],
+      "meaning": "Work stations receiving material this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        137,
+        140
+      ],
+      "meaning": "Workers currently supplying live ballast",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        140,
+        141
+      ],
+      "meaning": "Shared brake applied this tick",
+      "visibility": "public"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Coupled growth patches with delayed feeding and displaced waste
+
+Candidate: astra-d2-00022. This is a parentless source proposal with no supplied predecessor, score, or feedback.
+
+Each agent controls a renewable growth patch with biomass, nutrient, toxin and a local exchange valve. Action 0 waits. Action 1 harvests 45 percent of current biomass. Action 2 queues a nutrient dose. Action 3 toggles the local valve. Action 4 filters 55 percent of the current local toxin. All five actions are legal.
+
+Nutrient and toxin diffuse between patches only when both new-state valves are open. Either agent can stop or resume this common exchange. Diffusion can deliver useful nutrients or harmful toxin depending on the current concentrations. Filtering has a separate externality: 60 percent of the removed toxin is sent into the other patch's incoming waste state, arriving on its next transition irrespective of the valves. Consequently closing the exchange valve does not eliminate the effect of the other agent's filtering decision.
+
+Feeding is delayed through far and near dose states. A dose chosen now passes through both stored states before entering the nutrient transition, and also produces a small toxin increment on arrival. Growth depends on the post-exchange nutrient level relative to a private fixed nutrient affinity, on remaining biomass after harvesting, and on the toxin level. Harvesting reduces future productive stock. Background regrowth and toxin decay continue between actions, so harvest, feeding, filtration and exchange timing have persistent consequences.
+
+The nutrient affinity belongs to the acting agent and is observed only by that agent. Own patch conditions and pending own doses are current observations. The other patch's biomass, nutrient and toxin are reported with a one-transition lag; at reset the report is the actual initial state. Valve settings are public and current. The sixteen columns are time fraction, role sign, own biomass, lagged other biomass, own nutrient, lagged other nutrient, own toxin, lagged other toxin, own valve, other valve, own near dose, own far dose, own incoming waste, own nutrient affinity, own last reward and own last harvested amount. Other pending doses and affinities are not directly observed.
+
+Reward is tanh of clean-harvest revenue less feeding, valve-switching and filtration costs and a charge for current toxin. All concentrations and biomass are clipped to [0, 1], and tanh bounds the finite utility in [-1, 1]. The output at transition 32 is the preserved terminal state and both roles terminate together.
+
+This is related to familiar renewable-resource, pollution-externality and coupled-reservoir models. The proposed interaction combines a jointly controlled exchange channel, private growth optima, delayed treatment and waste displaced through a separate route. These are mathematical game dynamics, not a calibrated ecological model. No nonisomorphism, mechanism eligibility, compiler success or learning effect is asserted; isolated execution remains the experimenter's responsibility.

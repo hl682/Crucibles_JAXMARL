@@ -1,0 +1,144 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>astra-d2-00069: Reciprocal service with delayed acknowledgements and shared congestion · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI069 / LEGACY_ARRAY</p><h1>astra-d2-00069: Reciprocal service with delayed acknowledgements and shared congestion</h1><p class="lead"></p><div class="stats"><span>2 agents</span><span>5 actions</span><span>16 observation columns</span><span>32 original horizon</span><span>Runtime: PASS</span></div><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi069.gif" alt="Actual verification episode gi069"></section><section><h2>Run this game</h2><pre>crucibles play --game 69</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;termination&quot;: &quot;Original kernel t &gt;= 32; see mechanism and source&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 1.0. Observability: source_defined.</p></section><section><h2>Rules</h2><ol></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># astra-d2-00069: Reciprocal service with delayed acknowledgements and shared congestion
+
+This parentless proposal uses familiar finite-buffer networking, flow control, acknowledgements and timeout recovery. Its causal structure comprises separate outbound pipelines, receiver-held requests, delayed return credit and a shared congestion variable. No benchmark or other candidate source was consulted. Distinctness from other programs and operational qualification have not been established.
+
+Actions are 0 idle, 1 send an ordinary request, 2 send a protected request, 3 service the request in one&#x27;s inbox, and 4 timeout/reset one&#x27;s sending window. Each agent has two transmission credits. A send consumes one credit, inserts the privately observed demand value in outbound slot 0 and replaces that demand with a keyed random draw in [0.4, 1.0]. The packet advances to slot 1 on the next transition, then attempts to enter the other agent&#x27;s inbox on the following transition. Thus the sender cannot directly finish its own request.
+
+An ordinary arrival is lost when shared load is at least 0.65. Protection avoids that condition but cannot avoid a full receiver inbox. Service removes the current inbox request and allows another arrival to replace it on the same transition. It generates a value-bearing acknowledgement for the original sender. On the next transition the sender receives its reward and a transmission credit, capped at two. The receiver receives a smaller service reward immediately. Ignoring another agent&#x27;s inbox can therefore starve that agent&#x27;s window and block its subsequent arrivals.
+
+Timeout clears one&#x27;s outbound pipeline, cancels a currently arriving packet, restores two credits and starts a two-step sending cooldown. A request already held in the remote inbox survives timeout; a late acknowledgement is allowed and credits remain capped. Timeout does not empty one&#x27;s local inbox. Failed arrivals, including canceled arrivals, increase shared load. Transmissions also raise load, service reduces it, and load otherwise decays. Protected transmission and timeout have larger immediate costs than ordinary sending. All actions are legal and unsuccessful prerequisites have no send/service effect.
+
+Each observer sees its own private future demand and outbound packet values, its incoming request value and acknowledgement, own credits and cooldown, shared load, public occupancy and cooldown indicators, and both previous actions. The other&#x27;s prospective demand and outbound values are not direct columns. The 16 columns are clock; own credits; own slot 0 and slot 1 values; local inbox; received acknowledgement; own cooldown; shared load; own next demand; other outbound-busy indicator; other cooldown; own last failed-arrival indicator; aggregate pipeline occupancy; own/other previous action; other inbox-occupied indicator. Past public actions can support additional inference.
+
+Utility is 0.50 times the received acknowledgement plus 0.20 times the serviced value, minus 0.035 per successful transmission, another 0.045 for protection, 0.06 for timeout and 0.08 for a failed arrival. Reward is tanh(1.4 times utility), so it stays in [-1, 1]. No unacknowledged terminal work is paid out automatically. Both agents affect persistent queues, network load, credit availability and the other&#x27;s future reward opportunities.
+
+The horizon is exactly 32 transitions and preserves terminal buffers. The source has not been executed or validated by the author. Syntax parsing does not imply compilation, eligibility, duplicate clearance or learning effectiveness.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Action 0; see mechanism and source</span></div><div class="action"><b>1</b><span>Action 1; see mechanism and source</span></div><div class="action"><b>2</b><span>Action 2; see mechanism and source</span></div><div class="action"><b>3</b><span>Action 3; see mechanism and source</span></div><div class="action"><b>4</b><span>Action 4; see mechanism and source</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Original legacy agent; see mechanism and source</p><p><b>agent_1</b> Original legacy agent; see mechanism and source</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi069&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;b6523eef37c809ec0a92beab71eeadcc5640d3fd4192ad81aad92a243c141d5c&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8835809230804443
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.27778077125549316
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8189482688903809
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.20049786567687988
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.2591571807861328
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0005202293395996094
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.21958565711975098
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.35858654975891113
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.6699583530426025
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.503225088119507
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 6.841694593429565,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;NOT_PART_OF_ORIGINAL_LEGACY_CONTRACT&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 32,
+  &quot;scripted_random_returns&quot;: [
+    0.12137501314282417,
+    0.34317656978964806
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 33,
+  &quot;render_roles_checked&quot;: 2
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi069&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 3.539353609085083
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 69,
+  &quot;key&quot;: &quot;gi069&quot;,
+  &quot;title&quot;: &quot;astra-d2-00069: Reciprocal service with delayed acknowledgements and shared congestion&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;legacy_array&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 2,
+    &quot;observation_size&quot;: 16,
+    &quot;num_actions&quot;: 5,
+    &quot;max_steps&quot;: 32
+  },
+  &quot;source_sha256&quot;: &quot;b6523eef37c809ec0a92beab71eeadcc5640d3fd4192ad81aad92a243c141d5c&quot;,
+  &quot;manifest_sha256&quot;: &quot;110ef84f8df93106358fb57f56053f452817274f6ac6ef632f51c25f8e414045&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;b6523eef37c809ec0a92beab71eeadcc5640d3fd4192ad81aad92a243c141d5c&quot;,
+      &quot;bytes&quot;: 4963,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00069/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;9428f65fc39c0192f1dc57af25d092ea25894d16782c60ca30159016932804c7&quot;,
+      &quot;bytes&quot;: 3589,
+      &quot;origin&quot;: &quot;work/exp_2/astra_generation/discovery_v2/initial/candidate_00069/attempt_00/mechanism.md&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;LEGACY_SOURCE&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi069">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

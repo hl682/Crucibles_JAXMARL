@@ -1,0 +1,801 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00216",
+  "source_sha256": "3820414daa8875d3a3a3285f82ae101efcbaa38e304b8cd297db77b1dbe68d2f",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 3001,
+  "num_actions": 24,
+  "max_steps": 384,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -4,
+  "observation_high": 384,
+  "reward_low": -4,
+  "reward_high": 14,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Northwest settlement; food priority 1.0"
+    },
+    {
+      "id": "agent_1",
+      "role": "Northeast settlement; food priority 1.3"
+    },
+    {
+      "id": "agent_2",
+      "role": "Southwest settlement; food priority 0.8"
+    },
+    {
+      "id": "agent_3",
+      "role": "Southeast settlement; food priority 1.6"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Withdraw one stone from own home; pack capacity four total"
+    },
+    {
+      "id": 6,
+      "label": "Withdraw one timber from own home"
+    },
+    {
+      "id": 7,
+      "label": "Withdraw one grain from own home"
+    },
+    {
+      "id": 8,
+      "label": "Deposit carried resources at adjacent settlement; foreign grain counts as trade"
+    },
+    {
+      "id": 9,
+      "label": "Build levee on front empty cell for two stone"
+    },
+    {
+      "id": 10,
+      "label": "Build raised road on front empty cell for two timber"
+    },
+    {
+      "id": 11,
+      "label": "Convert front levee into open culvert for one stone and one timber"
+    },
+    {
+      "id": 12,
+      "label": "Open or close front culvert"
+    },
+    {
+      "id": 13,
+      "label": "Dismantle front structure; recover one appropriate material"
+    },
+    {
+      "id": 14,
+      "label": "Repair front damaged road with one timber"
+    },
+    {
+      "id": 15,
+      "label": "Harvest one grain from adjacent settlement field"
+    },
+    {
+      "id": 16,
+      "label": "Haul two cells north along existing raised roads"
+    },
+    {
+      "id": 17,
+      "label": "Haul two cells east along existing raised roads"
+    },
+    {
+      "id": 18,
+      "label": "Haul two cells south along existing raised roads"
+    },
+    {
+      "id": 19,
+      "label": "Haul two cells west along existing raised roads"
+    },
+    {
+      "id": 20,
+      "label": "Give one selected resource to lowest-index adjacent peer"
+    },
+    {
+      "id": 21,
+      "label": "Cycle selected resource: stone, timber, grain"
+    },
+    {
+      "id": 22,
+      "label": "Record dated water reports from locally visible settlements and own telemetry"
+    },
+    {
+      "id": 23,
+      "label": "Hand latest stored reports to lowest-index adjacent peer"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        20,
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "structure"
+      ],
+      "shape": [
+        20,
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        20,
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "durability"
+      ],
+      "shape": [
+        20,
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "builder"
+      ],
+      "shape": [
+        20,
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depth"
+      ],
+      "shape": [
+        20,
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map_visible"
+      ],
+      "shape": [
+        4,
+        20,
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "backpack"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "selected"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "priority"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "float32"
+    },
+    {
+      "path": [
+        "home_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stores"
+      ],
+      "shape": [
+        4,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crop"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_water"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_tick"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_pos"
+      ],
+      "shape": [
+        32,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_active"
+      ],
+      "shape": [
+        32
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "water_visible"
+      ],
+      "shape": [
+        4,
+        32
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "rain"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "alerts"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trade_receipts"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flood_losses"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "reward_parts"
+      ],
+      "shape": [
+        4,
+        6
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      19,
+      19
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Dry traversable land",
+          "color": "#D4C99F"
+        },
+        {
+          "value": 1,
+          "meaning": "Shallow water; depth class one",
+          "color": "#93B8C6"
+        },
+        {
+          "value": 2,
+          "meaning": "Deep water; bridge required",
+          "color": "#4D839E"
+        },
+        {
+          "value": 3,
+          "meaning": "Closed levee barrier",
+          "color": "#8F866E"
+        },
+        {
+          "value": 4,
+          "meaning": "Raised trade road or bridge",
+          "color": "#B79C6A"
+        },
+        {
+          "value": 5,
+          "meaning": "Closed culvert",
+          "color": "#807373"
+        },
+        {
+          "value": 6,
+          "meaning": "Open culvert",
+          "color": "#B5AB8A"
+        }
+      ],
+      "visibility": [
+        "map_visible"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "envoys",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "Facing 1 north, 2 east, 3 south, 4 west",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "backpack"
+          ],
+          "meaning": "Carried stone, timber, grain; total capacity four",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "selected"
+          ],
+          "meaning": "Selected transfer resource 0..2",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "home_pos"
+      ],
+      "active": [
+        "home_active"
+      ],
+      "visibility": [
+        "home_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stores"
+          ],
+          "meaning": "Settlement stone, timber, grain stores; each 0..20",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "crop"
+          ],
+          "meaning": "Harvestable field grain, 0..6",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "home_water"
+          ],
+          "meaning": "Maximum capped depth class within field radius two",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "floodwater",
+      "kind": "hazard",
+      "count": 32,
+      "position": [
+        "water_pos"
+      ],
+      "active": [
+        "water_active"
+      ],
+      "visibility": [
+        "water_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rain"
+      ],
+      "meaning": "Public upstream rain phase",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "alerts"
+      ],
+      "meaning": "Public number of settlements with field depth >=2; identities remain local",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Public periodic upstream input state; rain for first twelve ticks of each thirty-two-tick cycle",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Public aggregate count of flood-exposed settlements; no identities or remote current cell depths",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        14
+      ],
+      "meaning": "Four public home coordinates: northwest, northeast, southwest, southeast",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        18
+      ],
+      "meaning": "Public distinct settlement food valuations [1.0,1.3,0.8,1.6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        41
+      ],
+      "meaning": "Self: actor id, backpack[3], selected resource, own stores[3], priority, remembered water[4], original report ticks[4], reward components[6]",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        41,
+        2841
+      ],
+      "meaning": "400 local cell records in y,x order: visible, terrain, capped depth, structure kind, durability, builder, gate-open; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2841,
+        2873
+      ],
+      "meaning": "Four local worker records: visible, x,y, backpack[3], selected resource, facing; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2873,
+        2905
+      ],
+      "meaning": "Four settlement records: visible, x,y, stores[3], crop, field water; own telemetry always visible, others require radius four",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2905,
+        3001
+      ],
+      "meaning": "32 water packet records: visible,x,y; inactive or out-of-radius values -1",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Maintain and trade between four settlements while choosing resource investments, levee/culvert routing, raised roads and shared flood responses during a persistent 20x20 interaction window.",
+    "natural_termination": "No single settlement quest ends this persistent strategy world. terminated remains false and tick 384 truncates; harvest, trade, construction and flood losses never reset the state.",
+    "interaction": "Levees and closed culverts divert physical packets toward neighboring fields. Roads allow deep-water crossings and faster hauling but degrade in severe water. Grain trade and material gifts change other settlements' future construction/food options; dated reports require physical inspection or adjacent transfer.",
+    "observation_access": "Public information consists of clock/terminal causes, rain, aggregate flood-alert count, settlement coordinates and fixed food valuations. Each worker sees map cells, peers and water packets within Manhattan radius four; hidden map/entity records are -1 with a visibility bit. Own settlement stores/field water are continuously available as its explicit home telemetry; other settlement contents require local visibility. Each actor additionally sees its own dated report memory and six reward components. Public safety rewards and the alerts counter reveal only the aggregate exposed-settlement count, not remote identities or crop/store values. The scene map uses the actual map_visible mask."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 384
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "stores"
+      ],
+      "low": 0,
+      "high": 20
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "backpack"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "depth"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "durability"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "crop"
+      ],
+      "low": 0,
+      "high": 6
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

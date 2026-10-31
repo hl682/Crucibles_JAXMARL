@@ -1,0 +1,17 @@
+# astra-d2-00038: Coupled thermal queues with delayed vent externalities
+
+This parentless mechanism is related to queue scheduling, thermal throttling and congestion externalities. It proposes physical state coupling rather than a claim of benchmark novelty. No other proposal or benchmark source was inspected; duplicate and mechanism review remain separate.
+
+Each agent owns a backlog and two processing channels. Actions are 0 idle with extra cooling, 1 process through channel 0, 2 process through channel 1, 3 rebuild insulation, and 4 vent the hottest channel. Incoming heat pulses from the prior transition first reach local channels, reduced by the insulation already present. A selected channel serves up to one queued unit only if this effective temperature is below 1.25. Service generates heat on that channel and smaller spread to the other local channel.
+
+A service-generated pulse reaches the counterpart's same channel in the next state. Venting immediately removes up to 0.7 heat from the local hottest channel but puts 80 percent of the removed heat in the counterpart's opposite channel as a pending pulse. Pending pulses are consumed once at the following step. Insulation absorbs a fraction of incoming pulse heat and wears by half of the absorbed amount; a rebuild action adds 0.45 insulation for future steps, capped at one. All channels cool by 0.18, with an additional 0.22 on an idle action. Thus rebuilding cannot retroactively protect against the current arrival and venting exports a delayed burden.
+
+New work arrives after service: 0.15 every step plus 0.65 on each agent's private three-step phase. Excess beyond a queue capacity of five is lost and penalized. The phase is reset randomness, not selected from any score. Temperature is bounded at three.
+
+Observation columns 0..15 are time/32; own queue/5; own channel temperatures/3; own two pending pulses; own insulation; own phase/2; counterpart temperatures/3; counterpart insulation; counterpart queue/5; own and counterpart last service; own and counterpart prior actions/4. The other agent's arrival phase and pending pulses are not directly observed. Service, queue, current temperature and insulation are public. Neither agent can instantly eliminate its partner's backlog, but each can change the partner's later service feasibility through emitted heat.
+
+Reward is 0.55 times serviced work, minus 0.035 times next backlog, minus 0.08 times temperature above 1.7 on the hottest next-state channel, minus 0.03 for insulation work, 0.02 for venting and 0.12 times discarded arrivals. Explicit clipping guarantees [-1,1]. Since service is at most one, backlog at most five, heat at most three and overflow at most 0.8, the formula is bounded even before clipping. Agents can gain from servicing their own work yet impose future costs on the counterpart; routing, cooling and insulation mediate that conflict.
+
+All five actions are legal. Reset uses explicit independent subkeys for initial queues, heat and phases. Subsequent transitions are deterministic and do not use the step key. Both dones become true at raw step 32 without resetting state.
+
+Status: source authored but not executed or validated. No compiler, eligibility, nonisomorphism or effectiveness claim is made.

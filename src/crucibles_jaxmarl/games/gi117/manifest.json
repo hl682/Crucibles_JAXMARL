@@ -1,0 +1,871 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00117",
+  "source_sha256": "5726fbbef820541fcb14591d64f11730f02c4feccf98b7305bd5f8bd63c4ad60",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 150,
+  "num_actions": 15,
+  "max_steps": 160,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -1.0,
+  "reward_high": 6.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "entities": [
+    {
+      "id": "traders",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Public number delivered by this trader",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cargo_code"
+          ],
+          "meaning": "Public carried type, minus one means empty",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "signal_type"
+          ],
+          "meaning": "Voluntarily revealed truthful demand type, minus one means silent",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "signal_ttl"
+          ],
+          "meaning": "Remaining public signal ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "goods",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "goods_pos"
+      ],
+      "active": [
+        "goods_active"
+      ],
+      "visibility": [
+        "goods_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "goods_type"
+          ],
+          "meaning": "Public physical good type zero, one or two",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "goods_owner"
+          ],
+          "meaning": "Minus one ground, zero to two carrier, three delivered",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Public delivered count at this indexed dock",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "private_orders",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "order_pos"
+      ],
+      "active": [
+        "order_active"
+      ],
+      "visibility": [
+        "order_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "demand"
+          ],
+          "meaning": "Private required type: visible only to this order owner",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "remaining"
+          ],
+          "meaning": "Remaining deliveries for this order",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "loading_bays",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "bay_pos"
+      ],
+      "active": [
+        "bay_active"
+      ],
+      "visibility": [
+        "bay_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "bay_owner"
+          ],
+          "meaning": "Reservation holder, minus one means unreserved",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "bay_ttl"
+          ],
+          "meaning": "Remaining reservation ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "public_offers",
+      "kind": "object",
+      "count": 3,
+      "position": [
+        "offer_pos"
+      ],
+      "active": [
+        "offer_active"
+      ],
+      "visibility": [
+        "offer_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "offer_give"
+          ],
+          "meaning": "Offered physical good type, minus one means inactive",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_request"
+          ],
+          "meaning": "Requested type chosen by the trader, not a private-order field",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_ttl"
+          ],
+          "meaning": "Remaining escrow commitment ticks",
+          "display": "bar"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "trade_count"
+      ],
+      "meaning": "Number of atomic bilateral or three-way settlements; no reward is paid merely for trading",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "delivery_count"
+      ],
+      "meaning": "Number of goods delivered, public",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "remaining"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "bay_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "offer_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "signal_ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "trade_count"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable public yard",
+          "color": "#C7D5CD"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall, closed to movement",
+          "color": "#5B6770"
+        },
+        {
+          "value": 2,
+          "meaning": "Exchange bay with atomic clearing service",
+          "color": "#D4B58B"
+        },
+        {
+          "value": 3,
+          "meaning": "Indexed private-order delivery dock; type not painted here",
+          "color": "#80B08A"
+        },
+        {
+          "value": 4,
+          "meaning": "Initial goods station",
+          "color": "#E5C66D"
+        }
+      ],
+      "public": true
+    }
+  },
+  "title": "Hidden-demand exchange yard",
+  "action_mask_semantics": "Every listed action is a legal command attempt for an active role. Unmet physical, capability, inventory or consent prerequisites yield no effect. Out-of-range integers become wait. Inactive roles and absorbed episodes expose only action 0.",
+  "public_adapter_status": "NOT_DELIVERED_IN_AUTHOR_PACKAGE; the separate implementation layer must supply and validate agent-keyed dictionaries and __all__ without changing this flat kernel or the frozen learner.",
+  "authoring_status": "AUTHORED_NOT_EXECUTED",
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Trader 0: private order, one-slot carrier, dock (1,1)"
+    },
+    {
+      "id": "agent_1",
+      "role": "Trader 1: private order, one-slot carrier, dock (7,1)"
+    },
+    {
+      "id": "agent_2",
+      "role": "Trader 2: private order, one-slot carrier, dock (4,5)"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up one nearby ground good if empty"
+    },
+    {
+      "id": 6,
+      "label": "Drop carried good at current cell"
+    },
+    {
+      "id": 7,
+      "label": "Deliver matching good at own dock"
+    },
+    {
+      "id": 8,
+      "label": "Reserve or renew a nearby free loading bay"
+    },
+    {
+      "id": 9,
+      "label": "Release own bay reservation"
+    },
+    {
+      "id": 10,
+      "label": "Post carried good requesting type zero"
+    },
+    {
+      "id": 11,
+      "label": "Post carried good requesting type one"
+    },
+    {
+      "id": 12,
+      "label": "Post carried good requesting type two"
+    },
+    {
+      "id": 13,
+      "label": "Truthfully reveal own demand for five ticks"
+    },
+    {
+      "id": 14,
+      "label": "Cancel own escrow offer"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "trade_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivery_count"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_item"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo_code"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_type"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "signal_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goods_visible"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goods_type"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "order_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "order_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "demand"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "remaining"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bay_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bay_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bay_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bay_owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bay_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "offer_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "offer_give"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_request"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self trader identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        6
+      ],
+      "meaning": "Only this row owners private demand type one-hot; other demand entries are absent",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        69
+      ],
+      "meaning": "Row-major public terrain divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        69,
+        87
+      ],
+      "meaning": "Three public trader records: x/8,y/8,(cargo type+1)/3,delivered/2,(truthful signal type+1)/3,signal ttl/5",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        87,
+        111
+      ],
+      "meaning": "Six goods records: x/8,y/8,type/2,(owner+1)/4, including publicly known delivered locations",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        111,
+        123
+      ],
+      "meaning": "Three loading bay records: x/8,y/8,(reservation holder+1)/3,reservation ttl/6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        138
+      ],
+      "meaning": "Three public offer records: x/8,y/8,(offered type+1)/3,(requested type+1)/3,offer ttl/4; inactive type fields are zero after encoding",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        147
+      ],
+      "meaning": "Three delivery dock records: x/8,y/8,delivered/2; no private demand is included",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        150
+      ],
+      "meaning": "Elapsed ticks/160, cumulative atomic clearings/160, cumulative delivered goods/6",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Each trader delivers two goods of its private required type to its own dock. Exactly two physical goods of each type exist.",
+    "natural_termination": "All three traders have delivered two goods; otherwise truncate at tick 160. A finished trader is inactive and accepts only wait.",
+    "interaction": "One-slot inventory, narrow routes, public reservations and escrow commitments constrain others. Offers bind existing carried goods at loading bays. Reciprocal offers atomically swap a pair; if no pair clears, a compatible three-way cycle can clear atomically. No goods are copied or created.",
+    "observation_access": "Each role sees all public yard, physical goods, reservations, posted offers and deliberately broadcast truthful signals, plus only its own private demand one-hot. Private order entities have identity-matrix visibility. A reveal action or an observed delivery may legitimately disclose demand; hidden order fields never enter another row or public scene attribute.",
+    "transition_order": "Movement uses old occupancy, reservation and escrow state; timers decay; inventory and deliveries settle in rotating order; reservations, offers and truthful signals update; rotating bilateral matching has priority over three-way cycle clearing; expiring/settled offers clear, then joint terminal state is evaluated."
+  },
+  "invariant_notes": [
+    "Every good retains its identity and type; owner is ground -1, a single trader 0..2 or delivered 3. Two goods of each type remain in the full state.",
+    "No trader carries more than one good; each active offer names that traders actual escrowed good.",
+    "Bilateral settlement swaps both owners together. Three-way settlement permutes all three owners; there is no credit or duplication.",
+    "Reservation owner and ttl agree; offer ttl lies in [0,4], reservation ttl in [0,6], signal ttl in [0,5].",
+    "All active trader positions are distinct walkable cells. Orders and offers may visually share a cell with their actual dock or carrier.",
+    "Private demand is a random permutation of the three types. Knowing one type constrains the other two; inference from the public distribution or deliberate signals is legitimate.",
+    "No demand-dependent availability of another role is leaked through legal masks: all active commands are attempts.",
+    "Raw terminal state is absorbing; the previous terminal causes and clock remain fixed."
+  ]
+}

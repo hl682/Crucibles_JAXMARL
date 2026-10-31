@@ -1,0 +1,507 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Market Square Fermentation Kitchens · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI233 / SPATIAL</p><h1>Market Square Fermentation Kitchens</h1><p class="lead"></p><div class="stats"><span>32 agents</span><span>20 actions</span><span>544 observation columns</span><span>640 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Run this game</h2><pre>crucibles play --game 233</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Eight crews fulfill their distinct three-ticket queues through shared ingredient supply, culture exchange, preparation, fermentation and clean finishing.&quot;,
+  &quot;natural_termination&quot;: &quot;Natural completion occurs when every one of the eight customer order counts reaches 3. A mismatched dish is not delivered. H=640 otherwise truncates the ongoing kitchen.&quot;,
+  &quot;interaction&quot;: &quot;Shared station contamination changes other cooks&#x27; food and future tools; starter transfer changes ferment timing and recipe matching; cold slots and carts compete for spatial capacity; heavy vessels require a nearby bracing partner.&quot;,
+  &quot;observation_access&quot;: &quot;Actors and objects use L1 radius 5; actor slots retain the nearest four plus self. Customer tickets are visible only to their own four-person crew. Announce snapshots that crew&#x27;s current recipe and culture into a four-tick visible actor message; nearby cooks can read it, but it may become stale after a delivery.&quot;
+}</pre></details><p>Declared per-step reward bounds: -2 to 4. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Pick up a vessel, fill it at a market crate, wash it, and grind grain before inoculation. Fruit does not require grinding.</li><li>Culture 0 ferments for six steps; culture 1 takes ten. Finish ripe food at a hob and match a customer&#x27;s recipe and culture.</li><li>Dirty utensils contaminate shared stations and other food. Mills begin dirty; Clean changes the actual shared station and own tool.</li><li>Heavy pots need another actor choosing Brace within one tile of the carrier to be picked up or moved.</li><li>A cold store has two real container slots. Stored ripe food ages once every three ticks; occupied slots prevent other storage.</li><li>Carts move through the horizontal aisles and wait when people block them; people cannot step onto cart positions.</li><li>Tickets belong to one crew. Announce sends a visible four-tick snapshot; culture and vessel handoffs occur physically.</li><li>Scene and literal scripts are authored hypotheses; no actual play, trajectory or training has been executed.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Market Square Fermentation Kitchens
+
+Status: **AUTHORED_NOT_EXECUTED**. Candidate identity: game-v3-00233. Source split: train. No final test or previous candidate outcome was an input.
+
+## Native contract and human controls
+
+A=32, O=544, U=20, H=640. Every one of the 32 actor rows is independently controllable through one scalar int32 action. Ambient entities are not counted as agents. A human/AI/group assignment chooses the same native joint-action vector; no alternative UI dynamics are supplied. The source is the complete native kernel, and scene.json is complete declarative presentation data. JaxMARL adapter integration, actual keyboard/click controls, replay, animation, JIT/vmap, throughput, training and transfer remain unexecuted and unaccepted.
+
+Movement is a cardinal one-cell proposal with boundary clipping. Multiple people may occupy a tile; this is an explicit broad-walkway abstraction. Visible objects and terrain govern interaction conditions. Masks describe capability/inventory permissions, not a promise that a distant or blocked operation succeeds. Out-of-range or mask-invalid codes become no-op deterministically. Spatially inapplicable legal attempts cost the stated work cost and change no targeted object. Joint actions are captured together; movement precedes ordered work, and work resolves actor IDs in ascending order. This tie rule is fixed before any execution and can affect scarce-resource competition.
+
+Eight four-person crews occupy a 32 by 24 market partitioned by short walls with door gaps. Each crew has a sink, mill, finishing hob and service counter, while four moving carts and four two-slot cold stores serve the connected square. Eight finite crates alternate grain and fruit. Sixteen actual portable vessels (one light and one heavy per crew) begin empty; filling uses one finite portion. Raw food must be washed. Grain then needs grinding, while fruit can proceed directly from washed to inoculated. Starter culture 0 takes 6 fermentation advances; culture 1 takes 10. Fermentation advances before work. Once ripe or finished, a portion ages each step, or every third step while occupying a cold slot; age 25 changes it to spoiled. Cold storage consumes a real slot and fixes the container&#x27;s position until another cook picks it up.
+
+Mills begin dirty. Washing, grinding and finishing combine utensil/station contamination, which changes the vessel and the cook&#x27;s tool. A dirty tool also marks the shared station dirty for later actors; cleaning is a separate action at the nearest station and clears that cook&#x27;s tool. A clean sink can remove food contamination during the raw-to-washed step. All cooks can exchange starter culture, and a service counter permits physical vessel handoff. Heavy pickup and movement require another actor&#x27;s simultaneous Brace within distance 1 of the carrier. A cook&#x27;s source crew and a counter&#x27;s customer crew need not match. A matched service increments that customer&#x27;s finite queue and flips its next recipe/culture, with the next deadline 72 ticks later. Station operations require distance 1; an announced ticket is a finite-lived snapshot, not a live remote feed.
+
+## Action legend
+
+- 0: Wait.
+- 1: Move north.
+- 2: Move east.
+- 3: Move south.
+- 4: Move west.
+- 5: Fill carried empty vessel from nearby market crate.
+- 6: Brace a nearby heavy-pot carrier.
+- 7: Pick up nearby uncarried vessel.
+- 8: Put carried vessel down.
+- 9: Wash raw portion at a sink.
+- 10: Grind washed grain at a mill.
+- 11: Inoculate prepared portion with own starter.
+- 12: Finish ripe portion at a finishing hob.
+- 13: Serve matching finished portion at a counter.
+- 14: Clean nearest station and own utensil.
+- 15: Give starter culture to nearest adjacent cook.
+- 16: Store carried vessel in nearby available cold slot.
+- 17: Announce own crew&#x27;s current customer request.
+- 18: Discard carried portion and empty vessel.
+- 19: Hand carried vessel to adjacent cook at a service counter.
+
+## Observation and role-view contract
+
+Actors and objects use L1 radius 5; actor slots retain the nearest four plus self. Customer tickets are visible only to their own four-person crew. Announce snapshots that crew&#x27;s current recipe and culture into a four-tick visible actor message; nearby cooks can read it, but it may become stale after a delivery.
+
+The first scalar of the self block is actor ID/(A-1). Each nearest-actor slot begins with visibility then actor ID/(A-1); absent slots are all zero. Actor slots use the four smallest L1 distances with ID tie breaking; self is always visible through its self block. All other entity blocks use original entity order, visibility flag, normalized absolute x/y, then the listed attributes; hidden rows are zero. Terrain layout is fixed public knowledge, while changing object states use declared local visibility. The renderer must filter entity and event displays by role visibility; full-state diagnostics are a separate labeled view. Public scene metadata does not add policy input.
+
+- [0, 11): Self: actor ID/31, x/31, y/23, crew/7, (carried vessel+1)/16, starter, dirty utensil, message/4, announced recipe, announced culture, t/640 (self).
+- [11, 55): Four nearest actor slots, 11 each: visible, ID/31, x/31, y/23, crew/7, (vessel+1)/16, starter, dirty utensil, message/4, announced recipe, announced culture (local).
+- [55, 215): 32 station rows, 5 each: visible, x/31, y/23, kind/3, dirty (local).
+- [215, 255): 8 market rows, 5 each: visible, x/31, y/23, stock/24, recipe (local).
+- [255, 431): 16 vessel rows, 11 each: visible, x/31, y/23, stage/7, (recipe+1)/2, culture, progress/10, age/25, contaminated, heavy, (cold slot+1)/8 (local).
+- [431, 447): 4 cold-store rows, 4 each: visible, x/31, y/23, occupied slots/2 (local).
+- [447, 463): 4 cart rows, 4 each: visible, x/31, y/23, direction -1 or 1 (local).
+- [463, 519): 8 ticket rows, 7 each: own-crew visibility, x/31, y/23, recipe, culture, fulfilled/3, clipped(deadline-t,-640,640)/640; other crews hidden (self).
+- [519, 544): Row-major 5 by 5 edge-clamped partition patch centered on actor; 0 floor, 1 wall (local).
+
+## Rewards, bounds and persistent consequences
+
+Every legal work attempt (code &gt;=5) costs the actor 0.01. Successful delivery pays the server 2 for clean food or 0.25 for contaminated food, plus 0.5 if on time. Each of the customer&#x27;s four crew members receives 0.25 for the same delivery, regardless of who cooked it. A newly contaminating processing event costs the processing actor 0.15; discarding a nonempty portion costs 0.4. There is no payment for repeatedly storing, transferring, inoculating or cleaning. A customer has only three remaining tickets, so no actor can receive more than three customer bonuses in one step; own delivery return is at most 2.5. The range [-2,4] contains these simultaneous components.
+
+Rewards are float32[A]. Observations are explicitly float32[A,O]; normalized bounds are [-1,1]. Declared reward bounds are [-2, 4], analytical containment bounds rather than empirical results or performance gates. Actor/group identity, positions, tool changes and real object levels bind to native state in manifest.json and scene.json; no scripted display transition substitutes for a kernel transition.
+
+## Termination and declared source invariants
+
+Natural completion occurs when every one of the eight customer order counts reaches 3. A mismatched dish is not delivered. H=640 otherwise truncates the ongoing kitchen. A live call advances t exactly once. Natural termination has priority at H. A terminal call is absorbing: all state and observation leaves, clock and terminal cause are preserved; reward is zero and every done row is true. There is no raw auto-reset.
+
+Actors, carts, stations and containers stay within the stated map bounds. Each carried vessel has at most one actor owner; each actor carries at most one vessel. Each cold slot contains at most one vessel. Pantry stock stays 0..24; vessel stage 0..7, progress 0..10, age 0..25 and slot -1..7; order count 0..3. Dirty flags are genuine shared state. Food and vessel state survive movement, handoff and storage. Containers are not agents; all 32 cook rows are separately controllable. Direction -1 and an overdue deadline create the observation lower bound -1.
+
+The manifest declares the complete fixed-key state tree. Numeric/bool state leaves use int32/float32/bool. PRNG keys remain external trajectory provenance and are not duplicated in state. The source&#x27;s reset randomness is only the eight initial private requested recipe bits from the supplied key; initial requested cultures and all map geometry are deterministic; raw_step consumes no additional random draws. No signed-int or PRNG distribution substitution is made. Human-readable invariants above have not been numerically checked; the optional machine invariant list is empty to avoid inventing an unsupported invariant-check dialect.
+
+## Prospective strategies and fixed diagnostics
+
+A crew can spend one partner action to clean a shared mill before a batch, or rush a contaminated lower-quality portion while preserving labor for another task. Partners may exchange starter to match a remote customer&#x27;s announced ticket, or use cold storage to hold a ripe component while preparing a complementary delivery. Cold slots, cart traffic and heavy-pot support create timing costs. The two complete scripts differ only in actor 1 cleaning the mill before actor 0 grinds. This is also the paired hypothesis: the same later grind should change actor 0&#x27;s utensil and vessel contamination, even if the sampled customer ticket does not match and no serving occurs.
+
+playthrough.json contains two complete literal joint-action arrays at seed 23311, plus one pair whose entire continuation differs in exactly one actor action at one step. All are UNEXECUTED_AUTHOR_HYPOTHESIS. Their finite lengths are diagnostic scopes, not claims of finishing the game. Conditions, delays and intended state changes are source reasoning; legality during rollout, effects, rewards, solvability and human usability remain unverified. There is no adaptive policy, seed search, measured effect size or expected-success threshold.
+
+## Literal source evidence
+
+- Station, vessel and private-ticket state: candidate.py:58 — `s = {&#x27;t&#x27;: jnp.array(0, jnp.int32), &#x27;done&#x27;: jnp.array(False), &#x27;terminated&#x27;: jnp.array(False), &#x27;tiles&#x27;: tiles, &#x27;pos&#x27;: pos, &#x27;active&#x27;: jnp.ones((32,), jnp.bool_), &#x27;carry&#x27;: jnp.full((32,), -1, jnp.int32), &#x27;starter&#x27;: ids % 2, &#x27;dirty_tool&#x27;: jnp.zeros((32,), jnp.bool_), &#x27;message&#x27;: jnp.zeros((32,), jnp.int32), &#x27;message_recipe&#x27;: jnp.zeros((32,), jnp.int32), &#x27;message_culture&#x27;: jnp.zeros((32,), jnp.int32), &#x27;seen&#x27;: jnp.zeros((32, 4), jnp.int32), &#x27;agent_vis&#x27;: jnp.zeros((32, 32), jnp.bool_), &#x27;station_pos&#x27;: station_pos, &#x27;station_kind&#x27;: jnp.arange(32, dtype=jnp.int32) % 4, &#x27;station_dirty&#x27;: jnp.arange(32, dtype=jnp.int32) % 4 == 1, &#x27;station_active&#x27;: jnp.ones((32,), jnp.bool_), &#x27;station_vis&#x27;: jnp.zeros((32, 32), jnp.bool_), &#x27;pantry_pos&#x27;: center + jnp.array([-2, 0], jnp.int32), &#x27;pantry_stock&#x27;: jnp.full((8,), 24, jnp.int32), &#x27;pantry_recipe&#x27;: crew % 2, &#x27;pantry_active&#x27;: jnp.ones((8,), jnp.bool_), &#x27;pantry_vis&#x27;: jnp.zeros((32, 8), jnp.bool_), &#x27;vessel_pos&#x27;: jnp.repeat(center, 2, axis=0) + jnp.tile(jnp.array([[0, 0], [1, 1]], jnp.int32), (8, 1)), &#x27;vessel_stage&#x27;: jnp.zeros((16,), jnp.int32), &#x27;vessel_recipe&#x27;: jnp.full((16,), -1, jnp.int32), &#x27;vessel_culture&#x27;: jnp.zeros((16,), jnp.int32), &#x27;vessel_progress&#x27;: jnp.zeros((16,), jnp.int32), &#x27;vessel_age&#x27;: jnp.zeros((16,), jnp.int32), &#x27;vessel_bad&#x27;: jnp.zeros((16,), jnp.bool_), &#x27;vessel_heavy&#x27;: jnp.arange(16, dtype=jnp.int32) % 2 == 1, &#x27;vessel_slot&#x27;: jnp.full((16,), -1, jnp.int32), &#x27;vessel_active&#x27;: jnp.ones((16,), jnp.bool_), &#x27;vessel_vis&#x27;: jnp.zeros((32, 16), jnp.bool_), &#x27;cold_pos&#x27;: cold, &#x27;cold_used&#x27;: jnp.zeros((4,), jnp.int32), &#x27;cold_active&#x27;: jnp.ones((4,), jnp.bool_), &#x27;cold_vis&#x27;: jnp.zeros((32, 4), jnp.bool_), &#x27;cart_pos&#x27;: jnp.array([[2, 11], [18, 11], [6, 23], [22, 23]], jnp.int32), &#x27;cart_direction&#x27;: jnp.array([1, -1, 1, -1], jnp.int32), &#x27;cart_active&#x27;: jnp.ones((4,), jnp.bool_), &#x27;cart_vis&#x27;: jnp.zeros((32, 4), jnp.bool_), &#x27;order_pos&#x27;: center + jnp.array([0, 3], jnp.int32), &#x27;order_recipe&#x27;: jax.random.randint(key, (8,), 0, 2).astype(jnp.int32), &#x27;order_culture&#x27;: crew % 2, &#x27;order_count&#x27;: jnp.zeros((8,), jnp.int32), &#x27;order_deadline&#x27;: jnp.full((8,), 72, jnp.int32), &#x27;order_active&#x27;: jnp.ones((8,), jnp.bool_), &#x27;order_vis&#x27;: jnp.zeros((32, 8), jnp.bool_), &#x27;event_serve&#x27;: jnp.zeros((32,), jnp.bool_), &#x27;event_contaminate&#x27;: jnp.zeros((32,), jnp.bool_), &#x27;event_waste&#x27;: jnp.zeros((32,), jnp.bool_), &#x27;event_ripen&#x27;: jnp.zeros((16,), jnp.bool_)}`
+- Own-crew ticket visibility: candidate.py:23 — `s[&#x27;order_vis&#x27;] = jnp.arange(32, dtype=jnp.int32)[:, None] // 4 == jnp.arange(8, dtype=jnp.int32)[None, :]`
+- Timed fermentation: candidate.py:83 — `ripe = (s[&#x27;vessel_stage&#x27;] == 4) &amp; (progress &gt;= target)`
+- Actual cold-storage aging: candidate.py:86 — `aging = ((s[&#x27;vessel_stage&#x27;] == 5) | (s[&#x27;vessel_stage&#x27;] == 6)) &amp; ((s[&#x27;vessel_slot&#x27;] &lt; 0) | (n[&#x27;t&#x27;] % 3 == 0))`
+- Partner-enabled heavy motion: candidate.py:98 — `heavy = (s[&#x27;carry&#x27;] &gt;= 0) &amp; s[&#x27;vessel_heavy&#x27;][jnp.maximum(s[&#x27;carry&#x27;], 0)]`
+- Shared contamination path: candidate.py:132 — `contaminate = process &amp; dirty &amp; ~z[&#x27;vessel_bad&#x27;][pot]`
+- Culture changes fermentation: candidate.py:139 — `inoculate = (a[i] == 11) &amp; ready`
+- Physical occupied cold slot: candidate.py:159 — `store = (a[i] == 16) &amp; (cd[fridge] &lt;= 1) &amp; jnp.any(free)`
+- Matching and recipient reward: candidate.py:171 — `quality = jnp.where(z[&#x27;vessel_bad&#x27;][pot], 0.25, 2.0) + 0.5 * (z[&#x27;t&#x27;] &lt;= z[&#x27;order_deadline&#x27;][customer])`
+- Raw terminal absorption: candidate.py:198 — `n = jax.tree.map(lambda new, old: jnp.where(s[&#x27;done&#x27;], old, new), n, s)`
+
+## Provenance and limits
+
+Only the 21 actual authorized input files in author_input_freeze.json were read. The controlling population/family237 input sets A and H. Older copied population notes were not read. No old source, result, IR, training/selection/heldout file, memory file, network, local model, remote model API or other author feedback was used. The inherited genre direction comes from this batch&#x27;s independent_family_principles.json and design brief. No supplied upstream reference snapshot or upstream code was read or copied: Craftax mechanics and Pgx board APIs are not claimed as implementations, and PureJaxRL/Craftax PPO baselines are neither new game libraries nor replacements for the frozen learner.
+
+Author-side checks are standard-library AST parsing, literal schema/shape declarations, JSON, byte lengths and SHA256 only. Supplied validator modules were read as input text and were not executed. No import of candidate.py, JAX, NumPy, reset, raw_step, observe or legal_actions occurred. This package establishes authored source/data identity only, not accepted R0/M0, numerical parity, learnability, strategic non-isomorphism, animation acceptance, scientific benefit or transfer.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Fill carried empty vessel from nearby market crate</span></div><div class="action"><b>6</b><span>Brace a nearby heavy-pot carrier</span></div><div class="action"><b>7</b><span>Pick up nearby uncarried vessel</span></div><div class="action"><b>8</b><span>Put carried vessel down</span></div><div class="action"><b>9</b><span>Wash raw portion at a sink</span></div><div class="action"><b>10</b><span>Grind washed grain at a mill</span></div><div class="action"><b>11</b><span>Inoculate prepared portion with own starter</span></div><div class="action"><b>12</b><span>Finish ripe portion at a finishing hob</span></div><div class="action"><b>13</b><span>Serve matching finished portion at a counter</span></div><div class="action"><b>14</b><span>Clean nearest station and own utensil</span></div><div class="action"><b>15</b><span>Give starter culture to nearest adjacent cook</span></div><div class="action"><b>16</b><span>Store carried vessel in nearby available cold slot</span></div><div class="action"><b>17</b><span>Announce own crew&#x27;s current customer request</span></div><div class="action"><b>18</b><span>Discard carried portion and empty vessel</span></div><div class="action"><b>19</b><span>Hand carried vessel to adjacent cook at a service counter</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Kitchen crew 00; actor 000; initial prep cook with culture 0; individually controllable</p><p><b>agent_1</b> Kitchen crew 00; actor 001; initial fermenter with culture 1; individually controllable</p><p><b>agent_2</b> Kitchen crew 00; actor 002; initial porter with culture 0; individually controllable</p><p><b>agent_3</b> Kitchen crew 00; actor 003; initial finisher with culture 1; individually controllable</p><p><b>agent_4</b> Kitchen crew 01; actor 004; initial prep cook with culture 0; individually controllable</p><p><b>agent_5</b> Kitchen crew 01; actor 005; initial fermenter with culture 1; individually controllable</p><p><b>agent_6</b> Kitchen crew 01; actor 006; initial porter with culture 0; individually controllable</p><p><b>agent_7</b> Kitchen crew 01; actor 007; initial finisher with culture 1; individually controllable</p><p><b>agent_8</b> Kitchen crew 02; actor 008; initial prep cook with culture 0; individually controllable</p><p><b>agent_9</b> Kitchen crew 02; actor 009; initial fermenter with culture 1; individually controllable</p><p><b>agent_10</b> Kitchen crew 02; actor 010; initial porter with culture 0; individually controllable</p><p><b>agent_11</b> Kitchen crew 02; actor 011; initial finisher with culture 1; individually controllable</p><p><b>agent_12</b> Kitchen crew 03; actor 012; initial prep cook with culture 0; individually controllable</p><p><b>agent_13</b> Kitchen crew 03; actor 013; initial fermenter with culture 1; individually controllable</p><p><b>agent_14</b> Kitchen crew 03; actor 014; initial porter with culture 0; individually controllable</p><p><b>agent_15</b> Kitchen crew 03; actor 015; initial finisher with culture 1; individually controllable</p><p><b>agent_16</b> Kitchen crew 04; actor 016; initial prep cook with culture 0; individually controllable</p><p><b>agent_17</b> Kitchen crew 04; actor 017; initial fermenter with culture 1; individually controllable</p><p><b>agent_18</b> Kitchen crew 04; actor 018; initial porter with culture 0; individually controllable</p><p><b>agent_19</b> Kitchen crew 04; actor 019; initial finisher with culture 1; individually controllable</p><p><b>agent_20</b> Kitchen crew 05; actor 020; initial prep cook with culture 0; individually controllable</p><p><b>agent_21</b> Kitchen crew 05; actor 021; initial fermenter with culture 1; individually controllable</p><p><b>agent_22</b> Kitchen crew 05; actor 022; initial porter with culture 0; individually controllable</p><p><b>agent_23</b> Kitchen crew 05; actor 023; initial finisher with culture 1; individually controllable</p><p><b>agent_24</b> Kitchen crew 06; actor 024; initial prep cook with culture 0; individually controllable</p><p><b>agent_25</b> Kitchen crew 06; actor 025; initial fermenter with culture 1; individually controllable</p><p><b>agent_26</b> Kitchen crew 06; actor 026; initial porter with culture 0; individually controllable</p><p><b>agent_27</b> Kitchen crew 06; actor 027; initial finisher with culture 1; individually controllable</p><p><b>agent_28</b> Kitchen crew 07; actor 028; initial prep cook with culture 0; individually controllable</p><p><b>agent_29</b> Kitchen crew 07; actor 029; initial fermenter with culture 1; individually controllable</p><p><b>agent_30</b> Kitchen crew 07; actor 030; initial porter with culture 0; individually controllable</p><p><b>agent_31</b> Kitchen crew 07; actor 031; initial finisher with culture 1; individually controllable</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      11
+    ],
+    &quot;meaning&quot;: &quot;Self: actor ID/31, x/31, y/23, crew/7, (carried vessel+1)/16, starter, dirty utensil, message/4, announced recipe, announced culture, t/640&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      55
+    ],
+    &quot;meaning&quot;: &quot;Four nearest actor slots, 11 each: visible, ID/31, x/31, y/23, crew/7, (vessel+1)/16, starter, dirty utensil, message/4, announced recipe, announced culture&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      55,
+      215
+    ],
+    &quot;meaning&quot;: &quot;32 station rows, 5 each: visible, x/31, y/23, kind/3, dirty&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      215,
+      255
+    ],
+    &quot;meaning&quot;: &quot;8 market rows, 5 each: visible, x/31, y/23, stock/24, recipe&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      255,
+      431
+    ],
+    &quot;meaning&quot;: &quot;16 vessel rows, 11 each: visible, x/31, y/23, stage/7, (recipe+1)/2, culture, progress/10, age/25, contaminated, heavy, (cold slot+1)/8&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      431,
+      447
+    ],
+    &quot;meaning&quot;: &quot;4 cold-store rows, 4 each: visible, x/31, y/23, occupied slots/2&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      447,
+      463
+    ],
+    &quot;meaning&quot;: &quot;4 cart rows, 4 each: visible, x/31, y/23, direction -1 or 1&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      463,
+      519
+    ],
+    &quot;meaning&quot;: &quot;8 ticket rows, 7 each: own-crew visibility, x/31, y/23, recipe, culture, fulfilled/3, clipped(deadline-t,-640,640)/640; other crews hidden&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      519,
+      544
+    ],
+    &quot;meaning&quot;: &quot;Row-major 5 by 5 edge-clamped partition patch centered on actor; 0 floor, 1 wall&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agents&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;carry&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried vessel ID, -1 if empty-handed&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;starter&quot;
+        ],
+        &quot;meaning&quot;: &quot;Starter culture 0 or 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;dirty_tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;Utensil contamination&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message&quot;
+        ],
+        &quot;meaning&quot;: &quot;Request announcement lifetime, 0 to 4&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message_recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;Announced recipe, meaningful while message is positive&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;message_culture&quot;
+        ],
+        &quot;meaning&quot;: &quot;Announced culture, meaningful while message is positive&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;station&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 32,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 sink, 1 mill, 2 finish, 3 service counter&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;station_dirty&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shared station contamination&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;pantry&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;pantry_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;pantry_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;pantry_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;pantry_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining portions, at most 24&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pantry_recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 grain or 1 fruit supply&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;vessel&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;vessel_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;vessel_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;vessel_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_stage&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty, 1 raw, 2 washed, 3 ground, 4 ferment, 5 ripe, 6 finished, 7 spoiled&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;-1 empty, 0 grain or 1 fruit&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_culture&quot;
+        ],
+        &quot;meaning&quot;: &quot;Inoculated culture 0 or 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_progress&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fermentation progress, 0 to 10&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_age&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ripe-food exposure age, 0 to 25&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_bad&quot;
+        ],
+        &quot;meaning&quot;: &quot;Food contamination&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_heavy&quot;
+        ],
+        &quot;meaning&quot;: &quot;Paired transport required&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vessel_slot&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cold-store slot, -1 outside storage&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;cold&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;cold_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cold_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cold_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;cold_used&quot;
+        ],
+        &quot;meaning&quot;: &quot;Occupied physical slots, 0 to 2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;cart&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;cart_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cart_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cart_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;cart_direction&quot;
+        ],
+        &quot;meaning&quot;: &quot;Horizontal travel direction -1 or 1&quot;,
+        &quot;display&quot;: &quot;direction&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;order&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;order_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;order_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;order_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;order_recipe&quot;
+        ],
+        &quot;meaning&quot;: &quot;Required recipe 0 or 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;order_culture&quot;
+        ],
+        &quot;meaning&quot;: &quot;Required culture 0 or 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;order_count&quot;
+        ],
+        &quot;meaning&quot;: &quot;Orders fulfilled, 0 to 3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;order_deadline&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current absolute deadline tick&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 233,
+  &quot;key&quot;: &quot;gi233&quot;,
+  &quot;title&quot;: &quot;Market Square Fermentation Kitchens&quot;,
+  &quot;summary&quot;: &quot;&quot;,
+  &quot;tags&quot;: [],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 32,
+    &quot;observation_size&quot;: 544,
+    &quot;num_actions&quot;: 20,
+    &quot;max_steps&quot;: 640
+  },
+  &quot;source_sha256&quot;: &quot;fd4a347bdc58f26b246b58ab16d39d0868868117f6f88df13da5deb80ca743b6&quot;,
+  &quot;manifest_sha256&quot;: &quot;6627fac2a99b7c8362200f2c7d8cca5e3b0cff24e9787a945243351027fd5474&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;fd4a347bdc58f26b246b58ab16d39d0868868117f6f88df13da5deb80ca743b6&quot;,
+      &quot;bytes&quot;: 17966,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00233/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;6627fac2a99b7c8362200f2c7d8cca5e3b0cff24e9787a945243351027fd5474&quot;,
+      &quot;bytes&quot;: 23638,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00233/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;d5f7b63d23ad8f93d656b746dc94383f043fb5109bd2560a492e665031011f8b&quot;,
+      &quot;bytes&quot;: 10821,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00233/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;3a472734a8a05383f334c22a5bced0b95577ad0e8ee2c0c35fe02fdf941edfda&quot;,
+      &quot;bytes&quot;: 14964,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00233/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;6d18c0c15780c6c05f767c7ffff709bd421896f12d97c6d3c10a98cd6d8d7d88&quot;,
+      &quot;bytes&quot;: 41187,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00233/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: false,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi233">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

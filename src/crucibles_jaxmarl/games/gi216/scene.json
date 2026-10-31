@@ -1,0 +1,361 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "3820414daa8875d3a3a3285f82ae101efcbaa38e304b8cd297db77b1dbe68d2f",
+  "manifest_sha256": "31fbbcf4545a1afdc81b4a8bdf9f0eb52f78998eec984b1984f866d41491a4a1",
+  "title": "Floodplain Council",
+  "rules": [
+    "Four settlements own separate stone, timber and grain stores. A worker carries at most four resource units.",
+    "A levee costs two stone; a raised road costs two timber. Convert a levee into a controllable culvert using one of each.",
+    "Water packets move south every second tick. A closed barrier sends them outward sideways, or holds them if that exit is blocked.",
+    "Deep water blocks ordinary movement. Raised roads allow crossing and two-cell hauling, but depth three damages them on periodic pulses.",
+    "Field wetness is the maximum capped depth within two cells of a settlement. Deep exposure loses grain and crops.",
+    "Depositing foreign grain pays trade value and benefits the recipient; harvesting another field removes its actual grain.",
+    "Local reports preserve their observation dates when handed to a neighboring worker. Remote current water is not revealed by old reports.",
+    "Public aggregate flood alerts and distinct food valuations coexist with private stores and local views. The world truncates at 384."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      19,
+      19
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Dry traversable land",
+          "color": "#D4C99F"
+        },
+        {
+          "value": 1,
+          "meaning": "Shallow water; depth class one",
+          "color": "#93B8C6"
+        },
+        {
+          "value": 2,
+          "meaning": "Deep water; bridge required",
+          "color": "#4D839E"
+        },
+        {
+          "value": 3,
+          "meaning": "Closed levee barrier",
+          "color": "#8F866E"
+        },
+        {
+          "value": 4,
+          "meaning": "Raised trade road or bridge",
+          "color": "#B79C6A"
+        },
+        {
+          "value": 5,
+          "meaning": "Closed culvert",
+          "color": "#807373"
+        },
+        {
+          "value": 6,
+          "meaning": "Open culvert",
+          "color": "#B5AB8A"
+        }
+      ],
+      "visibility": [
+        "map_visible"
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "envoys",
+      "glyph": "agent",
+      "label": "Four settlement workers",
+      "color": "#627E9B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "Facing 1 north, 2 east, 3 south, 4 west"
+        },
+        {
+          "state_path": [
+            "backpack"
+          ],
+          "label": "Carried stone, timber, grain; total capacity four"
+        },
+        {
+          "state_path": [
+            "selected"
+          ],
+          "label": "Selected transfer resource 0..2"
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "glyph": "flag",
+      "label": "Independent stores and fields",
+      "color": "#AC8C55",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stores"
+          ],
+          "label": "Settlement stone, timber, grain stores; each 0..20"
+        },
+        {
+          "state_path": [
+            "crop"
+          ],
+          "label": "Harvestable field grain, 0..6"
+        },
+        {
+          "state_path": [
+            "home_water"
+          ],
+          "label": "Maximum capped depth class within field radius two"
+        }
+      ]
+    },
+    {
+      "id": "floodwater",
+      "glyph": "water",
+      "label": "Moving floodwater packets",
+      "color": "#5D9AB5",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rain"
+      ],
+      "meaning": "Public upstream rain phase",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "alerts"
+      ],
+      "meaning": "Public number of settlements with field depth >=2; identities remain local",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north and face north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east and face east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south and face south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west and face west"
+    },
+    {
+      "id": 5,
+      "label": "Withdraw one stone from own home; pack capacity four total"
+    },
+    {
+      "id": 6,
+      "label": "Withdraw one timber from own home"
+    },
+    {
+      "id": 7,
+      "label": "Withdraw one grain from own home"
+    },
+    {
+      "id": 8,
+      "label": "Deposit carried resources at adjacent settlement; foreign grain counts as trade"
+    },
+    {
+      "id": 9,
+      "label": "Build levee on front empty cell for two stone"
+    },
+    {
+      "id": 10,
+      "label": "Build raised road on front empty cell for two timber"
+    },
+    {
+      "id": 11,
+      "label": "Convert front levee into open culvert for one stone and one timber"
+    },
+    {
+      "id": 12,
+      "label": "Open or close front culvert"
+    },
+    {
+      "id": 13,
+      "label": "Dismantle front structure; recover one appropriate material"
+    },
+    {
+      "id": 14,
+      "label": "Repair front damaged road with one timber"
+    },
+    {
+      "id": 15,
+      "label": "Harvest one grain from adjacent settlement field"
+    },
+    {
+      "id": 16,
+      "label": "Haul two cells north along existing raised roads"
+    },
+    {
+      "id": 17,
+      "label": "Haul two cells east along existing raised roads"
+    },
+    {
+      "id": 18,
+      "label": "Haul two cells south along existing raised roads"
+    },
+    {
+      "id": 19,
+      "label": "Haul two cells west along existing raised roads"
+    },
+    {
+      "id": 20,
+      "label": "Give one selected resource to lowest-index adjacent peer"
+    },
+    {
+      "id": 21,
+      "label": "Cycle selected resource: stone, timber, grain"
+    },
+    {
+      "id": 22,
+      "label": "Record dated water reports from locally visible settlements and own telemetry"
+    },
+    {
+      "id": 23,
+      "label": "Hand latest stored reports to lowest-index adjacent peer"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; exact native row-major state values",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Public periodic upstream input state; rain for first twelve ticks of each thirty-two-tick cycle",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Public aggregate count of flood-exposed settlements; no identities or remote current cell depths",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        14
+      ],
+      "meaning": "Four public home coordinates: northwest, northeast, southwest, southeast",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        18
+      ],
+      "meaning": "Public distinct settlement food valuations [1.0,1.3,0.8,1.6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        41
+      ],
+      "meaning": "Self: actor id, backpack[3], selected resource, own stores[3], priority, remembered water[4], original report ticks[4], reward components[6]",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        41,
+        2841
+      ],
+      "meaning": "400 local cell records in y,x order: visible, terrain, capped depth, structure kind, durability, builder, gate-open; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2841,
+        2873
+      ],
+      "meaning": "Four local worker records: visible, x,y, backpack[3], selected resource, facing; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2873,
+        2905
+      ],
+      "meaning": "Four settlement records: visible, x,y, stores[3], crop, field water; own telemetry always visible, others require radius four",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        2905,
+        3001
+      ],
+      "meaning": "32 water packet records: visible,x,y; inactive or out-of-radius values -1",
+      "visibility": "local"
+    }
+  ]
+}

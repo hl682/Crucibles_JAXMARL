@@ -1,0 +1,575 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "2c3e17e93123d791abe9db44a2f55bd8bc4825c0215170920d04776344328b06",
+  "manifest_sha256": "f7749dbe96351c69005e37265d7b1eb295b8c19b5b5e4f567c40ea0a988bd734",
+  "title": "Hedgehaven",
+  "rules": [
+    "Six original crops share two movable hedges, two blankets, one hoe and one watering can. Each gardener can carry one object.",
+    "Place a hedge on an adjacent non-bed tile, or a blanket directly onto an adjacent growing bed. Pick a blanket up to uncover it.",
+    "A hedge one column upwind protects nearby beds against frost, but casts a moving one-to-two-cell horizontal shadow.",
+    "Blankets prevent frost, growth, insect pollination, tending and harvest while covering a bed.",
+    "The pollinator moves along a physical perimeter route and reverses when a standing hedge blocks its next cell.",
+    "Sunny uncovered crops consume tilled soil to grow. Stages beyond three require pollination; daylight also dries soil moisture.",
+    "Days have seven light ticks and five cold ticks. Wind reverses each day; six cumulative unprotected frost ticks kill a plant.",
+    "Use the shared hoe and can, harvest mature pollinated crops, and carry produce to the village crate. Exhausted crops plus no loose produce ends the episode."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Shared garden paths and ground",
+          "color": "#B8C994"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "gardeners",
+      "glyph": "worker",
+      "label": "Village gardeners",
+      "color": "#AA765B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "Held object index, -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "beds",
+      "glyph": "plant",
+      "label": "Neighboring crop beds",
+      "color": "#60974F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "bed_owner"
+          ],
+          "label": "Initial plot label 0..2; not exclusive access"
+        },
+        {
+          "state_path": [
+            "growth"
+          ],
+          "label": "Crop stage, mature at 6"
+        },
+        {
+          "state_path": [
+            "moisture"
+          ],
+          "label": "Moisture units, 0..6"
+        },
+        {
+          "state_path": [
+            "soil"
+          ],
+          "label": "Available tilled soil units, 0..6"
+        },
+        {
+          "state_path": [
+            "frost"
+          ],
+          "label": "Accumulated frost injury; dies at 6"
+        },
+        {
+          "state_path": [
+            "alive"
+          ],
+          "label": "Plant remains alive"
+        },
+        {
+          "state_path": [
+            "harvested"
+          ],
+          "label": "Original crop already harvested"
+        },
+        {
+          "state_path": [
+            "pollinated"
+          ],
+          "label": "Insect has pollinated this plant"
+        },
+        {
+          "state_path": [
+            "covered"
+          ],
+          "label": "A physical blanket covers bed"
+        },
+        {
+          "state_path": [
+            "sheltered"
+          ],
+          "label": "Upwind hedge protects bed"
+        },
+        {
+          "state_path": [
+            "shaded"
+          ],
+          "label": "Current hedge shadow falls on bed"
+        }
+      ]
+    },
+    {
+      "id": "garden_objects",
+      "glyph": "tool",
+      "label": "Hedges, blankets, hoe, can and produce",
+      "color": "#B39467",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "kind"
+          ],
+          "label": "0 hedge, 1 blanket, 2 hoe, 3 can, 4 produce"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "-1 loose, >=0 gardener, -3 delivered"
+        },
+        {
+          "state_path": [
+            "cover_bed"
+          ],
+          "label": "Bed under blanket, -1 none"
+        },
+        {
+          "state_path": [
+            "deployed"
+          ],
+          "label": "Hedge standing or blanket spread"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "Can water units, 0..4"
+        }
+      ]
+    },
+    {
+      "id": "pollinator",
+      "glyph": "circle",
+      "label": "Garden pollinator",
+      "color": "#DBB64F",
+      "attribute_labels": []
+    },
+    {
+      "id": "village",
+      "glyph": "crate",
+      "label": "0 Delivery crate / 1 Well",
+      "color": "#739AAA",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Produce delivered by each gardener",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "pollinations"
+      ],
+      "meaning": "Plants pollinated for the first time",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "daylight"
+      ],
+      "meaning": "Daylight phase; 7 of each 12 ticks",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "wind"
+      ],
+      "meaning": "Wind travel direction: +1 east, -1 west",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "sun"
+      ],
+      "meaning": "Shadow direction: +1 east early day, -1 west later day",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index loose object within one tile; lifting a blanket uncovers its bed"
+    },
+    {
+      "id": 6,
+      "label": "Drop held object at own tile; dropped hedge stands upright"
+    },
+    {
+      "id": 7,
+      "label": "Place held hedge or blanket on north adjacent tile"
+    },
+    {
+      "id": 8,
+      "label": "Place held hedge or blanket on east adjacent tile"
+    },
+    {
+      "id": 9,
+      "label": "Place held hedge or blanket on south adjacent tile"
+    },
+    {
+      "id": 10,
+      "label": "Place held hedge or blanket on west adjacent tile"
+    },
+    {
+      "id": 11,
+      "label": "Use held hoe on lowest-index eligible adjacent uncovered bed; add three soil"
+    },
+    {
+      "id": 12,
+      "label": "Fill held watering can at east well to four units"
+    },
+    {
+      "id": 13,
+      "label": "Water lowest-index eligible adjacent uncovered bed; spend one can unit for three moisture"
+    },
+    {
+      "id": 14,
+      "label": "Harvest lowest-index mature pollinated adjacent uncovered bed with empty hands"
+    },
+    {
+      "id": 15,
+      "label": "Deliver held produce beside village crate"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        67
+      ],
+      "meaning": "terrain; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        73
+      ],
+      "meaning": "agent pos; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        76
+      ],
+      "meaning": "load; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        88
+      ],
+      "meaning": "bed pos; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        88,
+        94
+      ],
+      "meaning": "Initial plot label per bed: [0,1,0,1,2,2]; no ownership exclusion or hidden reward",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        100
+      ],
+      "meaning": "Bed stage, 0..6; stages above 3 require pollination",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        100,
+        106
+      ],
+      "meaning": "Bed moisture, 0..6; daylight evaporates one every third tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        112
+      ],
+      "meaning": "Bed tilled-soil units, 0..6; each growth step consumes one",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        112,
+        118
+      ],
+      "meaning": "Accumulated bed frost damage, 0..6; no automatic recovery",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        118,
+        124
+      ],
+      "meaning": "Plant alive flag, false at six frost injury",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        124,
+        130
+      ],
+      "meaning": "Original crop harvested; no regrowth in this episode",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        136
+      ],
+      "meaning": "pollinated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        136,
+        142
+      ],
+      "meaning": "Blanket physically deployed over bed",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        148
+      ],
+      "meaning": "Upwind hedge exactly one column away and at most one row away",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        154
+      ],
+      "meaning": "Standing hedge casts one-to-two-cell horizontal daylight shadow",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        178
+      ],
+      "meaning": "item pos; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        178,
+        190
+      ],
+      "meaning": "item active; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        190,
+        202
+      ],
+      "meaning": "Object type: 0 hedge, 1 blanket, 2 hoe, 3 watering can, 4 produce",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        202,
+        214
+      ],
+      "meaning": "Object holder: -1 loose/uncreated, 0..2 gardener, -3 delivered",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        214,
+        226
+      ],
+      "meaning": "Blanket-covered bed index or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        226,
+        238
+      ],
+      "meaning": "Standing hedge or spread blanket indicator",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        238,
+        250
+      ],
+      "meaning": "Per-object water count; only watering can uses units, 0..4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        250,
+        252
+      ],
+      "meaning": "insect pos; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        252,
+        253
+      ],
+      "meaning": "Pollinator index in fixed 16-cell perimeter",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        253,
+        254
+      ],
+      "meaning": "Pollinator route direction, +1 or -1; flips on hedge collision",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        254,
+        258
+      ],
+      "meaning": "facility pos; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        258,
+        259
+      ],
+      "meaning": "Whether phase t modulo 12 is below 7",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        259,
+        260
+      ],
+      "meaning": "Wind direction alternates every 12 ticks: +1 eastward, -1 westward",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        260,
+        261
+      ],
+      "meaning": "Shadow direction is eastward for phases 0..3 and westward thereafter",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        261,
+        264
+      ],
+      "meaning": "Cumulative produce delivered per gardener",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        264,
+        265
+      ],
+      "meaning": "Number of first plant pollinations, at most six",
+      "visibility": "public"
+    }
+  ]
+}

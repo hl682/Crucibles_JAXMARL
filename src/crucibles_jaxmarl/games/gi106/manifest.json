@@ -1,0 +1,812 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00106",
+  "source_sha256": "64ce2d3a6e079e38d310343749fe5efd8b0fcdf515ce8c255d0b5c172ffff282",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 242,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1.0,
+  "observation_high": 1.0,
+  "reward_low": -8,
+  "reward_high": 8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "pump mechanic"
+    },
+    {
+      "id": "agent_1",
+      "role": "hose tender"
+    },
+    {
+      "id": "agent_2",
+      "role": "rescue carrier"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "lay or maintain hose"
+    },
+    {
+      "id": 6,
+      "label": "spray hottest adjacent fire"
+    },
+    {
+      "id": 7,
+      "label": "cut nonburning firebreak"
+    },
+    {
+      "id": 8,
+      "label": "crank nearby pump"
+    },
+    {
+      "id": 9,
+      "label": "pick up evacuee or deliver at shelter"
+    },
+    {
+      "id": 10,
+      "label": "consensual adjacent handoff"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "coupled"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "connected"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cell_pos"
+      ],
+      "shape": [
+        63,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire_active"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "fire_visible"
+      ],
+      "shape": [
+        3,
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "victim_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_status"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_distress"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "victim_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "victim_visible"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pump_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pump_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pump_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "reservoir"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pump_on"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "shelter_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "shelter_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "rescued"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lost"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "sprays"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cuts"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "handoffs"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      8.5,
+      6.5
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Nonburnable clearing or completed firebreak",
+          "color": "#D1D5DB"
+        },
+        {
+          "value": 1,
+          "meaning": "Brush footprint; actual remaining fuel is separately represented",
+          "color": "#A3B18A"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "responders",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "0 pump mechanic; 1 hose tender; 2 rescue carrier",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "water"
+          ],
+          "meaning": "Stored water units",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "coupled"
+          ],
+          "meaning": "Hose laid while stationary; actual movement disconnects",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "connected"
+          ],
+          "meaning": "Pressure reached this responder during the last transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "firefront",
+      "kind": "hazard",
+      "count": 63,
+      "position": [
+        "cell_pos"
+      ],
+      "active": [
+        "fire_active"
+      ],
+      "visibility": [
+        "fire_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "fire"
+          ],
+          "meaning": "Current fire intensity 0 to 3",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "meaning": "Remaining burnable fuel",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "evacuees",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "victim_pos"
+      ],
+      "active": [
+        "victim_active"
+      ],
+      "visibility": [
+        "victim_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "victim_status"
+          ],
+          "meaning": "0 waiting; 1 carried; 2 rescued; 3 lost",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "victim_owner"
+          ],
+          "meaning": "Carrier id, or -1 when uncarried",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "victim_distress"
+          ],
+          "meaning": "Accumulated severe-fire exposure, irreversible",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "pump",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "pump_pos"
+      ],
+      "active": [
+        "pump_active"
+      ],
+      "visibility": [
+        "pump_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "reservoir"
+          ],
+          "meaning": "Water remaining at shared pump",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "pump_on"
+          ],
+          "meaning": "Pump operated with available reserve during last transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "shelter",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "shelter_pos"
+      ],
+      "active": [
+        "shelter_active"
+      ],
+      "visibility": [
+        "shelter_visible"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "sprays"
+      ],
+      "meaning": "Water-consuming sprays performed this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cuts"
+      ],
+      "meaning": "Previously fueled cells cut this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handoffs"
+      ],
+      "meaning": "Evacuee transfers this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Evacuees delivered alive",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost"
+      ],
+      "meaning": "Evacuees lost to accumulated fire exposure",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role one-hot: mechanic, tender, carrier",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "All responder x,y positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "All stored water divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Laid hose flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Last-transition pressure connection flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        81
+      ],
+      "meaning": "Row-major fire intensity divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        144
+      ],
+      "meaning": "Row-major remaining fuel divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        207
+      ],
+      "meaning": "Row-major terrain: 0 clearing or cut; 1 brush",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        219
+      ],
+      "meaning": "Evacuee x,y positions divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        219,
+        225
+      ],
+      "meaning": "Evacuee status divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        225,
+        231
+      ],
+      "meaning": "Evacuee owner shifted by one and divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        231,
+        237
+      ],
+      "meaning": "Severe-fire exposure divided by 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        237,
+        242
+      ],
+      "meaning": "Pump reserve/36; last pump-on flag; rescued/6; lost/6; clock/96",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Rescue six evacuees before accumulating three severe-fire exposures, using shared water, hose infrastructure and firebreaks.",
+    "natural_termination": "All six evacuees are either rescued or lost. Mixed rescues and losses are valid terminal outcomes. Otherwise truncate at 96 transitions; natural completion has priority.",
+    "interaction": "Stationary laid hoses propagate pressure only while a nearby responder cranks the finite pump. Leaving a relay changes downstream water access; cutting nonburning brush changes subsequent fire spread. Consensual handoffs change who can evacuate and maintain infrastructure.",
+    "observation_access": "All transition-relevant world state is public, including inventories, fire, fuel, victims and hose flags. Agent role identity is encoded for each row. All entities and map are visible to every role; no renderer-only privileged information is supplied to the policy."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "fire"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "fuel"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "water"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "reservoir"
+      ],
+      "low": 0,
+      "high": 36
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "victim_status"
+      ],
+      "low": 0,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "victim_owner"
+      ],
+      "low": -1,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "victim_distress"
+      ],
+      "low": 0,
+      "high": 3
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "status": "AUTHORED_NOT_EXECUTED",
+  "legal_action_semantics": "Every action id is a legal attempt for every live responder; absent prerequisites deterministically yield no corresponding interaction. Out-of-domain actions map to wait. At joint termination only wait is legal. Collocation is permitted.",
+  "integration_scope": "Native fixed-array kernel. Public agent-keyed JaxMARL adapter is a separate trusted integration layer; no learner or policy-bank substitution."
+}

@@ -1,0 +1,361 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "57c802dfeaad65e5f760a9ebeb08cb53a8704c8a8c65c045b2a6e3900db527a7",
+  "manifest_sha256": "0ae65b81c78d41a1eee4273d0fdd40b8276c40d8c6870d65cf441cfc2719e35e",
+  "title": "Lantern Convoy",
+  "rules": [
+    "All three explorers are controlled. Movement follows public walls; co-location and crossing are allowed. Each explorer carries at most one cargo and one lantern.",
+    "Cargo pickup/drop and delivery use exact cells. Cargo can be passed to an adjacent free carrier; lantern and charge can be passed to an adjacent non-holder.",
+    "Switch-on light consumes one battery per tick, including the toggle tick. The last paid unit still illuminates its snapshot; no charge regenerates.",
+    "A hazard is directly sensed within distance one, or within distance four while lit by a lantern at distance at most three. Walls do not occlude this discrete glow.",
+    "Hazards pulse on the native clock. Armed contact damages carried cargo; destroyed cargo disappears from active cargo and never delivers.",
+    "Relay copies the freshest available sample to adjacent peers in one hop. Sample time is retained; stale armed values are never shown as current hazard state.",
+    "Public cargo telemetry excludes private priorities. Unseen hazard sprites are hidden in role views; complete state is debug-only."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Public walkable floor",
+          "color": "#D9D1B4"
+        },
+        {
+          "value": 1,
+          "meaning": "Public wall; no movement through cell",
+          "color": "#53606B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "explorers",
+      "glyph": "agent",
+      "label": "Controlled explorers",
+      "color": "#D5A340",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lantern"
+          ],
+          "label": "Holds a lantern"
+        },
+        {
+          "state_path": [
+            "battery"
+          ],
+          "label": "Remaining battery units"
+        },
+        {
+          "state_path": [
+            "lamp_on"
+          ],
+          "label": "Switch remains on"
+        },
+        {
+          "state_path": [
+            "glow"
+          ],
+          "label": "Paid illumination this tick"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Fragile tracked cargo",
+      "color": "#B77A53",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "integrity"
+          ],
+          "label": "Fragile cargo integrity"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "Holder index; -1 means unheld"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Delivered cargo"
+        }
+      ]
+    },
+    {
+      "id": "destinations",
+      "glyph": "flag",
+      "label": "Cargo destinations",
+      "color": "#54A979",
+      "attribute_labels": []
+    },
+    {
+      "id": "hazards",
+      "glyph": "hazard",
+      "label": "Locally sensed pulse hazards",
+      "color": "#D65853",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "armed"
+          ],
+          "label": "Currently armed pulse, visible only when sensed"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "lamp_passed"
+      ],
+      "meaning": "Explorer handed its lantern and remaining charge to a peer this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_passed"
+      ],
+      "meaning": "Explorer handed its held cargo to a peer this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_event"
+      ],
+      "meaning": "Cargo delivered at its matching destination this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "broken_event"
+      ],
+      "meaning": "Cargo integrity reached zero this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "glow"
+      ],
+      "meaning": "Paid light is active for this snapshot",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "battery"
+      ],
+      "meaning": "Public remaining battery units",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "north"
+    },
+    {
+      "id": 2,
+      "label": "east"
+    },
+    {
+      "id": 3,
+      "label": "south"
+    },
+    {
+      "id": 4,
+      "label": "west"
+    },
+    {
+      "id": 5,
+      "label": "toggle lantern"
+    },
+    {
+      "id": 6,
+      "label": "pass lantern and charge"
+    },
+    {
+      "id": 7,
+      "label": "pickup or drop cargo"
+    },
+    {
+      "id": 8,
+      "label": "pass cargo"
+    },
+    {
+      "id": 9,
+      "label": "deliver held cargo"
+    },
+    {
+      "id": 10,
+      "label": "relay timestamped samples"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Observer identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        6
+      ],
+      "meaning": "Own three cargo priorities / 3; no peer priorities",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        9
+      ],
+      "meaning": "Own cargo possession bits",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Own lantern possession",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Own charge / 8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "meaning": "Own switch-on state",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        13
+      ],
+      "meaning": "Own paid glow snapshot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        13,
+        14
+      ],
+      "meaning": "Clock / 96",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        14,
+        91
+      ],
+      "meaning": "Public topology map, row-major 7 by 11, floor=0 wall=1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        94
+      ],
+      "meaning": "Public delivered flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        97
+      ],
+      "meaning": "Public destroyed flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        97,
+        103
+      ],
+      "meaning": "Destination-major [x/10,y/6]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        103,
+        106
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        106,
+        130
+      ],
+      "meaning": "Three public explorer tuples: visible=1,x/10,y/6,lantern,charge/8,switch,glow,carried-cargo-code/3; code 0 none, 1..3 cargo",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        130,
+        148
+      ],
+      "meaning": "Three public cargo tuples: visible=1,x/10,y/6,integrity/3,(holder+1)/3,active",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        164
+      ],
+      "meaning": "Four direct hazard tuples: visible,x/10,y/6,armed; all payload fields zero when invisible",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        164,
+        184
+      ],
+      "meaning": "Four memory tuples: known,x/10,y/6,armed-at-capture,age/96; unknown payload zero. Relay preserves capture timestamp.",
+      "visibility": "local"
+    }
+  ]
+}

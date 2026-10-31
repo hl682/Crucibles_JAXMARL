@@ -1,0 +1,303 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "dbed668a41870f1fc914267c5ee0f95ee848bb4d00a574bfa0b10115e36b8468",
+  "manifest_sha256": "162e7b53ac9fac301b2c6a88cee4955c41014a9e75bdb57b6c31988ddbba2926",
+  "title": "Lantern Flag Rescue",
+  "rules": [
+    "Teams are agents 0/1 and 2/3. Cross the real wall openings at y=1,3,5 to take the enemy flag and return it home.",
+    "Movement cannot enter another player old cell. All contested destinations are rejected; swaps and following into a just-vacated cell are rejected.",
+    "Tag acts on every adjacent enemy after movement. Guard protects an adjacent teammate, never the guarding player itself.",
+    "Mutual tags occur simultaneously. A newly tagged player stays in its actual cell with countdown 4 and drops its flag.",
+    "Captured players have only Wait. Their countdown decreases each call; an adjacent free ally choosing Rescue releases them immediately.",
+    "Touching a grounded own flag returns it home; a free enemy on a grounded flag picks it up automatically.",
+    "A return scores only at the carrier team base with its own flag home. The first return ends play; horizon is 72.",
+    "Team return differential is shared by teammates. Every nonterminal call also costs each role 0.001.",
+    "All map and entity fields are public. Colored capture markers are actual immobilized cells, not a separate teleport mechanic."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable arena cell",
+          "color": "#E8EDF1"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable central wall",
+          "color": "#535D6D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "glyph": "agent",
+      "label": "Players",
+      "color": "#3168D9",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "Team identity: 0 or 1"
+        },
+        {
+          "state_path": [
+            "capture_timer"
+          ],
+          "label": "Immobilized calls remaining, 0 to 4"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "Carrying the enemy flag"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "label": "Guard action issued on the last transition"
+        }
+      ]
+    },
+    {
+      "id": "capture_cells",
+      "glyph": "gate",
+      "label": "Temporary capture cells",
+      "color": "#BC5661",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "capture_timer"
+          ],
+          "label": "Capture countdown at this actual cell"
+        }
+      ]
+    },
+    {
+      "id": "flags",
+      "glyph": "flag",
+      "label": "Team flags",
+      "color": "#D89A2B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "flag_team"
+          ],
+          "label": "Flag owning team"
+        },
+        {
+          "state_path": [
+            "flag_carrier"
+          ],
+          "label": "Carrier agent index; -1 means on the ground"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "glyph": "beacon",
+      "label": "Return bases",
+      "color": "#397F67",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "flag_team"
+          ],
+          "label": "Base owning team"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Flag returns scored by this team"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tagged"
+      ],
+      "meaning": "Agent newly captured on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "released"
+      ],
+      "meaning": "Old prisoner became free by countdown or rescue",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Old prisoner released by an adjacent ally rescue action",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Team flag-return total",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "capture_timer"
+      ],
+      "meaning": "Current capture countdown",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Tag adjacent enemies"
+    },
+    {
+      "id": 6,
+      "label": "Rescue adjacent captured ally"
+    },
+    {
+      "id": 7,
+      "label": "Guard adjacent ally"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        24
+      ],
+      "meaning": "Agent-major 4 x [x/10, y/6, capture_timer/4, team, carrying flag, last-transition guard flag], agent index order 0..3.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        30
+      ],
+      "meaning": "Flag-major 2 x [x/10, y/6, (carrier+1)/4]; carrier -1 is ground; flag index is owning team.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        34
+      ],
+      "meaning": "Base-major [x/10,y/6] for teams 0 and 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        36
+      ],
+      "meaning": "Cumulative scores of teams 0 and 1; each at most one before termination.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        40
+      ],
+      "meaning": "One-hot observing role index 0..3.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "meaning": "Elapsed nonterminal transitions t/72.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        42
+      ],
+      "meaning": "Joint episode_done flag.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        119
+      ],
+      "meaning": "Public terrain in y-major rows, 7 x 11: 0 floor, 1 wall.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        123
+      ],
+      "meaning": "Per-agent newly tagged flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        127
+      ],
+      "meaning": "Per-agent release flags from the latest transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        131
+      ],
+      "meaning": "Per-agent ally-rescue flags from the latest transition.",
+      "visibility": "public"
+    }
+  ]
+}

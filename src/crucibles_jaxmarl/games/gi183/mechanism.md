@@ -1,0 +1,45 @@
+# Mist Runners — original source-only mechanism
+
+Status: AUTHORED_NOT_EXECUTED. All gameplay statements below are source-derived semantics or hypotheses. No candidate function, JAX/NumPy call, simulation, rollout, rendering, training or seed search was executed. Actual code acceptance and animation require independently released frozen-source integration.
+
+Four couriers form teams (0,1) and (2,3) on a 9 × 7 arena. A central obstacle wall has north and south crossings. Initial positions are (2,2), (2,4), (6,2), (6,4). Public bases are (1,3) and (7,3), each initially holding its team's one real packet. Movement obstacles do not occlude radial sensing; that deliberate public rule avoids suggesting a line-of-sight calculation that does not exist.
+
+Each team owns exactly one packet. Only that team's members can pick it up from the same cell, carry it, or hand it to an adjacent waiting unfrozen teammate. A packet has one holder or is on the ground; delivered packets are inactive. Handoffs preserve packet identity. Opponents cannot collect the other team's packet but can tag its carrier, force a physical drop and contest access to the drop. A carrier delivers only at the opposing base. Delivery gives each teammate +1 and each opponent -0.5 that transition; simultaneous deliveries yield the algebraic sum. There are no invisible interception rewards.
+
+A tag requires an adjacent opponent outside that opponent's own home tile and zero attacker cooldown. Admission uses the old legal mask, then targets are rechecked at post-movement positions. A valid tag selects the cyclic-priority target. All accepted tags occur simultaneously: being hit does not cancel a tag already admitted for this transition. Victims freeze in place for two subsequent action opportunities, drop any carried packet at their actual cell and may be re-tagged. Successful taggers set cooldown 3. No respawn, teleport, displacement repair or invulnerability outside the exact home tile occurs. Frozen actors keep wait legal and continue to obstruct movement.
+
+Each courier has two finite sensing charges shared between scanners and decoy jammers. Each actor owns one reusable scanner slot and one decoy slot; a live slot cannot be relocated. A scanner is planted at the actor's actual cell with life 4. Life 4 is warmup; life 3, 2 and 1 provide team-shared radius-4 Manhattan sensing. A decoy jammer has life 4 and immediately shields same-team agents, packets and scanners within Manhattan radius 2 from enemy remote scanner detection. It does not hide them from direct radius-2 local sensing. The jammer transmitter itself remains detectable by scanners, so it supplies an identifiable disturbance rather than a fabricated opponent identity. Scanning and decoy use each spend one charge and cannot replenish it.
+
+Current physical entity visibility is exactly the union of local radius 2 and unjammed own-team scanner coverage. Team members know their team's transmitter locations and lifetimes through the command link. They do not receive current remote teammate locations for free. Instead each recipient has a private report marker for its teammate. On even next clocks, the marker samples the teammate's preceding-state position/cargo and sets age 1; on intervening clocks it retains the sample and increments age up to 2. Reset reports have age 0 and contain known spawn positions. Markers are stale information records, not extra physical agents and do not block movement.
+
+The O=162 policy observation consists of eight own fields, four recipient-only report fields, 70 public map/base/score/clock fields, and fixed masked rows for agents (28), packets (12), scanners (20) and decoys (20). Every contact row starts with a visibility bit; all payload fields are zeroed when hidden. Visible contacts expose team, carried packet, freeze and tag cooldown, but never another actor's sensing charge. Packet-holder identity is exposed only when that packet is visible; a carried packet shares its carrier's location/team visibility rule. Own charge is self-only. Reports use an identity visibility matrix, so only their recipient sees them. Delivery announcements are intentionally public. No global hidden-contact, tag or deployment event channel is exposed.
+
+The raw full dictionary contains privileged positions and private charges needed to update the world. Any full-state audit must be labeled privileged and kept distinct from role views. Scene agent/packet/transmitter/report groups all bind their actual visibility masks. Per-role rendering must not substitute all-state positions or reports into the role HUD. Showing a hidden entity or all report markers would violate this contract, even if the renderer otherwise animated correctly.
+
+Simultaneous movement first excludes any input-state occupied cell, preventing swaps and following, then resolves same empty destinations by cyclic actor priority. Devices update and age; finite packet pickup/handoff transactions use cyclic priority; tags resolve together; then unhit carriers may deliver. Report sampling uses the input state, and final visibility is recomputed from actual new positions and device lifetimes. Invalid actions become wait. A losing or newly unavailable interaction does not create a duplicate packet.
+
+Source invariants include four unique walkable agent positions, exactly one physical-or-delivered instance per packet, at most one holder per packet, no carrier holding an enemy packet, no negative charge/timer, and finite device slots. Each team has one packet, so a legal carrier cannot acquire a second one. Tagging moves ownership to ground without deleting the packet; delivery alone retires it. Counters/lifetimes never regenerate supply. These are unexecuted invariant claims.
+
+Potential partner-dependent approaches include split crossings versus escort-and-handoff, using a scanner to support a partner's route, spending a charge on jammer cover rather than sensing, delaying a crossing until an opponent's freeze/cooldown changes, and forcing drops to deny delivery. A teammate's device action alters the information available to the opposing team and hence the opportunity for a carrier's route. No equilibrium, fairness, learnability or game-theoretic richness is established by listing these alternatives.
+
+The paired hypothesis holds all actors' actions fixed except actor 2's decoy deployment after a common scanner prefix. Actor 0's remote contact payload for actor 2 is predicted to differ once the scanner warms; the decoy itself remains visible. The script fixes identical subsequent waits through expiry. This is an intended information intervention, with no observed difference or causal validation. A separate original literal script routes the two packets through different crossings and attempts simultaneous delivery, without claiming that it was run or completed.
+
+Natural completion occurs when both packets are delivered; otherwise H=112 truncates. No score threshold filters games. Natural completion takes priority at H. Already-terminal calls preserve every state leaf and the clock, return zero rewards and all dones true, and never reset. The declared reward interval is [-0.5,1] and observation interval [-1,112].
+
+All small integer fields are int32, observations and rewards float32, and flags bool. This arena is deterministic: reset and step accept keys but consume no randomness. Seeds remain explicit provenance literals, not hidden random choices. No upstream implementation was copied; the five official reference snapshots were integrity-only reads. Model identity is a self-report and root dispatch is authoritative. Runtime/legality/shape/parity, solvability, causal effects, native replay/animation, learning, generalization and transfer remain unproven.
+
+## Literal source evidence
+
+- candidate.py:57: `return jnp.sum(held.astype(jnp.int32)*jnp.array([1,2],jnp.int32)[None,:],axis=1,dtype=jnp.int32)-1`
+- candidate.py:64: `remote = jnp.any(own_scan & warm[None,:,None] & (distance[None,:,:]<=4),axis=1)`
+- candidate.py:68: `jammed = shield[None,:] & (s["team"][:,None]!=owner[None,:])`
+- candidate.py:84: `s["decoy_visible"] = (self.seen(s,s["decoy_pos"],jnp.full(4,-1,jnp.int32))|team_link)&s["decoy_active"][None,:]`
+- candidate.py:133: `jnp.where(av[:,:,None],agents[None,:,:],0)),axis=2).reshape(4,28)`
+- candidate.py:183: `hit = jnp.any(tags[:,None]&(target[:,None]==ids[None,:]),axis=0)`
+- candidate.py:189: `s["packet_holder"] = jnp.where(dropped,-1,holder)`
+- candidate.py:199: `s["report_pos"] = jnp.where(radio_tick,state["pos"][peers],state["report_pos"])`
+- candidate.py:206: `s = jax.tree.map(lambda new,old:jnp.where(state["done"],old,new),s,state)`
+
+Interface anchors from static AST: reset at candidate.py:12–53; legal_actions at candidate.py:112–120; observe at candidate.py:122–147; raw_step at candidate.py:149–212.
+
+The literal anchors and declared shapes were inspected statically. They are not execution traces or a proof that the implementation satisfies these claims under JAX.

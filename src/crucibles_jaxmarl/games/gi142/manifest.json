@@ -1,0 +1,630 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00142",
+  "source_sha256": "dbed668a41870f1fc914267c5ee0f95ee848bb4d00a574bfa0b10115e36b8468",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 131,
+  "num_actions": 8,
+  "max_steps": 72,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -1.01,
+  "reward_high": 1.0,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Team 0 runner"
+    },
+    {
+      "id": "agent_1",
+      "role": "Team 0 escort/rescuer"
+    },
+    {
+      "id": "agent_2",
+      "role": "Team 1 runner"
+    },
+    {
+      "id": "agent_3",
+      "role": "Team 1 escort/rescuer"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Tag adjacent enemies"
+    },
+    {
+      "id": 6,
+      "label": "Rescue adjacent captured ally"
+    },
+    {
+      "id": 7,
+      "label": "Guard adjacent ally"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "capture_timer"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "capture_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "guard"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tagged"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "released"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "rescued"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flag_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flag_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flag_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "flag_carrier"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flag_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable arena cell",
+          "color": "#E8EDF1"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable central wall",
+          "color": "#535D6D"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agents",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Team identity: 0 or 1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "capture_timer"
+          ],
+          "meaning": "Immobilized calls remaining, 0 to 4",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Carrying the enemy flag",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "meaning": "Guard action issued on the last transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "capture_cells",
+      "kind": "hazard",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "capture_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "capture_timer"
+          ],
+          "meaning": "Capture countdown at this actual cell",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "flags",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "flag_pos"
+      ],
+      "active": [
+        "flag_active"
+      ],
+      "visibility": [
+        "flag_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "flag_team"
+          ],
+          "meaning": "Flag owning team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "flag_carrier"
+          ],
+          "meaning": "Carrier agent index; -1 means on the ground",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "base_pos"
+      ],
+      "active": [
+        "base_active"
+      ],
+      "visibility": [
+        "base_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "flag_team"
+          ],
+          "meaning": "Base owning team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "meaning": "Flag returns scored by this team",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tagged"
+      ],
+      "meaning": "Agent newly captured on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "released"
+      ],
+      "meaning": "Old prisoner became free by countdown or rescue",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Old prisoner released by an adjacent ally rescue action",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Team flag-return total",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "capture_timer"
+      ],
+      "meaning": "Current capture countdown",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        24
+      ],
+      "meaning": "Agent-major 4 x [x/10, y/6, capture_timer/4, team, carrying flag, last-transition guard flag], agent index order 0..3.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        30
+      ],
+      "meaning": "Flag-major 2 x [x/10, y/6, (carrier+1)/4]; carrier -1 is ground; flag index is owning team.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        34
+      ],
+      "meaning": "Base-major [x/10,y/6] for teams 0 and 1.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        36
+      ],
+      "meaning": "Cumulative scores of teams 0 and 1; each at most one before termination.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        40
+      ],
+      "meaning": "One-hot observing role index 0..3.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "meaning": "Elapsed nonterminal transitions t/72.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        41,
+        42
+      ],
+      "meaning": "Joint episode_done flag.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        119
+      ],
+      "meaning": "Public terrain in y-major rows, 7 x 11: 0 floor, 1 wall.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        119,
+        123
+      ],
+      "meaning": "Per-agent newly tagged flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        123,
+        127
+      ],
+      "meaning": "Per-agent release flags from the latest transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        127,
+        131
+      ],
+      "meaning": "Per-agent ally-rescue flags from the latest transition.",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Return the enemy flag to the carrier team base while the carrier team own flag is on its home base. Team 0 is agents 0,1; team 1 is agents 2,3.",
+    "natural_termination": "Any team scores its first return. Simultaneous returns are resolved together; their reward differences cancel. Horizon 72 truncates only when no natural completion occurs.",
+    "interaction": "Position-dependent tags immobilize enemies for four calls and drop their flags; stationary adjacent ally guarding prevents tags; adjacent ally rescue restores the prisoner action set early. Carrying, interception and blocking alter actual paths.",
+    "observation_access": "The public map, every player/flag/base and all displayed dynamic fields/events are shared. Each policy also gets its own role one-hot. Capture markers use the actual prisoner position and countdown; there are no invented jail coordinates."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "capture_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "integration_status": "RAW_ARRAY_KERNEL_AUTHORED_PUBLIC_ADAPTER_REQUIRES_SEPARATE_IMPLEMENTATION_AND_VALIDATION",
+  "native_information_boundary": "Policies receive only returned float32 observations and legal masks. A full-state debug renderer must be separately labelled."
+}

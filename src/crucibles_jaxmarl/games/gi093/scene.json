@@ -1,0 +1,374 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "27b76e957066e5558ac1617ceaf024d154cc42b45f8a5642f46197e6d74a90d2",
+  "manifest_sha256": "ff45aa01f04558336c82c1529301e6971d5a26dc44c6560057282e0b5b957366",
+  "title": "Trestle Commons: Roads and Rivalry",
+  "rules": [
+    "River cells x=3..5 require constructed bridges. Anyone may enter a bridge with positive durability; simultaneous congestion can block a route.",
+    "A new front bridge costs two wood and starts at durability four. Repair costs one wood and adds two durability, up to four.",
+    "Entering consumes one durability, or two with a cart. A depleted occupied remnant supports only departure; once vacated it disappears unless repaired.",
+    "Crossing someone else's owned bridge transfers 1/32 reward to its owner. Owners can waive future tolls or salvage their unoccupied bridge.",
+    "Deliver your own cart for +1; each partner gains +0.25. All three deliveries end play; all roles can keep assisting after their own delivery."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable riverbank",
+          "color": "#6F7754"
+        },
+        {
+          "value": 1,
+          "meaning": "River: entry needs an actual live bridge",
+          "color": "#326F94"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "haulers",
+      "glyph": "worker",
+      "label": "Haulers and builders",
+      "color": "#E9C46A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wood"
+          ],
+          "label": "Carried construction material, capacity six"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "label": "Direction 1 north, 2 east, 3 south, 4 west"
+        },
+        {
+          "state_path": [
+            "credits"
+          ],
+          "label": "Cumulative net toll units, each unit is reward 1/32"
+        },
+        {
+          "state_path": [
+            "carried"
+          ],
+          "label": "Currently carrying own cart"
+        }
+      ]
+    },
+    {
+      "id": "bridges",
+      "glyph": "gate",
+      "label": "Built bridge cells",
+      "color": "#AC885C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "durability"
+          ],
+          "label": "Remaining crossing durability, zero to four"
+        },
+        {
+          "state_path": [
+            "bridge_owner"
+          ],
+          "label": "Toll recipient role, -1 for public/unowned"
+        },
+        {
+          "state_path": [
+            "pending"
+          ],
+          "label": "Zero-strength occupied remnant: allows current occupant to leave, blocks entry"
+        }
+      ]
+    },
+    {
+      "id": "carts",
+      "glyph": "crate",
+      "label": "Personal freight carts",
+      "color": "#D77D58",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_owner"
+          ],
+          "label": "Role permitted to carry this cart"
+        },
+        {
+          "state_path": [
+            "carried"
+          ],
+          "label": "Whether owner is carrying this cart"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Whether cart has reached its matching goal"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "glyph": "resource",
+      "label": "Shared-access material depots",
+      "color": "#87B7B4",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "supply"
+          ],
+          "label": "Finite material remaining; accessible to any nearby role"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "glyph": "flag",
+      "label": "Matched delivery goals",
+      "color": "#A4D78B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goal_owner"
+          ],
+          "label": "Role whose cart belongs at this goal"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices 0 to 6: new bridge built, bridge repaired, wood transferred, bridge salvaged, toll waived, a toll paid, a cart delivered; flags refer to the most recent nonterminal transition.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north attempt; face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east attempt; face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south attempt; face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west attempt; face west"
+    },
+    {
+      "id": 5,
+      "label": "Build front bridge for two wood, or repair it for one"
+    },
+    {
+      "id": 6,
+      "label": "Pick up or set down own cart at current position"
+    },
+    {
+      "id": 7,
+      "label": "Give one wood to adjacent teammate with capacity"
+    },
+    {
+      "id": 8,
+      "label": "Draw one wood from a nearby finite depot"
+    },
+    {
+      "id": 9,
+      "label": "Salvage own unoccupied front bridge; recover at most one wood"
+    },
+    {
+      "id": 10,
+      "label": "Release front bridge ownership; waive its future toll"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "All hauler xy positions divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Carried wood divided by 8",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Facing action IDs divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Cumulative net toll units divided by 256",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        21
+      ],
+      "meaning": "Own-cart carrying flags for all haulers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        84
+      ],
+      "meaning": "Public terrain flattened yx; zero bank, one river",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        84,
+        126
+      ],
+      "meaning": "All potential bridge cell positions flattened xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        126,
+        147
+      ],
+      "meaning": "Bridge durability divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        147,
+        168
+      ],
+      "meaning": "Bridge owner plus one divided by 4; zero is public/unowned",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        168,
+        189
+      ],
+      "meaning": "Occupied zero-strength remnant flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        189,
+        195
+      ],
+      "meaning": "Actual cart positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        195,
+        198
+      ],
+      "meaning": "Cart delivery flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        198,
+        204
+      ],
+      "meaning": "Depot positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        204,
+        207
+      ],
+      "meaning": "Finite depot supplies divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        213
+      ],
+      "meaning": "Matching goal positions xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        213,
+        214
+      ],
+      "meaning": "Clock divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        214,
+        221
+      ],
+      "meaning": "Last-step flags: build, repair, transfer, salvage, waive, toll, delivery",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        221,
+        224
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ]
+}
+

@@ -1,0 +1,535 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>铜线接力 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI095 / SPATIAL</p><h1>铜线接力</h1><p class="lead">围绕据点、补给转移与连接供给线进行团队配合和竞争，保存完整实际得分轨迹。</p><div class="stats"><span>4 agents</span><span>9 actions</span><span>393 observation columns</span><span>80 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi095.gif" alt="Original saved demonstration gi095"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi095.gif" alt="Actual verification episode gi095"></section><section><h2>Run this game</h2><pre>crucibles play --game 95</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Two pairs of teammates compete to accumulate 12 relay pulses through physically adjacent supply conduits. Both relay sites may be captured by either team.&quot;,
+  &quot;natural_termination&quot;: &quot;Any team reaches at least 12 cumulative pulses, including a simultaneous tie. Horizon 80 otherwise. No unique winner is fabricated for ties.&quot;,
+  &quot;interaction&quot;: &quot;Building costs 2 carried units, repairing or cutting costs 1, handoffs require paired consent, and linked restocking drains shared team stock. Enemy occupation breaks connectivity immediately; isolated nonhome conduits decay every third tick. Defending a relay&#x27;s tile can deny enemy occupation.&quot;,
+  &quot;observation_access&quot;: &quot;All state is public and repeated in every role observation with an own-role one-hot. Ownership, supply links, occupation, stocks, pulses and map are actual kernel state. Every active site and agent is visible to all roles; rocks have inactive site masks.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 1. Observability: fully_observable.</p></section><section><h2>Rules</h2><ol><li>Connect owned conduit cells by cardinal adjacency to your home. Enemy occupation cuts the connection at that cell.</li><li>Laying a conduit costs 2 supply. Repairing it or cutting a nearby enemy conduit costs 1. Home hardware is indestructible but can be occupied.</li><li>Two adjacent teammates choosing transfer shift one unit from the richer pack to the poorer pack, once per participant per tick.</li><li>Restock by up to 2 through a connected friendly conduit; teammates draw from the same finite stock.</li><li>Every third tick disconnected nonhome conduits lose durability. Every fourth tick connected owned relay sites produce pulses and each stock gains one unit.</li><li>Each role receives half its team&#x27;s pulse count minus half the opponent&#x27;s. First reaching 12 ends play, preserving simultaneous ties.</li><li>Displayed supply and contention are actual state. No performance or strategy result is claimed.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Copper Relay
+
+A/O/U/H = 4/393/9/80. Two teams of two surveyors build, defend and cut actual supply networks. Team membership is public and fixed: roles 0 and 1 are west team 0, roles 2 and 3 are east team 1. Homogeneous commands allow construction, raids, defense and resource handoffs.
+
+## Rules and causally coupled decisions
+
+The original 9 by 7 map has 35 interior site slots, with inactive rocks at [4,1] and [4,5]. Home sites [1,3] and [7,3] start owned with durability 3. Other sites start neutral. Every active site&#x27;s position, owner, durability, linked status and enemy-occupation status are real state. The scoring relay sites are [3,2] and [5,4]; either team may own either relay.
+
+Supply follows cardinally adjacent sites with the same owner from that owner&#x27;s home. A site occupied by an enemy is excluded from reachability, even if its durability is still positive. Connectivity is recomputed by a bounded 35-hop flood through the actual sites. A physically present raider can therefore interrupt multiple downstream opportunities without receiving an immediate shaping bonus. Home hardware cannot be destroyed, but occupation can interrupt its network.
+
+Each role begins with 4 supply and can carry at most 6. Laying a neutral conduit on the current tile costs 2 and sets durability 3. Repairing a friendly conduit costs 1 and adds one durability up to 3. Cutting chooses the lowest-index enemy nonhome site at Manhattan distance at most 1, costs 1, and removes one durability; zero durability returns a site to neutral. Choices resolve in rotating role order, making same-tick repair/attack order a visible clock-dependent rule.
+
+Two adjacent teammates both choosing transfer move one unit from the richer pack to the poorer pack. Each participant transfers at most once that tick. Restocking on a connected friendly tile draws up to 2 from the team&#x27;s shared finite stock, capped by pack capacity. Restocking uses the post-movement network before that step&#x27;s operations; new construction becomes usable next tick. Both teammates consume the same stock. Every fourth tick each stock gains one up to 24, so excessive private restocking constrains a partner&#x27;s future construction.
+
+Every third tick, disconnected nonhome conduits decay by one durability. Connectivity is recomputed after this decay. Every fourth tick, each connected owned relay generates one pulse. Each teammate receives 0.5 times own-team pulses minus 0.5 times opposing-team pulses. Reaching 12 cumulative pulses ends the game; both teams may reach that level together, and a tie is retained. Otherwise the horizon is 80. The number 12 is a game termination rule, not an acceptance or performance gate.
+
+Commands are 0 wait; 1/2/3/4 movement; 5 lay/repair; 6 cut; 7 teammate handoff; 8 restock. Movement into pre-step occupied cells and competing destinations is blocked. A defender standing on a relay can stop a raider from entering; leaving for supplies opens that physical opportunity. Enemy-controlled tiles otherwise remain traversable.
+
+Plausible plans include short defended relay connections, or two-branch expansion with one teammate resupplying and one raiding. A redundant path costs extra carried supply but can survive a cut that a cheap single chain cannot. Holding a relay may preserve production while foregoing repairs or a raid elsewhere. Teammates who build independently can drain shared stock or leave the same cut vertex undefended. These tradeoffs are mechanistic hypotheses; no policy has been evaluated.
+
+## Information, visible state and declared bounds
+
+All four roles see the same public map, agents, team stocks, site ownership, durability, actual supply links, occupation and scores, plus their own identity. There are 393 float32 columns. Neutral sites are drawn as neutral sites, not fabricated active supply. Rock slots are inactive. Agent team and pack attributes permit a role view to explain resource access without introducing private information.
+
+Agents occupy distinct traversable cells. Site positions are fixed and unique. Pack is in [0,6], durability in [0,3], stock in [0,24], and ownership in {-1,0,1}. Home ownership/durability remain fixed. Linked sites belong to a team, are uncontested and reach its home through actual eligible cells. The two relays bound each role&#x27;s step reward to [-1,1]. No artificial winner, learned defense or significant advantage is inferred from those definitions.
+
+## Literal source evidence
+
+- Bounded physical supply flood: `candidate.py:12`, literal `def network(self, owner, contested, active, positions):`.
+- Enemy occupation changes links: `candidate.py:27`, literal `s[&quot;contested&quot;] = s[&quot;cell_active&quot;] &amp; (s[&quot;owner&quot;] &gt;= 0) &amp; jnp.any(`.
+- Original sites and map: `candidate.py:32`, literal `def reset(self, key):`.
+- Public observation packing: `candidate.py:62`, literal `def observe(self, s):`.
+- Build cost: `candidate.py:101`, literal `building = (a[i] == 5) &amp; (owner[here] &lt; 0) &amp; (pack[i] &gt;= 2)`.
+- Enemy-cut opportunity: `candidate.py:108`, literal `targets = ((owner &gt;= 0) &amp; (owner != team) &amp; ~home_cell &amp; s[&quot;cell_active&quot;] &amp;`.
+- Paired finite-resource transfer: `candidate.py:120`, literal `give = (a[i] == 7) &amp; ~used[i] &amp; (pack[i] &gt; 0) &amp; jnp.any(partners)`.
+- Linked shared-stock restocking: `candidate.py:126`, literal `take = (a[i] == 8) &amp; (s[&quot;owner&quot;][here] == team) &amp; s[&quot;linked&quot;][here] &amp; (pack[i] &lt; 6) &amp; (stock[team] &gt; 0)`.
+- Delayed decay: `candidate.py:133`, literal `decay = s[&quot;cell_active&quot;] &amp; (owner &gt;= 0) &amp; ~s[&quot;linked&quot;] &amp; ~home_cell &amp; (jnp.mod(t,3) == 0)`.
+- Actual relay pulse scoring: `candidate.py:138`, literal `pulses = jnp.stack([jnp.sum((s[&quot;relay&quot;] &amp; s[&quot;linked&quot;] &amp; (owner == team)).astype(jnp.int32),dtype=jnp.int32)`.
+- Natural end and tie preservation: `candidate.py:145`, literal `s[&quot;terminated&quot;] = jnp.any(s[&quot;score&quot;] &gt;= 12)`.
+- Absorbing terminal branch: `candidate.py:158`, literal `def absorb(self, key, state, actions):`.
+
+## Witnesses and possible future variation
+
+One script attempts two initial connected networks, then west role 1 enters east&#x27;s vacated relay. Its paired branch keeps the east defender in place. The intended comparison is physical entry, contested, linked, durability and a later pulse, not a claimed winning raid. A second script and pair isolate consent to a teammate supply transfer. Both remain unexecuted.
+
+Future separately assigned layouts, home positions, relay placement, replenishment timing or team composition could change whether defense, redundant links or raids are sensible. Those variants are not implemented as hidden reset randomness and do not constitute measured transfer.
+
+## Provenance, interface and status
+
+Source SHA-256: 2040229c883b0abaa228b1d952c982d6fa7fb453b0371148dd299504e6a88af3.
+
+This is original author-written game code and layout for this assigned train-stream proposal, source attempt 00, generation window 0. No previous candidate, execution result, replay, ranking, training output or final-test material was read. No upstream game code, benchmark layout, texture, heldout implementation or scoring code was copied. Original authorship does not prove structural non-isomorphism.
+
+The supplied official JaxMARL README informed the distinction between the native flat kernel and an agent-keyed public integration API. The supplied Pgx README informed explicit state, legal-mask and terminal API concepts. The supplied Craftax README informed JAX game-state and reset/render separation concepts. The supplied PureJaxRL README was read as an algorithm/integration reference, not a game library; no PPO implementation was copied and the frozen scientific learner is unchanged. The supplied Craftax_Baselines/ppo_rnn.py was not read or used. Exact copied-reference hashes and official source URLs are in generation_record.json.
+
+Every declared nonterminal command is legal. A physically blocked movement or unavailable object operation is a deterministic failed attempt, not an out-of-range action. Out-of-range integers map to command 0. No role is individually removed before joint termination. Each role retains command 0; after joint termination only 0 is legal. The absorbing raw call ignores the provided actions, returns the same complete state and observation, leaves t unchanged, returns zero float32 rewards and all-true dones, and preserves actual terminal causes. Otherwise t advances exactly once. Natural termination has priority over the horizon, so terminated and truncated cannot both be true. No reset occurs inside raw_step.
+
+All observation columns are covered exactly once in manifest.json, in the literal concatenate order used by observe. Raw integer/bool state is cast to float32 without normalization. Visibility is fully public: active entity visibility is broadcast to all roles; map.public is true. Fixed or derived active/visibility masks do not add hidden policy information. Resolved objects retain their last public position and status in flat state, while the role renderer suppresses their inactive glyphs. A separate full-state debug view must remain labelled as such. The source uses only int32 and bool state, representing small categorical design values losslessly as int32. The reset key remains external provenance and is intentionally unused by these deterministic initial rules.
+
+The native kernel is not a public adapter implementation. Agent-keyed dictionaries, __all__, space objects and replay/UI integration belong to the coordinator&#x27;s separate presentation layer. The author has not exercised that layer. The six author files satisfy a source-delivery scope; they do not by themselves establish community product acceptance.
+
+No candidate import, reset, raw_step, JAX call, validator, training run, replay, browser playback or numerical parity test was executed by this author. Pure text and JSON metadata review and byte hashing are the only checks performed. playthrough.json contains literal finite action vectors, seeds and explicitly unexecuted paired intervention hypotheses. A later sealed replay must retain mismatches, zero effects, failures and early terminals as actual evidence. No script is a successful trajectory receipt, solvability proof, learned policy, optimal strategy, meta-learning result or generalization result. Model tokens and API charges are unknown rather than invented.
+
+Reference URLs read as supplied snapshots:
+- https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md
+- https://github.com/sotetsuk/pgx/blob/main/README.md
+- https://github.com/luchris429/purejaxrl/blob/main/README.md
+- https://github.com/MichaelTMatthews/Craftax/blob/main/README.md
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Lay neutral conduit or repair friendly conduit</span></div><div class="action"><b>6</b><span>Cut lowest-index nearby enemy conduit</span></div><div class="action"><b>7</b><span>Offer or receive adjacent teammate supply</span></div><div class="action"><b>8</b><span>Restock through connected friendly conduit</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> West team 0 north starter</p><p><b>agent_1</b> West team 0 south starter</p><p><b>agent_2</b> East team 1 north starter</p><p><b>agent_3</b> East team 1 south starter</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      8
+    ],
+    &quot;meaning&quot;: &quot;Agent [x,y] positions in role order.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      8,
+      12
+    ],
+    &quot;meaning&quot;: &quot;Public team assignments: roles 0,1 west team 0; roles 2,3 east team 1.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      16
+    ],
+    &quot;meaning&quot;: &quot;Supply units carried by each agent, 0 to 6.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      16,
+      20
+    ],
+    &quot;meaning&quot;: &quot;Last nonabsorbing step blocked movement intents.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      20,
+      90
+    ],
+    &quot;meaning&quot;: &quot;Interior tile-center positions in y-major order, including inactive rock sites.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      90,
+      125
+    ],
+    &quot;meaning&quot;: &quot;True for actual traversable conduit sites; false at the two rocks.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      125,
+      160
+    ],
+    &quot;meaning&quot;: &quot;Conduit ownership: -1 neutral, 0 west team, 1 east team.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      160,
+      195
+    ],
+    &quot;meaning&quot;: &quot;Conduit durability 0 to 3.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      195,
+      230
+    ],
+    &quot;meaning&quot;: &quot;Actual uncontested same-owner connection to that owner&#x27;s home.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      230,
+      265
+    ],
+    &quot;meaning&quot;: &quot;Enemy agent currently occupies an owned conduit, interrupting supply.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      265,
+      300
+    ],
+    &quot;meaning&quot;: &quot;The two scoring relay sites at [3,2] and [5,4].&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      300,
+      304
+    ],
+    &quot;meaning&quot;: &quot;Actual west/east home positions [1,3] and [7,3].&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      304,
+      306
+    ],
+    &quot;meaning&quot;: &quot;Shared team stock 0 to 24, used for linked restocking.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      306,
+      308
+    ],
+    &quot;meaning&quot;: &quot;Cumulative relay pulses credited to each team.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      308,
+      371
+    ],
+    &quot;meaning&quot;: &quot;Public y-major 7 by 9 map; 0 ground and 1 wall or rock.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      371,
+      375
+    ],
+    &quot;meaning&quot;: &quot;Per-role conduit build or repair on the last nonabsorbing step.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      375,
+      379
+    ],
+    &quot;meaning&quot;: &quot;Per-role successful durability attack on the last nonabsorbing step.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      379,
+      383
+    ],
+    &quot;meaning&quot;: &quot;Participants in the last nonabsorbing step&#x27;s supply handoffs.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      383,
+      385
+    ],
+    &quot;meaning&quot;: &quot;Whether each team received any relay pulse on the last nonabsorbing step.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      385,
+      386
+    ],
+    &quot;meaning&quot;: &quot;Elapsed nonabsorbing steps, 0 through 80.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      386,
+      387
+    ],
+    &quot;meaning&quot;: &quot;Joint episode completion; true for natural completion or horizon.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      387,
+      388
+    ],
+    &quot;meaning&quot;: &quot;Natural terminal cause, preserved by absorbing calls.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      388,
+      389
+    ],
+    &quot;meaning&quot;: &quot;Horizon cause; false when natural completion coincides with horizon.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      389,
+      393
+    ],
+    &quot;meaning&quot;: &quot;Own agent identity as A-way one-hot in agent_0 through agent_3 order.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;surveyors&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 4,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;team&quot;
+        ],
+        &quot;meaning&quot;: &quot;Team: west 0, east 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pack&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried supply, maximum 6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;blocked&quot;
+        ],
+        &quot;meaning&quot;: &quot;Last movement was blocked&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;conduits&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 35,
+    &quot;position&quot;: [
+      &quot;cell_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cell_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cell_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Owner: neutral -1, west 0, east 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;charge&quot;
+        ],
+        &quot;meaning&quot;: &quot;Conduit durability, maximum 3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;linked&quot;
+        ],
+        &quot;meaning&quot;: &quot;Connected to owner&#x27;s home&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;contested&quot;
+        ],
+        &quot;meaning&quot;: &quot;Enemy occupation interrupts supply&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;relay&quot;
+        ],
+        &quot;meaning&quot;: &quot;Scoring relay site&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;homes&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;home_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;home_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;home_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shared team stock, maximum 24&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;score&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cumulative relay pulses&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi095&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;2040229c883b0abaa228b1d952c982d6fa7fb453b0371148dd299504e6a88af3&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 4,
+    &quot;observation_size&quot;: 393,
+    &quot;num_actions&quot;: 9,
+    &quot;max_steps&quot;: 80
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.3544187545776367
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.20220208168029785
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.9094386100769043
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.7051100730895996
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 4.296044588088989
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0009999275207519531
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.8351924419403076
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 5.870380640029907
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 5.5885725021362305
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 4.83722996711731
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 28.37330389022827,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 80,
+  &quot;scripted_random_returns&quot;: [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 28,
+  &quot;render_roles_checked&quot;: 4
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi095&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 7.012881278991699
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 95,
+  &quot;key&quot;: &quot;gi095&quot;,
+  &quot;title&quot;: &quot;铜线接力&quot;,
+  &quot;summary&quot;: &quot;围绕据点、补给转移与连接供给线进行团队配合和竞争，保存完整实际得分轨迹。&quot;,
+  &quot;tags&quot;: [
+    &quot;团队对抗&quot;,
+    &quot;补给接力&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 4,
+    &quot;observation_size&quot;: 393,
+    &quot;num_actions&quot;: 9,
+    &quot;max_steps&quot;: 80
+  },
+  &quot;source_sha256&quot;: &quot;2040229c883b0abaa228b1d952c982d6fa7fb453b0371148dd299504e6a88af3&quot;,
+  &quot;manifest_sha256&quot;: &quot;91614b802acddca046d8b3493e01fd89c96bcc907c9b145bef4ee2011c019a82&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;2040229c883b0abaa228b1d952c982d6fa7fb453b0371148dd299504e6a88af3&quot;,
+      &quot;bytes&quot;: 10126,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00095/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;91614b802acddca046d8b3493e01fd89c96bcc907c9b145bef4ee2011c019a82&quot;,
+      &quot;bytes&quot;: 15938,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00095/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;9fdd17d1af10d7a89870b1c9163a7251133bf37c4eb67400e6f49608430698fe&quot;,
+      &quot;bytes&quot;: 9497,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00095/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;ec5bbbe6744a62304429278e17c2d83f46ecab60adbd6ef99667ab4190cb9f9d&quot;,
+      &quot;bytes&quot;: 10588,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00095/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;38b48dfdc74ff26cd806d02ce8007c097810b5ae5338f05d1b7349057b3d1060&quot;,
+      &quot;bytes&quot;: 4955,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00095/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi095">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

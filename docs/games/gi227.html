@@ -1,0 +1,520 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>林地边疆聚落 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI227 / SPATIAL</p><h1>林地边疆聚落</h1><p class="lead">128个角色生活在林地村落，采伐、种植、用水、火情和驮队运输改变彼此的行动条件。</p><div class="stats"><span>128 agents</span><span>26 actions</span><span>321 observation columns</span><span>896 original horizon</span><span>Runtime: PENDING</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi227.gif" alt="Original saved demonstration gi227"></section><section><h2>Run this game</h2><pre>crucibles play --game 227</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Build and provision sixteen settlements while maintaining renewable woodland, crops, water and safe shared routes; trade local production against transport access and neighboring ecological costs.&quot;,
+  &quot;natural_termination&quot;: &quot;No early natural success/failure threshold. Persistent world changes continue until the896-turn season truncates. Incapacitated actors retain wait and can receive aid; terminal raw calls absorb.&quot;,
+  &quot;interaction&quot;: &quot;Cutting mature trees opens pack routes but changes delayed regrowth, local well recharge and fire exposure. Loaded NPC pack animals traverse shared trails and bridges. Equipment exchange, carried goods, shared aquifer flow, rescue, village upgrades and finite trade commissions create partner-dependent choices.&quot;,
+  &quot;observation_access&quot;: &quot;Static terrain is public. Dynamic groups use Manhattan radius5, distance then id order, with8 settlers,12 tree sites and3 per other group. Every visible scene attribute is in native observations; hidden slots are zero. Fire reports are locally posted information from a neighboring village and age over time.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 4.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Control any of128 settlers through the same native action interface. The16 pack animals are separate NPC objects.</li><li>Walk on grass or trails and cross streams at usable bridges. Grass spends stamina; resting recovers it. Mature tree stage3 blocks passage.</li><li>Chop with an axe to obtain timber and open a route. Living cut trees regrow after eligible24-turn periods; bare stumps require replanting.</li><li>Mature neighboring woodland supports well recharge. Wells exchange water west-to-east along village rows, so local withdrawals can affect neighbors.</li><li>Buckets fill at wells, irrigate crops or extinguish trees. Hoes tend and seed crops. Exchange tools with a waiting neighbor to change work capability.</li><li>Shared trails carry loaded pack animals one cell per turn. Trees, broken bridges, other animals and settlers can block them; village docks allow co-location.</li><li>Timber and food remain in inventories, stores or moving shipments. Only finite matching trade orders pay shipment commissions.</li><li>Dry woodland can ignite and spread fire eastward. Fire consumes trees and damages nearby crops; smoke drains stamina and can injure settlers.</li><li>Firebreaks stop growth and fire at that tree site; replanting reverses them. Injured neighbors can be aided with carried food or water.</li><li>Work targets the nearest corresponding object within distance one. Clock-rotating actor order resolves contention, then pack movement and ecology run.</li><li>Role views show radius-five local entities with declared slot limits. Nearby fire reports can be posted to the neighboring village and become stale.</li><li>The896-turn season ends by truncation. This declarative scene is not an executed animation or evidence of learning.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Forest Frontier Commons
+
+**AUTHORED_NOT_EXECUTED** — A128 / O321 / U26 / H896. No candidate execution, numerical acceptance, replay, trained policy, human session or transfer result is claimed.
+
+## Native world and population
+
+Sixteen eight-person settlements occupy a40x40 bounded, connected woodland. There are128 actual independently controllable native agent rows: two woodcutters, farmers, courier/builders and rangers per village. Professions describe initial specialities; exchangeable axes, hoes and buckets determine abilities. The16 pack animals are separate NPC shipment objects and are not counted among128.
+
+The world has64 persistent tree sites,16 crop plots/wells/stores,8 stream bridges and connected orthogonal trail rows/columns. Village centers are spaced10 cells apart. Trees of height3 physically block entry; chopping to2 opens the same cell to settlers and pack animals. The public map supplies actual trail/stream geometry, while tree state supplies dynamic obstruction. Source: candidate.py:32-78, candidate.py:122-128.
+
+Agents carry bounded timber, food and water; tools are persistent state. Stores start with six timber/food. Couriers start with two timber; farmers/rangers carry one food, rangers one water. Trees start mature, crops at stage2 but dry, wells at4. Some bridges are broken. These are original deterministic constants, not seed-search outcomes.
+
+## Actions and step order
+
+0 rest;1–4 cardinal movement;5 chop;6 harvest;7 irrigate;8 fill bucket;9 bridge repair;10/11 load timber/food onto a home-idle pack animal;12/13 deposit timber/food;14 tend crop;15 eat to recover;16 swap equipment;17 aid an injured neighbor;18 make firebreak;19 upgrade store;20 seed crop;21 replant tree;22 extinguish;23/24 withdraw timber/food;25 send a nearby-fire reading to the next village in the row. Every action id has an implemented affordance. Source: candidate.py:130-163, candidate.py:165-261.
+
+Work uses the nearest object of the appropriate group within Manhattan distance1; id resolves ties. A nearby ineligible object may require repositioning. Waiting accepts a tool swap with the lowest-id eligible neighbor, at most one exchange per actor per turn. Aid chooses the lowest-id injured adjacent settler and consumes food first, otherwise water. This is a contextual action protocol, not an implemented free-text agreement system.
+
+Input legality is checked first; invalid commands become0. Actor intents resolve in order(old_t+k) mod128 with updated resource/target checks. Each tree can be chopped at most once that turn; contention can waste a legal intent. Citizen occupancy is exclusive. Moving on meadow costs one stamina; trails cost none. Wait recovers one stamina. Eating consumes food and restores health/stamina. At health0 only wait is legal; another settler can restore health, or a waiting injured settler at a store can consume store food every16 turns. Actors are never removed. Source: candidate.py:165-261, candidate.py:295-352.
+
+After actors,16 pack animals resolve in rotating order, then ecology updates. Loaded animals move at most one actual horizontal trail cell toward the next village in their row, unload if storage permits, and return home empty before accepting another load. Trees, streams/broken bridges, settlers and other animals block trail movement. Store docks permit co-location, so a parked destination animal does not force all villages to launch at once. Source: candidate.py:263-293.
+
+## Ecology and multi-agent consequences
+
+Chopping yields one timber, reduces height and resets regrowth age. A living height1/2 tree ages only when not burning/firebroken, its village well has water, and at least two mature trees lie within distance6. Each24 eligible turns adds a stage. Bare stumps require replanting with food seed. A site can regrow under an occupant; it prevents later entry, while the occupant may leave. Source: candidate.py:165-261, candidate.py:295-352, candidate.py:122-128.
+
+A well recharges by one every10 turns if at least two mature trees lie within distance6. Simultaneous aquifer flow moves one unit west-to-east across each neighboring pair whose level difference is at least2. Drawing water, cutting cover and preserving woodland thus affect another settler&#x27;s later water opportunities. Watering spends a carried bucket unit to add two soil moisture, capped3. Wet crops naturally grow every6 turns; hoe tending adds growth immediately; soil decays every12. Harvest at6 supplies two food and clears the plot, which then needs seed. Source: candidate.py:165-261, candidate.py:295-352.
+
+Every64 turns a deterministic spark visits a declared tree index. It ignites only mature, dry, non-firebroken woodland; dryness means its owner well has less than6 water. Existing fire can spread to tree sites within Manhattan4 at equal/eastern x, one ecology update at a time. Fire consumes one stage every4 turns. Trees reaching0 stop burning. Nearby crop plots lose growth; smoke within distance3 drains stamina and injures every8 turns. Firebreaks consume timber and clear the site, preventing fire/regrowth until replanted. Bucket water extinguishes; source fire may later spread again. These are actual conditional transitions, not promised ambient animations. Source: candidate.py:295-352, candidate.py:165-261.
+
+Important partner-dependent choices: clearing a shipment route versus preserving mature cover/recharge; sending timber versus retaining it for crossings/firebreaks; spending water on crops versus firefighting or keeping a moist woodland; loaning equipment to relieve a local bottleneck; opening a stream crossing versus walking to another bridge; and rescue versus saving supplies. Local pairs can farm or clear routes while everyone else waits. Cross-village traffic, aquifer flow, fires and finite commissions prevent an interpretation as128 independent single-player copies. No all-to-all interaction or all128-action requirement is imposed.
+
+## Local observation and faithful scene
+
+The321-column native observation contains12 self/public fields and capped local entity slots:8 settlers,12 tree sites and3 each of crops, wells, villages, bridges and pack animals. Visibility is Manhattan5, sorted by distance then id. Every slot has seen and all visible render attributes; unseen slots are zero. Source: candidate.py:12-19, candidate.py:21-30, candidate.py:80-87, candidate.py:89-116.
+
+Fire reports copy the sender&#x27;s radius-five burning-tree count, capped4, into the next village board; age increments to896. They convey local information but not a global map of fires. Public terrain is static. Dynamic tree stage, fire, crop moisture, stocks, bridges, carried goods and moving shipments come only from native state. Scene events are levels of already-observed fields. Per-step diagnostic flags remain full-state diagnostics, not extra information in a role view.
+
+The visual family is warm rural farming/woodland, separate from the canal federation&#x27;s territorial water infrastructure. Metadata identifies villages/roles and camera focus suitable for selecting one or multiple human actors. It does not claim a shipped UI, rendered frames or actual human play. The frontend must use this same kernel and legal masks, and label any privileged full-state view as debug.
+
+## Reward components and ranges
+
+Six float32 columns sum to native reward:
+
+1. Actor−0.01 for successful chopping, watering, bridge repair, firebreak, upgrade, planting/seeding, extinguishing, aid or eating.
+2. Actor+0.16 per two-food harvest; aid gives helper and injured recipient+0.02 each.
+3. Every beneficiary-village member+0.06 per store upgrade; settlers within5 of a repaired bridge+0.005.
+4. A matching finite shipment commission gives each recipient member+0.08 and home-village member+0.04. Required cargo is1+destination mod2; orders start4 and decrement permanently.
+5. Each member of an extinguished tree&#x27;s owner village+0.02; each newly rematured tree gives that village+0.002.
+6. Smoke injury costs the injured actor0.03; each burning tree-stage loss costs its village members0.02; a local crop loss costs each member0.01.
+
+Sources: candidate.py:165-261, candidate.py:263-293, candidate.py:295-352. Manual transfers/withdrawals, merely loading and idle status pay nothing. Store upgrades consume two carried timber and one food; facilities cap3. Orders are not replenished, avoiding a paid withdraw/redeposit loop. Renewable harvest/forest production still has real time, water and resource consequences.
+
+A conservative lower bound is−0.13: one0.01 expenditure,0.03 injury, at most four own-village tree losses0.08, and0.01 crop loss; manifest−1 safely covers it. An intentionally loose upper bound sums0.16 harvest +0.02 helping +0.06 received aid +0.18 village upgrades +0.12 all24 bridge increments +1.92 all16 possible commissions +0.08 own-village extinguishing +0.008 own-village rematuration =2.548, below manifest4. These analytic envelopes are not measured returns or success criteria.
+
+## Episode and invariants
+
+There is no forced early success/failure endpoint. The896-turn season truncates; construction/harvest does not reset the world. A live call increments t once. Already-terminal raw calls preserve state and observation, return zero reward/all dones, and retain causes. Natural priority holds with terminated always false. Source: candidate.py:295-352, candidate.py:354-356, candidate.py:358-362.
+
+Declared invariants awaiting independent checking: unique in-bounds settler positions; fixed entity capacities; inventories timber/food0–3, water0–2; health0–3/stamina0–6; tree0–3, age0–24; wells0–8; crops0–6/moisture0–3; stores0–32; facilities0–3; orders0–4; bridge0–3; pack cargo0/1/2 and phase0/1/2. All visible values normalize into[0,1]. Int32 counters/coordinates, bool masks and float32 observations/rewards follow the boundary. The external PRNG key is accepted but this original scenario is deterministic.
+
+## Literal scripts and single-action falsification
+
+Two seed0 scripts are unexecuted local proposals. The first chops tree0, loads pack animal0 and clears the next trail cell; the second has a ranger fetch water and irrigate while a farmer tends/harvests. Neither proves a complete delivery, solvability or learning.
+
+Paired branches share the empty prefix and identical subsequent commands. Only actor0&#x27;s first action changes: chop5 versus wait0. Actor2 loads timber in both; actor0 moves north on step2 in both. From source reasoning, the loaded animal should encounter tree0&#x27;s cell on step3: the cut branch may permit entry while the uncut branch stalls. Comparison targets the other actor2&#x27;s visible shipment information, native cart position/stalled/cargo and tree height. No effect magnitude or observed success is recorded. Independent replay may falsify legality, timing or the proposed contrast.
+
+## Provenance
+
+Only current clean226/227 inputs and named official snapshots were read. Population223 controls96/128, with no future population ceiling. Earlier population197/203 payloads, project history, other candidates/results, final-test/heldout data and memory were not used. No network/model API or resource probe occurred.
+
+JaxMARL/Pgx API concepts, Craftax bounded persistence/local visibility and PureJaxRL/Craftax baseline integration context informed the design; no upstream code, art, layouts, weights or benchmark/training results were copied. Input hashes are in author_input_freeze.json; output identities and Astra/max self-report in generation_record.json; parent dispatch independently retains model assignment. Text/JSON/AST/hash checks do not establish source validation, numerical parity, native animation, scalable throughput, human playability, learnability, successful learning, non-isomorphism or transfer.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Rest / accept tool swap</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Chop nearest tree with axe</span></div><div class="action"><b>6</b><span>Harvest ripe crop</span></div><div class="action"><b>7</b><span>Water nearest crop with bucket</span></div><div class="action"><b>8</b><span>Fill bucket at nearest well</span></div><div class="action"><b>9</b><span>Repair bridge with timber and axe</span></div><div class="action"><b>10</b><span>Load pack animal with timber</span></div><div class="action"><b>11</b><span>Load pack animal with food</span></div><div class="action"><b>12</b><span>Deposit one timber</span></div><div class="action"><b>13</b><span>Deposit one food</span></div><div class="action"><b>14</b><span>Tend crop with hoe</span></div><div class="action"><b>15</b><span>Eat food to recover</span></div><div class="action"><b>16</b><span>Swap tools with accepting neighbor</span></div><div class="action"><b>17</b><span>Aid injured neighboring settler</span></div><div class="action"><b>18</b><span>Cut firebreak using timber and axe</span></div><div class="action"><b>19</b><span>Upgrade store using two timber and food</span></div><div class="action"><b>20</b><span>Seed bare crop with hoe and food</span></div><div class="action"><b>21</b><span>Replant bare tree with food seed</span></div><div class="action"><b>22</b><span>Extinguish tree with bucket water</span></div><div class="action"><b>23</b><span>Withdraw one timber</span></div><div class="action"><b>24</b><span>Withdraw one food</span></div><div class="action"><b>25</b><span>Post local fire reading to neighboring village</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_000</b> village_00_woodcutter_0</p><p><b>agent_001</b> village_00_farmer_0</p><p><b>agent_002</b> village_00_courier_builder_0</p><p><b>agent_003</b> village_00_ranger_0</p><p><b>agent_004</b> village_00_woodcutter_1</p><p><b>agent_005</b> village_00_farmer_1</p><p><b>agent_006</b> village_00_courier_builder_1</p><p><b>agent_007</b> village_00_ranger_1</p><p><b>agent_008</b> village_01_woodcutter_0</p><p><b>agent_009</b> village_01_farmer_0</p><p><b>agent_010</b> village_01_courier_builder_0</p><p><b>agent_011</b> village_01_ranger_0</p><p><b>agent_012</b> village_01_woodcutter_1</p><p><b>agent_013</b> village_01_farmer_1</p><p><b>agent_014</b> village_01_courier_builder_1</p><p><b>agent_015</b> village_01_ranger_1</p><p><b>agent_016</b> village_02_woodcutter_0</p><p><b>agent_017</b> village_02_farmer_0</p><p><b>agent_018</b> village_02_courier_builder_0</p><p><b>agent_019</b> village_02_ranger_0</p><p><b>agent_020</b> village_02_woodcutter_1</p><p><b>agent_021</b> village_02_farmer_1</p><p><b>agent_022</b> village_02_courier_builder_1</p><p><b>agent_023</b> village_02_ranger_1</p><p><b>agent_024</b> village_03_woodcutter_0</p><p><b>agent_025</b> village_03_farmer_0</p><p><b>agent_026</b> village_03_courier_builder_0</p><p><b>agent_027</b> village_03_ranger_0</p><p><b>agent_028</b> village_03_woodcutter_1</p><p><b>agent_029</b> village_03_farmer_1</p><p><b>agent_030</b> village_03_courier_builder_1</p><p><b>agent_031</b> village_03_ranger_1</p><p><b>agent_032</b> village_04_woodcutter_0</p><p><b>agent_033</b> village_04_farmer_0</p><p><b>agent_034</b> village_04_courier_builder_0</p><p><b>agent_035</b> village_04_ranger_0</p><p><b>agent_036</b> village_04_woodcutter_1</p><p><b>agent_037</b> village_04_farmer_1</p><p><b>agent_038</b> village_04_courier_builder_1</p><p><b>agent_039</b> village_04_ranger_1</p><p><b>agent_040</b> village_05_woodcutter_0</p><p><b>agent_041</b> village_05_farmer_0</p><p><b>agent_042</b> village_05_courier_builder_0</p><p><b>agent_043</b> village_05_ranger_0</p><p><b>agent_044</b> village_05_woodcutter_1</p><p><b>agent_045</b> village_05_farmer_1</p><p><b>agent_046</b> village_05_courier_builder_1</p><p><b>agent_047</b> village_05_ranger_1</p><p><b>agent_048</b> village_06_woodcutter_0</p><p><b>agent_049</b> village_06_farmer_0</p><p><b>agent_050</b> village_06_courier_builder_0</p><p><b>agent_051</b> village_06_ranger_0</p><p><b>agent_052</b> village_06_woodcutter_1</p><p><b>agent_053</b> village_06_farmer_1</p><p><b>agent_054</b> village_06_courier_builder_1</p><p><b>agent_055</b> village_06_ranger_1</p><p><b>agent_056</b> village_07_woodcutter_0</p><p><b>agent_057</b> village_07_farmer_0</p><p><b>agent_058</b> village_07_courier_builder_0</p><p><b>agent_059</b> village_07_ranger_0</p><p><b>agent_060</b> village_07_woodcutter_1</p><p><b>agent_061</b> village_07_farmer_1</p><p><b>agent_062</b> village_07_courier_builder_1</p><p><b>agent_063</b> village_07_ranger_1</p><p><b>agent_064</b> village_08_woodcutter_0</p><p><b>agent_065</b> village_08_farmer_0</p><p><b>agent_066</b> village_08_courier_builder_0</p><p><b>agent_067</b> village_08_ranger_0</p><p><b>agent_068</b> village_08_woodcutter_1</p><p><b>agent_069</b> village_08_farmer_1</p><p><b>agent_070</b> village_08_courier_builder_1</p><p><b>agent_071</b> village_08_ranger_1</p><p><b>agent_072</b> village_09_woodcutter_0</p><p><b>agent_073</b> village_09_farmer_0</p><p><b>agent_074</b> village_09_courier_builder_0</p><p><b>agent_075</b> village_09_ranger_0</p><p><b>agent_076</b> village_09_woodcutter_1</p><p><b>agent_077</b> village_09_farmer_1</p><p><b>agent_078</b> village_09_courier_builder_1</p><p><b>agent_079</b> village_09_ranger_1</p><p><b>agent_080</b> village_10_woodcutter_0</p><p><b>agent_081</b> village_10_farmer_0</p><p><b>agent_082</b> village_10_courier_builder_0</p><p><b>agent_083</b> village_10_ranger_0</p><p><b>agent_084</b> village_10_woodcutter_1</p><p><b>agent_085</b> village_10_farmer_1</p><p><b>agent_086</b> village_10_courier_builder_1</p><p><b>agent_087</b> village_10_ranger_1</p><p><b>agent_088</b> village_11_woodcutter_0</p><p><b>agent_089</b> village_11_farmer_0</p><p><b>agent_090</b> village_11_courier_builder_0</p><p><b>agent_091</b> village_11_ranger_0</p><p><b>agent_092</b> village_11_woodcutter_1</p><p><b>agent_093</b> village_11_farmer_1</p><p><b>agent_094</b> village_11_courier_builder_1</p><p><b>agent_095</b> village_11_ranger_1</p><p><b>agent_096</b> village_12_woodcutter_0</p><p><b>agent_097</b> village_12_farmer_0</p><p><b>agent_098</b> village_12_courier_builder_0</p><p><b>agent_099</b> village_12_ranger_0</p><p><b>agent_100</b> village_12_woodcutter_1</p><p><b>agent_101</b> village_12_farmer_1</p><p><b>agent_102</b> village_12_courier_builder_1</p><p><b>agent_103</b> village_12_ranger_1</p><p><b>agent_104</b> village_13_woodcutter_0</p><p><b>agent_105</b> village_13_farmer_0</p><p><b>agent_106</b> village_13_courier_builder_0</p><p><b>agent_107</b> village_13_ranger_0</p><p><b>agent_108</b> village_13_woodcutter_1</p><p><b>agent_109</b> village_13_farmer_1</p><p><b>agent_110</b> village_13_courier_builder_1</p><p><b>agent_111</b> village_13_ranger_1</p><p><b>agent_112</b> village_14_woodcutter_0</p><p><b>agent_113</b> village_14_farmer_0</p><p><b>agent_114</b> village_14_courier_builder_0</p><p><b>agent_115</b> village_14_ranger_0</p><p><b>agent_116</b> village_14_woodcutter_1</p><p><b>agent_117</b> village_14_farmer_1</p><p><b>agent_118</b> village_14_courier_builder_1</p><p><b>agent_119</b> village_14_ranger_1</p><p><b>agent_120</b> village_15_woodcutter_0</p><p><b>agent_121</b> village_15_farmer_0</p><p><b>agent_122</b> village_15_courier_builder_0</p><p><b>agent_123</b> village_15_ranger_0</p><p><b>agent_124</b> village_15_woodcutter_1</p><p><b>agent_125</b> village_15_farmer_1</p><p><b>agent_126</b> village_15_courier_builder_1</p><p><b>agent_127</b> village_15_ranger_1</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;Public season clock t/896.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      12
+    ],
+    &quot;meaning&quot;: &quot;Self x/39, y/39, village/15, profession/3, tool/3, timber/3, food/3, water/2, health/3, stamina/6, nearby burning-tree count/64.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      108
+    ],
+    &quot;meaning&quot;: &quot;8 settler slots, each: seen, id/127, x/39, y/39, village/15, profession/3, tool/3, timber/3, food/3, water/2, health/3, stamina/6.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      108,
+      216
+    ],
+    &quot;meaning&quot;: &quot;12 woodland slots, each: seen, id/63, x/39, y/39, height/3, fire, firebreak, regrowth age/24, owner/15.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      216,
+      234
+    ],
+    &quot;meaning&quot;: &quot;3 crop slots, each: seen, id/15, x/39, y/39, growth/6, moisture/3.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      234,
+      249
+    ],
+    &quot;meaning&quot;: &quot;3 well slots, each: seen, id/15, x/39, y/39, water/8.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      249,
+      279
+    ],
+    &quot;meaning&quot;: &quot;3 village slots, each: seen, id/15, x/39, y/39, timber stock/32, food stock/32, facility/3, orders/4, fire report/4, report age/896.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      279,
+      294
+    ],
+    &quot;meaning&quot;: &quot;3 bridge slots, each: seen, id/7, x/39, y/39, strength/3.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      294,
+      321
+    ],
+    &quot;meaning&quot;: &quot;3 pack-animal slots, each: seen, id/15, x/39, y/39, cargo/2, phase/2, home/15, destination/15, stalled.&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;settlers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 128,
+    &quot;position&quot;: [
+      &quot;pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;crew&quot;
+        ],
+        &quot;meaning&quot;: &quot;Village 0-15&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;profession&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 woodcutter, 1 farmer, 2 courier, 3 ranger&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tool&quot;
+        ],
+        &quot;meaning&quot;: &quot;1 axe, 2 hoe, 3 bucket&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried timber 0-3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;food&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried food 0-3&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried water 0-2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Health 0-3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stamina&quot;
+        ],
+        &quot;meaning&quot;: &quot;Stamina 0-6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;woodland&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 64,
+    &quot;position&quot;: [
+      &quot;tree_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;tree_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;tree_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;height&quot;
+        ],
+        &quot;meaning&quot;: &quot;Tree stage 0-3; stage3 blocks passage&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fire&quot;
+        ],
+        &quot;meaning&quot;: &quot;Currently burning&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;firebreak&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cleared firebreak&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;regrow&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current eligible regrowth age 0-24&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;tree_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ecological beneficiary village&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;crops&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;field_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;village_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;field_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Crop stage 0-6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;moisture&quot;
+        ],
+        &quot;meaning&quot;: &quot;Soil moisture 0-3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;wells&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;well_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;village_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;well_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;well_water&quot;
+        ],
+        &quot;meaning&quot;: &quot;Well water 0-8&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;villages&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;store_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;village_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;store_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;stock_wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Timber stock 0-32&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stock_food&quot;
+        ],
+        &quot;meaning&quot;: &quot;Food stock 0-32&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;level&quot;
+        ],
+        &quot;meaning&quot;: &quot;Facility level 0-3&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;orders&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining trade commissions 0-4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;report&quot;
+        ],
+        &quot;meaning&quot;: &quot;Reported nearby fires 0-4&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;report_age&quot;
+        ],
+        &quot;meaning&quot;: &quot;Report age; 896 absent or stale&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;bridges&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 8,
+    &quot;position&quot;: [
+      &quot;bridge_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;bridge_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;bridge_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;bridge_health&quot;
+        ],
+        &quot;meaning&quot;: &quot;Bridge strength 0-3&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;pack_animals&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 16,
+    &quot;position&quot;: [
+      &quot;cart_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;village_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cart_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;cart_cargo&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 empty, 1 timber, 2 food&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cart_phase&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 home idle, 1 outbound, 2 returning&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cart_home&quot;
+        ],
+        &quot;meaning&quot;: &quot;Home village&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cart_target&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current destination village&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;cart_stalled&quot;
+        ],
+        &quot;meaning&quot;: &quot;Currently unable to advance&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;status&quot;: &quot;PENDING&quot;
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 227,
+  &quot;key&quot;: &quot;gi227&quot;,
+  &quot;title&quot;: &quot;林地边疆聚落&quot;,
+  &quot;summary&quot;: &quot;128个角色生活在林地村落，采伐、种植、用水、火情和驮队运输改变彼此的行动条件。&quot;,
+  &quot;tags&quot;: [
+    &quot;128角色&quot;,
+    &quot;林地聚落&quot;,
+    &quot;保存回放&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 128,
+    &quot;observation_size&quot;: 321,
+    &quot;num_actions&quot;: 26,
+    &quot;max_steps&quot;: 896
+  },
+  &quot;source_sha256&quot;: &quot;0dfe87d714ef6907e0e2fb30b8ed07b5357e832698e91cffc491441ec42ced06&quot;,
+  &quot;manifest_sha256&quot;: &quot;a2d425d03b46617d8186ffa69b5b091e82a2ae925e71b47749059bcef23f7b2e&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;0dfe87d714ef6907e0e2fb30b8ed07b5357e832698e91cffc491441ec42ced06&quot;,
+      &quot;bytes&quot;: 27080,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00227/attempt_00/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;a2d425d03b46617d8186ffa69b5b091e82a2ae925e71b47749059bcef23f7b2e&quot;,
+      &quot;bytes&quot;: 47431,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00227/attempt_00/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;d4011575148b473eb7f14ec48c50fbeb08bb1e3d43be4d157d04664a24f34ac4&quot;,
+      &quot;bytes&quot;: 12374,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00227/attempt_00/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;1c9a5da5d4b031a65da192f4d81f4f2f22fb5ea1aa30e38b0027a7e1b95aafb9&quot;,
+      &quot;bytes&quot;: 11799,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00227/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;f12798824365a868d31d240b0188392c558f1eebd627730315d86036f01ff2d3&quot;,
+      &quot;bytes&quot;: 37968,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00227/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;SOURCE_ONLY&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PENDING&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PENDING&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi227">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

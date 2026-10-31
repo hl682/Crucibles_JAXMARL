@@ -1,0 +1,757 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00124",
+  "source_sha256": "be2e366123e40eb86d3b71476fa3807775d75ba255178d0e118891d2634041c9",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 169,
+  "num_actions": 12,
+  "max_steps": 120,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Team 0 first player; attacks the eastern goal"
+    },
+    {
+      "id": "agent_1",
+      "role": "Team 0 second player; attacks the eastern goal"
+    },
+    {
+      "id": "agent_2",
+      "role": "Team 1 first player; attacks the western goal"
+    },
+    {
+      "id": "agent_3",
+      "role": "Team 1 second player; attacks the western goal"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Claim or tackle within one cell when ready"
+    },
+    {
+      "id": 6,
+      "label": "Pass toward current teammate position when possessing and ready"
+    },
+    {
+      "id": 7,
+      "label": "Shoot north when possessing and ready"
+    },
+    {
+      "id": 8,
+      "label": "Shoot east when possessing and ready"
+    },
+    {
+      "id": 9,
+      "label": "Shoot south when possessing and ready"
+    },
+    {
+      "id": 10,
+      "label": "Shoot west when possessing and ready"
+    },
+    {
+      "id": 11,
+      "label": "Block or shield for this step when ready"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        9,
+        13
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_xy"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "blocking"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_xy"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_velocity"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_owner"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_timer"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_visible"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "last_team"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_holder"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_xy"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_defender"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pass_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "catch_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "intercept_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "bounce_event"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "score_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      12,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#E4E8EC"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid wall; blocks movement",
+          "color": "#374151"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_xy"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Team (0 west, 1 east)",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "meaning": "Special-action cooldown",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "blocking"
+          ],
+          "meaning": "Active block or possession shield",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "ball_xy"
+      ],
+      "active": [
+        "ball_active"
+      ],
+      "visibility": [
+        "ball_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "ball_owner"
+          ],
+          "meaning": "Possessor (-1 means loose)",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "ball_velocity"
+          ],
+          "meaning": "Ball velocity xy",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "ball_timer"
+          ],
+          "meaning": "Flight ticks remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "last_team"
+          ],
+          "meaning": "Last-touch team (-1 means none)",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "goal_xy"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "goal_defender"
+          ],
+          "meaning": "Defending team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "meaning": "Defending team earned score",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pass_event"
+      ],
+      "meaning": "A possessor released a pass this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "catch_event"
+      ],
+      "meaning": "A loose ball was acquired this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "intercept_event"
+      ],
+      "meaning": "Opponent possession was taken by a tackle or catch this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "bounce_event"
+      ],
+      "meaning": "A wall/obstacle or ready block reflected or stopped flight this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score_event"
+      ],
+      "meaning": "Team goal scored this transition; ordered team 0 then team 1",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "meaning": "All four player xy coordinates divided by 12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        16
+      ],
+      "meaning": "Team identity for each player, two-way one-hot",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        20
+      ],
+      "meaning": "Player special-action cooldowns /2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        24
+      ],
+      "meaning": "Active blocking/shield flags for the last transition",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        26
+      ],
+      "meaning": "Ball xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        28
+      ],
+      "meaning": "Ball integer velocity components in -1..1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        33
+      ],
+      "meaning": "Ball owner one-hot: loose, player 0, 1, 2, 3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        34
+      ],
+      "meaning": "Remaining flight timer /6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        37
+      ],
+      "meaning": "Last ball-touch team one-hot: none, team 0, team 1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        37,
+        39
+      ],
+      "meaning": "Team scores /3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        43
+      ],
+      "meaning": "Western and eastern goal center xy /12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        43,
+        160
+      ],
+      "meaning": "Public 9 by 13 arena map in yx order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        160,
+        164
+      ],
+      "meaning": "Own player identity one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        164,
+        165
+      ],
+      "meaning": "Clock /120",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        165,
+        169
+      ],
+      "meaning": "Latest pass-release, catch, interception/tackle and bounce flags",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "With a teammate, pass, shoot, block and intercept a shared ball to score three goals before the opponent.",
+    "natural_termination": "Any team score reaches three. Natural completion takes precedence over H=120. Nonterminal scores reset only ball state, without resetting players or the raw episode.",
+    "interaction": "A teammate changes passing direction, receiving opportunities and possession. Opponent tackles, ready blocks and occupied cells change feasible trajectories. A common ball and zero-sum team reward prevent independent collection-race behavior.",
+    "observation_access": "All strategically relevant physical state, teams, cooldowns, goals, map, ball possession/velocity/flight, score and displayed event flags are public. Own identity is explicit. last_holder is attribution bookkeeping without transition-dependent use."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_xy"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_xy"
+      ],
+      "low": 0,
+      "high": 12,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ball_xy"
+      ],
+      "low": 0,
+      "high": 12,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ball_velocity"
+      ],
+      "low": -1,
+      "high": 1,
+      "min": -1,
+      "max": 1
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ball_owner"
+      ],
+      "low": -1,
+      "high": 3,
+      "min": -1,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ball_timer"
+      ],
+      "low": 0,
+      "high": 6,
+      "min": 0,
+      "max": 6
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cooldown"
+      ],
+      "low": 0,
+      "high": 2,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "score"
+      ],
+      "low": 0,
+      "high": 3,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "low": 0,
+      "high": 120,
+      "min": 0,
+      "max": 120
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

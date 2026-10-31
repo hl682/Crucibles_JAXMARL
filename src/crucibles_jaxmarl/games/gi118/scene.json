@@ -1,0 +1,368 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "f8c8a71d6aa82bf907577f8cd2b38524b9bc761447d98f42d7c5994c6d055d29",
+  "manifest_sha256": "9bf6dc5c54fa3625c12cffac2b1929743b45b4b0f77ac13b90038baa5949dd55",
+  "title": "Sailboat race with shared wind shadows",
+  "rules": [
+    "Touch the assigned buoy, then your own dock. Arrival is permanent.",
+    "A raised sail blocks wind for boats up to two cells downwind and one cell sideways. A shadowed raised sail cannot move.",
+    "Lowered sails row one cell for one stamina. Holding recovers one stamina, capped at four.",
+    "Unshadowed raised sails move one cell, or two directly downwind when strength is two.",
+    "A high-sail helper can attach to an adjacent low-sail consenting boat. Towing caps speed at one cell and costs the helper one stamina.",
+    "Boats cannot enter occupied cells or islands; competing moves to one cell cancel. Tow recipients follow into the helper old cell.",
+    "The first arrival earns a shared-if-simultaneous half-point bonus. Waiting before arrival costs 0.01 per step.",
+    "Wind changes every six transitions. Other boats and tow links obey the role-local visibility mask."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Sailable water",
+          "color": "#AED8EB"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable island",
+          "color": "#6B7654"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "boats",
+      "glyph": "agent",
+      "label": "Sailboats",
+      "color": "#1A678C",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "sail"
+          ],
+          "label": "Sail raised"
+        },
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "label": "Rowing and towing stamina"
+        },
+        {
+          "state_path": [
+            "progress"
+          ],
+          "label": "Route stage: 0 buoy, 1 dock, 2 arrived"
+        },
+        {
+          "state_path": [
+            "arrived"
+          ],
+          "label": "Moored after arrival"
+        },
+        {
+          "state_path": [
+            "tow"
+          ],
+          "label": "Towed boat id; -1 means no outgoing tow"
+        },
+        {
+          "state_path": [
+            "shadow"
+          ],
+          "label": "Currently in another raised sail wind shadow"
+        }
+      ]
+    },
+    {
+      "id": "buoys",
+      "glyph": "beacon",
+      "label": "Shared course buoys",
+      "color": "#EFC84A",
+      "attribute_labels": []
+    },
+    {
+      "id": "docks",
+      "glyph": "flag",
+      "label": "Assigned finish docks",
+      "color": "#4B9272",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "dock_owner"
+          ],
+          "label": "Assigned skipper id"
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "glyph": "beacon",
+      "label": "Wind indicator",
+      "color": "#789AA8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "wind"
+          ],
+          "label": "Public wind direction"
+        },
+        {
+          "state_path": [
+            "wind_strength"
+          ],
+          "label": "Wind strength 1 or 2"
+        }
+      ]
+    },
+    {
+      "id": "tow_links",
+      "glyph": "tool",
+      "label": "Actual tow links",
+      "color": "#B58D4A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "link_helper"
+          ],
+          "label": "Towing skipper id"
+        },
+        {
+          "state_path": [
+            "tow"
+          ],
+          "label": "Towed skipper id"
+        },
+        {
+          "state_path": [
+            "link_direction"
+          ],
+          "label": "Helper to recipient displacement"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "arrival_event"
+      ],
+      "meaning": "Arrived at assigned dock on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "buoy_event"
+      ],
+      "meaning": "Reached required buoy on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "tow_event"
+      ],
+      "meaning": "Helper moved and pulled a recipient on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "stall_event"
+      ],
+      "meaning": "Raised-sail movement attempt stalled in a wind shadow",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "boat_visible"
+      ]
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Heave to; recover one stamina if not arrived"
+    },
+    {
+      "id": 1,
+      "label": "Steer east"
+    },
+    {
+      "id": 2,
+      "label": "Steer west"
+    },
+    {
+      "id": 3,
+      "label": "Steer south"
+    },
+    {
+      "id": 4,
+      "label": "Steer north"
+    },
+    {
+      "id": 5,
+      "label": "Raise sail; leave any incoming tow"
+    },
+    {
+      "id": 6,
+      "label": "Lower sail; permit an adjacent high-sail boat to tow"
+    },
+    {
+      "id": 7,
+      "label": "Attach tow to lowest-index eligible adjacent low-sail boat"
+    },
+    {
+      "id": 8,
+      "label": "Release own outgoing and incoming tow"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own x,y divided by 10",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own stamina divided by 4",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own sail raised flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own route progress divided by 2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own arrived flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own outgoing tow recipient id divided by 2; -0.5 means none",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        9
+      ],
+      "meaning": "Current own required goal x,y divided by 10",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Own skipper one-hot id",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        39
+      ],
+      "meaning": "Three ordered boat records, stride 9: visibility, x/10, y/10, sail, stamina/4, progress/2, arrived, outgoing recipient/2, current shadow. All eight data values zero when invisible. Includes self.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        39,
+        138
+      ],
+      "meaning": "Public 9 by 11 terrain in yx row-major order; 0 water, 1 island",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        138,
+        142
+      ],
+      "meaning": "Two public buoy xy positions in buoy-id order divided by 10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        148
+      ],
+      "meaning": "Three public assigned dock xy positions in skipper-id order divided by 10",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        148,
+        150
+      ],
+      "meaning": "Public wind unit dx,dy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        150,
+        151
+      ],
+      "meaning": "Public wind strength divided by 2",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        151,
+        152
+      ],
+      "meaning": "Public clock divided by 80",
+      "visibility": "public"
+    }
+  ]
+}

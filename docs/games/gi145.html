@@ -1,0 +1,560 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>共享氧气矿权 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI145 / SPATIAL</p><h1>共享氧气矿权</h1><p class="lead">有限矿物搬运与氧气消耗相互制约；经同意的氧气交接与充氧站占位影响伙伴。</p><div class="stats"><span>3 agents</span><span>10 actions</span><span>153 observation columns</span><span>80 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi145.gif" alt="Original saved demonstration gi145"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi145.gif" alt="Actual verification episode gi145"></section><section><h2>Run this game</h2><pre>crucibles play --game 145</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Bring finite ore to (1,3). Each miner privately values one randomly assigned ore type; all share delivery benefits and survival losses. Maintain oxygen using two portable canisters and finite shared station stock.&quot;,
+  &quot;natural_termination&quot;: &quot;All miners are dead, or every vein is empty and nobody carries ore. Delivered and lost ore both count as removed resources; horizon 80 otherwise truncates.&quot;,
+  &quot;interaction&quot;: &quot;Shared veins are depleted by extraction; the station admits one occupant; a portable canister moves only through physical pickup/drop or simultaneous adjacent Offer/Accept consent. Resource transfers and station occupation change other miners feasible trip lengths and delivery payoffs.&quot;,
+  &quot;observation_access&quot;: &quot;Terrain, live/dead positions, oxygen, ore inventories, canisters, veins, station stock/occupancy and events are public. Only the observing role own private claim is returned. claim_visible is the identity matrix, so each role scene must hide other claims; a full-state debug view must be labelled separately.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1.0 to 2.0. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>Three miners each receive one private ore-type claim sampled as a permutation at reset. Claim labels are visible only to their owner.</li><li>Every living miner outside (1,3) consumes one oxygen at the end of each call. Zero oxygen kills the miner; dead roles retain only Wait.</li><li>Veins at (7,1), (8,3), (7,5) each hold two units. Extract within Manhattan distance one with an empty one-unit ore inventory.</li><li>Simultaneous extraction uses rotating player priority starting at t modulo three; extraction really removes the shared unit.</li><li>Two movable canisters each start with six oxygen. Pick/Drop acts within distance one for a floor canister, or drops the carried one.</li><li>Offer requires a carried canister. An adjacent empty-handed miner must choose Accept/Use on the same call; it may immediately draw gas after accepting.</li><li>Accept/Use draws up to the personal oxygen deficit from the owned canister. No gas is created; the donor loses the transferred canister.</li><li>The sole station cell (1,3) is safe and accepts ore automatically. Refill draws at most four units from 24 shared units, personal deficit first then carried-canister deficit.</li><li>Other live miners old cells and contested destinations block movement; a station occupant can deny another miner access. Dead cells are passable.</li><li>Each delivery pays everyone 0.1, plus the delivering miner 1 for its claim type or 0.25 otherwise. Every newly dead miner costs everyone 0.25.</li><li>All-dead or all-ore-resolved ends play. Horizon is 80. Empty veins, empty canisters and lost-miner markers reflect actual retained state.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Breathshare Claims — authored attempt_00
+
+Status: AUTHORED_NOT_EXECUTED. A=3, O=153, U=10, H=80. This source, declarative scene and rule-derived scripts have not been imported or run by the author.
+
+## Physical resources and private objectives
+
+The 11x7 asteroid has impassable rocks at (5,2) and (5,4), a shared refill/delivery station at (1,3), and three veins at (7,1), (8,3), (7,5). Vein indices are ore types 0,1,2 and each begins with two units. Each miner holds at most one ore unit and one canister.
+
+Miners start at (2,3), (2,2), (2,4), each with 12 oxygen. Two canisters start at (2,2) and (2,4), each holding six gas units. Station stock is 24. A reset-key permutation assigns the three distinct private claim types. Actual claim values exist only in state and each role own observation.
+
+Every living miner outside the station consumes one oxygen at the end of every nonterminal call, including Wait. The station is the only safe cell. Reaching zero kills that miner, drops its canister at its actual last position, and destroys any carried ore while incrementing lost_counts. Dead roles retain only Wait, do not block other live miners, and remain represented by a true last-position memorial. Joint dones remain false until the joint ending rule; individual inactivity is communicated by active and the mask.
+
+## Actions, consent and deterministic conflicts
+
+Actions 0..4 are Wait and cardinal moves. Movement masks rock/bounds; entering another live miner&#x27;s old cell or a contested live destination fails. Swaps and following into a cell vacated on the same call are disallowed. Only one live miner can occupy the station, so holding it denies another miner a refill or delivery approach.
+
+Action 5 extracts from a vein at Manhattan distance at most one if ore inventory is empty. Available lowest vein index is chosen. Agents are processed in rotating order t modulo three, then the next two indices; each extraction decrements the current shared reserve before the next request. A request losing the last unit conflict is a legal failed attempt.
+
+Action 6 drops a held canister at the miner cell, or picks a grounded canister within Manhattan distance one. Canisters are processed in index order and competing pickup agents use lowest index. A miner who began with a canister cannot drop it and pick another in the same action. Busy-owner checks prevent one miner acquiring both canisters.
+
+Action 7 offers one&#x27;s canister. Transfer requires another live miner exactly one cell away, empty-handed, simultaneously choosing action 8. If there is more than one eligible recipient, lowest role index wins. Canisters resolve in index order with updated ownership, so a recipient cannot accept two. Without simultaneous consent, ownership is unchanged.
+
+Action 8 also draws oxygen from the now-owned canister, including one just accepted on the same call. Draw is min(canister volume, 12 minus personal oxygen). This happens before end-of-call breathing, making a timely transfer capable of changing imminent survival. The same draw debits the real canister volume; it cannot create oxygen.
+
+Action 9 works only on the station. At most four units are removed from finite stock per call. The miner personal deficit is filled first, then any remaining per-call budget may fill its held canister toward six. An already-full miner can refill an empty canister. The station does not manufacture new gas.
+
+The full order is sanitize, move, Pick/Drop, Offer/Accept and canister use, station refill, extraction, automatic delivery, breathing/death and resulting canister drops, then termination. Interactions use actual resolved positions. All resource transfers have bounded integer amounts.
+
+## Coupled choices
+
+A portable supply can let a teammate reach a distant vein or return before depletion, at the donor&#x27;s opportunity cost of losing that supply. Refilling for oneself consumes stock that someone else may need later. Occupying the only safe station blocks access. Extracting one of a vein&#x27;s two units removes that delivery opportunity from every other miner; a nonmatching miner can still take it for a smaller private payment.
+
+Possible tactics include self-provisioned short trips, a supporting canister handoff, station turn-taking, or opportunistic extraction of another miner&#x27;s favored type. Common survival penalties and common delivery payments encourage support, while larger claim-matching personal payments create competing objectives. No equilibrium, optimal schedule or measured adaptation is asserted.
+
+## Payoffs, endings and invariants
+
+Every delivery gives all roles +0.1. Its deliverer additionally gets +1 if the ore matches its private claim, or +0.25 otherwise. Every newly dead miner subtracts 0.25 from every role, including already-dead roles that remain in the joint game. These are bounded by [-1,2] per role per call.
+
+A natural ending occurs if no miners remain alive, or if all veins are empty and nobody carries ore. The latter includes ore accounted as lost; it is not automatically successful delivery. Otherwise H=80 truncates with natural-ending priority. Negative, deadlock, timeout and partial-delivery outcomes remain valid real outcomes for later execution.
+
+For every ore type, remaining vein units plus carried units plus delivered_counts plus lost_counts should stay exactly two. There are always exactly two portable canisters with unique owner-or-floor status; canister gas stays 0..6, personal oxygen 0..12, and station stock 0..24. Total stored oxygen starts at 72 and falls only through breathing. Movement preserves unique live positions. Private claims stay a permutation and are not changed by play. These are declared conservation properties requiring real invariant tests.
+
+## Observation visibility and scene
+
+The 153 columns expose the public map, public live/dead positions, oxygen, inventories, vein depletion, canister positions/ownership/gas, station stock/occupancy, aggregate delivered/lost ore and actual event flags. Each row additionally has the observing role own private claim one-hot and own identity one-hot. Other private claim values do not enter that row.
+
+The scene uses a separate private_claims entity group at the actual owner position and an identity-matrix visibility leaf. A role-specific renderer must display only that role claim; it must not draw the other assignments merely because full state contains them. A debug view that shows all claims must be labelled as privileged. Public ore and rewards may legitimately allow inferences during play, but direct private labels remain hidden.
+
+Depleted veins and empty canisters stay present with actual zero quantities. A memorial uses the dead miner&#x27;s retained position and true inactive status. Station occupancy is an explicit state attribute. Transfers, gas draws, pickups, drops, extraction, delivery and deaths are latest-transition flags; delivered/lost counts are cumulative. No frame or event is fabricated from the intended script.
+
+## Literal scripts and future tasks
+
+The long script gives miner 0 a central-vein round trip while its waiting partners pick and later use their own canisters. It targets one delivery and a station refill, not a complete or optimal episode; the private claim reward depends on the actual reset permutation. The two branch pairs isolate simultaneous consent and station departure. Each uses literal action arrays with identical branch prefixes.
+
+Changing station location/stock, canister placement, vein supply, claim distribution or breathing cost could change support and competition strategies. Such changes are prospective new tasks requiring new source hashes and validation, not implemented variations or evidence of transfer in this attempt.
+
+## Literal source evidence
+
+- Key-driven private assignments: candidate.py:26 contains exactly `&quot;claim&quot;: jax.random.permutation(key, jnp.arange(3, dtype=jnp.int32)).astype(jnp.int32),`.
+- Strict owner-only visibility: candidate.py:27 contains exactly `&quot;claim_visible&quot;: jnp.eye(3, dtype=jnp.bool_),`.
+- Native observation uses own claim only: candidate.py:105 contains exactly `return jnp.concatenate((jnp.broadcast_to(common, (3,48)), jax.nn.one_hot(state[&quot;claim&quot;], 3),`.
+- Consensual transfer: candidate.py:152 contains exactly `consent = (donor &gt;= 0) &amp; (actions[safe_donor] == 7) &amp; (recipient &lt; 3)`.
+- Actual portable gas debit: candidate.py:161 contains exactly `volume = volume.at[c].add(-amount)`.
+- Finite shared station allocation: candidate.py:169 contains exactly `budget = jnp.where(refill, jnp.minimum(stock, 4), 0)`.
+- Rotating mining priority: candidate.py:181 contains exactly `a = jnp.mod(state[&quot;t&quot;] + order, 3)`.
+- Real resource depletion: candidate.py:188 contains exactly `remaining = remaining.at[safe_vein].add(-extraction.astype(jnp.int32))`.
+- Delayed oxygen survival: candidate.py:194 contains exactly `oxygen = jnp.maximum(oxygen - (alive &amp; ~at_station).astype(jnp.int32), 0).astype(jnp.int32)`.
+- Common survival and personal delivery payoffs: candidate.py:233 contains exactly `reward = jnp.full((3,), 0.1 * jnp.sum(delivery.astype(jnp.float32)) - 0.25 * jnp.sum(died.astype(jnp.float32)), jnp.float32)`.
+- Raw terminal absorption: candidate.py:239 contains exactly `ns = jax.tree.map(lambda old, new: jnp.where(state[&quot;episode_done&quot;], old, new), state, proposed)`.
+
+The line references above are static source evidence, not executed transition evidence. Method spans are reset=12-55, legal_actions=57-81, observe=83-106, advance=108-235, raw_step=237-243.
+
+## Interface, provenance and remaining acceptance
+
+The native boundary is reset(key) -&gt; (observation,state), observe(state), legal_actions(state), and raw_step(key,state,actions) -&gt; (observation,state,reward,dones,info). All state leaves are fixed-shape int32/bool arrays; observations and rewards are float32. Signed sentinels use int32. The uint32 reset key belongs to external provenance and is not copied into state. Every valid nonterminal call increments t once. Natural termination has priority over a simultaneous horizon. Already-terminal calls preserve every state leaf and t, return the preserved observation and cause flags, zero reward, and all dones true. No raw auto-reset occurs. Invalid/out-of-range/masked actions deterministically become action 0. Action 0 remains legal for every role, including inactive or immobilized roles and terminal states.
+
+A later public JaxMARL adapter must map the listed agent names to ordered action/observation/reward/done dictionaries and expose done[&quot;__all__&quot;]. It must preserve these observations, masks, rewards, raw terminal states, and inactive-role semantics. The author did not implement or validate that separate adapter, replace the frozen learner, or reuse old policy-bank weights. The declared A/O/U/H require matching integration and policy metadata.
+
+Only data schemas and source AST were inspected. Static checks do not establish JIT/vmap behavior, numerical parity, physical invariants under all actions, script legality, solvability, strategic richness, learned adaptation, transfer, or scientific acceptance. No real trajectories, animations, RGB frames, benchmark scores, training results or final-test data were read or generated. The scene is declarative binding data for a later real-state replay. Each source is attempt_00 and is frozen at its recorded SHA-256; a later repair requires separate actual feedback and dispatch.
+
+Community references were supplied as hash-bound read-only files. JaxMARL informs the future parallel agent-keyed interface; Pgx informs explicit legal masks and terminated/truncated separation; Craftax demonstrates persistent spatial game state and explicit reset handling. PureJaxRL and Craftax_Baselines_ppo_rnn.py are algorithm/integration references, not game libraries or replacements for the experimental learner. No upstream game rules or code were copied into this kernel, and no upstream benchmark implementation was read. The original rules here are attributable to GPT-6-Astra/max.
+
+- references\JaxMARL_README.md (https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md), SHA-256 `6649d04f5ed05d620e78e8416a00d4db841cf2633ae60fdb3c9729e037a71c15`.
+- references\Pgx_README.md (https://github.com/sotetsuk/pgx/blob/main/README.md), SHA-256 `153f44999e55d5df3e51e13dee6ef418cc9704ddfa26206f1dc5789b9cbbf8df`.
+- references\PureJaxRL_README.md (https://github.com/luchris429/purejaxrl/blob/main/README.md), SHA-256 `d5f40182c924a42cec820931e61a7d5070e48c4c8413c7d16455abc6ea0ef6b0`.
+- references\Craftax_Baselines_ppo_rnn.py (https://github.com/MichaelTMatthews/Craftax_Baselines/blob/main/ppo_rnn.py), SHA-256 `5f93e6a7c3a1e0c551831d75be311735ba495dfdecae51787a1c03a27b1cd011`.
+- references\Craftax_README.md (https://github.com/MichaelTMatthews/Craftax/blob/main/README.md), SHA-256 `7f9757a2047143cf183f7e2e84851a740f386af80dbee050c89b316d66a3d3ff`.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Extract one nearby ore if inventory empty</span></div><div class="action"><b>6</b><span>Pick up or drop a portable canister</span></div><div class="action"><b>7</b><span>Offer own canister to an adjacent consenting miner</span></div><div class="action"><b>8</b><span>Accept an offered canister and/or draw portable oxygen</span></div><div class="action"><b>9</b><span>Refill at the shared station, at most four units</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Miner role 0 with private sampled ore claim</p><p><b>agent_1</b> Miner role 1 with private sampled ore claim</p><p><b>agent_2</b> Miner role 2 with private sampled ore claim</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      18
+    ],
+    &quot;meaning&quot;: &quot;Miner-major 3 x [x/10,y/6,active,oxygen/12,(ore+1)/3,(canister_index+1)/2]. Dead miners keep their last public position.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      30
+    ],
+    &quot;meaning&quot;: &quot;Vein-major 3 x [x/10,y/6,type/2,remaining/2]. Depleted veins remain visibly present.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      30,
+      38
+    ],
+    &quot;meaning&quot;: &quot;Canister-major 2 x [x/10,y/6,(owner+1)/3,volume/6]. Empty canisters persist.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      38,
+      42
+    ],
+    &quot;meaning&quot;: &quot;Shared station [x/10,y/6,stock/24,(occupant+1)/3].&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      42,
+      45
+    ],
+    &quot;meaning&quot;: &quot;Delivered ore counts by type divided by six.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      45,
+      48
+    ],
+    &quot;meaning&quot;: &quot;Ore lost on death by type divided by six.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      48,
+      51
+    ],
+    &quot;meaning&quot;: &quot;One-hot of this observing miner own private claim type only; other miners claims are absent.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      51,
+      54
+    ],
+    &quot;meaning&quot;: &quot;One-hot observing miner identity.&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      54,
+      55
+    ],
+    &quot;meaning&quot;: &quot;Elapsed calls t/80.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      55,
+      56
+    ],
+    &quot;meaning&quot;: &quot;Joint episode_done.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      56,
+      133
+    ],
+    &quot;meaning&quot;: &quot;Public 7x11 terrain in y-major order: 0 traversable, 1 impassable rock.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      133,
+      136
+    ],
+    &quot;meaning&quot;: &quot;Latest per-agent mining flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      136,
+      139
+    ],
+    &quot;meaning&quot;: &quot;Latest per-agent delivery flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      139,
+      141
+    ],
+    &quot;meaning&quot;: &quot;Latest per-canister consent-transfer flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      141,
+      143
+    ],
+    &quot;meaning&quot;: &quot;Latest per-canister positive gas-use flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      143,
+      146
+    ],
+    &quot;meaning&quot;: &quot;Latest per-agent oxygen-death flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      146,
+      149
+    ],
+    &quot;meaning&quot;: &quot;Latest per-agent station-refill flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      149,
+      151
+    ],
+    &quot;meaning&quot;: &quot;Latest per-canister pickup flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      151,
+      153
+    ],
+    &quot;meaning&quot;: &quot;Latest per-canister voluntary/death drop flags.&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;miners&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;oxygen&quot;
+        ],
+        &quot;meaning&quot;: &quot;Personal oxygen, 0 to 12&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;ore&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried ore type; -1 means empty&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carrying_canister&quot;
+        ],
+        &quot;meaning&quot;: &quot;Portable canister index; -1 means none&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;private_claims&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;claim_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;claim&quot;
+        ],
+        &quot;meaning&quot;: &quot;Private rewarded ore type; visible only to its owner&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;memorials&quot;,
+    &quot;kind&quot;: &quot;hazard&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;memorial_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;veins&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;vein_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;vein_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;vein_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;vein_type&quot;
+        ],
+        &quot;meaning&quot;: &quot;Ore type&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;vein_remaining&quot;
+        ],
+        &quot;meaning&quot;: &quot;Units remaining, 0 to 2&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;canisters&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;canister_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;canister_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;canister_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;canister_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carrier agent index; -1 means on the ground&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;canister_volume&quot;
+        ],
+        &quot;meaning&quot;: &quot;Portable oxygen units remaining, 0 to 6&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;station&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Finite station oxygen units remaining, initially 24&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;station_occupant&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current live occupant; -1 means empty&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi145&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;aa5903c6cb30959ab9fd8def84eb0a7688a47ac2f0bad8105671f7e765f1ff4c&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 153,
+    &quot;num_actions&quot;: 10,
+    &quot;max_steps&quot;: 80
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.337571620941162
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.4660258293151855
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.3078455924987793
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1446828842163086
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.0988080501556396
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.6039066314697266
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.7664339542388916
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.3252477645874023
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.5977432727813721
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 11.244136571884155,
+  &quot;float_parity_max_abs&quot;: 5.960464477539063e-08,
+  &quot;numerical_parity&quot;: &quot;UNDETERMINED_NONZERO_FLOAT_DIFFERENCE&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 20,
+  &quot;scripted_random_returns&quot;: [
+    -0.75,
+    -0.75,
+    -0.75
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 8,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi145&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 4.142230033874512
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 145,
+  &quot;key&quot;: &quot;gi145&quot;,
+  &quot;title&quot;: &quot;共享氧气矿权&quot;,
+  &quot;summary&quot;: &quot;有限矿物搬运与氧气消耗相互制约；经同意的氧气交接与充氧站占位影响伙伴。&quot;,
+  &quot;tags&quot;: [
+    &quot;资源交接&quot;,
+    &quot;共享设施&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 153,
+    &quot;num_actions&quot;: 10,
+    &quot;max_steps&quot;: 80
+  },
+  &quot;source_sha256&quot;: &quot;aa5903c6cb30959ab9fd8def84eb0a7688a47ac2f0bad8105671f7e765f1ff4c&quot;,
+  &quot;manifest_sha256&quot;: &quot;0830be53f5bc04a96ef5f179dc856a27dd823073e0fd55d4854a130a4b893dd9&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;aa5903c6cb30959ab9fd8def84eb0a7688a47ac2f0bad8105671f7e765f1ff4c&quot;,
+      &quot;bytes&quot;: 14686,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00145/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;0830be53f5bc04a96ef5f179dc856a27dd823073e0fd55d4854a130a4b893dd9&quot;,
+      &quot;bytes&quot;: 17439,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00145/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;4fe763293a0aafd249b754e85fa8de4bc72a0e949c4d92de5991ad79f7a30637&quot;,
+      &quot;bytes&quot;: 10540,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00145/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;967d9e86b591fee58baa944dc8d0886f2e67531df0f813496b8583e1b8254e67&quot;,
+      &quot;bytes&quot;: 12877,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00145/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;b3c6192fdf6343877868eb46850f356de04789cc9d2ec325cde19c97cbb473f0&quot;,
+      &quot;bytes&quot;: 4581,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00145/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi145">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

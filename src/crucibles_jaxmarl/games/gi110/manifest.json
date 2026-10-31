@@ -1,0 +1,631 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00110",
+  "source_sha256": "fbc6da3df61915cf82a7b5d395befa7b60e480b958266083e6df10ed664a0c60",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 142,
+  "num_actions": 12,
+  "max_steps": 64,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -1,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "tug 0: shared delivery reward, own fuel cost"
+    },
+    {
+      "id": "agent_1",
+      "role": "tug 1: shared delivery reward, own fuel cost"
+    },
+    {
+      "id": "agent_2",
+      "role": "tug 2: shared delivery reward, own fuel cost"
+    },
+    {
+      "id": "agent_3",
+      "role": "tug 3: shared delivery reward, own fuel cost"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "wait"
+    },
+    {
+      "id": 1,
+      "label": "swim north when detached"
+    },
+    {
+      "id": 2,
+      "label": "swim east when detached"
+    },
+    {
+      "id": 3,
+      "label": "swim south when detached"
+    },
+    {
+      "id": 4,
+      "label": "swim west when detached"
+    },
+    {
+      "id": 5,
+      "label": "attach to lowest-index adjacent undelivered barge"
+    },
+    {
+      "id": 6,
+      "label": "detach"
+    },
+    {
+      "id": 7,
+      "label": "tow north"
+    },
+    {
+      "id": 8,
+      "label": "tow east"
+    },
+    {
+      "id": 9,
+      "label": "tow south"
+    },
+    {
+      "id": 10,
+      "label": "tow west"
+    },
+    {
+      "id": 11,
+      "label": "crank nearest adjacent channel selector"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        11
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "attached"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "barge_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "barge_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "barge_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_timer"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_flow"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "control_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "control_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "control_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dock_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dock_vis"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tow_moved"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tow_blocked"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered_step"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_changed"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "water navigable by tug and cargo",
+          "color": "#A3D5EF"
+        },
+        {
+          "value": 1,
+          "meaning": "solid bank or pier",
+          "color": "#40546A"
+        },
+        {
+          "value": 2,
+          "meaning": "hydraulic selector location",
+          "color": "#E5AF53"
+        },
+        {
+          "value": 3,
+          "meaning": "assigned cargo dock",
+          "color": "#7ABD9A"
+        },
+        {
+          "value": 4,
+          "meaning": "sluice centre; whole adjacent three-row lane shares its gate",
+          "color": "#B98CE5"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "tugs",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "attached"
+          ],
+          "meaning": "Attached barge index; -1 means detached",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "barges",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "barge_pos"
+      ],
+      "active": [
+        "barge_active"
+      ],
+      "visibility": [
+        "barge_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "At its assigned dock and permanently stationary",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "kind": "gate",
+      "count": 2,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_timer"
+          ],
+          "meaning": "Open timer; decays before next tow resolution",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "gate_flow"
+          ],
+          "meaning": "Current vector for the next nonterminal transition",
+          "display": "direction"
+        }
+      ]
+    },
+    {
+      "id": "selectors",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "control_pos"
+      ],
+      "active": [
+        "control_active"
+      ],
+      "visibility": [
+        "control_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "docks",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "dock_pos"
+      ],
+      "active": [
+        "dock_active"
+      ],
+      "visibility": [
+        "dock_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "tow_moved"
+      ],
+      "meaning": "Whether each barge moved in the last nonterminal transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tow_blocked"
+      ],
+      "meaning": "Some attached tug attempted a tow but that barge did not move",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_step"
+      ],
+      "meaning": "New arrival of each barge at its assigned dock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gate_changed"
+      ],
+      "meaning": "Each gate timer changed, including natural countdown",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Self identity one-hot over four tugs",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        20
+      ],
+      "meaning": "Four public tug blocks [x/16,y/16,(attached+1)/2,active] in ID order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        20,
+        26
+      ],
+      "meaning": "Two public barge blocks [x/16,y/16,delivered]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        34
+      ],
+      "meaning": "Two public gate blocks [x/16,y/16,timer/4,next-transition current x]",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        35
+      ],
+      "meaning": "Public clock t/64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        134
+      ],
+      "meaning": "Public 9x11 map flattened y-major, tile value/4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        134,
+        142
+      ],
+      "meaning": "Public event flags in order: tow_moved[2],tow_blocked[2],delivered_step[2],gate_changed[2]",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Deliver barge 0 to (8,2) and barge 1 to (8,6). Each new delivery pays every tug +1; every sanitized non-wait action costs that tug 1/64. No reward is attached to cooperation labels.",
+    "natural_termination": "Both distinct barges are at their own docks; otherwise the game truncates at 64 steps.",
+    "interaction": "Opposite perpendicular anchor positions and compatible force votes move whole physical convoys; other boats, cargo, terrain, adverse current and a shared gate selector can prevent movement.",
+    "observation_access": "All physical state used by decisions is public. Fixed selectors and docks are public map landmarks; ID and current clocks are explicit. No private field or renderer-only strategic information."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "gate_timer"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

@@ -1,0 +1,786 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00191",
+  "source_sha256": "35e10e901bd4fd3a219614bea42bb6cb7196524e72d3f9c0764f17528889ad3a",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 252,
+  "num_actions": 14,
+  "max_steps": 112,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": 0,
+  "reward_high": 4,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Western grain charter"
+    },
+    {
+      "id": "agent_1",
+      "role": "Northeastern copper charter"
+    },
+    {
+      "id": "agent_2",
+      "role": "Southeastern wool charter"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pave the cell ahead: 1 timber"
+    },
+    {
+      "id": 6,
+      "label": "Claim neutral road underfoot as toll outpost: 2 timber"
+    },
+    {
+      "id": 7,
+      "label": "Toggle toll on owned road underfoot"
+    },
+    {
+      "id": 8,
+      "label": "Offer 8-step reciprocal passage to next role: 1 coin"
+    },
+    {
+      "id": 9,
+      "label": "Offer passage to previous role: 1 coin"
+    },
+    {
+      "id": 10,
+      "label": "Accept adjacent existing offer; lowest proposer index"
+    },
+    {
+      "id": 11,
+      "label": "Load own commodity at own town"
+    },
+    {
+      "id": 12,
+      "label": "Deliver commodity at next roles town"
+    },
+    {
+      "id": 13,
+      "label": "Discard carried commodity to travel unloaded"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        7,
+        7
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "timber"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "coins"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "sale_value"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_target"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "permits"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "road_pos"
+      ],
+      "shape": [
+        49,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "road_active"
+      ],
+      "shape": [
+        49
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "road_visibility"
+      ],
+      "shape": [
+        3,
+        49
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "road_owner"
+      ],
+      "shape": [
+        49
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "road_toll"
+      ],
+      "shape": [
+        49
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "town_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "town_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "town_visibility"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "received"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "e_built"
+      ],
+      "shape": [
+        49
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_claimed"
+      ],
+      "shape": [
+        49
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_toll"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "e_trade"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_treaty"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_move"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "e_discard"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      6,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable border plain; loaded wagons require constructed roads",
+          "color": "#B8B08A"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable lake inlet",
+          "color": "#558FA8"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "Facing: 1 north, 2 east, 3 south, 4 west",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "timber"
+          ],
+          "meaning": "Timber carried",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "coins"
+          ],
+          "meaning": "Coin purse",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "meaning": "Own commodity aboard",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "offer_target"
+          ],
+          "meaning": "Proposed partner: -1 none, otherwise role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "offer_ttl"
+          ],
+          "meaning": "Offer steps remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "road",
+      "kind": "landmark",
+      "count": 49,
+      "position": [
+        "road_pos"
+      ],
+      "active": [
+        "road_active"
+      ],
+      "visibility": [
+        "road_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "road_owner"
+          ],
+          "meaning": "Road owner: -1 public, otherwise role",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "road_toll"
+          ],
+          "meaning": "Entry toll: 0 or 1 coin",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "town",
+      "kind": "resource",
+      "count": 3,
+      "position": [
+        "town_pos"
+      ],
+      "active": [
+        "town_active"
+      ],
+      "visibility": [
+        "town_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Own export crates remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "received"
+          ],
+          "meaning": "Imports accepted",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "e_built"
+      ],
+      "meaning": "Road cell paved this step; role overlay only for visible road cells",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_claimed"
+      ],
+      "meaning": "Neutral road claimed this step; role overlay only for visible road cells",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_toll"
+      ],
+      "meaning": "Coin toll paid by each trader; not a remote role disclosure",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_trade"
+      ],
+      "meaning": "Commodity delivered this step; remote private events remain debug-only",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_treaty"
+      ],
+      "meaning": "New bilateral permit; public registry change",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_move"
+      ],
+      "meaning": "Trader moved; role overlay only for visible traders",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_discard"
+      ],
+      "meaning": "Cargo discarded; role overlay only for visible traders",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own role one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Public t/112",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own sale value/3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        7
+      ],
+      "meaning": "Own x/6,y/6",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Own timber/8",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "meaning": "Own coins/16",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "meaning": "Own cargo bit",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        37
+      ],
+      "meaning": "For roles 0..2: visibility, x/6,y/6,coins/16,timber/8,cargo,(offer target+1)/3,offer TTL/4,facing/4. Nonvisible data are -1. Range Manhattan 2 including self.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        37,
+        233
+      ],
+      "meaning": "For 49 cells in y-major order: visibility,built,(owner+1)/3,toll. Nonvisible data are -1. Manhattan range 2.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        233,
+        242
+      ],
+      "meaning": "For towns 0..2: visibility,stock/4,received/4. Own town always known; others Manhattan range 2. Nonvisible data are -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        242,
+        251
+      ],
+      "meaning": "Public row-major bilateral permit TTLs/8, owner row and permitted traveller column",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        251,
+        252
+      ],
+      "meaning": "Own completed exports/4",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Sell four finite hometown commodities at the next roles town. Build a useful shared transport network while bargaining over toll revenue and temporary reciprocal access.",
+    "natural_termination": "Natural completion when every hometown stock is empty and all carried cargo is gone, whether delivered or discarded. Otherwise H=112. No winner or return threshold is used.",
+    "interaction": "Unloaded builders walk land; a loaded wagon can enter only constructed roads. Paving, outpost ownership, per-entry tolls, eight-step bilateral permits and finite stock alter other roles routes, budgets and import payoffs.",
+    "observation_access": "Terrain and town coordinates are public. Road and trader details have Manhattan radius 2; own town stock stays known at distance. Unseen local data are -1 with explicit visibility bits. Permit TTL matrix is public. Sale value is private. Debug event arrays and score must not become extra role information."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "timber"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "coins"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cargo"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "received"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "score"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "permits"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "offer_ttl"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

@@ -1,0 +1,631 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00137",
+  "source_sha256": "8cc580b11c98d57a0a62af45f3d974279e80f7832ad065e6c0abd03c2e7e1374",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 288,
+  "num_actions": 11,
+  "max_steps": 64,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "padded_flat",
+  "observability": "partially_observable",
+  "observation_low": 0.0,
+  "observation_high": 1.0,
+  "reward_low": -2,
+  "reward_high": 2,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Tracker 0: nose radius 3, visual radius 2"
+    },
+    {
+      "id": "agent_1",
+      "role": "Tracker 1: nose radius 1, visual radius 3"
+    },
+    {
+      "id": "agent_2",
+      "role": "Runner 2: visual radius 3, scent radius 2"
+    },
+    {
+      "id": "agent_3",
+      "role": "Runner 3: visual radius 3, scent radius 2"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait; active runners leave ordinary scent unless hiding/erasing"
+    },
+    {
+      "id": 1,
+      "label": "Attempt north"
+    },
+    {
+      "id": 2,
+      "label": "Attempt east"
+    },
+    {
+      "id": 3,
+      "label": "Attempt south"
+    },
+    {
+      "id": 4,
+      "label": "Attempt west"
+    },
+    {
+      "id": 5,
+      "label": "Tracker: scan; runner: hide, cost 1"
+    },
+    {
+      "id": 6,
+      "label": "Erase scent on current and cardinal-adjacent cells, cost 1"
+    },
+    {
+      "id": 7,
+      "label": "Tracker: adjacent tag sweep cost 1; runner: throw north decoy cost 2"
+    },
+    {
+      "id": 8,
+      "label": "Runner: throw east decoy cost 2; illegal for trackers"
+    },
+    {
+      "id": 9,
+      "label": "Runner: throw south decoy cost 2; illegal for trackers"
+    },
+    {
+      "id": 10,
+      "label": "Runner: throw west decoy cost 2; illegal for trackers"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "dtype": "int32",
+      "shape": []
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "dtype": "bool",
+      "shape": []
+    },
+    {
+      "path": [
+        "tilemap"
+      ],
+      "dtype": "int32",
+      "shape": [
+        9,
+        9
+      ]
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        2
+      ]
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "agent_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        4
+      ]
+    },
+    {
+      "path": [
+        "role"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "status"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "hidden"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "scan"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "charge"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "kit_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        4,
+        2
+      ]
+    },
+    {
+      "path": [
+        "kit_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4
+      ]
+    },
+    {
+      "path": [
+        "kit_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        4
+      ]
+    },
+    {
+      "path": [
+        "trail_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        81,
+        2
+      ]
+    },
+    {
+      "path": [
+        "trail_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        81
+      ]
+    },
+    {
+      "path": [
+        "trail_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        81
+      ]
+    },
+    {
+      "path": [
+        "scent"
+      ],
+      "dtype": "int32",
+      "shape": [
+        81
+      ]
+    },
+    {
+      "path": [
+        "exit_pos"
+      ],
+      "dtype": "int32",
+      "shape": [
+        2,
+        2
+      ]
+    },
+    {
+      "path": [
+        "exit_active"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "exit_visibility"
+      ],
+      "dtype": "bool",
+      "shape": [
+        4,
+        2
+      ]
+    },
+    {
+      "path": [
+        "captured_now"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "escaped_now"
+      ],
+      "dtype": "bool",
+      "shape": [
+        2
+      ]
+    },
+    {
+      "path": [
+        "resolved_count"
+      ],
+      "dtype": "int32",
+      "shape": []
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "tilemap"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable open ground",
+          "color": "#D9DEBD"
+        },
+        {
+          "value": 1,
+          "meaning": "Movement-blocking fence; sensing ignores line of sight",
+          "color": "#4A535A"
+        },
+        {
+          "value": 2,
+          "meaning": "Walkable concealing brush",
+          "color": "#567A3A"
+        },
+        {
+          "value": 3,
+          "meaning": "Runner extraction cell",
+          "color": "#3A94A1"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "role"
+          ],
+          "meaning": "Role ID: trackers 0,1 and runners 2,3",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "hidden"
+          ],
+          "meaning": "Current hide flag, visible only with this entity",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "scan"
+          ],
+          "meaning": "Current scanner pulse, visible only with this entity",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "team_kits",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "kit_pos"
+      ],
+      "active": [
+        "kit_active"
+      ],
+      "visibility": [
+        "kit_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "charge"
+          ],
+          "meaning": "Remaining charge, own-team information only",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "scent_cells",
+      "kind": "resource",
+      "count": 81,
+      "position": [
+        "trail_pos"
+      ],
+      "active": [
+        "trail_active"
+      ],
+      "visibility": [
+        "trail_visibility"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "scent"
+          ],
+          "meaning": "Unattributed local scent strength 1..6",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "extraction",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "exit_pos"
+      ],
+      "active": [
+        "exit_active"
+      ],
+      "visibility": [
+        "exit_visibility"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "captured_now"
+      ],
+      "meaning": "Public newly captured runner flags, ordered runners 2,3",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "escaped_now"
+      ],
+      "meaning": "Public newly extracted runner flags, ordered runners 2,3",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "resolved_count"
+      ],
+      "meaning": "Public total runners already captured or extracted",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Clock t/64",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Own role one-hot identity",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        86
+      ],
+      "meaning": "Public 9x9 terrain row-major /3; 0 ground,1 fence,2 brush,3 extraction before normalization",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        90
+      ],
+      "meaning": "Current visible-entity mask by role; same-team active locations are shared, opponents are local",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        90,
+        98
+      ],
+      "meaning": "Visible x,y positions /8, zero for invisible roles and interpreted with visibility mask",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        98,
+        102
+      ],
+      "meaning": "Visible role ID /3, zero when unseen",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        102,
+        106
+      ],
+      "meaning": "Hide flags only for currently visible roles",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        106,
+        110
+      ],
+      "meaning": "Scan flags only for currently visible roles",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        110,
+        114
+      ],
+      "meaning": "Charges /8 for own team only, zeros for opponent slots",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        114,
+        118
+      ],
+      "meaning": "Public status by role /2: 0 active,1 captured,2 extracted before normalization; trackers remain 0",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        118,
+        199
+      ],
+      "meaning": "Scent strength /6 on locally sensed cells, zero elsewhere; scent is not attributed to an emitter",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        199,
+        280
+      ],
+      "meaning": "Local scent-cell access mask, including visible empty cells",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        280,
+        288
+      ],
+      "meaning": "Zero padding; no policy information",
+      "visibility": "padding"
+    }
+  ],
+  "task": {
+    "objective": "Trackers 0 and 1 cooperate to tag runners before extraction. Runners 2 and 3 cooperate to reach either exit, using hiding, shared-trail erasure and decoys with finite charges.",
+    "natural_termination": "Both runners have resolved, each either captured or extracted; mixed outcomes are valid. Otherwise truncate at 64 steps. Capture precedes extraction on the same transition.",
+    "interaction": "Trace manipulation changes opponent information and can erase a teammate's trail; scans compete with limited tag charges. Tagging changes both teams' reward and removes a runner. Teammates share their active positions and charges but do not automatically share every local scent observation.",
+    "observation_access": "Map and resolved status are public. Own-team active positions and charges are shared. Opponents are shown only within native Manhattan vision with brush/hide concealment, close-range or scan exceptions. Scent is local and anonymous; no hidden positions, opponent charges, private actions or full scent field appear in role view."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "scent"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "resolved_count"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "action_semantics": "Masks depend only on own role, own known charge, public active status and joint done. Directional moves are legal attempts, even when blocked. Same-team old occupants and contested destinations block movement; opponents may overlap or cross without automatic capture. Order is movement, decay, all erasures, fresh real/false scent, tag sweep, extraction, visibility refresh. Capture overrides extraction. Inactive runners and terminal states allow only wait.",
+  "native_adapter_note": "The source exposes the frozen flat-array kernel. A separate trusted JaxMARL dictionary adapter is required; it must not change observations, masks, rules, rewards or terminal semantics."
+}

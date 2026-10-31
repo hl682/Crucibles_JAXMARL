@@ -1,0 +1,321 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "fd2690b11faacbb506703a3951159b8c5b6d75fd4d1ef5c7ed59f3ef3ac97575",
+  "manifest_sha256": "455a15abd74239598c06addea1af3cb4e4a43795d84686302ad82da2a6005934",
+  "title": "Skybridge Quarry Cooperative",
+  "rules": [
+    "Select any of 160 individual actors; IDs 8*c through 8*c+7 belong to crew c. Keyboard or clickable controls must call these native action IDs; no human UI has been executed here.",
+    "Read the actual block map: dark gaps stop walking, amber ore and gray supports can be mined, tan scaffolds restore floor. Facing actions turn without moving.",
+    "Mining a support removes its bridge immediately. An actor on that bridge loses one health and cannot walk until someone builds floor under it; a zero-health actor only waits.",
+    "Pick, scaffold and rigger tools can be exchanged with the actor directly ahead. Give transfers ore before stone.",
+    "A lift spans its adjacent banks at y=6 of each terrace. A rider spends 1 counterweight, or 2 while carrying material; the paired lift gains that amount up to capacity 4.",
+    "Stone can rebuild paths or become lift ballast. Unsupported designated scaffolds lose one strength every 32 ticks; their actual tile disappears at zero.",
+    "Unload ore next to a depot. Its eight-person crew receives the shared delivery component; the carrier receives the individual component.",
+    "This block-world scene is a source-bound author specification. Its scripts, interaction effects, animation, learning and solvability remain unexecuted."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      59,
+      39
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "visibility": [
+        "map_vis"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Ravine or collapsed support gap",
+          "color": "#202B39"
+        },
+        {
+          "value": 1,
+          "meaning": "Traversable stone terrace",
+          "color": "#8C918B"
+        },
+        {
+          "value": 2,
+          "meaning": "Mineable ore block",
+          "color": "#D9AC48"
+        },
+        {
+          "value": 3,
+          "meaning": "Load-bearing stone block",
+          "color": "#5E6872"
+        },
+        {
+          "value": 4,
+          "meaning": "Scaffold or supported bridge",
+          "color": "#B78E5A"
+        },
+        {
+          "value": 5,
+          "meaning": "Ore depot",
+          "color": "#559B8A"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "quarry_crews",
+      "glyph": "agent",
+      "label": "Quarry crews",
+      "color": "#D7C58D",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "Crew index 0..19"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "0 pick, 1 scaffold kit, 2 rigger, 3 courier"
+        },
+        {
+          "state_path": [
+            "stone"
+          ],
+          "label": "Carried scaffold stone; capacity 4"
+        },
+        {
+          "state_path": [
+            "ore"
+          ],
+          "label": "Carried ore; capacity 1"
+        },
+        {
+          "state_path": [
+            "message"
+          ],
+          "label": "Current inventory signal; 0 silent"
+        }
+      ]
+    },
+    {
+      "id": "blocks",
+      "glyph": "square",
+      "label": "Ore and load-bearing blocks",
+      "color": "#A79D89",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "resource_kind"
+          ],
+          "label": "2 ore, 3 load-bearing support"
+        }
+      ]
+    },
+    {
+      "id": "counterweight_lifts",
+      "glyph": "gate",
+      "label": "Paired counterweight lifts",
+      "color": "#D5984B",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "weight"
+          ],
+          "label": "Available counterweight units; 0..4"
+        }
+      ]
+    },
+    {
+      "id": "ore_depots",
+      "glyph": "crate",
+      "label": "Crew ore depots",
+      "color": "#4D9989",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "Ore unloaded at this crew depot"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "mined"
+      ],
+      "meaning": "Actor mined one ore or support block",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "built"
+      ],
+      "meaning": "Actor placed a scaffold",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Actor had missing floor restored underfoot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "fell"
+      ],
+      "meaning": "Actor lost health when its bridge collapsed",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "unloaded"
+      ],
+      "meaning": "Actor unloaded one ore",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rode"
+      ],
+      "meaning": "Actor used a lift",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative ore at each depot",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait; no movement"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Face north"
+    },
+    {
+      "id": 6,
+      "label": "Face east"
+    },
+    {
+      "id": 7,
+      "label": "Face south"
+    },
+    {
+      "id": 8,
+      "label": "Face west"
+    },
+    {
+      "id": 9,
+      "label": "Mine facing ore or support with pick"
+    },
+    {
+      "id": 10,
+      "label": "Build scaffold in facing gap using one stone"
+    },
+    {
+      "id": 11,
+      "label": "Unload one ore at adjacent depot"
+    },
+    {
+      "id": 12,
+      "label": "Give ore first, otherwise stone, to facing actor"
+    },
+    {
+      "id": 13,
+      "label": "Ride adjacent paired counterweight lift"
+    },
+    {
+      "id": 14,
+      "label": "Add one stone ballast using rigger tool"
+    },
+    {
+      "id": 15,
+      "label": "Swap tools with facing actor"
+    },
+    {
+      "id": 16,
+      "label": "Signal inventory: 1 empty, 2 one material kind, 3 both"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        14
+      ],
+      "meaning": "Self: x/59,y/39,facing/3,stone/4,ore,tool/3,health/4,crew/19,t/768,heard/3,grounded,mined,built,rescued. Heard is the maximum current signal within Chebyshev 6; 0 silent.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        14,
+        112
+      ],
+      "meaning": "7x7 row-major patch dy=-3..3,dx=-3..3; each cell has [tile/5 (outside=-1), active actor occupancy].",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        112,
+        144
+      ],
+      "meaning": "Up to 4 nearest other active actors in Chebyshev radius 3, stable distance/index order: [visible,dx/3,dy/3,tool/3,stone/4,ore,message/3,crew/19]. Missing slots all zero.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        144,
+        149
+      ],
+      "meaning": "Nearest lift when within Chebyshev 3: [visible,dx/3,dy/3,weight/4,weight>0]; otherwise all zero. Partner lift weight is not revealed remotely.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        149,
+        154
+      ],
+      "meaning": "Nearest depot within Chebyshev 3: [visible,dx/3,dy/3,delivered/20,owner index/19]; otherwise all zero.",
+      "visibility": "local"
+    }
+  ]
+}
+

@@ -1,0 +1,489 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "79a0391fc40375d7876f2cfba3ebc356fc89e3a8390b4d8f87607b1e1ef1da36",
+  "manifest_sha256": "b5fc125cdb16632a56e1434758367236b947c6551475430803842f9003940aef",
+  "title": "Windlift Quarry",
+  "rules": [
+    "Ore, weight and kit are real movable blocks; pick/drop works on your cell.",
+    "Role 0 cranks at (3,5), while role 1 brakes at (5,5). Both actions must occur together to launch.",
+    "At the brake, socket a held counterweight or retrieve one with empty hands.",
+    "Lift load includes its rider and all cargo aboard. Launch requires a positive counterweight and mass difference at most two.",
+    "A launch consumes 1 + mass difference rope units; each following tick moves the platform one cell toward its other dock.",
+    "Workers cannot leave a moving platform. Its arrival cell is reserved; occupied arrival docks prevent launch.",
+    "Walk along x=0 or x=8 to bypass the chasm. A rope kit near a control restores up to three wear units.",
+    "Deliver each ore block at its owner's depot. Selling a weight benefits its owner but removes shared lifting capacity."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable quarry terrace or safe edge ramp",
+          "color": "#B9A584"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable chasm",
+          "color": "#273843"
+        },
+        {
+          "value": 2,
+          "meaning": "Lift shaft; walkable only at actual platform",
+          "color": "#625046"
+        }
+      ],
+      "public": true
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Quarry workers",
+      "color": "#418BC5",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "label": "carrying"
+        }
+      ]
+    },
+    {
+      "id": "blocks",
+      "glyph": "crate",
+      "label": "Ore, weights and rope kits",
+      "color": "#C59957",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "block_kind"
+          ],
+          "label": "block kind"
+        },
+        {
+          "state_path": [
+            "block_owner"
+          ],
+          "label": "block owner"
+        },
+        {
+          "state_path": [
+            "block_mass"
+          ],
+          "label": "block mass"
+        },
+        {
+          "state_path": [
+            "block_status"
+          ],
+          "label": "block status"
+        }
+      ]
+    },
+    {
+      "id": "lift",
+      "glyph": "square",
+      "label": "Moving windlift platform",
+      "color": "#C88842",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "lift_target"
+          ],
+          "label": "lift target"
+        },
+        {
+          "state_path": [
+            "rope"
+          ],
+          "label": "rope"
+        },
+        {
+          "state_path": [
+            "countermass"
+          ],
+          "label": "countermass"
+        }
+      ]
+    },
+    {
+      "id": "controls",
+      "glyph": "tool",
+      "label": "Crank and brake controls",
+      "color": "#78614A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "rig_kind"
+          ],
+          "label": "rig kind"
+        }
+      ]
+    },
+    {
+      "id": "depots",
+      "glyph": "flag",
+      "label": "Owner depots",
+      "color": "#E2B24F",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "delivered"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "hoisted"
+      ],
+      "meaning": "Platform moved one vertical cell during this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Ore delivered this step, indexed by owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sale_now"
+      ],
+      "meaning": "Counterweights sold this step, indexed by owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "repaired"
+      ],
+      "meaning": "A rope kit was consumed to restore rope this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative ore deliveries by owner.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Pick up loose block on own cell"
+    },
+    {
+      "id": 6,
+      "label": "Drop held block on own cell"
+    },
+    {
+      "id": 7,
+      "label": "Crank: role 0 at crank, hands empty"
+    },
+    {
+      "id": 8,
+      "label": "Brake: role 1 at brake, hands empty"
+    },
+    {
+      "id": 9,
+      "label": "Socket held weight or retrieve a socketed weight at brake"
+    },
+    {
+      "id": 10,
+      "label": "Deliver ore or sell weight at its owner's depot"
+    },
+    {
+      "id": 11,
+      "label": "Patch rope using held kit within one cell of a control"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Self role one-hot in declared role order.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "t: Nonterminal clock, frozen after joint terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "done: Joint terminal latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "terminated: Natural cause latch. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "truncated: Cap-only latch, excluding natural termination. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        7,
+        70
+      ],
+      "meaning": "tiles: Actual y-major terrain codes; see tile legend. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        70,
+        76
+      ],
+      "meaning": "agent_pos: Agent [x,y] coordinates in role order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "agent_active: All roles remain present through joint terminal. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        82
+      ],
+      "meaning": "carrying: Held object index; -1 means empty. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        102
+      ],
+      "meaning": "block_pos: Each block's physical [x,y]; carried blocks track the carrier, socketed weights stay at brake, delivered/consumed coordinates freeze. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        102,
+        112
+      ],
+      "meaning": "block_active: Native block active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        112,
+        122
+      ],
+      "meaning": "block_kind: 0 ore, 1 counterweight, 2 rope kit. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        122,
+        132
+      ],
+      "meaning": "block_owner: Owner role 0..2; -1 for shared rope kits. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        132,
+        142
+      ],
+      "meaning": "block_mass: Integer mass; ore/kits 1, weights 2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        142,
+        152
+      ],
+      "meaning": "block_status: -1 loose, 0..2 held by that role, -2 installed, -3 delivered or sold, -4 consumed repair kit. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        152,
+        154
+      ],
+      "meaning": "lift_pos: The actual single platform [x,y]. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "meaning": "lift_active: Native lift active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        155,
+        156
+      ],
+      "meaning": "lift_target: Target dock y, 1 or 5. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        156,
+        157
+      ],
+      "meaning": "rope: Rope wear budget in 0..8. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "meaning": "countermass: Sum of mass of blocks with status -2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        158,
+        162
+      ],
+      "meaning": "rig_pos: Crank then brake/socket positions, both fixed on lower terrace. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        162,
+        164
+      ],
+      "meaning": "rig_active: Native rig active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        164,
+        166
+      ],
+      "meaning": "rig_kind: 0 crank, 1 brake/socket. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        166,
+        172
+      ],
+      "meaning": "depot_pos: Depots in owner order 0,1,2. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        172,
+        175
+      ],
+      "meaning": "depot_active: Native depot active in declared entity index order. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        175,
+        178
+      ],
+      "meaning": "delivered: Cumulative deliveries credited to original owners. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        178,
+        179
+      ],
+      "meaning": "hoisted: Per-step platform displacement flag, not a persistent motion label. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        179,
+        182
+      ],
+      "meaning": "delivered_now: Deliveries this step, credited to original owners. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        182,
+        183
+      ],
+      "meaning": "repaired: Per-step kit consumption/rope repair flag. Flattened row-major.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        183,
+        186
+      ],
+      "meaning": "sale_now: Weights sold this step by weight owner. Flattened row-major.",
+      "visibility": "public"
+    }
+  ]
+}

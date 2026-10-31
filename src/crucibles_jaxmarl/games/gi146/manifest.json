@@ -1,0 +1,960 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00146",
+  "source_sha256": "0bf7d018ace424e77dc0c3f7571e7889fde9463a76b053e9c167e2e6a836be16",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 304,
+  "num_actions": 13,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 80,
+  "reward_low": -17,
+  "reward_high": 8,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "firefighter_0_initial_pump_position"
+    },
+    {
+      "id": "agent_1",
+      "role": "firefighter_1_initial_console_position"
+    },
+    {
+      "id": "agent_2",
+      "role": "firefighter_2_initial_rescue_position"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move south"
+    },
+    {
+      "id": 3,
+      "label": "Move west"
+    },
+    {
+      "id": 4,
+      "label": "Move east"
+    },
+    {
+      "id": 5,
+      "label": "Operate pump"
+    },
+    {
+      "id": 6,
+      "label": "Receive water"
+    },
+    {
+      "id": 7,
+      "label": "Pick up or drop hose coupling"
+    },
+    {
+      "id": 8,
+      "label": "Spray radius one"
+    },
+    {
+      "id": 9,
+      "label": "Hold firebreak console"
+    },
+    {
+      "id": 10,
+      "label": "Pick up or drop occupant"
+    },
+    {
+      "id": 11,
+      "label": "Evacuate carried occupant at refuge"
+    },
+    {
+      "id": 12,
+      "label": "Give one water to a consenting receiver"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "tiles"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "has_hose"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "has_person"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pump_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pump_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pump_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hose_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hose_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "hose_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "person_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "person_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "person_vis"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "gate_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "console_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "console_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "console_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "refuge_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "refuge_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "refuge_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pump_water"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hose_holder"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "hose_connected"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "person_holder"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "person_status"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "person_health"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cell_pos"
+      ],
+      "shape": [
+        63,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire_level"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire_active"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cell_vis"
+      ],
+      "shape": [
+        3,
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gate_open"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "spent_water"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "water_total"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "rescued"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "lost"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "received"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "sprayed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "held"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "new_rescue"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "new_loss"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "walkable floor"
+        },
+        {
+          "value": 1,
+          "meaning": "wall"
+        },
+        {
+          "value": 2,
+          "meaning": "firebreak gate"
+        },
+        {
+          "value": 3,
+          "meaning": "finite pump"
+        },
+        {
+          "value": 4,
+          "meaning": "firebreak console"
+        },
+        {
+          "value": 5,
+          "meaning": "evacuation refuge"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "firefighters",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "meaning": "Stored water units, capacity four",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "has_hose"
+          ],
+          "meaning": "Carries one portable coupling",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "has_person"
+          ],
+          "meaning": "Carries one living occupant",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "pump",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "pump_pos"
+      ],
+      "active": [
+        "pump_active"
+      ],
+      "visibility": [
+        "pump_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "pump_water"
+          ],
+          "meaning": "Finite communal water reserve",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "couplings",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "hose_pos"
+      ],
+      "active": [
+        "hose_active"
+      ],
+      "visibility": [
+        "hose_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "hose_holder"
+          ],
+          "meaning": "Carrier id or minus one for a ground coupling",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "hose_connected"
+          ],
+          "meaning": "Ground coupling physically connected to pump",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "occupants",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "person_pos"
+      ],
+      "active": [
+        "person_active"
+      ],
+      "visibility": [
+        "person_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "person_holder"
+          ],
+          "meaning": "Carrier id or minus one",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "person_status"
+          ],
+          "meaning": "Zero unresolved, one evacuated, two lost",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "person_health"
+          ],
+          "meaning": "Remaining heat tolerance",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "fire_cells",
+      "kind": "hazard",
+      "count": 63,
+      "position": [
+        "cell_pos"
+      ],
+      "active": [
+        "fire_active"
+      ],
+      "visibility": [
+        "cell_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "fire_level"
+          ],
+          "meaning": "Zero out, one burning, two movement-blocking fire",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "meaning": "Remaining finite burn fuel",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "firebreak",
+      "kind": "gate",
+      "count": 1,
+      "position": [
+        "gate_pos"
+      ],
+      "active": [
+        "gate_active"
+      ],
+      "visibility": [
+        "gate_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "gate_open"
+          ],
+          "meaning": "A console was held during the preceding transition",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "console",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "console_pos"
+      ],
+      "active": [
+        "console_active"
+      ],
+      "visibility": [
+        "console_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "refuge",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "refuge_pos"
+      ],
+      "active": [
+        "refuge_active"
+      ],
+      "visibility": [
+        "refuge_vis"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Public cumulative evacuated occupants",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost"
+      ],
+      "meaning": "Public cumulative casualties",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "spent_water"
+      ],
+      "meaning": "Public cumulative water irreversibly consumed",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "gate_open"
+      ],
+      "meaning": "Console held in the preceding transition",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        8
+      ],
+      "meaning": "Public t, pump reserve, spent water, total water ledger, evacuated count, casualty count, preceding gate-open flag, joint done",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        8,
+        12
+      ],
+      "meaning": "Self id, x, y, stored water",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        75
+      ],
+      "meaning": "Public 7 by 9 terrain map, row-major yx; dynamic fire is excluded",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        93
+      ],
+      "meaning": "Three local firefighter records: visible, x, y, water, carries coupling, carries occupant; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        93,
+        103
+      ],
+      "meaning": "Two local coupling records: visible, x, y, holder id, connected gauge; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        103,
+        115
+      ],
+      "meaning": "Two local occupant records: visible, x, y, holder id, status, health; hidden payload minus one",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        115,
+        304
+      ],
+      "meaning": "63 row-major local cell records: visible, fire level, fuel; coordinates are implied by public map; hidden payload minus one",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Evacuate both occupants at the refuge before either suffers fatal heat exposure; share the finite water supply.",
+    "natural_termination": "Success when both occupants have status one; failure as soon as any occupant has status two. Otherwise the 80-transition horizon truncates. Natural completion takes priority at the horizon.",
+    "interaction": "Concurrent pump/receive and give/receive transfer real water. Ground couplings transmit pressure; picking one up can sever another firefighter's supply. A water-consuming console holder opens the gate for a different mover in that transition. Sprays alter later travel and occupant safety.",
+    "observation_access": "Public fixed terrain, pump reserve, conservation ledger, evacuation/casualty counts and preceding gate flag. Agents, occupants, couplings and fire/fuel are exposed only within Manhattan distance three. Coupling connection gauges are local. Geometry is distance-based without occlusion. All hidden dynamic payloads are minus one; visibility flags are explicit."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "constant",
+      "state_path": [
+        "water_total"
+      ],
+      "value": 24
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "pump_water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "spent_water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "person_health"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fire_level"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fuel"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

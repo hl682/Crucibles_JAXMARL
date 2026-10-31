@@ -1,0 +1,381 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "be6bf2ba2aaccce15d7be4c910873bebcee93b51b5b010b62ad910216b91617c",
+  "manifest_sha256": "d645bf382e21961a5f913625af7f132c7323ad4d8055f2332f5ca87cb959cba3",
+  "title": "Lantern Grid",
+  "rules": [
+    "Three crews share one finite electric grid and six ore blocks. All roles use the same native actions.",
+    "Lamp, lift and sorter draw 1, 3 and 2 units per tick. The common trunk carries at most 4.",
+    "Excess demand trips the highest-demand branch fuse before supply. A carried spare fuse repairs it.",
+    "A generator crank spends one of nine fuel units to add six charge when charge is at most six.",
+    "Wire the lift using a carried cable, or hold its manual bypass for three ticks. Movement uses the previous interval's power.",
+    "Powered light expands nearby crews' sight from one to four tiles; hidden items remain hidden in role view.",
+    "Sort carried ore beside the powered sorter, then take it to the west depot. Materials are never respawned.",
+    "All six deposits finish naturally; tick 160 otherwise truncates. This source and its scripts are unexecuted."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable block floor",
+          "color": "#807564"
+        },
+        {
+          "value": 1,
+          "meaning": "Solid quarry wall",
+          "color": "#4F535D"
+        },
+        {
+          "value": 2,
+          "meaning": "Lift gate; powered branch 1 or manual bypass permits crossing",
+          "color": "#BD9B45"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "glyph": "worker",
+      "label": "Block crews",
+      "color": "#DAA657",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "load"
+          ],
+          "label": "Held item index; -1 empty"
+        }
+      ]
+    },
+    {
+      "id": "circuits",
+      "glyph": "battery",
+      "label": "0 Lamp / 1 Lift / 2 Sorter",
+      "color": "#D9BD53",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "branch_on"
+          ],
+          "label": "Switch requested on"
+        },
+        {
+          "state_path": [
+            "wired"
+          ],
+          "label": "Installed cable connection"
+        },
+        {
+          "state_path": [
+            "fuse"
+          ],
+          "label": "Fuse intact"
+        },
+        {
+          "state_path": [
+            "powered"
+          ],
+          "label": "Supply available this interval"
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "glyph": "square",
+      "label": "0 Generator / 1 Ore depot",
+      "color": "#796453",
+      "attribute_labels": []
+    },
+    {
+      "id": "materials",
+      "glyph": "crate",
+      "label": "Ore, cable and fuse blocks",
+      "color": "#65A7B3",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "kind"
+          ],
+          "label": "0 ore, 1 cable, 2 fuse"
+        },
+        {
+          "state_path": [
+            "holder"
+          ],
+          "label": "-1 ground, >=0 actor, -2 consumed, -3 delivered"
+        },
+        {
+          "state_path": [
+            "sorted"
+          ],
+          "label": "Ore sorted"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Sorted ore deposited; cumulative out of six",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "trips"
+      ],
+      "meaning": "Trunk overload trips; cumulative",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "charge"
+      ],
+      "meaning": "Shared capacitor charge, 0..12",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "bypass"
+      ],
+      "meaning": "Manual gate time remaining",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Walk north"
+    },
+    {
+      "id": 2,
+      "label": "Walk east"
+    },
+    {
+      "id": 3,
+      "label": "Walk south"
+    },
+    {
+      "id": 4,
+      "label": "Walk west"
+    },
+    {
+      "id": 5,
+      "label": "Pick lowest-index eligible loose item within one tile; hands must be empty"
+    },
+    {
+      "id": 6,
+      "label": "Drop held item on current tile"
+    },
+    {
+      "id": 7,
+      "label": "Toggle closest branch switch within one tile"
+    },
+    {
+      "id": 8,
+      "label": "Crank generator within one tile: one fuel gives six charge if charge <= 6"
+    },
+    {
+      "id": 9,
+      "label": "Install held cable at closest unwired branch within one tile"
+    },
+    {
+      "id": 10,
+      "label": "Repair closest blown branch with held fuse within one tile"
+    },
+    {
+      "id": 11,
+      "label": "Hold manual lift bypass open for three ticks from within one tile"
+    },
+    {
+      "id": 12,
+      "label": "Sort held ore beside powered sorter branch 2"
+    },
+    {
+      "id": 13,
+      "label": "Deliver sorted held ore beside depot"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "t; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "meaning": "done; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "terminated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "truncated; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        67
+      ],
+      "meaning": "terrain; native state, row-major order",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        67,
+        73
+      ],
+      "meaning": "Public circuit positions in index order lamp, lift, sorter; x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        73,
+        76
+      ],
+      "meaning": "Three public switch demands",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        76,
+        79
+      ],
+      "meaning": "Three public cable installed flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        82
+      ],
+      "meaning": "Three public fuse integrity flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        85
+      ],
+      "meaning": "Three public current supply flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        85,
+        89
+      ],
+      "meaning": "Public generator then depot positions; x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        90
+      ],
+      "meaning": "Remaining shared generator fuel units, 0..9",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        90,
+        91
+      ],
+      "meaning": "Capacitor stored charge, 0..12",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        91,
+        92
+      ],
+      "meaning": "Manual gate bypass ticks remaining, 0..3",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        93
+      ],
+      "meaning": "Sorted ore already deposited, 0..6",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        93,
+        94
+      ],
+      "meaning": "Cumulative trunk overload count; at most t",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        94,
+        95
+      ],
+      "meaning": "Own immutable actor index, 0..2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        95,
+        107
+      ],
+      "meaning": "Three records: visible, x, y, held item index; hidden values -1",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        107,
+        167
+      ],
+      "meaning": "Ten item records: visible, x, y, kind, holder, sorted; hidden values -1",
+      "visibility": "local"
+    }
+  ]
+}

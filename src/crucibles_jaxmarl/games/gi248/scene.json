@@ -1,0 +1,2489 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "a3f68f170bfd0a38bc5eff6e983461f9699121fa8b529c19b65d2ad9eb008e1b",
+  "manifest_sha256": "dbbd179949f0b81ab82b5964c24204a4ea968f00cdf615f6fcdb2c6679b02475",
+  "title": "Basalt Tide Salvage",
+  "rules": [
+    "512 independent people belong to 32 crews; select one actor or submit any joint 512-action vector.",
+    "Two harness users on the exact brake squares hold a bridge for this transition. Three supports make it permanent. High water otherwise prevents entry onto the bridge strip.",
+    "A wrench operator pumps one water unit using one charge. The adjacent paired dock receives it; its valve can divert it into charge.",
+    "Pick up a nearby crate, carry it through real coordinates, then deliver near a shelter. The collecting crew receives salvage credit; rust can destroy submerged crates.",
+    "Quarry with a pick, spend blocks near a bridge or shelter, exchange tools with a consenting neighbor, or rescue an oxygen-zero neighbor.",
+    "Nearby actors and objects are shown through their exact observation masks. Forecasts are learned at a shelter and may be passed to neighbors.",
+    "This gray basalt, ochre timber and blue water scene is an original block survival family. Replay, human play, runtime and learning are unverified."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      -0.5,
+      -0.5,
+      63.5,
+      31.5
+    ],
+    "map": {
+      "state_path": [
+        "tile"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Dry basalt path",
+          "color": "#59616B"
+        },
+        {
+          "value": 1,
+          "meaning": "Floodable water channel",
+          "color": "#59616B"
+        },
+        {
+          "value": 2,
+          "meaning": "Counterweighted bridge strip",
+          "color": "#59616B"
+        },
+        {
+          "value": 3,
+          "meaning": "Shelter and forecast board",
+          "color": "#59616B"
+        },
+        {
+          "value": 4,
+          "meaning": "Basalt quarry",
+          "color": "#59616B"
+        },
+        {
+          "value": 5,
+          "meaning": "Charge-consuming pump",
+          "color": "#59616B"
+        },
+        {
+          "value": 6,
+          "meaning": "Incoming-flow diversion valve",
+          "color": "#59616B"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "actors",
+      "glyph": "worker",
+      "label": "Actors",
+      "color": "#CDA15A",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "label": "crew index 0..31"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "label": "Tool: 0 pick,1 pump wrench,2 harness,3 signal flag"
+        },
+        {
+          "state_path": [
+            "oxygen"
+          ],
+          "label": "oxygen 0..12; zero disables all non-wait actions"
+        },
+        {
+          "state_path": [
+            "blocks"
+          ],
+          "label": "carried basalt blocks 0..3"
+        },
+        {
+          "state_path": [
+            "carry"
+          ],
+          "label": "carried crate ID or -1"
+        },
+        {
+          "state_path": [
+            "warning"
+          ],
+          "label": "current tide message: 0 silent, 1..3 encodes forecast 0..2"
+        },
+        {
+          "state_path": [
+            "event"
+          ],
+          "label": "0..15 accepted action,16 completed tool swap,17 credited rescuer; other codes are not success flags"
+        },
+        {
+          "state_path": [
+            "rescued"
+          ],
+          "label": "received a rescue in the last transition"
+        }
+      ]
+    },
+    {
+      "id": "docks",
+      "glyph": "square",
+      "label": "Docks",
+      "color": "#515965",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "label": "local water level 0..4"
+        },
+        {
+          "state_path": [
+            "support"
+          ],
+          "label": "persistent bridge supports 0..3"
+        },
+        {
+          "state_path": [
+            "shelter"
+          ],
+          "label": "shelter built flag"
+        },
+        {
+          "state_path": [
+            "valve"
+          ],
+          "label": "diversion/irrigation switch state"
+        },
+        {
+          "state_path": [
+            "charge"
+          ],
+          "label": "stored pump charge 0..8"
+        },
+        {
+          "state_path": [
+            "bridge"
+          ],
+          "label": "bridge currently usable from two holds or three supports"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "label": "cumulative local delivered units"
+        },
+        {
+          "state_path": [
+            "pumped"
+          ],
+          "label": "one actual pump discharge in the last transition"
+        },
+        {
+          "state_path": [
+            "flood_loss"
+          ],
+          "label": "crate losses assigned to this crew in last transition"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Cargo",
+      "color": "#C58C43",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "label": "native carrier actor ID or -1"
+        },
+        {
+          "state_path": [
+            "owner"
+          ],
+          "label": "current cargo or barge owner group"
+        },
+        {
+          "state_path": [
+            "rust"
+          ],
+          "label": "rust damage 0..8"
+        }
+      ]
+    },
+    {
+      "id": "brakes",
+      "glyph": "tool",
+      "label": "Brakes",
+      "color": "#D3D7DB",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "held"
+          ],
+          "label": "currently held brake, brace or door"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "event"
+      ],
+      "meaning": "Last transition: 0..15 accepted action,16 completed tool swap,17 credited rescuer",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "received a rescue in the last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pumped"
+      ],
+      "meaning": "one actual pump discharge in the last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "flood_loss"
+      ],
+      "meaning": "crate losses assigned to this crew in last transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "cumulative local delivered units",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "held"
+      ],
+      "meaning": "currently held brake, brace or door",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "bridge"
+      ],
+      "meaning": "bridge currently usable from two holds or three supports",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "North"
+    },
+    {
+      "id": 2,
+      "label": "East"
+    },
+    {
+      "id": 3,
+      "label": "South"
+    },
+    {
+      "id": 4,
+      "label": "West"
+    },
+    {
+      "id": 5,
+      "label": "Quarry basalt"
+    },
+    {
+      "id": 6,
+      "label": "Build support or shelter"
+    },
+    {
+      "id": 7,
+      "label": "Pump dock"
+    },
+    {
+      "id": 8,
+      "label": "Toggle diversion"
+    },
+    {
+      "id": 9,
+      "label": "Hold brake"
+    },
+    {
+      "id": 10,
+      "label": "Pick up crate"
+    },
+    {
+      "id": 11,
+      "label": "Drop crate"
+    },
+    {
+      "id": 12,
+      "label": "Offer tool swap"
+    },
+    {
+      "id": 13,
+      "label": "Rescue neighbor"
+    },
+    {
+      "id": 14,
+      "label": "Deliver salvage"
+    },
+    {
+      "id": 15,
+      "label": "Share tide warning"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "name": "self.id",
+      "meaning": "native zero-based actor ID",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        2
+      ],
+      "name": "self.crew",
+      "meaning": "crew index 0..31",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "name": "self.tool",
+      "meaning": "Tool: 0 pick,1 pump wrench,2 harness,3 signal flag",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "name": "self.x",
+      "meaning": "absolute grid x coordinate",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "name": "self.y",
+      "meaning": "absolute grid y coordinate",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "name": "self.oxygen",
+      "meaning": "oxygen 0..12; zero disables all non-wait actions",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "name": "self.blocks",
+      "meaning": "carried basalt blocks 0..3",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "name": "self.carry",
+      "meaning": "carried crate ID or -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        9
+      ],
+      "name": "self.knowledge",
+      "meaning": "private cached forecast/recipe; may be stale",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        10
+      ],
+      "name": "self.warning",
+      "meaning": "current tide message: 0 silent, 1..3 encodes forecast 0..2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "name": "self.event",
+      "meaning": "accepted action code for the last actual transition; not a success flag In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "name": "self.rescued",
+      "meaning": "received a rescue in the last transition",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        13
+      ],
+      "name": "actors.slot0.visible",
+      "meaning": "actors, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        13,
+        14
+      ],
+      "name": "actors.slot0.entity_id",
+      "meaning": "actors, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        14,
+        15
+      ],
+      "name": "actors.slot0.x",
+      "meaning": "actors, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        15,
+        16
+      ],
+      "name": "actors.slot0.y",
+      "meaning": "actors, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        16,
+        17
+      ],
+      "name": "actors.slot0.crew",
+      "meaning": "actors, nearest slot 0: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        17,
+        18
+      ],
+      "name": "actors.slot0.tool",
+      "meaning": "actors, nearest slot 0: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        18,
+        19
+      ],
+      "name": "actors.slot0.oxygen",
+      "meaning": "actors, nearest slot 0: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        19,
+        20
+      ],
+      "name": "actors.slot0.blocks",
+      "meaning": "actors, nearest slot 0: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        20,
+        21
+      ],
+      "name": "actors.slot0.carry",
+      "meaning": "actors, nearest slot 0: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        21,
+        22
+      ],
+      "name": "actors.slot0.warning",
+      "meaning": "actors, nearest slot 0: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        22,
+        23
+      ],
+      "name": "actors.slot0.event",
+      "meaning": "actors, nearest slot 0: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        23,
+        24
+      ],
+      "name": "actors.slot0.rescued",
+      "meaning": "actors, nearest slot 0: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        24,
+        25
+      ],
+      "name": "actors.slot1.visible",
+      "meaning": "actors, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        25,
+        26
+      ],
+      "name": "actors.slot1.entity_id",
+      "meaning": "actors, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        26,
+        27
+      ],
+      "name": "actors.slot1.x",
+      "meaning": "actors, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        27,
+        28
+      ],
+      "name": "actors.slot1.y",
+      "meaning": "actors, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        28,
+        29
+      ],
+      "name": "actors.slot1.crew",
+      "meaning": "actors, nearest slot 1: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        29,
+        30
+      ],
+      "name": "actors.slot1.tool",
+      "meaning": "actors, nearest slot 1: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        30,
+        31
+      ],
+      "name": "actors.slot1.oxygen",
+      "meaning": "actors, nearest slot 1: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        31,
+        32
+      ],
+      "name": "actors.slot1.blocks",
+      "meaning": "actors, nearest slot 1: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        32,
+        33
+      ],
+      "name": "actors.slot1.carry",
+      "meaning": "actors, nearest slot 1: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        33,
+        34
+      ],
+      "name": "actors.slot1.warning",
+      "meaning": "actors, nearest slot 1: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        34,
+        35
+      ],
+      "name": "actors.slot1.event",
+      "meaning": "actors, nearest slot 1: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        35,
+        36
+      ],
+      "name": "actors.slot1.rescued",
+      "meaning": "actors, nearest slot 1: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        36,
+        37
+      ],
+      "name": "actors.slot2.visible",
+      "meaning": "actors, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        37,
+        38
+      ],
+      "name": "actors.slot2.entity_id",
+      "meaning": "actors, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        38,
+        39
+      ],
+      "name": "actors.slot2.x",
+      "meaning": "actors, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        39,
+        40
+      ],
+      "name": "actors.slot2.y",
+      "meaning": "actors, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        40,
+        41
+      ],
+      "name": "actors.slot2.crew",
+      "meaning": "actors, nearest slot 2: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        41,
+        42
+      ],
+      "name": "actors.slot2.tool",
+      "meaning": "actors, nearest slot 2: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        42,
+        43
+      ],
+      "name": "actors.slot2.oxygen",
+      "meaning": "actors, nearest slot 2: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        43,
+        44
+      ],
+      "name": "actors.slot2.blocks",
+      "meaning": "actors, nearest slot 2: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        44,
+        45
+      ],
+      "name": "actors.slot2.carry",
+      "meaning": "actors, nearest slot 2: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        45,
+        46
+      ],
+      "name": "actors.slot2.warning",
+      "meaning": "actors, nearest slot 2: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        46,
+        47
+      ],
+      "name": "actors.slot2.event",
+      "meaning": "actors, nearest slot 2: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        47,
+        48
+      ],
+      "name": "actors.slot2.rescued",
+      "meaning": "actors, nearest slot 2: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        48,
+        49
+      ],
+      "name": "actors.slot3.visible",
+      "meaning": "actors, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        49,
+        50
+      ],
+      "name": "actors.slot3.entity_id",
+      "meaning": "actors, nearest slot 3: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        50,
+        51
+      ],
+      "name": "actors.slot3.x",
+      "meaning": "actors, nearest slot 3: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        51,
+        52
+      ],
+      "name": "actors.slot3.y",
+      "meaning": "actors, nearest slot 3: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        52,
+        53
+      ],
+      "name": "actors.slot3.crew",
+      "meaning": "actors, nearest slot 3: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        53,
+        54
+      ],
+      "name": "actors.slot3.tool",
+      "meaning": "actors, nearest slot 3: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        54,
+        55
+      ],
+      "name": "actors.slot3.oxygen",
+      "meaning": "actors, nearest slot 3: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        55,
+        56
+      ],
+      "name": "actors.slot3.blocks",
+      "meaning": "actors, nearest slot 3: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        56,
+        57
+      ],
+      "name": "actors.slot3.carry",
+      "meaning": "actors, nearest slot 3: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        57,
+        58
+      ],
+      "name": "actors.slot3.warning",
+      "meaning": "actors, nearest slot 3: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        58,
+        59
+      ],
+      "name": "actors.slot3.event",
+      "meaning": "actors, nearest slot 3: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        59,
+        60
+      ],
+      "name": "actors.slot3.rescued",
+      "meaning": "actors, nearest slot 3: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        60,
+        61
+      ],
+      "name": "actors.slot4.visible",
+      "meaning": "actors, nearest slot 4: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        61,
+        62
+      ],
+      "name": "actors.slot4.entity_id",
+      "meaning": "actors, nearest slot 4: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        62,
+        63
+      ],
+      "name": "actors.slot4.x",
+      "meaning": "actors, nearest slot 4: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        63,
+        64
+      ],
+      "name": "actors.slot4.y",
+      "meaning": "actors, nearest slot 4: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        64,
+        65
+      ],
+      "name": "actors.slot4.crew",
+      "meaning": "actors, nearest slot 4: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        65,
+        66
+      ],
+      "name": "actors.slot4.tool",
+      "meaning": "actors, nearest slot 4: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        66,
+        67
+      ],
+      "name": "actors.slot4.oxygen",
+      "meaning": "actors, nearest slot 4: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        67,
+        68
+      ],
+      "name": "actors.slot4.blocks",
+      "meaning": "actors, nearest slot 4: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        68,
+        69
+      ],
+      "name": "actors.slot4.carry",
+      "meaning": "actors, nearest slot 4: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        69,
+        70
+      ],
+      "name": "actors.slot4.warning",
+      "meaning": "actors, nearest slot 4: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        70,
+        71
+      ],
+      "name": "actors.slot4.event",
+      "meaning": "actors, nearest slot 4: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        71,
+        72
+      ],
+      "name": "actors.slot4.rescued",
+      "meaning": "actors, nearest slot 4: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        72,
+        73
+      ],
+      "name": "actors.slot5.visible",
+      "meaning": "actors, nearest slot 5: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        73,
+        74
+      ],
+      "name": "actors.slot5.entity_id",
+      "meaning": "actors, nearest slot 5: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        74,
+        75
+      ],
+      "name": "actors.slot5.x",
+      "meaning": "actors, nearest slot 5: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        75,
+        76
+      ],
+      "name": "actors.slot5.y",
+      "meaning": "actors, nearest slot 5: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        76,
+        77
+      ],
+      "name": "actors.slot5.crew",
+      "meaning": "actors, nearest slot 5: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        77,
+        78
+      ],
+      "name": "actors.slot5.tool",
+      "meaning": "actors, nearest slot 5: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        78,
+        79
+      ],
+      "name": "actors.slot5.oxygen",
+      "meaning": "actors, nearest slot 5: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        79,
+        80
+      ],
+      "name": "actors.slot5.blocks",
+      "meaning": "actors, nearest slot 5: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        80,
+        81
+      ],
+      "name": "actors.slot5.carry",
+      "meaning": "actors, nearest slot 5: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "name": "actors.slot5.warning",
+      "meaning": "actors, nearest slot 5: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        82,
+        83
+      ],
+      "name": "actors.slot5.event",
+      "meaning": "actors, nearest slot 5: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        83,
+        84
+      ],
+      "name": "actors.slot5.rescued",
+      "meaning": "actors, nearest slot 5: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        84,
+        85
+      ],
+      "name": "actors.slot6.visible",
+      "meaning": "actors, nearest slot 6: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        85,
+        86
+      ],
+      "name": "actors.slot6.entity_id",
+      "meaning": "actors, nearest slot 6: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        86,
+        87
+      ],
+      "name": "actors.slot6.x",
+      "meaning": "actors, nearest slot 6: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        87,
+        88
+      ],
+      "name": "actors.slot6.y",
+      "meaning": "actors, nearest slot 6: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        88,
+        89
+      ],
+      "name": "actors.slot6.crew",
+      "meaning": "actors, nearest slot 6: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        89,
+        90
+      ],
+      "name": "actors.slot6.tool",
+      "meaning": "actors, nearest slot 6: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        90,
+        91
+      ],
+      "name": "actors.slot6.oxygen",
+      "meaning": "actors, nearest slot 6: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        91,
+        92
+      ],
+      "name": "actors.slot6.blocks",
+      "meaning": "actors, nearest slot 6: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        92,
+        93
+      ],
+      "name": "actors.slot6.carry",
+      "meaning": "actors, nearest slot 6: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        93,
+        94
+      ],
+      "name": "actors.slot6.warning",
+      "meaning": "actors, nearest slot 6: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        94,
+        95
+      ],
+      "name": "actors.slot6.event",
+      "meaning": "actors, nearest slot 6: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        95,
+        96
+      ],
+      "name": "actors.slot6.rescued",
+      "meaning": "actors, nearest slot 6: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        96,
+        97
+      ],
+      "name": "actors.slot7.visible",
+      "meaning": "actors, nearest slot 7: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        97,
+        98
+      ],
+      "name": "actors.slot7.entity_id",
+      "meaning": "actors, nearest slot 7: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        98,
+        99
+      ],
+      "name": "actors.slot7.x",
+      "meaning": "actors, nearest slot 7: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        99,
+        100
+      ],
+      "name": "actors.slot7.y",
+      "meaning": "actors, nearest slot 7: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        100,
+        101
+      ],
+      "name": "actors.slot7.crew",
+      "meaning": "actors, nearest slot 7: crew index 0..31. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        101,
+        102
+      ],
+      "name": "actors.slot7.tool",
+      "meaning": "actors, nearest slot 7: Tool: 0 pick,1 pump wrench,2 harness,3 signal flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        102,
+        103
+      ],
+      "name": "actors.slot7.oxygen",
+      "meaning": "actors, nearest slot 7: oxygen 0..12; zero disables all non-wait actions. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        103,
+        104
+      ],
+      "name": "actors.slot7.blocks",
+      "meaning": "actors, nearest slot 7: carried basalt blocks 0..3. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        104,
+        105
+      ],
+      "name": "actors.slot7.carry",
+      "meaning": "actors, nearest slot 7: carried crate ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        105,
+        106
+      ],
+      "name": "actors.slot7.warning",
+      "meaning": "actors, nearest slot 7: current tide message: 0 silent, 1..3 encodes forecast 0..2. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        106,
+        107
+      ],
+      "name": "actors.slot7.event",
+      "meaning": "actors, nearest slot 7: accepted action code for the last actual transition; not a success flag. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1. In this game 16 marks completed tool swap and 17 the credited rescuer.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        107,
+        108
+      ],
+      "name": "actors.slot7.rescued",
+      "meaning": "actors, nearest slot 7: received a rescue in the last transition. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        108,
+        109
+      ],
+      "name": "docks.slot0.visible",
+      "meaning": "docks, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        109,
+        110
+      ],
+      "name": "docks.slot0.entity_id",
+      "meaning": "docks, nearest slot 0: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        110,
+        111
+      ],
+      "name": "docks.slot0.x",
+      "meaning": "docks, nearest slot 0: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        111,
+        112
+      ],
+      "name": "docks.slot0.y",
+      "meaning": "docks, nearest slot 0: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        112,
+        113
+      ],
+      "name": "docks.slot0.water",
+      "meaning": "docks, nearest slot 0: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        113,
+        114
+      ],
+      "name": "docks.slot0.support",
+      "meaning": "docks, nearest slot 0: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        114,
+        115
+      ],
+      "name": "docks.slot0.shelter",
+      "meaning": "docks, nearest slot 0: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        115,
+        116
+      ],
+      "name": "docks.slot0.valve",
+      "meaning": "docks, nearest slot 0: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        116,
+        117
+      ],
+      "name": "docks.slot0.charge",
+      "meaning": "docks, nearest slot 0: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        117,
+        118
+      ],
+      "name": "docks.slot0.bridge",
+      "meaning": "docks, nearest slot 0: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        118,
+        119
+      ],
+      "name": "docks.slot0.delivered",
+      "meaning": "docks, nearest slot 0: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        119,
+        120
+      ],
+      "name": "docks.slot0.pumped",
+      "meaning": "docks, nearest slot 0: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        120,
+        121
+      ],
+      "name": "docks.slot0.flood_loss",
+      "meaning": "docks, nearest slot 0: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        121,
+        122
+      ],
+      "name": "docks.slot1.visible",
+      "meaning": "docks, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        122,
+        123
+      ],
+      "name": "docks.slot1.entity_id",
+      "meaning": "docks, nearest slot 1: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        123,
+        124
+      ],
+      "name": "docks.slot1.x",
+      "meaning": "docks, nearest slot 1: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        124,
+        125
+      ],
+      "name": "docks.slot1.y",
+      "meaning": "docks, nearest slot 1: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        125,
+        126
+      ],
+      "name": "docks.slot1.water",
+      "meaning": "docks, nearest slot 1: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        126,
+        127
+      ],
+      "name": "docks.slot1.support",
+      "meaning": "docks, nearest slot 1: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        127,
+        128
+      ],
+      "name": "docks.slot1.shelter",
+      "meaning": "docks, nearest slot 1: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        128,
+        129
+      ],
+      "name": "docks.slot1.valve",
+      "meaning": "docks, nearest slot 1: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        129,
+        130
+      ],
+      "name": "docks.slot1.charge",
+      "meaning": "docks, nearest slot 1: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        130,
+        131
+      ],
+      "name": "docks.slot1.bridge",
+      "meaning": "docks, nearest slot 1: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        131,
+        132
+      ],
+      "name": "docks.slot1.delivered",
+      "meaning": "docks, nearest slot 1: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        132,
+        133
+      ],
+      "name": "docks.slot1.pumped",
+      "meaning": "docks, nearest slot 1: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        133,
+        134
+      ],
+      "name": "docks.slot1.flood_loss",
+      "meaning": "docks, nearest slot 1: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        134,
+        135
+      ],
+      "name": "docks.slot2.visible",
+      "meaning": "docks, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        135,
+        136
+      ],
+      "name": "docks.slot2.entity_id",
+      "meaning": "docks, nearest slot 2: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        136,
+        137
+      ],
+      "name": "docks.slot2.x",
+      "meaning": "docks, nearest slot 2: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        137,
+        138
+      ],
+      "name": "docks.slot2.y",
+      "meaning": "docks, nearest slot 2: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        138,
+        139
+      ],
+      "name": "docks.slot2.water",
+      "meaning": "docks, nearest slot 2: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        139,
+        140
+      ],
+      "name": "docks.slot2.support",
+      "meaning": "docks, nearest slot 2: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        140,
+        141
+      ],
+      "name": "docks.slot2.shelter",
+      "meaning": "docks, nearest slot 2: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        141,
+        142
+      ],
+      "name": "docks.slot2.valve",
+      "meaning": "docks, nearest slot 2: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        142,
+        143
+      ],
+      "name": "docks.slot2.charge",
+      "meaning": "docks, nearest slot 2: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        143,
+        144
+      ],
+      "name": "docks.slot2.bridge",
+      "meaning": "docks, nearest slot 2: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        144,
+        145
+      ],
+      "name": "docks.slot2.delivered",
+      "meaning": "docks, nearest slot 2: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        145,
+        146
+      ],
+      "name": "docks.slot2.pumped",
+      "meaning": "docks, nearest slot 2: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        146,
+        147
+      ],
+      "name": "docks.slot2.flood_loss",
+      "meaning": "docks, nearest slot 2: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        147,
+        148
+      ],
+      "name": "docks.slot3.visible",
+      "meaning": "docks, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        148,
+        149
+      ],
+      "name": "docks.slot3.entity_id",
+      "meaning": "docks, nearest slot 3: zero-based entity ID within this group. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        149,
+        150
+      ],
+      "name": "docks.slot3.x",
+      "meaning": "docks, nearest slot 3: absolute grid x. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        150,
+        151
+      ],
+      "name": "docks.slot3.y",
+      "meaning": "docks, nearest slot 3: absolute grid y. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        151,
+        152
+      ],
+      "name": "docks.slot3.water",
+      "meaning": "docks, nearest slot 3: local water level 0..4. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        152,
+        153
+      ],
+      "name": "docks.slot3.support",
+      "meaning": "docks, nearest slot 3: persistent bridge supports 0..3. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        153,
+        154
+      ],
+      "name": "docks.slot3.shelter",
+      "meaning": "docks, nearest slot 3: shelter built flag. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        154,
+        155
+      ],
+      "name": "docks.slot3.valve",
+      "meaning": "docks, nearest slot 3: diversion/irrigation switch state. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        155,
+        156
+      ],
+      "name": "docks.slot3.charge",
+      "meaning": "docks, nearest slot 3: stored pump charge 0..8. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        156,
+        157
+      ],
+      "name": "docks.slot3.bridge",
+      "meaning": "docks, nearest slot 3: bridge currently usable from two holds or three supports. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        157,
+        158
+      ],
+      "name": "docks.slot3.delivered",
+      "meaning": "docks, nearest slot 3: cumulative local delivered units. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        158,
+        159
+      ],
+      "name": "docks.slot3.pumped",
+      "meaning": "docks, nearest slot 3: one actual pump discharge in the last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        159,
+        160
+      ],
+      "name": "docks.slot3.flood_loss",
+      "meaning": "docks, nearest slot 3: crate losses assigned to this crew in last transition. Manhattan radius 7; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        160,
+        161
+      ],
+      "name": "cargo.slot0.visible",
+      "meaning": "cargo, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        161,
+        162
+      ],
+      "name": "cargo.slot0.entity_id",
+      "meaning": "cargo, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        162,
+        163
+      ],
+      "name": "cargo.slot0.x",
+      "meaning": "cargo, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        163,
+        164
+      ],
+      "name": "cargo.slot0.y",
+      "meaning": "cargo, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        164,
+        165
+      ],
+      "name": "cargo.slot0.carrier",
+      "meaning": "cargo, nearest slot 0: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        165,
+        166
+      ],
+      "name": "cargo.slot0.owner",
+      "meaning": "cargo, nearest slot 0: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        166,
+        167
+      ],
+      "name": "cargo.slot0.rust",
+      "meaning": "cargo, nearest slot 0: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        167,
+        168
+      ],
+      "name": "cargo.slot1.visible",
+      "meaning": "cargo, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        168,
+        169
+      ],
+      "name": "cargo.slot1.entity_id",
+      "meaning": "cargo, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        169,
+        170
+      ],
+      "name": "cargo.slot1.x",
+      "meaning": "cargo, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        170,
+        171
+      ],
+      "name": "cargo.slot1.y",
+      "meaning": "cargo, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        171,
+        172
+      ],
+      "name": "cargo.slot1.carrier",
+      "meaning": "cargo, nearest slot 1: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        172,
+        173
+      ],
+      "name": "cargo.slot1.owner",
+      "meaning": "cargo, nearest slot 1: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        173,
+        174
+      ],
+      "name": "cargo.slot1.rust",
+      "meaning": "cargo, nearest slot 1: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        174,
+        175
+      ],
+      "name": "cargo.slot2.visible",
+      "meaning": "cargo, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        175,
+        176
+      ],
+      "name": "cargo.slot2.entity_id",
+      "meaning": "cargo, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        176,
+        177
+      ],
+      "name": "cargo.slot2.x",
+      "meaning": "cargo, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        177,
+        178
+      ],
+      "name": "cargo.slot2.y",
+      "meaning": "cargo, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        178,
+        179
+      ],
+      "name": "cargo.slot2.carrier",
+      "meaning": "cargo, nearest slot 2: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        179,
+        180
+      ],
+      "name": "cargo.slot2.owner",
+      "meaning": "cargo, nearest slot 2: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        180,
+        181
+      ],
+      "name": "cargo.slot2.rust",
+      "meaning": "cargo, nearest slot 2: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        181,
+        182
+      ],
+      "name": "cargo.slot3.visible",
+      "meaning": "cargo, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        182,
+        183
+      ],
+      "name": "cargo.slot3.entity_id",
+      "meaning": "cargo, nearest slot 3: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        183,
+        184
+      ],
+      "name": "cargo.slot3.x",
+      "meaning": "cargo, nearest slot 3: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        184,
+        185
+      ],
+      "name": "cargo.slot3.y",
+      "meaning": "cargo, nearest slot 3: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        185,
+        186
+      ],
+      "name": "cargo.slot3.carrier",
+      "meaning": "cargo, nearest slot 3: native carrier actor ID or -1. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        186,
+        187
+      ],
+      "name": "cargo.slot3.owner",
+      "meaning": "cargo, nearest slot 3: current cargo or barge owner group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        187,
+        188
+      ],
+      "name": "cargo.slot3.rust",
+      "meaning": "cargo, nearest slot 3: rust damage 0..8. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        188,
+        189
+      ],
+      "name": "brakes.slot0.visible",
+      "meaning": "brakes, nearest slot 0: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        189,
+        190
+      ],
+      "name": "brakes.slot0.entity_id",
+      "meaning": "brakes, nearest slot 0: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        190,
+        191
+      ],
+      "name": "brakes.slot0.x",
+      "meaning": "brakes, nearest slot 0: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        191,
+        192
+      ],
+      "name": "brakes.slot0.y",
+      "meaning": "brakes, nearest slot 0: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        192,
+        193
+      ],
+      "name": "brakes.slot0.held",
+      "meaning": "brakes, nearest slot 0: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        193,
+        194
+      ],
+      "name": "brakes.slot1.visible",
+      "meaning": "brakes, nearest slot 1: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        194,
+        195
+      ],
+      "name": "brakes.slot1.entity_id",
+      "meaning": "brakes, nearest slot 1: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        195,
+        196
+      ],
+      "name": "brakes.slot1.x",
+      "meaning": "brakes, nearest slot 1: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        196,
+        197
+      ],
+      "name": "brakes.slot1.y",
+      "meaning": "brakes, nearest slot 1: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        197,
+        198
+      ],
+      "name": "brakes.slot1.held",
+      "meaning": "brakes, nearest slot 1: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        198,
+        199
+      ],
+      "name": "brakes.slot2.visible",
+      "meaning": "brakes, nearest slot 2: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        199,
+        200
+      ],
+      "name": "brakes.slot2.entity_id",
+      "meaning": "brakes, nearest slot 2: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        200,
+        201
+      ],
+      "name": "brakes.slot2.x",
+      "meaning": "brakes, nearest slot 2: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        201,
+        202
+      ],
+      "name": "brakes.slot2.y",
+      "meaning": "brakes, nearest slot 2: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        202,
+        203
+      ],
+      "name": "brakes.slot2.held",
+      "meaning": "brakes, nearest slot 2: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        203,
+        204
+      ],
+      "name": "brakes.slot3.visible",
+      "meaning": "brakes, nearest slot 3: 1 for selected visible entity; the entire slot is -1 when hidden. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        204,
+        205
+      ],
+      "name": "brakes.slot3.entity_id",
+      "meaning": "brakes, nearest slot 3: zero-based entity ID within this group. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        205,
+        206
+      ],
+      "name": "brakes.slot3.x",
+      "meaning": "brakes, nearest slot 3: absolute grid x. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        206,
+        207
+      ],
+      "name": "brakes.slot3.y",
+      "meaning": "brakes, nearest slot 3: absolute grid y. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        207,
+        208
+      ],
+      "name": "brakes.slot3.held",
+      "meaning": "brakes, nearest slot 3: currently held brake, brace or door. Manhattan radius 5; ascending (distance,entity ID); hidden slot -1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        208,
+        209
+      ],
+      "name": "patch.dy-2.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        209,
+        210
+      ],
+      "name": "patch.dy-2.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        210,
+        211
+      ],
+      "name": "patch.dy-2.dx0",
+      "meaning": "Static map tile at self offset x=0, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        211,
+        212
+      ],
+      "name": "patch.dy-2.dx1",
+      "meaning": "Static map tile at self offset x=1, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        212,
+        213
+      ],
+      "name": "patch.dy-2.dx2",
+      "meaning": "Static map tile at self offset x=2, y=-2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        213,
+        214
+      ],
+      "name": "patch.dy-1.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        214,
+        215
+      ],
+      "name": "patch.dy-1.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        215,
+        216
+      ],
+      "name": "patch.dy-1.dx0",
+      "meaning": "Static map tile at self offset x=0, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        216,
+        217
+      ],
+      "name": "patch.dy-1.dx1",
+      "meaning": "Static map tile at self offset x=1, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        217,
+        218
+      ],
+      "name": "patch.dy-1.dx2",
+      "meaning": "Static map tile at self offset x=2, y=-1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        218,
+        219
+      ],
+      "name": "patch.dy0.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        219,
+        220
+      ],
+      "name": "patch.dy0.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        220,
+        221
+      ],
+      "name": "patch.dy0.dx0",
+      "meaning": "Static map tile at self offset x=0, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        221,
+        222
+      ],
+      "name": "patch.dy0.dx1",
+      "meaning": "Static map tile at self offset x=1, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        222,
+        223
+      ],
+      "name": "patch.dy0.dx2",
+      "meaning": "Static map tile at self offset x=2, y=0; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        223,
+        224
+      ],
+      "name": "patch.dy1.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        224,
+        225
+      ],
+      "name": "patch.dy1.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        225,
+        226
+      ],
+      "name": "patch.dy1.dx0",
+      "meaning": "Static map tile at self offset x=0, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        226,
+        227
+      ],
+      "name": "patch.dy1.dx1",
+      "meaning": "Static map tile at self offset x=1, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        227,
+        228
+      ],
+      "name": "patch.dy1.dx2",
+      "meaning": "Static map tile at self offset x=2, y=1; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        228,
+        229
+      ],
+      "name": "patch.dy2.dx-2",
+      "meaning": "Static map tile at self offset x=-2, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        229,
+        230
+      ],
+      "name": "patch.dy2.dx-1",
+      "meaning": "Static map tile at self offset x=-1, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        230,
+        231
+      ],
+      "name": "patch.dy2.dx0",
+      "meaning": "Static map tile at self offset x=0, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        231,
+        232
+      ],
+      "name": "patch.dy2.dx1",
+      "meaning": "Static map tile at self offset x=1, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        232,
+        233
+      ],
+      "name": "patch.dy2.dx2",
+      "meaning": "Static map tile at self offset x=2, y=2; -1 outside bounds. See world.map.legend.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        233,
+        234
+      ],
+      "name": "public.t",
+      "meaning": "completed native transition count",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        234,
+        235
+      ],
+      "name": "public.done",
+      "meaning": "joint episode completion",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        235,
+        236
+      ],
+      "name": "public.terminated",
+      "meaning": "natural completion cause",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        236,
+        272
+      ],
+      "name": "padding",
+      "meaning": "Explicit constant zero padding; contains no additional information.",
+      "visibility": "padding"
+    }
+  ]
+}

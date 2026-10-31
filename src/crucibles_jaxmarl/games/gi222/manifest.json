@@ -1,0 +1,791 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00222",
+  "source_sha256": "79c337638b54d537f4bbf30ac2e2a38c0a1dd3718e22d14e98d9035079f7ee51",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 20,
+  "observation_size": 344,
+  "num_actions": 18,
+  "max_steps": 512,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -2,
+  "observation_high": 65536,
+  "reward_low": -1,
+  "reward_high": 30,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "crew 0 / initial pick miner / actor 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "crew 0 / initial support carpenter / actor 1"
+    },
+    {
+      "id": "agent_2",
+      "role": "crew 0 / initial ventilator / actor 2"
+    },
+    {
+      "id": "agent_3",
+      "role": "crew 0 / initial field medic / actor 3"
+    },
+    {
+      "id": "agent_4",
+      "role": "crew 1 / initial pick miner / actor 4"
+    },
+    {
+      "id": "agent_5",
+      "role": "crew 1 / initial support carpenter / actor 5"
+    },
+    {
+      "id": "agent_6",
+      "role": "crew 1 / initial ventilator / actor 6"
+    },
+    {
+      "id": "agent_7",
+      "role": "crew 1 / initial field medic / actor 7"
+    },
+    {
+      "id": "agent_8",
+      "role": "crew 2 / initial pick miner / actor 8"
+    },
+    {
+      "id": "agent_9",
+      "role": "crew 2 / initial support carpenter / actor 9"
+    },
+    {
+      "id": "agent_10",
+      "role": "crew 2 / initial ventilator / actor 10"
+    },
+    {
+      "id": "agent_11",
+      "role": "crew 2 / initial field medic / actor 11"
+    },
+    {
+      "id": "agent_12",
+      "role": "crew 3 / initial pick miner / actor 12"
+    },
+    {
+      "id": "agent_13",
+      "role": "crew 3 / initial support carpenter / actor 13"
+    },
+    {
+      "id": "agent_14",
+      "role": "crew 3 / initial ventilator / actor 14"
+    },
+    {
+      "id": "agent_15",
+      "role": "crew 3 / initial field medic / actor 15"
+    },
+    {
+      "id": "agent_16",
+      "role": "crew 4 / initial pick miner / actor 16"
+    },
+    {
+      "id": "agent_17",
+      "role": "crew 4 / initial support carpenter / actor 17"
+    },
+    {
+      "id": "agent_18",
+      "role": "crew 4 / initial ventilator / actor 18"
+    },
+    {
+      "id": "agent_19",
+      "role": "crew 4 / initial field medic / actor 19"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Face or move north"
+    },
+    {
+      "id": 2,
+      "label": "Face or move east"
+    },
+    {
+      "id": 3,
+      "label": "Face or move south"
+    },
+    {
+      "id": 4,
+      "label": "Face or move west"
+    },
+    {
+      "id": 5,
+      "label": "Excavate facing rock with pick"
+    },
+    {
+      "id": 6,
+      "label": "Build duct here with ventilator"
+    },
+    {
+      "id": 7,
+      "label": "Shore floor here with builder"
+    },
+    {
+      "id": 8,
+      "label": "Lay rail here with builder"
+    },
+    {
+      "id": 9,
+      "label": "Install winch here with builder"
+    },
+    {
+      "id": 10,
+      "label": "Pump standing duct"
+    },
+    {
+      "id": 11,
+      "label": "Haul two rail cells forward"
+    },
+    {
+      "id": 12,
+      "label": "Lift cleared casualty with medic"
+    },
+    {
+      "id": 13,
+      "label": "Pass wood, otherwise medicine, to nearest actor"
+    },
+    {
+      "id": 14,
+      "label": "Treat nearest actor with medic"
+    },
+    {
+      "id": 15,
+      "label": "Draw wood and medicine at depot"
+    },
+    {
+      "id": 16,
+      "label": "Cycle tool at depot"
+    },
+    {
+      "id": 17,
+      "label": "Donate wood to foreign depot"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        20,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "face"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        20,
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map_visible"
+      ],
+      "shape": [
+        20,
+        15,
+        27
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terrain"
+      ],
+      "shape": [
+        15,
+        27
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "crew"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "tool"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "wood"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "med"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "carrying"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "dust"
+      ],
+      "shape": [
+        15,
+        27
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_wood"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_med"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_aid"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "bearer"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "rescued"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "dug"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pumped"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "injured"
+      ],
+      "shape": [
+        20
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "evacuated"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visible"
+      ],
+      "shape": [
+        20,
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "casualty_pos"
+      ],
+      "shape": [
+        5,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "casualty_active"
+      ],
+      "shape": [
+        5
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "casualty_visible"
+      ],
+      "shape": [
+        20,
+        5
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      26,
+      14
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "terrain"
+      ],
+      "visibility": [
+        "map_visible"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open cavern floor",
+          "color": "#625848"
+        },
+        {
+          "value": 1,
+          "meaning": "Excavatable rock",
+          "color": "#504B49"
+        },
+        {
+          "value": 2,
+          "meaning": "Boundary rock",
+          "color": "#29282B"
+        },
+        {
+          "value": 3,
+          "meaning": "Support beam",
+          "color": "#A77B46"
+        },
+        {
+          "value": 4,
+          "meaning": "Ventilation duct",
+          "color": "#70A1A0"
+        },
+        {
+          "value": 5,
+          "meaning": "Transport rail",
+          "color": "#A8A5A0"
+        },
+        {
+          "value": 6,
+          "meaning": "Rescue winch",
+          "color": "#D5AF53"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 20,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "crew"
+          ],
+          "meaning": "Native crew index",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "tool"
+          ],
+          "meaning": "Current tool code",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "wood"
+          ],
+          "meaning": "Carried timber units",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "med"
+          ],
+          "meaning": "Carried medicine units",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Worker health",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "carrying"
+          ],
+          "meaning": "Actor carries a casualty",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "kind": "resource",
+      "count": 5,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "depot_wood"
+          ],
+          "meaning": "Depot timber stock",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "depot_med"
+          ],
+          "meaning": "Depot medicine stock",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "depot_aid"
+          ],
+          "meaning": "Foreign wood donations received, capped at two",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "casualty",
+      "kind": "object",
+      "count": 5,
+      "position": [
+        "casualty_pos"
+      ],
+      "active": [
+        "casualty_active"
+      ],
+      "visibility": [
+        "casualty_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "bearer"
+          ],
+          "meaning": "Carrier actor index; -1 awaiting rescue",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Total casualties evacuated to any depot",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        9
+      ],
+      "meaning": "Self x,y,crew,tool,wood,medicine,health,carrying,face.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        9,
+        11
+      ],
+      "meaning": "Clock t; total rescued.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        191
+      ],
+      "meaning": "20 actor slots, width 9: visible,x,y,crew,tool,wood,medicine,health,carrying.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        191,
+        221
+      ],
+      "meaning": "5 depot slots, width 6: visible,x,y,wood,medicine,foreign-aid receipts.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        221,
+        246
+      ],
+      "meaning": "5 casualty slots, width 5: visible,x,y,bearer,active.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        246,
+        295
+      ],
+      "meaning": "7x7 terrain patch in y-major order, dx/dy -3..3; outside=-1.",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        295,
+        344
+      ],
+      "meaning": "7x7 dust patch, same ordering; outside=-1.",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Evacuate all five casualties through excavated caverns; sustain shared air and infrastructure while provisioning other crews.",
+    "natural_termination": "Natural completion exactly when rescued == 5; otherwise truncate at 512. Health never falls below 1, so injured actors remain controllable.",
+    "interaction": "Excavation opens native tiles and emits spreading dust. Duct pumping changes nearby air; beams prevent dust-triggered floor collapse. Carried casualties follow actors to depots; shared supplies and hauling routes change other actors' opportunities.",
+    "observation_access": "Self fields and declared public counters/charts are exact. For each entity slot, visibility is active AND Chebyshev distance <= 3 from the role's current position; hidden slots have visible=0 and all values zero. Actor slots use the same radius. Patches cover dx,dy -3..3 in row-major order, outside=-1. Public static bounds, indexing and action meanings do not expose hidden current state. Legal masks are native affordance information; no renderer-only policy information. Human and policy actors use the same scalar action and transition."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "wood"
+      ],
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "med"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "health"
+      ],
+      "low": 1,
+      "high": 5
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "dust"
+      ],
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "depot_aid"
+      ],
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "rescued"
+      ],
+      "low": 0,
+      "high": 5
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json",
+    "role_view": "Use declared visibility and native observations; only declared public event counters are global. Full state is a separately labelled debug view."
+  }
+}

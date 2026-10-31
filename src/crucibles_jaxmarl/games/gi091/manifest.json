@@ -1,0 +1,714 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00091",
+  "source_sha256": "ecdc0a48686f6ef2675b5c36074a44339a2882bfef85950b50df836fd7e09d40",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 293,
+  "num_actions": 10,
+  "max_steps": 96,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 1,
+  "reward_low": -2,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Northern containment worker"
+    },
+    {
+      "id": "agent_1",
+      "role": "Central supply and relief worker"
+    },
+    {
+      "id": "agent_2",
+      "role": "Southern containment worker"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north attempt; face north"
+    },
+    {
+      "id": 2,
+      "label": "Move east attempt; face east"
+    },
+    {
+      "id": 3,
+      "label": "Move south attempt; face south"
+    },
+    {
+      "id": 4,
+      "label": "Move west attempt; face west"
+    },
+    {
+      "id": 5,
+      "label": "Spray current and front cell; spend one water"
+    },
+    {
+      "id": 6,
+      "label": "Build two-strength firebreak in front; spend two water"
+    },
+    {
+      "id": 7,
+      "label": "Draw one unit from the finite shared depot"
+    },
+    {
+      "id": 8,
+      "label": "Give one water to an adjacent teammate with capacity"
+    },
+    {
+      "id": 9,
+      "label": "Dismantle front firebreak; recover at most one water"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cell_pos"
+      ],
+      "shape": [
+        63,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fuel"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "barrier"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "fire_active"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "barrier_active"
+      ],
+      "shape": [
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cell_visible"
+      ],
+      "shape": [
+        3,
+        63
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "water"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "facing"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "stun"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "asset_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "asset_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "asset_visible"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "health"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_visible"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stock"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "events"
+      ],
+      "shape": [
+        7
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Flammable traversable ground",
+          "color": "#566C41"
+        },
+        {
+          "value": 1,
+          "meaning": "Nonflammable stone barrier",
+          "color": "#606D7B"
+        },
+        {
+          "value": 2,
+          "meaning": "Nonflammable water depot",
+          "color": "#3B93B4"
+        },
+        {
+          "value": 3,
+          "meaning": "Flammable shared asset footprint",
+          "color": "#D3C786"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "workers",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "water"
+          ],
+          "meaning": "Carried water units, capacity three",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "facing"
+          ],
+          "meaning": "Front direction: 1 north, 2 east, 3 south, 4 west",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "stun"
+          ],
+          "meaning": "Remaining suppressed-action steps after fire exposure",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "flames",
+      "kind": "hazard",
+      "count": 63,
+      "position": [
+        "cell_pos"
+      ],
+      "active": [
+        "fire_active"
+      ],
+      "visibility": [
+        "cell_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "fire"
+          ],
+          "meaning": "Remaining fire lifetime, zero to three",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "fuel"
+          ],
+          "meaning": "Unignited fuel flag at this cell",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "firebreaks",
+      "kind": "gate",
+      "count": 63,
+      "position": [
+        "cell_pos"
+      ],
+      "active": [
+        "barrier_active"
+      ],
+      "visibility": [
+        "cell_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "barrier"
+          ],
+          "meaning": "Remaining resistance to exposed spread ticks",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "asset_pos"
+      ],
+      "active": [
+        "asset_active"
+      ],
+      "visibility": [
+        "asset_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "health"
+          ],
+          "meaning": "Remaining shared asset integrity",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "kind": "resource",
+      "count": 1,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "stock"
+          ],
+          "meaning": "Finite shared water supply remaining",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "events"
+      ],
+      "meaning": "Indices 0 to 6: spray used, firebreak built, water transferred, firebreak dismantled, asset damaged, success, failure; flags refer to the most recent nonterminal transition.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Identity one-hot in role order 0,1,2",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        9
+      ],
+      "meaning": "All worker xy positions divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        9,
+        12
+      ],
+      "meaning": "Carried water divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "Facing action IDs divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "Stun duration divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        81
+      ],
+      "meaning": "Public terrain flattened yx divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        144
+      ],
+      "meaning": "All cells' fire lifetime divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        144,
+        207
+      ],
+      "meaning": "All cells' remaining fuel flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        207,
+        270
+      ],
+      "meaning": "All cells' firebreak strength divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        270,
+        276
+      ],
+      "meaning": "Asset xy positions divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        276,
+        279
+      ],
+      "meaning": "Asset integrity divided by 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        279,
+        281
+      ],
+      "meaning": "Depot xy divided by 16",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        281,
+        282
+      ],
+      "meaning": "Shared depot stock divided by 32",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        282,
+        283
+      ],
+      "meaning": "Clock divided by 128",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        283,
+        290
+      ],
+      "meaning": "Last-step flags: spray, build, transfer, dismantle, damage, success, failure",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        290,
+        293
+      ],
+      "meaning": "Joint done, natural termination, truncation",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Contain two spreading fire fronts while preserving at least one of three shared assets, using finite water, temporary firebreaks and teammate transfers.",
+    "natural_termination": "Success when all fire lifetimes are zero and at least one asset survives; failure when all three assets have zero integrity. The shared per-step reward is success minus failure minus total new asset damage divided by 16. Otherwise truncate at step 96.",
+    "interaction": "Building blocks partners' movement and fire transmission at the same physical cells. Using the depot consumes finite supplies available to others. Handing water to an adjacent teammate enables later suppression or construction. Firebreak erosion and depleted fuel determine future spread.",
+    "observation_access": "The entire physical world and resource state are public. All groups have all-true role visibility and the static terrain is public. Observation includes the complete fire, fuel and barrier arrays, all worker resources and all protected assets."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "water"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stun"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "stock"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fire"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "fuel"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "barrier"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "health"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}
+

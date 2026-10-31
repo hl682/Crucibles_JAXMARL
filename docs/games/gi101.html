@@ -1,0 +1,694 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>配重货场 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI101 / SPATIAL</p><h1>配重货场</h1><p class="lead">升降平台依赖对侧配重与摇柄操作者；移除配重会让载货升降台下坠并影响乘员。</p><div class="stats"><span>3 agents</span><span>13 actions</span><span>141 observation columns</span><span>160 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi101.gif" alt="Original saved demonstration gi101"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi101.gif" alt="Actual verification episode gi101"></section><section><h2>Run this game</h2><pre>crucibles play --game 101</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Install one block at each side station and two at the middle station. Cargo cannot be carried upward on ladders; raise it on shared lifts. Build a bridge to support the middle station. A station&#x27;s corresponding role earns the larger installation bonus even when another worker carries the material.&quot;,
+  &quot;natural_termination&quot;: &quot;All station_count entries equal station_required [1,1,2]. Otherwise truncate after 160 nonterminal steps. Natural completion takes precedence at the horizon. Impact immobilization is bounded at two future calls unless another impact occurs. Terminal raw state is absorbing.&quot;,
+  &quot;interaction&quot;: &quot;Opposite-pad resting blocks and bracing workers support a loaded lift. Another worker removing ballast or stopping a brace can make the platform drop and stun its riders. A crank operator raises or safely lowers platforms; the shared brake also stops useful motion. Physical material can be installed privately, left as ballast, or bolted into traversable support at three bridge cells. Reclaiming bridge material removes that support and can drop another worker.&quot;,
+  &quot;observation_access&quot;: &quot;The side-view map, ladder and solid-cell legend, all workers, blocks, platforms, ballast pads, stations, crane state and events are public. All entity visibility masks are true. Every displayed changing attribute is returned in the flat observation. Downward screen y is gravity. Loose waist-high cargo permits worker co-location; bolted blocks and lift platforms are solid cells.&quot;
+}</pre></details><p>Declared per-step reward bounds: -4 to 16. Observability: fully_observable.</p></section><section><h2>Rules</h2><ol><li>Cargo cannot be carried upward on ladders; a crank operator raises it on a shared lift.</li><li>Resting blocks and bracing workers on the opposite ballast pad support each loaded platform.</li><li>Removing ballast can drop a loaded lift and stun its riders. Controlled lowering avoids that jolt.</li><li>The shared brake stops both useful lift motion and automatic drops for its bounded duration.</li><li>Bolt blocks into the three bridge sockets to create solid support; reclaiming a block opens a hole.</li><li>Install one block at each side station and two in the middle. Material committed to private work is unavailable as ballast or bridge support.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Counterweight Yard — game-v3-00101
+
+Three workers share a 9 by 9 side-view yard, nine real blocks, two lifts and a ground crank. Gravity points toward increasing screen y. Each role benefits most from its corresponding work station: west, east and middle require one, one and two blocks. The other blocks can remain counterweights or be bolted into bridge support. This finite common material stock makes those uses compete.
+
+## Motion, load and work sequence
+
+Actions 0–4 wait or move. Solid map cells, bolted blocks and lift platforms block manual motion. Ladders support a worker against gravity, and an empty-handed worker can climb them. A worker carrying any block cannot climb upward; the shared lifts provide upward cargo transport. Loose waist-high cargo can share a cell with a worker, while bolted cargo is solid support.
+
+Action 5 lifts loose cargo on the worker&#x27;s cell. If already carrying, it installs cargo at any unfinished work station on that cell, or drops it elsewhere. No private ownership restricts this common stock. Action 6 bolts a held block into one of (3,4), (4,4), (5,4) when the worker is on row 3 within one horizontal cell and that socket has a solid horizontal neighbor. The result is an actual solid cell below the walking row. Once bolted into the rail it remains supported until reclaimed. Action 10 reclaims the nearest bolted block within Manhattan distance two when empty-handed; this immediately removes that support.
+
+The left and right lift platforms occupy columns 2 and 6 with y in [4,8]. Workers and cargo on the cell immediately above a platform add their weight: one per worker, plus each active unbolted block&#x27;s mass, including carried blocks. Resting unbolted blocks on the opposite ground ballast pad support the lift. A worker actively bracing on that opposite pad contributes two more support units. Held blocks do not count as resting ballast.
+
+At the shared crank, action 7 raises the left lift one cell and action 8 raises the right, only if counterweight is positive and at least the current load. Actions 11 and 12 lower the corresponding platform safely one cell. Action 9 on a ballast pad supplies live ballast for that tick; at the crank it instead applies the two-tick shared brake, preventing both commanded and automatic motion. Without braking or controlled lowering, an elevated underbalanced platform drops one cell and jolts its riders. A partner who stops bracing or picks up ballast can cause that change under the same operator action.
+
+Platform riders and loose platform cargo move with the platform. Thereafter each loose unbolted block can fall at most one cell, using rotating block priority and actual terrain, platforms, bolted cells or resting cargo below it as support. A falling block entering a worker&#x27;s current cell, or an automatic platform drop with that worker aboard, sets stun two. Worker gravity then moves unsupported nonladder workers down at most one cell. Physics can co-locate workers during a fall; that is permitted and no unique-position invariant is asserted. Stunned workers have only no-op until their input timer becomes zero; physical gravity and impacts still occur.
+
+## Payoffs and causal alternatives
+
+Each transition costs every role one. Each newly installed unit pays four to its station&#x27;s beneficiary, one to every role, and one to the actual delivering worker. Each impacted worker loses two. Joint completion adds three to everyone and ends naturally; otherwise the horizon is 160. There is no reward for repeatedly reclaiming and rebuilding a bridge.
+
+A crank operator can help another worker reach an upper station, or brake at a time that delays that worker&#x27;s delivery. A ballast worker can hold the platform stable, remove a useful block for private construction, or substitute live bracing while materials are reassigned. Reclaiming a bridge support for an earlier private installation can remove a partner&#x27;s walking surface and deny the middle station. Safe sequential work, synchronized ballast substitution, and early station prioritization are plausible alternatives whose practical merit is not measured.
+
+The paired script holds worker 0&#x27;s no-op and worker 2&#x27;s crank operation fixed while worker 1 either leaves or lifts the right-pad counterweight. It proposes a rise versus an automatic drop of worker 0&#x27;s left platform. This is a source-based hypothesis, not a physics replay.
+
+## Presentation, invariants and prospective variants
+
+All changing physical state is public in 141 columns. Displayed lift positions are solid platform cells, and worker/cargo coordinates represent their actual positions above them. The scene binds load, support, carrier, mass, anchored status, work counts, brake and actual per-step events. Automatic drops and controlled descents have distinct event channels.
+
+Nine block identities are conserved: active blocks plus station_count sum to nine. Every worker carries at most one. Bolted blocks lie in the three bridge sockets, are uncarried and remain active. Installed blocks become inactive. All positions stay inside [0,8] by [0,8], workers and blocks stay at y at most seven, platform y remains [4,8], brake and stun remain [0,2], and station counts never exceed [1,1,2]. These are declared source invariants awaiting numerical checking.
+
+Prospective variants could alter pad placement, block masses, station ownership, bridge socket layout, operator access or support requirements. The authored instance does not sample those variants or demonstrate transfer.
+
+## Literal source evidence
+
+**Other workers and physical cargo determine support**
+
+```python
+L29:         fixed_mass = s[&quot;block_weight&quot;] * (s[&quot;block_active&quot;] &amp; (s[&quot;block_carrier&quot;] &lt; 0) &amp; ~s[&quot;block_anchored&quot;]).astype(jnp.int32)
+L30:         human_pad = jnp.all(s[&quot;agent_pos&quot;][:, None, :] == s[&quot;ballast_pos&quot;][None, :, :], axis=2)
+L31:         ballast = (jnp.sum(on_pad.astype(jnp.int32) * fixed_mass[:, None], axis=0, dtype=jnp.int32)
+L32:                    + 2 * jnp.sum(human_pad.astype(jnp.int32) * s[&quot;braced&quot;].astype(jnp.int32)[:, None], axis=0, dtype=jnp.int32))
+L33:         return load, ballast[::-1]
+```
+
+**Upward cargo needs lifts**
+
+```python
+L150:             climb = (a[i] != 1) | ((s[&quot;carrying&quot;][i] &lt; 0) &amp; (here_ladder | there_ladder))
+L151:             occupied = jnp.any(jnp.all(pos == target, axis=1) &amp; (jnp.arange(3) != i))
+L152:             solid = self.solid(n, target[None, :])[0]
+L153:             ok = able[i] &amp; inside &amp; climb &amp; ~occupied &amp; ~solid
+```
+
+**Real support cells are constructed**
+
+```python
+L184:             eligible = (dx &lt;= 1) &amp; (q[&quot;agent_pos&quot;][i, 1] == 3) &amp; ~self.solid(q, bridge) &amp; adjacent_support
+L185:             socket = jnp.argmin(jnp.where(eligible, dx, 99))
+L186:             build = able[i] &amp; (a[i] == 6) &amp; has &amp; jnp.any(eligible)
+L187:             q[&quot;block_pos&quot;] = q[&quot;block_pos&quot;].at[good].set(jnp.where(build, bridge[socket], q[&quot;block_pos&quot;][good]))
+L188:             q[&quot;block_carrier&quot;] = q[&quot;block_carrier&quot;].at[good].set(jnp.where(build, -1, q[&quot;block_carrier&quot;][good]))
+L189:             q[&quot;block_anchored&quot;] = q[&quot;block_anchored&quot;].at[good].set(q[&quot;block_anchored&quot;][good] | build)
+L190:             q[&quot;build_event&quot;] = q[&quot;build_event&quot;].at[good].set(q[&quot;build_event&quot;][good] | build)
+```
+
+**Reclaiming removes support**
+
+```python
+L194:             reclaim = able[i] &amp; (a[i] == 10) &amp; ~has &amp; jnp.any(bolts)
+L195:             q[&quot;block_anchored&quot;] = q[&quot;block_anchored&quot;].at[anchor].set(q[&quot;block_anchored&quot;][anchor] &amp; ~reclaim)
+L196:             q[&quot;block_carrier&quot;] = q[&quot;block_carrier&quot;].at[anchor].set(jnp.where(reclaim, i, q[&quot;block_carrier&quot;][anchor]))
+L197:             q[&quot;block_pos&quot;] = q[&quot;block_pos&quot;].at[anchor].set(jnp.where(reclaim, q[&quot;agent_pos&quot;][i], q[&quot;block_pos&quot;][anchor]))
+L198:             q[&quot;reclaim_event&quot;] = q[&quot;reclaim_event&quot;].at[anchor].set(q[&quot;reclaim_event&quot;][anchor] | reclaim)
+```
+
+**Safe command versus underbalanced fall**
+
+```python
+L215:         controlled_down = lowering &amp; (n[&quot;lift_pos&quot;][:, 1] &lt; 8) &amp; free
+L216:         down = (support &lt; load) &amp; (n[&quot;lift_pos&quot;][:, 1] &lt; 8) &amp; free &amp; ~controlled_down
+L217:         shift = (down | controlled_down).astype(jnp.int32) - up.astype(jnp.int32)
+L218:         old_tops = n[&quot;lift_pos&quot;] - jnp.array([0, 1], dtype=jnp.int32)
+```
+
+**Riders actually move with the lift**
+
+```python
+L220:         n[&quot;agent_pos&quot;] = n[&quot;agent_pos&quot;].at[:, 1].add(jnp.sum(riders.astype(jnp.int32) * shift[None, :], axis=1, dtype=jnp.int32))
+L221:         cargo_riders = (jnp.all(n[&quot;block_pos&quot;][:, None, :] == old_tops[None, :, :], axis=2)
+L222:                          &amp; (n[&quot;block_carrier&quot;] &lt; 0)[:, None] &amp; n[&quot;block_active&quot;][:, None] &amp; ~n[&quot;block_anchored&quot;][:, None])
+L223:         n[&quot;block_pos&quot;] = n[&quot;block_pos&quot;].at[:, 1].add(jnp.sum(cargo_riders.astype(jnp.int32) * shift[None, :], axis=1, dtype=jnp.int32))
+L224:         n[&quot;lift_pos&quot;] = n[&quot;lift_pos&quot;].at[:, 1].add(shift)
+L225:         n[&quot;lift_up_event&quot;] = up
+L226:         n[&quot;lift_down_event&quot;] = controlled_down
+```
+
+**Discrete gravity and impacts**
+
+```python
+L238:             fall = q[&quot;block_active&quot;][g] &amp; (q[&quot;block_carrier&quot;][g] &lt; 0) &amp; ~q[&quot;block_anchored&quot;][g] &amp; (q[&quot;block_pos&quot;][g, 1] &lt; 7) &amp; ~supported
+L239:             q[&quot;block_pos&quot;] = q[&quot;block_pos&quot;].at[g].set(jnp.where(fall, below, q[&quot;block_pos&quot;][g]))
+L240:             q[&quot;block_fall_event&quot;] = q[&quot;block_fall_event&quot;].at[g].set(fall)
+L241:             hit = fall &amp; jnp.all(q[&quot;agent_pos&quot;] == below, axis=1)
+L242:             q[&quot;impact_event&quot;] = q[&quot;impact_event&quot;] | hit
+```
+
+**Gravity and lost actions persist**
+
+```python
+L248:         fall_agent = (n[&quot;agent_pos&quot;][:, 1] &lt; 7) &amp; ~on_ladder &amp; ~self.solid(n, below_agents)
+L249:         n[&quot;agent_pos&quot;] = n[&quot;agent_pos&quot;].at[:, 1].add(fall_agent.astype(jnp.int32))
+L250:         n[&quot;stun&quot;] = jnp.maximum(n[&quot;stun&quot;], 2 * n[&quot;impact_event&quot;].astype(jnp.int32))
+L251:         n[&quot;block_pos&quot;] = jnp.where((n[&quot;block_carrier&quot;] &gt;= 0)[:, None],
+```
+
+## Author boundary and provenance
+
+This package is authored, frozen and **not executed**. Only the assigned batch&#x27;s eight design/request files, delivery requirements, six contract/interface files and five supplied official reference files were inputs. There was no candidate import, JAX/NumPy import, compiler, contract validator, simulator, training, SSH or network operation. The only local source check is Python AST parsing; JSON parsing and SHA-256 establish file syntax and identity, not runtime validity.
+
+All dynamics and integer design fields use fixed-shape int32/bool arrays; observations and rewards are float32. The supplied reset and step keys are unused because this original instance is deterministic. The key is not duplicated into state. Natural completion has priority at the horizon. A terminal raw call preserves every state leaf and observation, keeps the clock unchanged, returns zero reward and preserves its cause flags. The outer training wrapper remains responsible for resetting.
+
+Unavailable contextual intents and blocked movement are legal attempts with no effect. Out-of-range or masked actions become wait. Normal manual movement uses rotating role priority (clock modulo the role count), refuses occupied target cells and has no implicit swap. This is a public rule. Every script and paired branch in playthrough.json is UNEXECUTED_AUTHOR_HYPOTHESIS; it contains actions and intended differences only, with no invented rollout states, returns or successful-completion claims.
+
+## Supplied reference use
+
+The supplied official JaxMARL README informed the distinction between this fixed-array kernel and an external agent-keyed parallel API adapter with an __all__ done entry. The supplied Pgx README informed explicit legal-action and terminal-state metadata and the separation of caller keys from hidden state. The supplied Craftax README informed the goal of a persistent spatial world with real objects, resource use and visible consequences. No existing game map, benchmark implementation, game rules or upstream code was copied.
+
+PureJaxRL and the supplied Craftax_Baselines PPO-RNN file were read as algorithm/integration references only. They are not game libraries and are not incorporated here. This package does not replace the frozen experimental learner or implement the coordinator&#x27;s separate community adapter and replay runtime. All five input snapshots and their actual hashes are recorded in generation_record.json.
+
+Reference attribution: JaxMARL (Rutherford et al., NeurIPS Datasets and Benchmarks 2024), Pgx (Koyamada et al., NeurIPS 2023), Craftax (Matthews et al., ICML 2024), and PureJaxRL/Discovered Policy Optimisation (Lu et al., NeurIPS 2022). The Craftax PPO-RNN integration source credits Chris Lu&#x27;s PureJaxRL implementation. No license from those references is asserted to cover this new author&#x27;s own rules or source.
+
+## Scientific limits
+
+The intended strategies and interventions are hypotheses from source reasoning. Static syntax and real future causal replay do not establish learnability, optimality, solvability, strategic richness, non-isomorphism, generalization or meta-learning transfer. Negative, failed, zero-effect and indeterminate validation outcomes must remain visible. No reward, success-count, percentage or seed-count acceptance gate is introduced. Rule, role and layout variations mentioned below are prospective design possibilities, not implemented sampled task distributions or measured results.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Climb north one cell on a ladder only when empty-handed</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Lift loose block; if carrying, install at an unfinished station or drop</span></div><div class="action"><b>6</b><span>Bolt carried block into an adjacent supported bridge socket</span></div><div class="action"><b>7</b><span>At crank: raise left lift if counterweight supports its load</span></div><div class="action"><b>8</b><span>At crank: raise right lift if counterweight supports its load</span></div><div class="action"><b>9</b><span>On ballast pad: brace; at crank: brake both lifts for two ticks</span></div><div class="action"><b>10</b><span>Reclaim nearest bolted block within distance two when empty-handed</span></div><div class="action"><b>11</b><span>At crank: safely lower left lift one cell</span></div><div class="action"><b>12</b><span>At crank: safely lower right lift one cell</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> West-station beneficiary and shared yard worker</p><p><b>agent_1</b> East-station beneficiary and shared yard worker</p><p><b>agent_2</b> Middle-station beneficiary and shared yard worker</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      1
+    ],
+    &quot;meaning&quot;: &quot;Observer builder identity; each benefits most from its matching work station&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      1,
+      5
+    ],
+    &quot;meaning&quot;: &quot;Clock, done, natural termination, truncation&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      11
+    ],
+    &quot;meaning&quot;: &quot;Worker x,y&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      11,
+      14
+    ],
+    &quot;meaning&quot;: &quot;Carried block index or -1&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      14,
+      17
+    ],
+    &quot;meaning&quot;: &quot;Worker immobilization timers&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      17,
+      35
+    ],
+    &quot;meaning&quot;: &quot;Nine real block x,y positions&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      35,
+      44
+    ],
+    &quot;meaning&quot;: &quot;Block active flags; installed material inactive&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      44,
+      53
+    ],
+    &quot;meaning&quot;: &quot;Block masses&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      53,
+      62
+    ],
+    &quot;meaning&quot;: &quot;Block carriers; -1 loose or bolted&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      62,
+      71
+    ],
+    &quot;meaning&quot;: &quot;Bolted bridge flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      71,
+      75
+    ],
+    &quot;meaning&quot;: &quot;Lift-platform x,y; rider surface is one cell above&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      75,
+      77
+    ],
+    &quot;meaning&quot;: &quot;Actual load on each platform&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      77,
+      79
+    ],
+    &quot;meaning&quot;: &quot;Actual counterweight support from the opposite pad&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      79,
+      83
+    ],
+    &quot;meaning&quot;: &quot;Counterweight-pad x,y&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      83,
+      89
+    ],
+    &quot;meaning&quot;: &quot;Work-station x,y&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      89,
+      92
+    ],
+    &quot;meaning&quot;: &quot;Installed units at each work station&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      92,
+      95
+    ],
+    &quot;meaning&quot;: &quot;Required units at each work station&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      95,
+      97
+    ],
+    &quot;meaning&quot;: &quot;Shared crank x,y&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      97,
+      98
+    ],
+    &quot;meaning&quot;: &quot;Brake time remaining&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      98,
+      100
+    ],
+    &quot;meaning&quot;: &quot;Lifts raised one cell this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      100,
+      102
+    ],
+    &quot;meaning&quot;: &quot;Lifts safely lowered one cell by crank this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      102,
+      104
+    ],
+    &quot;meaning&quot;: &quot;Lifts dropping one cell due to insufficient ballast this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      104,
+      113
+    ],
+    &quot;meaning&quot;: &quot;Loose blocks falling one cell this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      113,
+      116
+    ],
+    &quot;meaning&quot;: &quot;Workers hit by falling cargo or jolted by automatic lift drop&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      116,
+      125
+    ],
+    &quot;meaning&quot;: &quot;Blocks bolted into bridge cells this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      125,
+      134
+    ],
+    &quot;meaning&quot;: &quot;Bolted blocks reclaimed this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      134,
+      137
+    ],
+    &quot;meaning&quot;: &quot;Work stations receiving material this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      137,
+      140
+    ],
+    &quot;meaning&quot;: &quot;Workers currently supplying live ballast&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      140,
+      141
+    ],
+    &quot;meaning&quot;: &quot;Shared brake applied this tick&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;agent&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;carrying&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried block identity or -1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;stun&quot;
+        ],
+        &quot;meaning&quot;: &quot;Immobilization after a falling load or lift jolt&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;braced&quot;
+        ],
+        &quot;meaning&quot;: &quot;Supplying two units of live ballast on a pad this tick&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;block&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 9,
+    &quot;position&quot;: [
+      &quot;block_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;block_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;block_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;block_weight&quot;
+        ],
+        &quot;meaning&quot;: &quot;Mass of this reusable physical block: one or two&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;block_carrier&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carrier role or -1 loose/bolted&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;block_anchored&quot;
+        ],
+        &quot;meaning&quot;: &quot;Bolted into a load-bearing bridge cell&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;lift&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;lift_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;lift_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;lift_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;lift_load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Current workers plus cargo mass resting on this lift&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;lift_support&quot;
+        ],
+        &quot;meaning&quot;: &quot;Opposite-pad block mass plus active live ballast&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;ballast&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 2,
+    &quot;position&quot;: [
+      &quot;ballast_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;ballast_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;ballast_vis&quot;
+    ],
+    &quot;attributes&quot;: []
+  },
+  {
+    &quot;id&quot;: &quot;station&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;station_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;station_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;station_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;station_count&quot;
+        ],
+        &quot;meaning&quot;: &quot;Materials installed at this work station&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;station_required&quot;
+        ],
+        &quot;meaning&quot;: &quot;Materials required: one, one, two&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;crank&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;crank_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;crank_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;crank_vis&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;brake&quot;
+        ],
+        &quot;meaning&quot;: &quot;Shared brake timer; stops commanded motion and automatic drops&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi101&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;a2c2ae21a48b7ed1950ed96f636e2f62b404ec99bd7c09be2ab337aba4227b28&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 141,
+    &quot;num_actions&quot;: 13,
+    &quot;max_steps&quot;: 160
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.5857317447662354
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.2975301742553711
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.7748429775238037
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1737687587738037
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.5228996276855469
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0016033649444580078
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.23916316032409668
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.327761650085449
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.6750695705413818
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.6722583770751953
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 14.907371759414673,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 160,
+  &quot;scripted_random_returns&quot;: [
+    -160.0,
+    -160.0,
+    -160.0
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 28,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi101&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 4.111970663070679
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 101,
+  &quot;key&quot;: &quot;gi101&quot;,
+  &quot;title&quot;: &quot;配重货场&quot;,
+  &quot;summary&quot;: &quot;升降平台依赖对侧配重与摇柄操作者；移除配重会让载货升降台下坠并影响乘员。&quot;,
+  &quot;tags&quot;: [
+    &quot;协同搬运&quot;,
+    &quot;配重依赖&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 141,
+    &quot;num_actions&quot;: 13,
+    &quot;max_steps&quot;: 160
+  },
+  &quot;source_sha256&quot;: &quot;a2c2ae21a48b7ed1950ed96f636e2f62b404ec99bd7c09be2ab337aba4227b28&quot;,
+  &quot;manifest_sha256&quot;: &quot;335c9823e15eb644a53d0b9a3024b8d86f889f23e34c3ff8d67be65daf43ab12&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;a2c2ae21a48b7ed1950ed96f636e2f62b404ec99bd7c09be2ab337aba4227b28&quot;,
+      &quot;bytes&quot;: 17165,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00101/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;335c9823e15eb644a53d0b9a3024b8d86f889f23e34c3ff8d67be65daf43ab12&quot;,
+      &quot;bytes&quot;: 20680,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00101/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;384d48b63d646e657bc4eca90f635049f0a31ec45f48c7107e8d86a9ecfc0804&quot;,
+      &quot;bytes&quot;: 11398,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00101/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;1c47745ec73620d570df2ac5bd6563839990965d26454003afeded8ff7018d4d&quot;,
+      &quot;bytes&quot;: 13361,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00101/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;e9be5f47c949b0b1bb39c9ded06c6b5170da7a9820b923f99fbae7e244ceba30&quot;,
+      &quot;bytes&quot;: 2608,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00101/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi101">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

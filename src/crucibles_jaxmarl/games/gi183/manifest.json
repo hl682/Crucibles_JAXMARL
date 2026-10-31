@@ -1,0 +1,866 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00183",
+  "source_sha256": "2ff9049e2a74bd9620bacf42c02884d6ac553d43048039c5fa50fcc13961ebb6",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 162,
+  "num_actions": 11,
+  "max_steps": 112,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 112,
+  "reward_low": -0.5,
+  "reward_high": 1,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Courier on team 0"
+    },
+    {
+      "id": "agent_1",
+      "role": "Courier on team 0"
+    },
+    {
+      "id": "agent_2",
+      "role": "Courier on team 1"
+    },
+    {
+      "id": "agent_3",
+      "role": "Courier on team 1"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait / receive packet"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Pick up own team's ground packet underfoot"
+    },
+    {
+      "id": 6,
+      "label": "Spend sensing charge to plant scanner with one-transition warmup"
+    },
+    {
+      "id": 7,
+      "label": "Spend sensing charge to plant decoy jammer"
+    },
+    {
+      "id": 8,
+      "label": "Tag adjacent opponent outside its home safe tile"
+    },
+    {
+      "id": 9,
+      "label": "Pass packet to adjacent waiting unfrozen teammate"
+    },
+    {
+      "id": 10,
+      "label": "Deliver carried packet at opposing base"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "natural"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cargo"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "charge"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "frozen"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_holder"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "packet_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "packet_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "scan_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "scan_life"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "scan_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "scan_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_life"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "decoy_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "decoy_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "base_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "base_team"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_age"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_cargo"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "report_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "report_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "public": true,
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable floor",
+          "color": "#CBD5E1"
+        },
+        {
+          "value": 1,
+          "meaning": "Movement obstacle; does not block radial sensing",
+          "color": "#334155"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "couriers",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Public affiliation of this visible contact",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "cargo"
+          ],
+          "meaning": "Visible held packet identity or -1",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "frozen"
+          ],
+          "meaning": "Remaining frozen transitions",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "meaning": "Remaining tag cooldown, visible on contact",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "packets",
+      "kind": "object",
+      "count": 2,
+      "position": [
+        "packet_pos"
+      ],
+      "active": [
+        "packet_active"
+      ],
+      "visibility": [
+        "packet_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "packet_team"
+          ],
+          "meaning": "Origin team of this visible packet",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "packet_holder"
+          ],
+          "meaning": "Visible carrier index or -1 for ground",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "scanners",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "scan_pos"
+      ],
+      "active": [
+        "scan_active"
+      ],
+      "visibility": [
+        "scan_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Transmitter team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "scan_life"
+          ],
+          "meaning": "4 warmup, 3/2/1 active sensing, 0 inactive",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "decoys",
+      "kind": "object",
+      "count": 4,
+      "position": [
+        "decoy_pos"
+      ],
+      "active": [
+        "decoy_active"
+      ],
+      "visibility": [
+        "decoy_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Decoy-jammer team",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "decoy_life"
+          ],
+          "meaning": "Remaining jamming transitions",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "bases",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "base_pos"
+      ],
+      "active": [
+        "base_active"
+      ],
+      "visibility": [
+        "base_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "base_team"
+          ],
+          "meaning": "Home team; opposing packet delivery target",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "reports",
+      "kind": "landmark",
+      "count": 4,
+      "position": [
+        "report_pos"
+      ],
+      "active": [
+        "report_active"
+      ],
+      "visibility": [
+        "report_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "report_age"
+          ],
+          "meaning": "Age of this recipient's delayed teammate report",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "report_cargo"
+          ],
+          "meaning": "Teammate cargo when report was sampled",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public base announcement: this team's packet arrived this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Public delivered-packet scoreboard",
+      "semantics": "level"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own current xy",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own unspent sensing charges",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own freeze timer",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own tag cooldown",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Own packet identity or -1",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        6,
+        7
+      ],
+      "meaning": "Own actor index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        7,
+        8
+      ],
+      "meaning": "Own team",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        8,
+        10
+      ],
+      "meaning": "Recipient-private sampled teammate xy, not current hidden position",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        10,
+        11
+      ],
+      "meaning": "Age in transitions of that teammate report",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        11,
+        12
+      ],
+      "meaning": "Teammate cargo at report sampling time",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        12,
+        75
+      ],
+      "meaning": "Public 7 by 9 map, row-major yx",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        75,
+        79
+      ],
+      "meaning": "Public base xy coordinates",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        79,
+        81
+      ],
+      "meaning": "Public delivered-packet flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        81,
+        82
+      ],
+      "meaning": "Public transition clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        82,
+        110
+      ],
+      "meaning": "Four visible-contact rows: visible,x,y,team,frozen,cooldown,cargo; six payload fields zero when hidden",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        110,
+        122
+      ],
+      "meaning": "Two packet rows: visible,x,y,holder,origin_team,active; five payload fields zero when hidden",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        122,
+        142
+      ],
+      "meaning": "Four scanner rows: visible,x,y,life,team; four payload fields zero when hidden",
+      "visibility": "local"
+    },
+    {
+      "slice": [
+        142,
+        162
+      ],
+      "meaning": "Four decoy-jammer rows: visible,x,y,life,team; four payload fields zero when hidden",
+      "visibility": "local"
+    }
+  ],
+  "task": {
+    "objective": "Two teams carry their finite native packets to the opposing base. Deliveries reward both teammates and penalize the opposing team; tagging, sensing and covering can alter the race.",
+    "natural_termination": "Both packets have been delivered; otherwise horizon 112 ends the contest. Either zero or one delivery at the horizon remains a valid outcome.",
+    "interaction": "Packets can be picked up, handed off, dropped by simultaneous tags and recovered. Two sensing charges per actor fund warmup scanners or local decoy-jammer cover. Partner radio reports are sampled from the preceding state on even clocks, with explicit age; they do not grant current teammate visibility.",
+    "observation_access": "Current entities are visible within Manhattan radius 2 or a same-team active scanner's radius 4. Enemy-team agents, packets and scanners inside their own decoy's radius 2 resist remote scanning but remain locally visible. Decoy transmitters remain detectable by remote scans. Same-team transmitters are team-known. Walls block motion, not radial sensing. Inactive objects are hidden. Reports are visible only to their recipient; only own charge is observed. Map, bases, delivery announcements and scores are public. Raw full state is privileged audit data, never a role-view HUD."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "charge"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "frozen"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cooldown"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "scan_life"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "decoy_life"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "report_age"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

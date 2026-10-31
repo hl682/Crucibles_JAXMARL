@@ -1,0 +1,546 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>三花交换 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI139 / SPATIAL</p><h1>三花交换</h1><p class="lead">花粉记住采集者，需由另一名快递员接手才能嫁接，并受花期与单格容量限制。</p><div class="stats"><span>3 agents</span><span>12 actions</span><span>120 observation columns</span><span>96 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi139.gif" alt="Original saved demonstration gi139"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi139.gif" alt="Actual verification episode gi139"></section><section><h2>Run this game</h2><pre>crucibles play --game 139</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Cooperatively deliver the six finite fruits. Each delivery rewards every courier 0.5; the delivering courier additionally receives 0.5 when its private preferred species matches.&quot;,
+  &quot;natural_termination&quot;: &quot;Six deliveries naturally complete the garden. Missing pollen or poor coordination may instead reach the 96-step truncation.&quot;,
+  &quot;interaction&quot;: &quot;A packet must pass to another handler before grafting. Grafting closes that plant as a pollen source, then opens a delayed harvest opportunity for any courier. One inventory slot and contested plants create route, handoff and harvesting tradeoffs.&quot;,
+  &quot;observation_access&quot;: &quot;Each role sees its own preference and inventory. Courier/plant/active-fruit payloads are visible only at Manhattan distance &lt;=3; other payloads are zero with explicit visibility bits. Depot, clock, phase, aggregate stock-consumption counters and anonymous event-count bells are public. Preferences of other roles are never exposed in observations or entity attributes.&quot;
+}</pre></details><p>Declared per-step reward bounds: 0 to 2. Observability: partially_observable.</p></section><section><h2>Rules</h2><ol><li>A courier has one shared slot for pollen or fruit. Pollen remembers its collector and must be handled by a different courier to graft.</li><li>Species 0 flowers for four steps, then species 1 for four. A plant accepts opposite-species pollen only while flowering and ungrafted.</li><li>GIVE and RECEIVE must be chosen by adjacent couriers on the same transition. A successful graft consumes one packet and grows for three later steps.</li><li>Ripe fruit is a real object: harvest it, carry it, then deliver within one cell of (4,3). Each of six plants fruits only once.</li><li>Local sight has Manhattan radius three. Public bells give anonymous event counts; each harvest preference stays private.</li><li>Rotating courier order settles plant conflicts. Shared movement targets are rejected and currently occupied cells cannot be entered.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Three Bloom Exchange (game-v3-00139)
+
+**Status: AUTHORED_NOT_EXECUTED.** This is an original initial-window train-only source package. Source, scene and literal action scripts are authored hypotheses. No candidate was imported, evaluated, replayed, trained or rendered during authoring. No final-test or earlier candidate/result input was used.
+
+Source SHA-256: `01fe140143e8464ce2affdebe5c9aefa347536d5b309d0af03c478cf68994f08`.
+
+Native boundary: A=3, O=120, U=12, H=96; homogeneous scalar int32 actions, float32 flat observations and rewards, fixed-key int32/bool state. Declared observation interval [0, 1], reward interval [0, 2]. These are representation/game bounds, not empirical acceptance thresholds.
+
+## Garden, conserved resources and transition order
+
+Three couriers move on a 9x7 open grid. Six fixed plants are at (1,1),(7,1),(1,5),(7,5),(4,1),(4,5), with species [0,1,1,0,0,1]. Each begins with two pollen packets, giving twelve finite units. Couriers start at (1,2),(4,2),(7,2). The common depot is (4,3). The reset key samples each courier&#x27;s private preferred fruit species independently from {0,1}; there is no other randomness, and raw-step keys are unused.
+
+Each courier has one shared inventory slot: one pollen packet or one fruit, never both. A pollen packet retains its original collector identity after every handoff. To graft a plant, a different courier must hold it; this explicit two-handler rule makes a partner&#x27;s reception necessary. The target plant must be the opposite species and currently flowering. Species 0 opens for clock phases t=0..3 modulo 8, and species 1 for phases 4..7. Only ungrafted plants flower. Grafting therefore closes its remaining pollen stock to further collection, a real opportunity cost for future couriers.
+
+All commands are legal intentions while the episode is live. Failed gather, give, receive, graft, harvest, delivery and discard attempts no-op. Out-of-range commands become wait. Movement obeys borders, prohibits swaps/following into currently occupied cells, and rejects all proposals sharing an otherwise empty target. Plants and the depot can share a courier&#x27;s cell; they are interaction sites, not obstacles.
+
+After movement, already-growing plants count down. A graft made on this transition starts at three; it becomes ripe after three later transitions. Then GIVE/RECEIVE rendezvous resolve. A giver carrying pollen needs an adjacent empty courier selecting RECEIVE. Ties among receivers and competing givers follow rotating rank/order (id-t) mod 3. A packet&#x27;s collector identity is preserved. There is no same-step give chain because GIVE and RECEIVE are distinct actions.
+
+Plant commands then resolve in rotating actor order. A courier considers plants within Manhattan distance one, with the lowest eligible plant id breaking site ties. GATHER removes a finite pollen unit; GRAFT consumes a compatible transferred packet and starts the growth clock; HARVEST takes a ripe fruit if the shared slot is empty. A plant can produce only one fruit. The six fruit entity slots are inactive before ripeness, located on their plant when ripe, carried at the responsible courier&#x27;s actual endpoint, then inactive at the depot once delivered. A newly ripe fruit can be harvested on that same later transition.
+
+DELIVER works within Manhattan distance one of the depot. Every delivery gives 0.5 to each courier and an additional 0.5 to the delivering courier only if the fruit matches its private preference. DISCARD destroys held pollen permanently and records that loss; fruit cannot be discarded. Delivering all six fruits naturally ends the task. Resource mistakes and failed coordination may leave the garden incomplete until the 96-step truncation; no artificial score criterion prevents those outcomes.
+
+## Causal interaction and competing schedules
+
+A courier cannot collect and immediately use its own packet. Its partner can enable or refuse the transfer, redirect a compatible packet to another plant, or occupy the intended rendezvous cell. Successful grafting removes a flower as a resource source now and creates a delayed ripe-fruit opportunity later, potentially for a third courier. All three agents therefore affect each other&#x27;s feasible future actions through physical inventory, opening windows and locations.
+
+A team can use short local exchanges between paired gatherers and specialized harvest runners, or circulate pollen around the garden and let couriers switch roles. Early grafting minimizes maturation delay but can seal off unused pollen. Delaying it preserves stock and may suit another courier&#x27;s route, at the risk of missing the four-step flowering window. A courier may prefer to deliver its favorite species for the private bonus; allowing another courier to harvest still creates a shared reward. None of these candidate strategies has been optimized or measured.
+
+## Information and visual fidelity
+
+Own preference and inventory are private/self fields. Other courier inventories, all plant state and actual active fruits are observed only within Manhattan radius three. Hidden payloads are zero with an explicit visibility bit; the entity visibility matrices use exactly the same distance rule. Other couriers&#x27; private preferences are absent from scene attributes and public observations.
+
+The depot, current flowering phase, delivery and consumed/discarded-pollen totals are public. Garden bells publicly report aggregate event counts without actor/site identities, including movement conflicts. These public bells are explicitly included in native observations; the scene does not invent extra distant-event information. Reset plant layout and the open rectangular bounds are fixed rules, but current hidden plant stock/stage remains unavailable until observed. Fruit and plant are separate physical stages; animation must not draw inactive unborn or delivered fruit.
+
+## Declared invariants and boundedness
+
+- sum(plant_stock) + count(pollen_kind&gt;=0) + pollen_used + pollen_discarded = 12. A handoff preserves this total; grafting and discard only move a packet into the corresponding consumed ledger.
+- Each courier carries at most one item across pollen_kind and fruit_load. An empty pollen slot has collector=-1; a held packet has a valid original collector.
+- A plant stage advances only 0 -&gt; 1 -&gt; 2 -&gt; 3. Its growth countdown is in 0..3; uncollected pollen stock is in 0..2.
+- Each fruit id appears in at most one courier load and agrees with fruit_owner. A delivered fruit stays delivered and cannot be rewarded again.
+- Active couriers remain on distinct in-bounds cells. Plant positions are constant; carried fruit positions follow the carrier.
+- All preferences and species are binary; delivered is in 0..6 and consumed/discarded pollen in 0..12. Three simultaneous deliveries can reward a courier at most 2.0.
+- These are declared source properties for future independent checks, not executed assertions.
+
+Changing plant spacing, phase duration, sight radius, the two-handler rule or preference distribution could change the coordination problem. Such variants are prospective ideas requiring separately identified sources and protocols; no claim of trained adaptation or transfer follows from this authoring.
+
+## Exact action legend
+
+- 0: Wait.
+- 1: Move north.
+- 2: Move east.
+- 3: Move south.
+- 4: Move west.
+- 5: Gather one pollen packet.
+- 6: Give pollen to an adjacent receiving courier.
+- 7: Receive pollen into an empty inventory.
+- 8: Graft opposite-species pollen handled by another collector.
+- 9: Harvest one ripe fruit into an empty inventory.
+- 10: Deliver carried fruit within one cell of the depot.
+- 11: Discard held pollen permanently.
+
+## Native observation columns
+
+- [0:5), self: Self: id/4,private preferred species,(pollen_kind+1)/2,(collector+1)/4,(fruit_load+1)/8.
+- [5:10), public: Public: t/128,flowering phase,delivered/8,discarded pollen/16,used pollen/16.
+- [10:28), local: Three local courier records, stride 6: visible,x/16,y/16,(pollen_kind+1)/2,(collector+1)/4,(fruit_load+1)/8; hidden payloads zero.
+- [28:76), local: Six local plant records, stride 8: visible,x/16,y/16,species,flowering,stock/2,stage/4,growth/4; hidden payloads zero.
+- [76:106), local: Six local active fruit records, stride 5: visible,x/16,y/16,species,(owner+2)/8; hidden/inactive payloads zero.
+- [106:108), public: Public depot x/16,y/16.
+- [108:115), public: Public event counts/8 in order gather,handoff,pollination,ripening,harvest,delivery,collision; no actor or site identity.
+- [115:120), padding: Five constant zeros.
+
+The renderer binds only these real state groups, positions, active masks and role visibility masks. Glyphs and inert colors carry no extra rule. A carried object shares the actual carrier endpoint; flight, growth, support changes, leases and service are real state transitions. Frame interpolation is presentation only and must not invent a catch, handoff, crossing or private observation. Debug/full-state view must remain separately labeled.
+
+## Authored paired interventions
+
+The complete literal integer vectors, including every prefix step, are saved in playthrough.json. These are not observed trajectories or guaranteed successful solutions.
+
+**receiver_opens_third_courier_future_harvest**
+
+Only courier 1 changes RECEIVE to WAIT at the rendezvous. All later actions match. A should create a fruit for courier 2; B should leave the same graft, harvest and delivery attempts without that resource. No trajectory was executed.
+
+Prefix (2 joint steps): `[[5,0,0],[2,4,0]]`.
+Branch A suffix: `[[6,7,0],[0,2,0],[0,2,0],[0,2,3],[0,1,0],[0,8,0],[0,0,1],[0,0,1],[0,0,9],[0,0,3],[0,0,3],[0,0,4],[0,0,4],[0,0,10]]`.
+Branch B suffix: `[[6,0,0],[0,2,0],[0,2,0],[0,2,3],[0,1,0],[0,8,0],[0,0,1],[0,0,1],[0,0,9],[0,0,3],[0,0,3],[0,0,4],[0,0,4],[0,0,10]]`.
+
+## Raw terminal and boundary semantics
+
+A live raw step advances t once. Natural termination takes priority over the horizon: truncated=(next_t&gt;=H) and not terminated; episode_done=terminated or truncated. raw_step uses an absorbing branch for an already completed state: every leaf and observation remain unchanged, reward is zero, all per-agent dones stay true, and terminal causes are preserved. No reset occurs in raw_step. A later trusted wrapper may reset outside it; an absorbing call is not a new learning transition or a new occurrence of the preserved last-transition event flags.
+
+Invalid/out-of-range commands deterministically become action 0. Every role always has action 0. All small signed codes, clocks, indices and inventories use int32; masks and terminal causes use bool. The externally supplied uint32 reset key is not duplicated in the state. Scaling uses powers of two. This design choice is not a numeric-parity result.
+
+The required community adapter remains a separate implementation-layer deliverable: map native array row i to agent_i in action/observation/reward/done dictionaries and map info.done_all to __all__, preserving these masks, role observations, raw terminal causes and inactive-role semantics. This six-file author package neither implements that adapter nor silently replaces a frozen learner.
+
+## Literal source evidence
+
+- `refresh`: candidate.py lines 15-28.
+- `reset`: candidate.py lines 30-67.
+- `legal_actions`: candidate.py lines 69-72.
+- `advance`: candidate.py lines 74-176.
+- `observe`: candidate.py lines 178-206.
+- `raw_step`: candidate.py lines 208-213.
+
+Native local visibility — candidate.py line 21:
+
+```python
+        n[&quot;plant_visibility&quot;] = plant_distance &lt;= 3
+```
+
+Complementary physical flowering phase — candidate.py line 17:
+
+```python
+        n[&quot;plant_flowering&quot;] = (state[&quot;plant_stage&quot;] == 0) &amp; (jnp.mod(state[&quot;t&quot;] // 4, 2) == state[&quot;plant_species&quot;])
+```
+
+Delayed ripe-fruit creation — candidate.py line 99:
+
+```python
+        ripened = growing &amp; (n[&quot;plant_growth&quot;] == 0)
+```
+
+A partner must explicitly accept the packet — candidate.py line 108:
+
+```python
+            receivers = adjacent &amp; (a == 7) &amp; (n[&quot;pollen_kind&quot;] &lt; 0) &amp; (n[&quot;fruit_load&quot;] &lt; 0) &amp; (ids != i)
+```
+
+Successful two-agent rendezvous — candidate.py line 110:
+
+```python
+            give = (a[i] == 6) &amp; (n[&quot;pollen_kind&quot;][i] &gt;= 0) &amp; jnp.any(receivers)
+```
+
+Collector identity survives the transfer — candidate.py line 112:
+
+```python
+            old_collector = n[&quot;pollen_collector&quot;][i]
+```
+
+Grafting cannot use a self-collected packet — candidate.py line 136:
+
+```python
+            graft = (a[i] == 8) &amp; (n[&quot;pollen_kind&quot;][i] &gt;= 0) &amp; (n[&quot;pollen_collector&quot;][i] != i) &amp; jnp.any(compatible)
+```
+
+Harvest creates another courier transport opportunity — candidate.py line 147:
+
+```python
+            harvest = (a[i] == 9) &amp; empty &amp; jnp.any(harvestable)
+```
+
+Shared delivery and private preference reward — candidate.py line 175:
+
+```python
+        reward = (0.5 * jnp.sum(delivered_by.astype(jnp.float32)) + 0.5 * preferred_by.astype(jnp.float32)).astype(jnp.float32)
+```
+
+Public bells have native observation columns — candidate.py line 206:
+
+```python
+                                jnp.broadcast_to(bells, (3, 7)), jnp.zeros((3, 5), dtype=jnp.float32)), axis=1).astype(jnp.float32)
+```
+
+Actual natural completion — candidate.py line 171:
+
+```python
+        n[&quot;terminated&quot;] = n[&quot;delivered&quot;][0] == 6
+```
+
+## Reference use and provenance
+
+All game rules and kernel expressions were authored for this assigned design; no upstream game, board implementation, model weights or learner code was copied. The allowed reference snapshots were read as inspiration and interface context. Their exact identities are also recorded in generation_record.json.
+
+- JaxMARL supplies the community parallel, agent-keyed API model and the idea of distinct environment/algorithm components. Its example game rules were not copied.
+- Pgx supplies explicit-key, legal-mask and state/visualization API context for discrete games. It is a board-game environment library, not this spatial game&#x27;s implementation.
+- Craftax supplies inspiration for stateful spatial inventory and persistent world consequences. The assigned rules are independent of Craftax&#x27;s game mechanics.
+- PureJaxRL is an end-to-end algorithm implementation reference. Craftax_Baselines/ppo_rnn.py is recurrent PPO integration code and credits Chris Lu/PureJaxRL. Neither is treated as a new game library or substituted for the experiment&#x27;s learner.
+
+- `references\JaxMARL_README.md`; SHA-256 `6649d04f5ed05d620e78e8416a00d4db841cf2633ae60fdb3c9729e037a71c15`; source: https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md.
+- `references\Pgx_README.md`; SHA-256 `153f44999e55d5df3e51e13dee6ef418cc9704ddfa26206f1dc5789b9cbbf8df`; source: https://github.com/sotetsuk/pgx/blob/main/README.md.
+- `references\PureJaxRL_README.md`; SHA-256 `d5f40182c924a42cec820931e61a7d5070e48c4c8413c7d16455abc6ea0ef6b0`; source: https://github.com/luchris429/purejaxrl/blob/main/README.md.
+- `references\Craftax_Baselines_ppo_rnn.py`; SHA-256 `5f93e6a7c3a1e0c551831d75be311735ba495dfdecae51787a1c03a27b1cd011`; source: https://github.com/MichaelTMatthews/Craftax_Baselines/blob/main/ppo_rnn.py.
+- `references\Craftax_README.md`; SHA-256 `7f9757a2047143cf183f7e2e84851a740f386af80dbee050c89b316d66a3d3ff`; source: https://github.com/MichaelTMatthews/Craftax/blob/main/README.md.
+
+Only this batch&#x27;s sanitized requests/designs/contracts and the five supplied snapshots were inputs. Shared input bytes were not modified. Local AST/data checks do not establish successful JAX execution, eager/JIT/vmap parity, legal-script replay, balance, learnability, strategic richness, non-isomorphism, adaptation or meta-RL transfer. Actual replay, animation, community adapter behavior and scientific evidence require the separately authorized execution and review stages.
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north</span></div><div class="action"><b>2</b><span>Move east</span></div><div class="action"><b>3</b><span>Move south</span></div><div class="action"><b>4</b><span>Move west</span></div><div class="action"><b>5</b><span>Gather one pollen packet</span></div><div class="action"><b>6</b><span>Give pollen to an adjacent receiving courier</span></div><div class="action"><b>7</b><span>Receive pollen into an empty inventory</span></div><div class="action"><b>8</b><span>Graft opposite-species pollen handled by another collector</span></div><div class="action"><b>9</b><span>Harvest one ripe fruit into an empty inventory</span></div><div class="action"><b>10</b><span>Deliver carried fruit within one cell of the depot</span></div><div class="action"><b>11</b><span>Discard held pollen permanently</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> courier_0 with private harvest preference</p><p><b>agent_1</b> courier_1 with private harvest preference</p><p><b>agent_2</b> courier_2 with private harvest preference</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      5
+    ],
+    &quot;meaning&quot;: &quot;Self: id/4,private preferred species,(pollen_kind+1)/2,(collector+1)/4,(fruit_load+1)/8&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      5,
+      10
+    ],
+    &quot;meaning&quot;: &quot;Public: t/128,flowering phase,delivered/8,discarded pollen/16,used pollen/16&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      10,
+      28
+    ],
+    &quot;meaning&quot;: &quot;Three local courier records, stride 6: visible,x/16,y/16,(pollen_kind+1)/2,(collector+1)/4,(fruit_load+1)/8; hidden payloads zero&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      28,
+      76
+    ],
+    &quot;meaning&quot;: &quot;Six local plant records, stride 8: visible,x/16,y/16,species,flowering,stock/2,stage/4,growth/4; hidden payloads zero&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      76,
+      106
+    ],
+    &quot;meaning&quot;: &quot;Six local active fruit records, stride 5: visible,x/16,y/16,species,(owner+2)/8; hidden/inactive payloads zero&quot;,
+    &quot;visibility&quot;: &quot;local&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      106,
+      108
+    ],
+    &quot;meaning&quot;: &quot;Public depot x/16,y/16&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      108,
+      115
+    ],
+    &quot;meaning&quot;: &quot;Public event counts/8 in order gather,handoff,pollination,ripening,harvest,delivery,collision; no actor or site identity&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      115,
+      120
+    ],
+    &quot;meaning&quot;: &quot;Five constant zeros&quot;,
+    &quot;visibility&quot;: &quot;padding&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;couriers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;pollen_kind&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried pollen species; -1 empty&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pollen_collector&quot;
+        ],
+        &quot;meaning&quot;: &quot;Original collector id; -1 empty&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fruit_load&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried fruit id; -1 none&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;plants&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;plant_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;plant_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;plant_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;plant_species&quot;
+        ],
+        &quot;meaning&quot;: &quot;Plant species 0 or 1&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;plant_stock&quot;
+        ],
+        &quot;meaning&quot;: &quot;Uncollected pollen units, initially two&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;plant_stage&quot;
+        ],
+        &quot;meaning&quot;: &quot;0 ungrafted, 1 growing, 2 ripe, 3 harvested&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;plant_growth&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining later steps to ripeness&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;plant_flowering&quot;
+        ],
+        &quot;meaning&quot;: &quot;Currently open to collection and grafting&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;fruit&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 6,
+    &quot;position&quot;: [
+      &quot;fruit_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;fruit_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;fruit_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;fruit_species&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fruit species inherited from its plant&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;fruit_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;-2 unborn, -1 ripe on plant, 0..2 carried, 3 delivered&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;depot&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 1,
+    &quot;position&quot;: [
+      &quot;depot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;depot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;depot_visibility&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;Fruit delivered across all couriers&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi139&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;01fe140143e8464ce2affdebe5c9aefa347536d5b309d0af03c478cf68994f08&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 120,
+    &quot;num_actions&quot;: 12,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.300873041152954
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.26352906227111816
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.6484415531158447
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.21048212051391602
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.4945790767669678
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0065119266510009766
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.3909885883331299
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.0067570209503174
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.0437586307525635
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.9966812133789062
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 11.821202516555786,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 96,
+  &quot;scripted_random_returns&quot;: [
+    0.0,
+    0.0,
+    0.0
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 25,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi139&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 4.554204702377319
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 139,
+  &quot;key&quot;: &quot;gi139&quot;,
+  &quot;title&quot;: &quot;三花交换&quot;,
+  &quot;summary&quot;: &quot;花粉记住采集者，需由另一名快递员接手才能嫁接，并受花期与单格容量限制。&quot;,
+  &quot;tags&quot;: [
+    &quot;互补交接&quot;,
+    &quot;生态时序&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 120,
+    &quot;num_actions&quot;: 12,
+    &quot;max_steps&quot;: 96
+  },
+  &quot;source_sha256&quot;: &quot;01fe140143e8464ce2affdebe5c9aefa347536d5b309d0af03c478cf68994f08&quot;,
+  &quot;manifest_sha256&quot;: &quot;218eedb89a697b2e783770ef157159b8cd8fc93870164ef7787bd763822994b0&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;01fe140143e8464ce2affdebe5c9aefa347536d5b309d0af03c478cf68994f08&quot;,
+      &quot;bytes&quot;: 14284,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00139/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;218eedb89a697b2e783770ef157159b8cd8fc93870164ef7787bd763822994b0&quot;,
+      &quot;bytes&quot;: 14811,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00139/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;22940e04be0941df843d8b9f479b69d10a7a2e01e445bbf66f60f6dca180dedd&quot;,
+      &quot;bytes&quot;: 7860,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00139/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;90bd41fc1529e575a302d0c5bdf628397bb74822829014d83c0032354e71c020&quot;,
+      &quot;bytes&quot;: 15744,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00139/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;e7383b5cc6da2198528b1abf633c3ec2554be04bdcd9ef9afdc992a93d1427a8&quot;,
+      &quot;bytes&quot;: 4355,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00139/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi139">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

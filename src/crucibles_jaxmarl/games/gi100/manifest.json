@@ -1,0 +1,829 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00100",
+  "source_sha256": "75b5f4dac757265e7743226b2f47873f4d574b063eb4c68dec0e0e105e548ab5",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 104,
+  "num_actions": 10,
+  "max_steps": 120,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -3,
+  "observation_high": 128,
+  "reward_low": -1,
+  "reward_high": 12,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "West merchant; owns kind 0 initially and needs kind 2"
+    },
+    {
+      "id": "agent_1",
+      "role": "East merchant; owns kind 1 initially and needs kind 0"
+    },
+    {
+      "id": "agent_2",
+      "role": "South merchant; owns kind 2 initially and needs kind 1"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Lift owned or gifted cargo; if carrying, fulfil own depot or drop"
+    },
+    {
+      "id": 6,
+      "label": "Commit carried cargo at own escrow pad for three ticks"
+    },
+    {
+      "id": 7,
+      "label": "Toggle next-offer recipient between the two other merchants; unavailable while committed"
+    },
+    {
+      "id": 8,
+      "label": "Withdraw own mature offer while at own pad"
+    },
+    {
+      "id": 9,
+      "label": "Drop carried cargo as a public gift that any merchant may claim"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        9,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "home_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "home_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pad_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pad_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pad_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "quote"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "demand"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_pos"
+      ],
+      "shape": [
+        6,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_active"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goods_vis"
+      ],
+      "shape": [
+        3,
+        6
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goods_kind"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_owner"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_carrier"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_escrow"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_timer"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goods_target"
+      ],
+      "shape": [
+        6
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "offer_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "exchange_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "withdraw_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "gift_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "pickup_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      8
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Open traversable board",
+          "color": "#E7EDF3"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable fixed wall",
+          "color": "#4A5568"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "quote"
+          ],
+          "meaning": "Chosen prospective recipient for the next escrow offer",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "home_pos"
+      ],
+      "active": [
+        "home_active"
+      ],
+      "visibility": [
+        "home_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "demand"
+          ],
+          "meaning": "Cargo kind required by this depot",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Required-kind units delivered; target two",
+          "display": "bar"
+        }
+      ]
+    },
+    {
+      "id": "pad",
+      "kind": "landmark",
+      "count": 3,
+      "position": [
+        "pad_pos"
+      ],
+      "active": [
+        "pad_active"
+      ],
+      "visibility": [
+        "pad_vis"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "goods",
+      "kind": "object",
+      "count": 6,
+      "position": [
+        "goods_pos"
+      ],
+      "active": [
+        "goods_active"
+      ],
+      "visibility": [
+        "goods_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "goods_kind"
+          ],
+          "meaning": "Cargo kind 0, 1 or 2",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "goods_owner"
+          ],
+          "meaning": "Legal owner; -1 public gift, -2 delivered",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "goods_carrier"
+          ],
+          "meaning": "Carrier role or -1 resting cargo",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "goods_escrow"
+          ],
+          "meaning": "Committing seller or -1 outside escrow",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "goods_timer"
+          ],
+          "meaning": "Nonwithdrawable commitment ticks remaining",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "goods_target"
+          ],
+          "meaning": "Conditional recipient or -1 when no offer",
+          "display": "category"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "offer_event"
+      ],
+      "meaning": "Goods physically deposited into new commitments",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "exchange_event"
+      ],
+      "meaning": "Recipients gaining title in completed conditional cycles",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "withdraw_event"
+      ],
+      "meaning": "Mature commitments withdrawn at the seller's pad",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "gift_event"
+      ],
+      "meaning": "Carried goods released to public ownership",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Required-kind cargo consumed at its owner's depot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pickup_event"
+      ],
+      "meaning": "Physical cargo lifted by merchants",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "meaning": "Observer merchant index",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        1,
+        5
+      ],
+      "meaning": "Public clock, done, natural termination, truncation",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        11
+      ],
+      "meaning": "Merchant x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        11,
+        17
+      ],
+      "meaning": "Private depot x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        23
+      ],
+      "meaning": "Seller-specific escrow-pad x,y",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        23,
+        26
+      ],
+      "meaning": "Next-offer recipients",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        26,
+        29
+      ],
+      "meaning": "Required cargo kind for each merchant",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        32
+      ],
+      "meaning": "Required-kind depot deliveries",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        32,
+        44
+      ],
+      "meaning": "Six physical cargo x,y positions; carried goods follow their carrier",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        50
+      ],
+      "meaning": "Cargo active flags; delivered goods inactive",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        56
+      ],
+      "meaning": "Cargo kind",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        56,
+        62
+      ],
+      "meaning": "Cargo legal owner; -1 gifted, -2 delivered",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        68
+      ],
+      "meaning": "Cargo carrier; -1 means resting",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        68,
+        74
+      ],
+      "meaning": "Escrow seller; -1 means free of commitment",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        74,
+        80
+      ],
+      "meaning": "Escrow commitment timers",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        80,
+        86
+      ],
+      "meaning": "Conditional recipient; -1 means no offer",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        86,
+        89
+      ],
+      "meaning": "New escrow deposits by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        89,
+        92
+      ],
+      "meaning": "Merchants receiving title through conditional settlement this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        92,
+        95
+      ],
+      "meaning": "Mature offers withdrawn by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        95,
+        98
+      ],
+      "meaning": "Goods publicly gifted by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        98,
+        101
+      ],
+      "meaning": "Own-depot deliveries by merchant this tick",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        101,
+        104
+      ],
+      "meaning": "Cargo pickups by merchant this tick",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Each merchant needs two units of its required kind at its own depot. Initially nobody owns the kind they need. Negotiate through visible recipient quotes, physical deposits, conditional cycles or unsecured gifts, then transport the newly owned goods.",
+    "natural_termination": "Every merchant has delivered two required-kind goods. Otherwise truncate at 120 steps. A natural completion on step 120 takes priority. Terminal raw state is absorbing.",
+    "interaction": "Ownership, carrier, commitment, recipient and lock timer belong to each physical good. Whole compatible bilateral or three-party cycles transfer title only after all offers mature. Goods stay on the seller's actual pad after settlement and must be fetched. Withdrawing before settlement prevents the whole dependent cycle; gifts bypass that protection and can be claimed or withheld. Merchants compete for occupied corridor cells and finite time.",
+    "observation_access": "All cargo positions, ownership, carriers, escrow commitments, timers, quotes, depot needs and event flags are public. Every entity visibility mask is true. The static walls and pad/depot geometry are public. No text messages or extra renderer-only policy information exist."
+  },
+  "invariants": [
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "t"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "quote"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "demand"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "delivered"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "goods_kind"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "goods_timer"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "agent_pos"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "goods_pos"
+      ]
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  },
+  "stochasticity": "Deterministic fixed initial world and deterministic transitions; supplied reset/step keys are accepted and unused. No PRNG state is stored.",
+  "invalid_action_handling": "Out-of-range or masked actions become no-op. Unavailable target intents and blocked movement have no effect; an otherwise legal intent is not a claim that its preconditions hold."
+}

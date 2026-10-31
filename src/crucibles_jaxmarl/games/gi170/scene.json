@@ -1,0 +1,300 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "7a946fd4f66075d95dfd90d9c047c13c5aafbca39d647bf9b5f12a10b2753c99",
+  "manifest_sha256": "7b3b85fad62c858134008c4d60db6075cc74b6a0b7928c91286bef2bab675438",
+  "title": "Counterweight Crew",
+  "rules": [
+    "Attach beside cargo, then cardinal actions exert force; release restores free walking.",
+    "Heavy cargo needs net force two; light cargo needs one. Opposed force cancels; equal axis magnitude selects x.",
+    "Workers can share cells. Cargo cannot enter another active cargo or a non-tethered worker; walls and tether footprints constrain travel.",
+    "Rest restores two stamina up to ten; direction costs one even when collective motion fails.",
+    "Any depot accepts cargo and pays each worker its own public value times cargo weight, then removes cargo and releases tethers.",
+    "All cargo delivered ends naturally; otherwise horizon 80."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "tiles"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Walkable floor",
+          "color": "#D9E2E8"
+        },
+        {
+          "value": 1,
+          "meaning": "Impassable bulkhead",
+          "color": "#596674"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "glyph": "worker",
+      "label": "Crew",
+      "color": "#377EB8",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "label": "Stamina reserve"
+        },
+        {
+          "state_path": [
+            "attachment"
+          ],
+          "label": "Cargo attachment index; -1 means free"
+        },
+        {
+          "state_path": [
+            "effort"
+          ],
+          "label": "Directional effort spent this transition"
+        },
+        {
+          "state_path": [
+            "values"
+          ],
+          "label": "Public values for west northeast southeast depots"
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "glyph": "crate",
+      "label": "Salvage cargo",
+      "color": "#D89236",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "cargo_weight"
+          ],
+          "label": "Net force required to move"
+        },
+        {
+          "state_path": [
+            "force"
+          ],
+          "label": "Chosen net xy force"
+        },
+        {
+          "state_path": [
+            "moved"
+          ],
+          "label": "Moved this transition"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "glyph": "flag",
+      "label": "Depot",
+      "color": "#4DA66C",
+      "attribute_labels": []
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "effort"
+      ],
+      "meaning": "Directional stamina spent by worker",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "moved"
+      ],
+      "meaning": "Actual cargo displacement",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_event"
+      ],
+      "meaning": "Cargo newly delivered",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_delivered"
+      ],
+      "meaning": "Cargo delivered status",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest: recover two stamina"
+    },
+    {
+      "id": 1,
+      "label": "North: walk or exert north tether force"
+    },
+    {
+      "id": 2,
+      "label": "East: walk or exert east tether force"
+    },
+    {
+      "id": 3,
+      "label": "South: walk or exert south tether force"
+    },
+    {
+      "id": 4,
+      "label": "West: walk or exert west tether force"
+    },
+    {
+      "id": 5,
+      "label": "Attach to nearest active cargo within one cell; cargo ID breaks distance ties"
+    },
+    {
+      "id": 6,
+      "label": "Release current tether"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        3
+      ],
+      "meaning": "Own worker ID one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        4,
+        10
+      ],
+      "meaning": "All worker xy positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        10,
+        13
+      ],
+      "meaning": "All stamina",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        16
+      ],
+      "meaning": "All attachment indices; -1 free",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        16,
+        22
+      ],
+      "meaning": "Cargo xy positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        22,
+        25
+      ],
+      "meaning": "Active cargo bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        28
+      ],
+      "meaning": "Cargo weights",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        28,
+        34
+      ],
+      "meaning": "Cargo net xy force",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        34,
+        40
+      ],
+      "meaning": "Depot xy positions",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        49
+      ],
+      "meaning": "Public worker by depot value matrix row-major",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        49,
+        112
+      ],
+      "meaning": "Public 7 by 9 yx tile map; 0 floor, 1 bulkhead",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        112,
+        113
+      ],
+      "meaning": "Episode done",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        113,
+        116
+      ],
+      "meaning": "Worker effort flags",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        116,
+        119
+      ],
+      "meaning": "Cargo moved flags",
+      "visibility": "public"
+    }
+  ]
+}

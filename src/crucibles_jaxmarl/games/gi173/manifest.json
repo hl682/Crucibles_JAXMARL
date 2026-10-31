@@ -1,0 +1,818 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00173",
+  "source_sha256": "fd343e7d228d41dfd595cd135f86e7b9925e5a8c2dc08dd5b3d075f73e5c52cb",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 4,
+  "observation_size": 66,
+  "num_actions": 11,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "fully_observable",
+  "observation_low": -1,
+  "observation_high": 80,
+  "reward_low": -10,
+  "reward_high": 10,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "episode_done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Team 0 player 0 attacks right"
+    },
+    {
+      "id": "agent_1",
+      "role": "Team 0 player 1 attacks right"
+    },
+    {
+      "id": "agent_2",
+      "role": "Team 1 player 2 attacks left"
+    },
+    {
+      "id": "agent_3",
+      "role": "Team 1 player 3 attacks left"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Rest: regain two energy"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Receive loose ball or tackle opposing carrier within one cell"
+    },
+    {
+      "id": 6,
+      "label": "Carrier passes north"
+    },
+    {
+      "id": 7,
+      "label": "Carrier passes east"
+    },
+    {
+      "id": 8,
+      "label": "Carrier passes south"
+    },
+    {
+      "id": 9,
+      "label": "Carrier passes west"
+    },
+    {
+      "id": 10,
+      "label": "Screen: protect nearby carrier teammate and block nearby enemy movement"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "episode_done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_pos"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_visible"
+      ],
+      "shape": [
+        4,
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ball_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "ball_visible"
+      ],
+      "shape": [
+        4,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_pos"
+      ],
+      "shape": [
+        2,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "goal_active"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_visible"
+      ],
+      "shape": [
+        4,
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "team"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "energy"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "screen"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "possession"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "carrier"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "velocity"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "flight"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "last_passer"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "score"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "passed"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "caught"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "intercepted"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "stolen"
+      ],
+      "shape": [
+        4
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "goal_event"
+      ],
+      "shape": [
+        2
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "kickoff"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ]
+  },
+  "entities": [
+    {
+      "id": "agent",
+      "kind": "agent",
+      "count": 4,
+      "position": [
+        "agent_pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "meaning": "Public team ID",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "energy"
+          ],
+          "meaning": "Energy reserve",
+          "display": "bar"
+        },
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "meaning": "Special-action cooldown",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "screen"
+          ],
+          "meaning": "Screen declared this transition",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "possession"
+          ],
+          "meaning": "Current token carrier",
+          "display": "flag"
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "kind": "object",
+      "count": 1,
+      "position": [
+        "ball_pos"
+      ],
+      "active": [
+        "ball_active"
+      ],
+      "visibility": [
+        "ball_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "carrier"
+          ],
+          "meaning": "Carrier ID; -1 loose",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "velocity"
+          ],
+          "meaning": "Current cardinal flight velocity",
+          "display": "direction"
+        },
+        {
+          "state_path": [
+            "flight"
+          ],
+          "meaning": "Remaining flight steps",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "last_passer"
+          ],
+          "meaning": "Last passer while loose; -1 otherwise",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "kind": "landmark",
+      "count": 2,
+      "position": [
+        "goal_pos"
+      ],
+      "active": [
+        "goal_active"
+      ],
+      "visibility": [
+        "goal_visible"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "score"
+          ],
+          "meaning": "Score of team attacking this goal",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "passed"
+      ],
+      "meaning": "Pass launched by player",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "caught"
+      ],
+      "meaning": "Loose ball caught by player",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "intercepted"
+      ],
+      "meaning": "Catch by opponent of last passer",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "stolen"
+      ],
+      "meaning": "Opposing carrier tackled by player",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "goal_event"
+      ],
+      "meaning": "Team scored this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "kickoff"
+      ],
+      "meaning": "Nonterminal goal placed next kickoff",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative team score",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        4
+      ],
+      "meaning": "Own player ID one-hot",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Clock",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        5,
+        13
+      ],
+      "meaning": "All player xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        13,
+        17
+      ],
+      "meaning": "All energy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        17,
+        21
+      ],
+      "meaning": "All cooldowns",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        21,
+        25
+      ],
+      "meaning": "Team IDs",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        25,
+        29
+      ],
+      "meaning": "Screen bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        29,
+        33
+      ],
+      "meaning": "Possession bits",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "meaning": "Ball xy",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        36
+      ],
+      "meaning": "Carrier ID or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        38
+      ],
+      "meaning": "Ball flight xy velocity",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        38,
+        39
+      ],
+      "meaning": "Remaining flight",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        40
+      ],
+      "meaning": "Last passer while loose or -1",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        40,
+        44
+      ],
+      "meaning": "Goal centers; lanes include y 2 through 4",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        44,
+        46
+      ],
+      "meaning": "Team scores",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        46,
+        50
+      ],
+      "meaning": "Pass events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        50,
+        54
+      ],
+      "meaning": "Catch events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        54,
+        58
+      ],
+      "meaning": "Interception events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        58,
+        62
+      ],
+      "meaning": "Tackle events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        62,
+        64
+      ],
+      "meaning": "Goal events",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        64,
+        65
+      ],
+      "meaning": "Kickoff event",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        65,
+        66
+      ],
+      "meaning": "Episode done",
+      "visibility": "public"
+    }
+  ],
+  "task": {
+    "objective": "Pairs 0/1 and 2/3 attack right and left goals using controlled carrying, directional passing, receiving, interception and screening.",
+    "natural_termination": "First team to two goals; otherwise horizon 80. Winning goals have natural priority. Horizon goals do not place a kickoff.",
+    "interaction": "Carrying doubles movement energy. Passing requires teammate positioning and explicit catch; opponents can intercept or tackle. Screens alter enemy movement and protect a nearby carrier.",
+    "observation_access": "All positions, teams, energy, cooldowns, ball state, goals and events are public. Own identity is additional. No automatic teammate or receiver is provided."
+  },
+  "invariants": [
+    {
+      "kind": "range",
+      "state_path": [
+        "t"
+      ],
+      "min": 0,
+      "max": 80,
+      "low": 0,
+      "high": 80
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "agent_pos"
+      ],
+      "min": 0,
+      "max": 10,
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "ball_pos"
+      ],
+      "min": 0,
+      "max": 10,
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "goal_pos"
+      ],
+      "min": 0,
+      "max": 10,
+      "low": 0,
+      "high": 10
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "energy"
+      ],
+      "min": 0,
+      "max": 8,
+      "low": 0,
+      "high": 8
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "cooldown"
+      ],
+      "min": 0,
+      "max": 2,
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "flight"
+      ],
+      "min": 0,
+      "max": 4,
+      "low": 0,
+      "high": 4
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "carrier"
+      ],
+      "min": -1,
+      "max": 3,
+      "low": -1,
+      "high": 3
+    },
+    {
+      "kind": "range",
+      "state_path": [
+        "score"
+      ],
+      "min": 0,
+      "max": 2,
+      "low": 0,
+      "high": 2
+    },
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "agent_pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

@@ -1,0 +1,658 @@
+{
+  "schema": "cr01-spatial-game-manifest-v3",
+  "candidate_id": "game-v3-00166",
+  "source_sha256": "0cc9d5510948860eb0d3a62219138aeb88583506f997f50759e7df1f2a7823fb",
+  "source_split": "train",
+  "final_test_used": false,
+  "num_agents": 3,
+  "observation_size": 51,
+  "num_actions": 10,
+  "max_steps": 80,
+  "observation_dtype": "float32",
+  "action_dtype": "int32",
+  "observation_encoding": "flat",
+  "observability": "partially_observable",
+  "observation_low": -1,
+  "observation_high": 80,
+  "reward_low": -5,
+  "reward_high": 18,
+  "terminal_semantics": "raw_no_autoreset",
+  "terminal_policy": "absorbing_raw_state_natural_priority_v1",
+  "episode_done_path": [
+    "done"
+  ],
+  "agents": [
+    {
+      "id": "agent_0",
+      "role": "Train 0 with private cargo urgency"
+    },
+    {
+      "id": "agent_1",
+      "role": "Train 1 with private cargo urgency"
+    },
+    {
+      "id": "agent_2",
+      "role": "Train 2 with private cargo urgency"
+    }
+  ],
+  "actions": [
+    {
+      "id": 0,
+      "label": "Wait"
+    },
+    {
+      "id": 1,
+      "label": "Move north"
+    },
+    {
+      "id": 2,
+      "label": "Move east"
+    },
+    {
+      "id": 3,
+      "label": "Move south"
+    },
+    {
+      "id": 4,
+      "label": "Move west"
+    },
+    {
+      "id": 5,
+      "label": "Claim nearest adjacent block for four ticks"
+    },
+    {
+      "id": 6,
+      "label": "Release all owned reservations"
+    },
+    {
+      "id": 7,
+      "label": "Toggle nearest adjacent block entry axis"
+    },
+    {
+      "id": 8,
+      "label": "Deliver at the shared depot"
+    },
+    {
+      "id": 9,
+      "label": "Yield: release claims and bind movement for two future decisions"
+    }
+  ],
+  "state": [
+    {
+      "path": [
+        "t"
+      ],
+      "shape": [],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "done"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "terminated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "truncated"
+      ],
+      "shape": [],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "map"
+      ],
+      "shape": [
+        7,
+        9
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "agent_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "agent_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "urgency"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "delivered"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "commit"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "block_pos"
+      ],
+      "shape": [
+        3,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "block_active"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "block_vis"
+      ],
+      "shape": [
+        3,
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "owner"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "ttl"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "axis"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_pos"
+      ],
+      "shape": [
+        1,
+        2
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "depot_active"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "depot_vis"
+      ],
+      "shape": [
+        3,
+        1
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "cooldown"
+      ],
+      "shape": [
+        1
+      ],
+      "dtype": "int32"
+    },
+    {
+      "path": [
+        "moved"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "claimed"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "blocked"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    },
+    {
+      "path": [
+        "delivery_event"
+      ],
+      "shape": [
+        3
+      ],
+      "dtype": "bool"
+    }
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "y_direction": "down",
+    "bounds": [
+      0,
+      0,
+      8,
+      6
+    ],
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Traversable rail cell",
+          "color": "#cbd5e1"
+        },
+        {
+          "value": 1,
+          "meaning": "No track; movement forbidden",
+          "color": "#334155"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "trains",
+      "kind": "agent",
+      "count": 3,
+      "position": [
+        "pos"
+      ],
+      "active": [
+        "agent_active"
+      ],
+      "visibility": [
+        "agent_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "delivered"
+          ],
+          "meaning": "Cargo delivery complete",
+          "display": "flag"
+        },
+        {
+          "state_path": [
+            "commit"
+          ],
+          "meaning": "Binding yield ticks remaining",
+          "display": "number"
+        }
+      ]
+    },
+    {
+      "id": "blocks",
+      "kind": "gate",
+      "count": 3,
+      "position": [
+        "block_pos"
+      ],
+      "active": [
+        "block_active"
+      ],
+      "visibility": [
+        "block_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "owner"
+          ],
+          "meaning": "Reservation owner, -1 means unclaimed",
+          "display": "category"
+        },
+        {
+          "state_path": [
+            "ttl"
+          ],
+          "meaning": "Reservation ticks remaining",
+          "display": "number"
+        },
+        {
+          "state_path": [
+            "axis"
+          ],
+          "meaning": "Permitted entry axis: 0 horizontal, 1 vertical",
+          "display": "category"
+        }
+      ]
+    },
+    {
+      "id": "depot",
+      "kind": "landmark",
+      "count": 1,
+      "position": [
+        "depot_pos"
+      ],
+      "active": [
+        "depot_active"
+      ],
+      "visibility": [
+        "depot_vis"
+      ],
+      "attributes": [
+        {
+          "state_path": [
+            "cooldown"
+          ],
+          "meaning": "Remaining service cooldown",
+          "display": "number"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "moved"
+      ],
+      "meaning": "Train changed its physical cell",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "claimed"
+      ],
+      "meaning": "Reservation granted or renewed",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "blocked"
+      ],
+      "meaning": "Legal move request lost a same-tick access/occupancy conflict",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Cargo accepted at the single service slot",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "observation_fields": [
+    {
+      "slice": [
+        0,
+        2
+      ],
+      "meaning": "Own train x,y.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        2,
+        3
+      ],
+      "meaning": "Own urgency integer 1..3; independently sampled at reset; never revealed by entity attributes.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        3,
+        4
+      ],
+      "meaning": "Own delivered flag.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        4,
+        5
+      ],
+      "meaning": "Own remaining binding yield ticks.",
+      "visibility": "self"
+    },
+    {
+      "slice": [
+        5,
+        6
+      ],
+      "meaning": "Public elapsed decision ticks.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        6,
+        12
+      ],
+      "meaning": "All train x,y pairs in agent order, including retained finished positions.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        12,
+        15
+      ],
+      "meaning": "All delivered flags.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        15,
+        18
+      ],
+      "meaning": "All binding yield timers.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        18,
+        24
+      ],
+      "meaning": "Three block x,y pairs.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        24,
+        27
+      ],
+      "meaning": "Block reservation owner -1 or agent index.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        27,
+        30
+      ],
+      "meaning": "Block reservation ticks remaining.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        30,
+        33
+      ],
+      "meaning": "Block entry axis: 0 horizontal, 1 vertical.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        33,
+        35
+      ],
+      "meaning": "Single depot x,y.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        35,
+        36
+      ],
+      "meaning": "Depot service cooldown.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        36,
+        39
+      ],
+      "meaning": "Successful moves in the last nonabsorbing transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        39,
+        42
+      ],
+      "meaning": "Claims granted in the last nonabsorbing transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        42,
+        45
+      ],
+      "meaning": "Originally legal move requests blocked by same-tick peer control or occupancy.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        45,
+        48
+      ],
+      "meaning": "Deliveries in last nonabsorbing transition.",
+      "visibility": "public"
+    },
+    {
+      "slice": [
+        48,
+        51
+      ],
+      "meaning": "Own stable identity one-hot; roles share action semantics.",
+      "visibility": "self"
+    }
+  ],
+  "task": {
+    "objective": "Deliver each controlled train cargo at the single depot while trading own urgency costs against competing track access.",
+    "natural_termination": "Joint natural completion exactly when all three cargos are delivered. Otherwise time limit 80; no unsupported early failure claim.",
+    "interaction": "Physical occupancy, rotating same-tick priority, four-tick reservations, switch orientation and one shared service cooldown alter peers feasible routes. Yield binds future movement and releases claims.",
+    "observation_access": "Track layout, physical train/block/depot states, claims, timers and events are public. Only own urgency is observed; scene has no urgency attribute. Inactive delivered trains retain only no-op."
+  },
+  "invariants": [
+    {
+      "kind": "unique_active_positions",
+      "state_path": [
+        "pos"
+      ],
+      "active_path": [
+        "agent_active"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "ttl"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "commit"
+      ]
+    },
+    {
+      "kind": "nonnegative",
+      "state_path": [
+        "cooldown"
+      ]
+    }
+  ],
+  "render": {
+    "required": true,
+    "scene_file": "scene.json"
+  }
+}

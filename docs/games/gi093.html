@@ -1,0 +1,620 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>栈桥公地 · Crucibles JAXMARL</title><link rel="stylesheet" href="../style.css"></head><body><header><a href="../index.html">CRUCIBLES <small>JAXMARL</small></a><nav><a href="../guide.html">Install & play</a><a href="../api.html">API</a><a href="../verification.html">Verification</a><a href="https://github.com/hl682/Crucibles_JAXMARL">GitHub ↗</a></nav></header><main><p class="eyebrow">GI093 / SPATIAL</p><h1>栈桥公地</h1><p class="lead">各方搭建、维修并共用易损桥梁；载货过桥消耗更多耐久，拥堵会改变通路。</p><div class="stats"><span>3 agents</span><span>11 actions</span><span>224 observation columns</span><span>128 original horizon</span><span>Runtime: PASS</span></div><section><h2>Original saved demonstration</h2><p>Recorded native state, often authored scripts or interventions; information scope and failures are preserved in the original provenance. This is a saved demonstration, not live browser play.</p><img class="demo" src="../previews/gi093.gif" alt="Original saved demonstration gi093"></section><section><h2>Release verification episode</h2><p>Untrained uniform legal actions. Actual JAX state sampled along the full original episode; full-state debug camera. No human performance or learning claim.</p><img class="demo" src="../demos/gi093.gif" alt="Actual verification episode gi093"></section><section><h2>Run this game</h2><pre>crucibles play --game 93</pre><p>Start Python locally, then open the address printed by the terminal. <a href="../guide.html">Installation, multiplayer, takeover and keyboard controls →</a></p></section><section><h2>Objective, rewards & ending</h2><details><summary>Exact task contract</summary><pre>{
+  &quot;objective&quot;: &quot;Move each role&#x27;s actual cart from the western bank to its matching eastern goal, while deciding whether to pool construction resources, share bridges, maintain access or pursue toll income.&quot;,
+  &quot;natural_termination&quot;: &quot;All three carts delivered ends naturally. A cart delivery rewards its owner +1 and each other role +0.25. A crossing of another role&#x27;s owned bridge transfers 1/32 reward from traveler to owner. Otherwise truncate at step 128.&quot;,
+  &quot;interaction&quot;: &quot;Any role may use a live bridge. Entering wears it by one, or two when hauling a cart; depleted occupied remnants permit departure but block new entry. Ownership allocates real payoff transfers, while maintenance, public access, shared depots and material handoffs change others&#x27; later route opportunities.&quot;,
+  &quot;observation_access&quot;: &quot;All terrain, bridge states and ownership, cargo positions, worker resources, depot stock and goal identities are public. Entity visibility is true for all roles. Public observation contains the entire dynamic infrastructure state and net toll ledgers.&quot;
+}</pre></details><p>Declared per-step reward bounds: -1 to 2. Observability: fully_observable.</p></section><section><h2>Rules</h2><ol><li>River cells x=3..5 require constructed bridges. Anyone may enter a bridge with positive durability; simultaneous congestion can block a route.</li><li>A new front bridge costs two wood and starts at durability four. Repair costs one wood and adds two durability, up to four.</li><li>Entering consumes one durability, or two with a cart. A depleted occupied remnant supports only departure; once vacated it disappears unless repaired.</li><li>Crossing someone else&#x27;s owned bridge transfers 1/32 reward to its owner. Owners can waive future tolls or salvage their unoccupied bridge.</li><li>Deliver your own cart for +1; each partner gains +0.25. All three deliveries end play; all roles can keep assisting after their own delivery.</li></ol><details><summary>Original mechanism document (historical status wording retained)</summary><pre class="prose"># Trestle Commons: Roads and Rivalry
+
+Status: **AUTHORED_NOT_EXECUTED**. Candidate `game-v3-00093`, attempt 00; train-only prospective source. A/O/U/H = 3/224/11/128. Source SHA256: `27b76e957066e5558ac1617ceaf024d154cc42b45f8a5642f46197e6d74a90d2`.
+
+Original mixed-interest infrastructure game with real cart positions, a three-cell-wide river, shared-access bridges, congestion, hauling-dependent wear and ownership tolls. Every constructed segment can affect other roles&#x27; later travel and payoff.
+
+## Literal rules and transition order
+
+1. Three roles start with their own carts at (1,1),(1,3),(1,5), four wood each, and matching goals at (8,1),(8,3),(8,5). Three depots at the starting cells hold four additional units each and can be used by any role within Manhattan distance one. The river is columns 3,4,5 across all seven rows.
+
+2. All in-range IDs are legal attempts while live; unmet interaction conditions cause no effect. Out-of-range IDs become wait. Only wait is legal after joint completion. A role whose own cart has arrived remains active for maintenance, material transfers and assistance.
+
+3. Directional actions also set facing. River entry requires a positive-durability bridge in the old state. Occupancy of another role&#x27;s old cell blocks movement, so swaps and immediate following are blocked. Competing proposals for an unoccupied cell are resolved by clock-rotated role priority.
+
+4. Entering a bridge uses one durability, or two while carrying a cart. Entry into another role&#x27;s owned segment transfers one toll unit from traveler to owner. The toll uses ownership before construction/waiver actions on that step. Each unit is returned as reward 1/32 and recorded in the actual cumulative credits state.
+
+5. Build/repair acts on the front river cell. A new empty segment costs two wood, sets strength four and ownership to the builder. A live or occupied-remnant segment can be repaired for one wood, adding two strength up to four while retaining ownership. The shared segment remains usable by all roles.
+
+6. An exhausted segment occupied by a hauler stays visible as pending=true and durability zero. Its current occupant can leave toward passable ground/another live segment; no newcomer can enter. If it is vacated without repair, it disappears and loses ownership. This avoids instant removal under the occupying hauler without granting free future crossings.
+
+7. Give transfers one wood to a neighboring role below capacity six. Refill takes one from an eligible finite depot. Clock-rotated interaction processing gives a literal resolution order for simultaneous claims. Salvage is restricted to one&#x27;s own unoccupied live front segment and returns at most one wood; waive removes ownership but preserves the route.
+
+8. Action 6 drops a carried personal cart or picks it up from the current cell. A carried cart follows its owner&#x27;s real movement; a dropped cart remains in place. Arrival while carrying at the role&#x27;s matching goal delivers it automatically. Cargo capacity is one personal cart per role.
+
+9. Each new delivery gives its owner one reward and the other roles one quarter each. Tolls sum to zero across roles; delivery benefits create a shared interest in finishing while ownership, wear and congestion create rivalry. The raw game ends naturally only after all three deliveries.
+
+## Cross-agent consequences and untested paired interventions
+
+- A builder&#x27;s front-cell construction changes whether another role&#x27;s later east/west move succeeds. The same later crossing reduces that segment&#x27;s remaining capacity for a third role.
+
+- Changing a first traveler from unloaded to cart-carrying changes wear from one to two. A later traveler may face a missing bridge and need the first role or another builder to maintain it.
+
+- Waiving ownership changes future crossing rewards while preserving geometry; salvaging removes both access and potential toll income. A material handoff can enable a teammate to restore a route that the donor cannot currently reach.
+
+- A worker waiting in a one-cell bridge segment can block the next hauler despite an otherwise valid bridge. Parallel construction avoids that crowding but consumes additional shared materials.
+
+These are consequences derived from source inspection and proposed intervention traces. No paired-action execution or strategic-richness acceptance has been performed by the author.
+
+## Partner-dependent strategies and possible variation
+
+Unmeasured alternatives include pooled construction of one maintained common crossing, separate personal bridges, unloaded scouting and supply shuttles before hauling, toll-earning maintenance, or public access waivers to encourage cooperation. A fast first crossing can strand followers through wear; initial builders need not be the eventual maintenance beneficiaries.
+
+Future separately authorized variants could change river width, wear, private delivery values, toll rates or depot allocation. These could alter sharing versus parallel construction incentives, but this source makes no measured strategic-richness, learning or transfer claim.
+
+## Information, rendering and invariants
+
+All terrain, bridge states and ownership, cargo positions, worker resources, depot stock and goal identities are public. Entity visibility is true for all roles. Public observation contains the entire dynamic infrastructure state and net toll ledgers.
+
+The scene contains no executable rendering code. Its world, entity groups, attribute labels, event semantics, actions and observation labels are copied from this package&#x27;s own manifest declarations. Visible positions bind directly to state arrays used in transitions. Inactive delivered objects are hidden as declared; the privileged debug state must be labelled separately from each role view. Events are last-transition flags, not cumulative event counts. The absorbing terminal keeps the final flags frozen; a repeated terminal call is not a newly occurring game event.
+
+All agent/cart positions stay in x=0..8,y=0..6 and agent positions are unique. Wood 0..6, bridge durability 0..4, owners -1..2, depot stock 0..4. A role pays at most one toll or receives at most two per live step, so credits are within [-128,256]; normalized observations stay in [-1,1]. Rewards are bounded by [-1,2] conservatively.
+
+All integer state fields use int32, all logical leaves bool, and returned observations/rewards float32. No key is duplicated in state. This particular source is deterministic and does not use the supplied stochastic key. Normalization uses powers of two. These are design and source properties, not an eager/JIT parity receipt.
+
+## Terminal and integration contract
+
+A live input increments scalar int32 t exactly once. Natural completion takes priority on the horizon: truncated is (next_t &gt;= H) AND NOT terminated. episode_done equals terminated OR truncated. A terminal input returns the identical state/observation/clock, zero rewards, all dones true and the preserved natural/truncated cause. There is no reset inside raw_step. A trusted outer wrapper owns reset. Native learning receives only observe(state) and legal_actions(state).
+
+The kernel is the homogeneous array boundary. A community JaxMARL dictionary adapter with per-agent dictionaries and __all__ is a separate coordinator-owned integration layer; its existence or correctness is not asserted by this source package. Completed individual deliveries do not remove a role from the joint action interface.
+
+## Source line evidence
+
+`candidate.py`, lines 12-16 (original_river_and_actual_carts):
+
+```python
+        # EVIDENCE: original_river_and_actual_carts
+        terrain = jnp.zeros((7, 9), dtype=jnp.int32).at[:, 3:6].set(1)
+        bridge_pos = jnp.stack((3 + jnp.mod(jnp.arange(21), 3), jnp.arange(21) // 3), axis=1).astype(jnp.int32)
+        start = jnp.array([[1, 1], [1, 3], [1, 5]], dtype=jnp.int32)
+        state = {
+```
+
+`candidate.py`, lines 58-62 (public_infrastructure_observation):
+
+```python
+        # EVIDENCE: public_infrastructure_observation
+        public = jnp.concatenate((
+            state[&quot;agent_pos&quot;].reshape(-1).astype(jnp.float32) / 16.0,
+            state[&quot;wood&quot;].astype(jnp.float32) / 8.0,
+            state[&quot;facing&quot;].astype(jnp.float32) / 4.0,
+```
+
+`candidate.py`, lines 90-94 (constructed_passability_and_congestion):
+
+```python
+        # EVIDENCE: constructed_passability_and_congestion
+        target_bridges = jnp.all(target[:, None, :] == state[&quot;bridge_pos&quot;][None, :, :], axis=2)
+        supported = jnp.any(target_bridges &amp; (state[&quot;durability&quot;] &gt; 0)[None, :], axis=1)
+        water_target = state[&quot;map&quot;][target[:, 1], target[:, 0]] == 1
+        occupied = jnp.any(jnp.all(target[:, None, :] == old[None, :, :], axis=2) &amp; (ids[:, None] != ids[None, :]), axis=1)
+```
+
+`candidate.py`, lines 100-104 (ownership_tolls_and_cart_wear):
+
+```python
+        # EVIDENCE: ownership_tolls_and_cart_wear
+        entered = moved[:, None] &amp; jnp.all(pos[:, None, :] == state[&quot;bridge_pos&quot;][None, :, :], axis=2)
+        bridge_index = jnp.argmax(entered, axis=1).astype(jnp.int32)
+        owner_at_entry = state[&quot;bridge_owner&quot;][bridge_index]
+        toll = jnp.any(entered, axis=1) &amp; (owner_at_entry &gt;= 0) &amp; (owner_at_entry != ids)
+```
+
+`candidate.py`, lines 120-124 (lasting_construction_maintenance_and_access):
+
+```python
+        # EVIDENCE: lasting_construction_maintenance_and_access
+        for k in range(3):
+            i = jnp.mod(k + state[&quot;t&quot;], 3)
+            b = front_index[i]
+            existing = (durability[b] &gt; 0) | bridge_occupied[b]
+```
+
+`candidate.py`, lines 156-160 (deliveries_mix_shared_and_private_payoffs):
+
+```python
+        # EVIDENCE: deliveries_mix_shared_and_private_payoffs
+        pickup = (a == 6) &amp; ~state[&quot;carried&quot;] &amp; ~state[&quot;delivered&quot;] &amp; jnp.all(pos == state[&quot;cargo_pos&quot;], axis=1)
+        drop = (a == 6) &amp; state[&quot;carried&quot;]
+        carried = (state[&quot;carried&quot;] &amp; ~drop) | pickup
+        cargo_pos = jnp.where((state[&quot;carried&quot;] | carried)[:, None], pos, state[&quot;cargo_pos&quot;])
+```
+
+`candidate.py`, lines 170-174 (natural_priority_absorbing_terminal):
+
+```python
+        # EVIDENCE: natural_priority_absorbing_terminal
+        n = dict(state)
+        n[&quot;t&quot;] = state[&quot;t&quot;] + 1
+        n[&quot;agent_pos&quot;] = pos
+        n[&quot;wood&quot;] = wood
+```
+
+## Supplied community references and originality
+
+- [JaxMARL_README.md](https://github.com/bold-lab-ai/JaxMARL/blob/main/README.md) — Read supplied Quick Start/API text: parallel agent-keyed dictionaries and __all__ are an external adapter target; no upstream environment source or layout copied. Supplied-file SHA256: `6649d04f5ed05d620e78e8416a00d4db841cf2633ae60fdb3c9729e037a71c15`.
+
+- [Pgx_README.md](https://github.com/sotetsuk/pgx/blob/main/README.md) — Read supplied Usage/API v2 text: JAX-native state transitions, explicit legal masks and caller-provided stochastic keys. No board rules, implementation or rendering copied. Supplied-file SHA256: `153f44999e55d5df3e51e13dee6ef418cc9704ddfa26206f1dc5789b9cbbf8df`.
+
+- [Craftax_README.md](https://github.com/MichaelTMatthews/Craftax/blob/main/README.md) — Read supplied description, Basic Usage and reset discussion for spatial resource consequences and environment/algorithm separation. No game mechanics implementation, assets or layout copied. Supplied-file SHA256: `7f9757a2047143cf183f7e2e84851a740f386af80dbee050c89b316d66a3d3ff`.
+
+- [PureJaxRL_README.md](https://github.com/luchris429/purejaxrl/blob/main/README.md) — Read supplied Code Philosophy and overview: single-file end-to-end JAX learning implementations are algorithm references, not a new game library. No learning code imported, copied or run. Supplied-file SHA256: `d5f40182c924a42cec820931e61a7d5070e48c4c8413c7d16455abc6ea0ef6b0`.
+
+Only the supplied static README copies were consulted. The supplied Craftax PPO recurrent baseline was not read or used. Craftax is the game/mechanics reference; Pgx is a discrete-game API reference; PureJaxRL and the unconsulted PPO baseline are algorithm/integration references. No upstream code, benchmark layout, heldout implementation, project result, prior candidate, model call or network request was used. Common interface and terminal code here implements the supplied author contract, not an imported environment.
+
+## Playthrough limits
+
+`playthrough.json` is a fixed, in-range joint-action script with a reset seed. Every in-range attempt is legal while live. A replay driver must stop on done_all; only wait is legal afterward. Objectives and events in that file are intended hypotheses, not observations. The script is not a policy, solvability proof or success certificate. Candidate imports, reset/step calls, validators, JIT/vmap, training and rendering were not executed by this author. Root independently accepts or rejects the entire sealed batch after delivery.
+
+</pre></details></section><section><h2>Commands</h2><div class="action"><b>0</b><span>Wait</span></div><div class="action"><b>1</b><span>Move north attempt; face north</span></div><div class="action"><b>2</b><span>Move east attempt; face east</span></div><div class="action"><b>3</b><span>Move south attempt; face south</span></div><div class="action"><b>4</b><span>Move west attempt; face west</span></div><div class="action"><b>5</b><span>Build front bridge for two wood, or repair it for one</span></div><div class="action"><b>6</b><span>Pick up or set down own cart at current position</span></div><div class="action"><b>7</b><span>Give one wood to adjacent teammate with capacity</span></div><div class="action"><b>8</b><span>Draw one wood from a nearby finite depot</span></div><div class="action"><b>9</b><span>Salvage own unoccupied front bridge; recover at most one wood</span></div><div class="action"><b>10</b><span>Release front bridge ownership; waive its future toll</span></div></section><section><h2>Roles & abilities</h2><div class="scroll"><p><b>agent_0</b> Northern hauler and builder; own cart goal is (8,1)</p><p><b>agent_1</b> Central hauler and builder; own cart goal is (8,3)</p><p><b>agent_2</b> Southern hauler and builder; own cart goal is (8,5)</p></div></section><section><h2>Observation permissions</h2><p>Training receives only the original observation rows. Role cameras use declared visibility; debug cameras are explicitly marked. Local benchmark records log debug exposure and role takeover history.</p><details><summary>Exact observation layout</summary><pre>[
+  {
+    &quot;slice&quot;: [
+      0,
+      3
+    ],
+    &quot;meaning&quot;: &quot;Own role identity one-hot&quot;,
+    &quot;visibility&quot;: &quot;self&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      3,
+      9
+    ],
+    &quot;meaning&quot;: &quot;All hauler xy positions divided by 16&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      9,
+      12
+    ],
+    &quot;meaning&quot;: &quot;Carried wood divided by 8&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      12,
+      15
+    ],
+    &quot;meaning&quot;: &quot;Facing action IDs divided by 4&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      15,
+      18
+    ],
+    &quot;meaning&quot;: &quot;Cumulative net toll units divided by 256&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      18,
+      21
+    ],
+    &quot;meaning&quot;: &quot;Own-cart carrying flags for all haulers&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      21,
+      84
+    ],
+    &quot;meaning&quot;: &quot;Public terrain flattened yx; zero bank, one river&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      84,
+      126
+    ],
+    &quot;meaning&quot;: &quot;All potential bridge cell positions flattened xy divided by 16&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      126,
+      147
+    ],
+    &quot;meaning&quot;: &quot;Bridge durability divided by 4&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      147,
+      168
+    ],
+    &quot;meaning&quot;: &quot;Bridge owner plus one divided by 4; zero is public/unowned&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      168,
+      189
+    ],
+    &quot;meaning&quot;: &quot;Occupied zero-strength remnant flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      189,
+      195
+    ],
+    &quot;meaning&quot;: &quot;Actual cart positions xy divided by 16&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      195,
+      198
+    ],
+    &quot;meaning&quot;: &quot;Cart delivery flags&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      198,
+      204
+    ],
+    &quot;meaning&quot;: &quot;Depot positions xy divided by 16&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      204,
+      207
+    ],
+    &quot;meaning&quot;: &quot;Finite depot supplies divided by 4&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      207,
+      213
+    ],
+    &quot;meaning&quot;: &quot;Matching goal positions xy divided by 16&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      213,
+      214
+    ],
+    &quot;meaning&quot;: &quot;Clock divided by 128&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      214,
+      221
+    ],
+    &quot;meaning&quot;: &quot;Last-step flags: build, repair, transfer, salvage, waive, toll, delivery&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  },
+  {
+    &quot;slice&quot;: [
+      221,
+      224
+    ],
+    &quot;meaning&quot;: &quot;Joint done, natural termination, truncation&quot;,
+    &quot;visibility&quot;: &quot;public&quot;
+  }
+]</pre></details><details><summary>Entity visibility &amp; attributes</summary><pre>[
+  {
+    &quot;id&quot;: &quot;haulers&quot;,
+    &quot;kind&quot;: &quot;agent&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;agent_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;agent_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;agent_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;wood&quot;
+        ],
+        &quot;meaning&quot;: &quot;Carried construction material, capacity six&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;facing&quot;
+        ],
+        &quot;meaning&quot;: &quot;Direction 1 north, 2 east, 3 south, 4 west&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;credits&quot;
+        ],
+        &quot;meaning&quot;: &quot;Cumulative net toll units, each unit is reward 1/32&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carried&quot;
+        ],
+        &quot;meaning&quot;: &quot;Currently carrying own cart&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;bridges&quot;,
+    &quot;kind&quot;: &quot;gate&quot;,
+    &quot;count&quot;: 21,
+    &quot;position&quot;: [
+      &quot;bridge_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;bridge_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;bridge_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;durability&quot;
+        ],
+        &quot;meaning&quot;: &quot;Remaining crossing durability, zero to four&quot;,
+        &quot;display&quot;: &quot;bar&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;bridge_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Toll recipient role, -1 for public/unowned&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;pending&quot;
+        ],
+        &quot;meaning&quot;: &quot;Zero-strength occupied remnant: allows current occupant to leave, blocks entry&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;carts&quot;,
+    &quot;kind&quot;: &quot;object&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;cargo_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;cargo_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;cargo_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;cargo_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Role permitted to carry this cart&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;carried&quot;
+        ],
+        &quot;meaning&quot;: &quot;Whether owner is carrying this cart&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      },
+      {
+        &quot;state_path&quot;: [
+          &quot;delivered&quot;
+        ],
+        &quot;meaning&quot;: &quot;Whether cart has reached its matching goal&quot;,
+        &quot;display&quot;: &quot;flag&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;depots&quot;,
+    &quot;kind&quot;: &quot;resource&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;depot_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;depot_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;depot_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;supply&quot;
+        ],
+        &quot;meaning&quot;: &quot;Finite material remaining; accessible to any nearby role&quot;,
+        &quot;display&quot;: &quot;number&quot;
+      }
+    ]
+  },
+  {
+    &quot;id&quot;: &quot;goals&quot;,
+    &quot;kind&quot;: &quot;landmark&quot;,
+    &quot;count&quot;: 3,
+    &quot;position&quot;: [
+      &quot;goal_pos&quot;
+    ],
+    &quot;active&quot;: [
+      &quot;goal_active&quot;
+    ],
+    &quot;visibility&quot;: [
+      &quot;goal_visible&quot;
+    ],
+    &quot;attributes&quot;: [
+      {
+        &quot;state_path&quot;: [
+          &quot;goal_owner&quot;
+        ],
+        &quot;meaning&quot;: &quot;Role whose cart belongs at this goal&quot;,
+        &quot;display&quot;: &quot;category&quot;
+      }
+    ]
+  }
+]</pre></details></section><section><h2>Actual verification & provenance</h2><details><summary>Per-game execution receipt</summary><pre>{
+  &quot;game&quot;: &quot;gi093&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;verification_revision&quot;: 2,
+  &quot;source_sha256&quot;: &quot;27b76e957066e5558ac1617ceaf024d154cc42b45f8a5642f46197e6d74a90d2&quot;,
+  &quot;seed&quot;: 20261101,
+  &quot;runtime&quot;: {
+    &quot;jax&quot;: &quot;0.4.38&quot;,
+    &quot;numpy&quot;: &quot;1.26.4&quot;,
+    &quot;devices&quot;: [
+      &quot;TFRT_CPU_0&quot;
+    ]
+  },
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 224,
+    &quot;num_actions&quot;: 11,
+    &quot;max_steps&quot;: 128
+  },
+  &quot;checks&quot;: {
+    &quot;eager_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.138946533203125
+    },
+    &quot;observation_spaces_legal_masks&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.1979813575744629
+    },
+    &quot;eager_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 3.7628285884857178
+    },
+    &quot;jit_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.21166777610778809
+    },
+    &quot;jit_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.70210337638855
+    },
+    &quot;eager_jit_integer_parity_float_measurement&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.0010542869567871094
+    },
+    &quot;jit_vmap_reset&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 0.11008882522583008
+    },
+    &quot;jit_vmap_step&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.3412563800811768
+    },
+    &quot;outer_autoreset_api&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 1.1521601676940918
+    },
+    &quot;full_original_horizon_episode_and_render&quot;: {
+      &quot;status&quot;: &quot;PASS&quot;,
+      &quot;seconds&quot;: 2.1212446689605713
+    }
+  },
+  &quot;human_scores&quot;: null,
+  &quot;browser_controls&quot;: &quot;PENDING&quot;,
+  &quot;failures&quot;: [],
+  &quot;elapsed_seconds&quot;: 14.237417697906494,
+  &quot;float_parity_max_abs&quot;: 0.0,
+  &quot;numerical_parity&quot;: &quot;EXACT&quot;,
+  &quot;raw_terminal_absorbing&quot;: &quot;PASS&quot;,
+  &quot;terminal_outer_reset&quot;: &quot;PASS&quot;,
+  &quot;episode_steps&quot;: 128,
+  &quot;scripted_random_returns&quot;: [
+    -0.03125,
+    0.0625,
+    -0.03125
+  ],
+  &quot;terminal&quot;: true,
+  &quot;demo_information&quot;: &quot;FULL_STATE_DEBUG&quot;,
+  &quot;demo_frames&quot;: 27,
+  &quot;render_roles_checked&quot;: 3
+}</pre></details><details><summary>Chromium control verification</summary><pre>{
+  &quot;game&quot;: &quot;gi093&quot;,
+  &quot;status&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;engineering&quot;: true,
+  &quot;checks&quot;: [
+    &quot;catalog_selected_and_real_native_reset&quot;,
+    &quot;dom_queue_and_native_step&quot;,
+    &quot;second_participant_ownership_and_native_joint_step&quot;,
+    &quot;all_roles_individually_controllable_no_role_cap&quot;,
+    &quot;explicit_debug_camera&quot;,
+    &quot;release_to_pure_ai_without_reset&quot;
+  ],
+  &quot;seconds&quot;: 3.815626859664917
+}</pre></details><details><summary>Original identity and file hashes</summary><pre>{
+  &quot;id&quot;: 93,
+  &quot;key&quot;: &quot;gi093&quot;,
+  &quot;title&quot;: &quot;栈桥公地&quot;,
+  &quot;summary&quot;: &quot;各方搭建、维修并共用易损桥梁；载货过桥消耗更多耐久，拥堵会改变通路。&quot;,
+  &quot;tags&quot;: [
+    &quot;共享建设&quot;,
+    &quot;通行竞争&quot;
+  ],
+  &quot;family&quot;: &quot;spatial&quot;,
+  &quot;dimensions&quot;: {
+    &quot;num_agents&quot;: 3,
+    &quot;observation_size&quot;: 224,
+    &quot;num_actions&quot;: 11,
+    &quot;max_steps&quot;: 128
+  },
+  &quot;source_sha256&quot;: &quot;27b76e957066e5558ac1617ceaf024d154cc42b45f8a5642f46197e6d74a90d2&quot;,
+  &quot;manifest_sha256&quot;: &quot;ff45aa01f04558336c82c1529301e6971d5a26dc44c6560057282e0b5b957366&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file&quot;: &quot;candidate.py&quot;,
+      &quot;sha256&quot;: &quot;27b76e957066e5558ac1617ceaf024d154cc42b45f8a5642f46197e6d74a90d2&quot;,
+      &quot;bytes&quot;: 11056,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00093/candidate.py&quot;
+    },
+    {
+      &quot;file&quot;: &quot;manifest.json&quot;,
+      &quot;sha256&quot;: &quot;ff45aa01f04558336c82c1529301e6971d5a26dc44c6560057282e0b5b957366&quot;,
+      &quot;bytes&quot;: 14755,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00093/manifest.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;scene.json&quot;,
+      &quot;sha256&quot;: &quot;b9584a4f72b66f26a55664b708486cb29257577fad2b44220343629d956226d4&quot;,
+      &quot;bytes&quot;: 8449,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/community_games222_225_visualization_root222_v1/native154_candidate/registry/v2/games/game-v3-00093/scene.json&quot;
+    },
+    {
+      &quot;file&quot;: &quot;mechanism.md&quot;,
+      &quot;sha256&quot;: &quot;0cb481eef73b2b4d35df2bca6839eb9a27332d2d80ed2704c5b2ef4f3e856147&quot;,
+      &quot;bytes&quot;: 12796,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00093/attempt_00/mechanism.md&quot;
+    },
+    {
+      &quot;file&quot;: &quot;playthrough.json&quot;,
+      &quot;sha256&quot;: &quot;12bbf70fd2750fc2ed2eebcda75b0aae831ba35b75f4cbd27c855a019c7f88b3&quot;,
+      &quot;bytes&quot;: 1593,
+      &quot;origin&quot;: &quot;work/exp_2/game_incubator_v3/sources/game-v3-00093/attempt_00/playthrough.json&quot;
+    }
+  ],
+  &quot;original_status&quot;: &quot;NATIVE154_REFERENCE&quot;,
+  &quot;original_saved_replay&quot;: true,
+  &quot;release_validation&quot;: &quot;PASS&quot;,
+  &quot;human_scores&quot;: null,
+  &quot;browser_validation&quot;: &quot;PASS&quot;
+}</pre></details><p><a href="https://github.com/hl682/Crucibles_JAXMARL/tree/main/src/crucibles_jaxmarl/games/gi093">Complete source, manifest and mechanism →</a></p></section></main><footer>Original JAX transitions. Explicit evidence. Human scores remain unverified / null. Apache 2.0.</footer></body></html>

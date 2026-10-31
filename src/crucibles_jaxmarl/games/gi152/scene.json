@@ -1,0 +1,275 @@
+{
+  "schema": "cr01-spatial-world-scene-v3",
+  "source_sha256": "5ad8900a38e4b890b8ff1ebb06a3288622bab398814e035089f9f440a9c15dc8",
+  "manifest_sha256": "31351c681b92e8bac753c141b0d53e4a4b96e2d5bd6946caa3d6e4ca233ebfd6",
+  "title": "Lane Relay Gridball",
+  "rules": [
+    "Teams are players 0/1 versus 2/3; team amber attacks right and team indigo attacks left.",
+    "One physical ball is either possessed, in axis-aligned flight, or loose.",
+    "An aligned pass flies at one cell per tick for at most five cells; a center-row shot travels to the opposing goal.",
+    "Standing on the ball cell catches automatically; bracing extends reach by one cell and protects a carrier from tackles.",
+    "Contact tackles resolve before launching; exact-cell catches outrank braced adjacent catches, then rotating player priority breaks ties.",
+    "Action costs consume stamina; resting recovers two up to five. Blocked legal movement still spends one.",
+    "A scoring frame retains the goal position. The next forced-wait tick restores kickoff formation and gives possession to the conceding side.",
+    "A goal gives +1 to both scoring teammates and -1 to both opponents; there is no pass-farming reward.",
+    "First to three ends naturally; clock 160 truncates without assigning an unearned win."
+  ],
+  "world": {
+    "coordinates": "grid_xy",
+    "bounds": [
+      0,
+      0,
+      10,
+      6
+    ],
+    "y_direction": "down",
+    "map": {
+      "state_path": [
+        "map"
+      ],
+      "indexing": "yx",
+      "cell_origin_xy": [
+        0,
+        0
+      ],
+      "cell_size_xy": [
+        1,
+        1
+      ],
+      "public": true,
+      "legend": [
+        {
+          "value": 0,
+          "meaning": "Playable floor",
+          "color": "#D6D4CB"
+        },
+        {
+          "value": 1,
+          "meaning": "Wall or lane obstruction",
+          "color": "#394652"
+        },
+        {
+          "value": 2,
+          "meaning": "Left goal, scores for team indigo",
+          "color": "#BA8A45"
+        },
+        {
+          "value": 3,
+          "meaning": "Right goal, scores for team amber",
+          "color": "#6D95A6"
+        }
+      ]
+    }
+  },
+  "entities": [
+    {
+      "id": "players",
+      "glyph": "agent",
+      "label": "Players",
+      "color": "#8D87BD",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "team"
+          ],
+          "label": "0 amber, 1 indigo"
+        },
+        {
+          "state_path": [
+            "stamina"
+          ],
+          "label": "Available stamina, capped at five"
+        },
+        {
+          "state_path": [
+            "guard"
+          ],
+          "label": "Bracing on this frame"
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "glyph": "circle",
+      "label": "One physical ball",
+      "color": "#E6A94E",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "ball_carrier"
+          ],
+          "label": "Player id; -1 means free ball"
+        },
+        {
+          "state_path": [
+            "ball_velocity"
+          ],
+          "label": "Axis-aligned flight direction"
+        },
+        {
+          "state_path": [
+            "flight"
+          ],
+          "label": "Remaining movement ticks"
+        },
+        {
+          "state_path": [
+            "touch_team"
+          ],
+          "label": "Team that last touched or launched ball"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "glyph": "flag",
+      "label": "Contested goals",
+      "color": "#668CA0",
+      "attribute_labels": [
+        {
+          "state_path": [
+            "goal_team"
+          ],
+          "label": "Team that earns this goal"
+        },
+        {
+          "state_path": [
+            "score"
+          ],
+          "label": "Goals scored by that team"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "state_path": [
+        "pass_event"
+      ],
+      "meaning": "A legal aligned pass was launched this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "catch_event"
+      ],
+      "meaning": "A free or flying ball was caught this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "intercept_event"
+      ],
+      "meaning": "Catching player belongs to opposite team from prior touch",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tackle_event"
+      ],
+      "meaning": "A contact tackle stole possession this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "goal_event"
+      ],
+      "meaning": "Goal flags in scoring-team order for this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Match score by team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "restart_pending"
+      ],
+      "meaning": "One forced-wait kickoff tick remains",
+      "semantics": "level"
+    }
+  ],
+  "action_labels": [
+    {
+      "id": 0,
+      "label": "Rest and recover two stamina"
+    },
+    {
+      "id": 1,
+      "label": "Move north, spending one stamina"
+    },
+    {
+      "id": 2,
+      "label": "Move east, spending one stamina"
+    },
+    {
+      "id": 3,
+      "label": "Move south, spending one stamina"
+    },
+    {
+      "id": 4,
+      "label": "Move west, spending one stamina"
+    },
+    {
+      "id": 5,
+      "label": "Pass toward aligned teammate within five cells, spending one stamina"
+    },
+    {
+      "id": 6,
+      "label": "Shoot toward opposing goal from center row, spending two stamina"
+    },
+    {
+      "id": 7,
+      "label": "Brace: protect possession or catch within one cell, spending one stamina"
+    },
+    {
+      "id": 8,
+      "label": "Attempt adjacent opponent tackle, spending two stamina"
+    }
+  ],
+  "observation_labels": [
+    {
+      "slice": [
+        0,
+        1
+      ],
+      "visibility": "self",
+      "meaning": "Own immutable player id."
+    },
+    {
+      "slice": [
+        1,
+        12
+      ],
+      "visibility": "public",
+      "meaning": "Clock,score amber,score indigo,restart pending,goal amber,goal indigo,pass event,catch event,intercept event,tackle event,joint done."
+    },
+    {
+      "slice": [
+        12,
+        32
+      ],
+      "visibility": "public",
+      "meaning": "Four players in id order: x,y,stamina,team,guard."
+    },
+    {
+      "slice": [
+        32,
+        39
+      ],
+      "visibility": "public",
+      "meaning": "Ball x,y,carrier id (-1 free),velocity x,velocity y,remaining flight,last-touch team."
+    },
+    {
+      "slice": [
+        39,
+        116
+      ],
+      "visibility": "public",
+      "meaning": "Static 7 by 11 public tile map, row-major yx."
+    }
+  ]
+}
