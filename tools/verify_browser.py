@@ -1,6 +1,6 @@
 """Real Chromium DOM controls against the real local JAX server, per game."""
 from pathlib import Path
-import argparse,hashlib,json,os,re,subprocess,sys,time,urllib.request
+import argparse,hashlib,json,os,re,socket,subprocess,sys,time,urllib.request,uuid
 
 R=Path(__file__).resolve().parents[1]
 def main():
@@ -12,16 +12,23 @@ def main():
     ui_hash=hashlib.sha256(b''.join((R/'src/crucibles_jaxmarl'/p).read_bytes() for p in ['server.py','rendering.py','web/app.js','web/index.html','web/style.css'])).hexdigest()
     logs=R/'verification/logs';logs.mkdir(exist_ok=True)
     base=f'http://127.0.0.1:{a.port}'
-    env=dict(os.environ,JAX_PLATFORMS='cpu',PYTHONIOENCODING='utf-8',OMP_NUM_THREADS='1')
+    boot_nonce=uuid.uuid4().hex;actual_server_pid=None
+    # Never attach a test to an older or unrelated service occupying the port.
+    with socket.socket() as probe:probe.bind(('127.0.0.1',a.port))
+    env=dict(os.environ,JAX_PLATFORMS='cpu',PYTHONIOENCODING='utf-8',OMP_NUM_THREADS='1',CRUCIBLES_TEST_NONCE=boot_nonce)
     log=(logs/'browser_server.log').open('w',encoding='utf-8')
     server=subprocess.Popen([sys.executable,'-m','crucibles_jaxmarl','play','--port',str(a.port),'--engineering','--runs',str(R/'local-runs/browser-verification')],cwd=R,env=env,stdout=log,stderr=subprocess.STDOUT)
     try:
         failures=0
         for _ in range(100):
             try:
-                with urllib.request.urlopen(base+'/health',timeout=1) as resp:assert json.load(resp)['ok']
+                with urllib.request.urlopen(base+'/health',timeout=1) as resp:health=json.load(resp)
+                if health.get('test_nonce')!=boot_nonce:raise RuntimeError('Health endpoint belongs to a different process')
+                actual_server_pid=health['pid'];assert health['ok']
                 break
-            except Exception:time.sleep(.1)
+            except (urllib.error.URLError,TimeoutError,ConnectionError):
+                if server.poll() is not None:raise RuntimeError('Owned test server exited before becoming healthy')
+                time.sleep(.1)
         else:raise RuntimeError('Test server did not become healthy')
         with sync_playwright() as p:
             browser=p.chromium.launch(headless=True)
@@ -107,7 +114,11 @@ def main():
                 failures+=record['status']!='PASS'
             browser.close()
     finally:
-        server.terminate()
+        if os.name=='nt':
+            # Windows venv redirectors launch the actual interpreter as a child.
+            # Kill only our verified Popen process tree, including that child.
+            subprocess.run(['taskkill','/PID',str(server.pid),'/T','/F'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        else:server.terminate()
         try:server.wait(timeout=10)
         except subprocess.TimeoutExpired:server.kill();server.wait()
         log.close()

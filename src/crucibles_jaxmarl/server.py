@@ -1,7 +1,7 @@
 """Loopback multiplayer server. Every command reaches the original JAX kernel."""
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
-import hashlib,json,secrets,threading,time,uuid
+import hashlib,json,os,secrets,threading,time,uuid
 
 WEB=Path(__file__).parent/'web'
 
@@ -121,7 +121,7 @@ def serve(port=8765,game=225,runs='local-runs',engineering=False):
         def do_GET(self):
             from urllib.parse import urlsplit
             p=urlsplit(self.path).path
-            if p=='/health':return self.send_json(dict(ok=True,version='0.1.0',games=len(_rows),sessions=len(sessions)))
+            if p=='/health':return self.send_json(dict(ok=True,version='0.1.0',games=len(_rows),sessions=len(sessions),pid=os.getpid(),test_nonce=os.environ.get('CRUCIBLES_TEST_NONCE')))
             if p=='/api/catalog':return self.send_json(dict(games=[{k:r[k] for k in ['id','key','title','family','dimensions','summary']} for r in _rows]))
             name={'/':'index.html','/app.js':'app.js','/style.css':'style.css'}.get(p)
             if not name:return self.send_json(dict(error='Not found'),404)
