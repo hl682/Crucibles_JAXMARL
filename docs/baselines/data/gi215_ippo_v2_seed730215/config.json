@@ -1,0 +1,123 @@
+{
+  "game": "gi215",
+  "source_sha256": "98ded10c93949b1019e15a9c920cdd76450fe055c69fc397a19ed80905c03534",
+  "manifest_sha256": "8a3b96f5f50b662f9b9fe49bb38c27d59888266a9156aae062eba6fb4e0fa97d",
+  "num_agents": 2,
+  "observation_size": 190,
+  "num_actions": 16,
+  "max_steps": 256,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730215,
+  "eval_seeds": [
+    1751500,
+    1751501,
+    1751502,
+    1751503
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 3121152,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Fulfill four physical soup orders while coordinating reusable bowls, cooking/cleaning utensils and finite-capacity clean/waste water infrastructure.",
+    "natural_termination": "Natural end when each of the four customers has either been served or left after its own patience expired. H=256 is the upper truncation window; natural causes take priority.",
+    "interaction": "An upstream wash consumes shared clean water and creates sink dirt. Opening its drain moves dirty parcels toward the coworker's pan unless a physical filter or diversion catches them. Tool exchange transfers preparation and cleaning capabilities between the two workers.",
+    "observation_access": "Fully observable compact kitchen. Both roles receive identical flat native maps, actors/items/tools and holders, clean/prepared/filled/age/spoiled flags, every drainage-cell parcel, tank/sink/basin/filter/pan state, customer patience/outcomes and reward components. Inactive ingredients and completed orders remain fixed slots in observations but disappear from active scene groups."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "tank"
+      ],
+      "meaning": "Clean-water tank, 0..12",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "sink_dirt"
+      ],
+      "meaning": "Stored dirty sink units, 0..3",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "basin"
+      ],
+      "meaning": "Diverted dirty-water units, 0..3",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "filter_installed"
+      ],
+      "meaning": "Filter is physically installed at valve",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "filter_charge"
+      ],
+      "meaning": "Filter capacity remaining, 0..3",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "pan_dirty"
+      ],
+      "meaning": "Drainage has contaminated pan",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Orders fulfilled",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "wasted"
+      ],
+      "meaning": "Fresh spoilage plus deliberate food-disposal events",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "contaminations"
+      ],
+      "meaning": "New downstream contamination episodes",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

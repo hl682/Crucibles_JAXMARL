@@ -39,6 +39,7 @@ def page(path,title,body,lang):
     switch=root+(local if lang=='zh' else 'zh/'+local);base=root+('zh/' if lang=='zh' else '')
     nav=[('index.html','All games','全部游戏'),('guide.html','Install & play','安装操作'),('api.html','Training API','训练接口'),('design.html','Design & classification','理念与分类'),('verification.html','Evidence','证据')]
     links=''.join('<a href="'+base+p+'">'+choose(en,zh,lang)+'</a>' for p,en,zh in nav)
+    links+='<a href="'+root+'baselines/'+('zh.html' if lang=='zh' else 'index.html')+'">'+choose('Learning curves','学习曲线',lang)+'</a>'
     links+='<a class="language-switch" lang="'+('en' if lang=='zh' else 'zh-CN')+'" href="'+switch+'">'+('English' if lang=='zh' else '中文')+'</a><a href="'+GH+'">GitHub ↗</a>'
     footer=choose('Original JAX transitions · Full-state debug previews · Untrained policies · Human scores unverified · Apache 2.0','原生状态转移 · 完整状态调试预览 · 策略未训练 · 人类成绩未核验 · 开源许可：Apache 2.0',lang)
     result='<!doctype html><html lang="'+('zh-CN' if lang=='zh' else 'en')+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' · Crucibles JAXMARL</title><link rel="stylesheet" href="'+root+'style.css"></head><body><header><a href="'+base+'index.html">CRUCIBLES <small>JAXMARL</small></a><nav>'+links+'</nav></header>'+body+'<footer>'+footer+'</footer></body></html>'
