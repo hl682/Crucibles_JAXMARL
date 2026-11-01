@@ -1,0 +1,130 @@
+{
+  "game": "gi145",
+  "source_sha256": "aa5903c6cb30959ab9fd8def84eb0a7688a47ac2f0bad8105671f7e765f1ff4c",
+  "manifest_sha256": "0830be53f5bc04a96ef5f179dc856a27dd823073e0fd55d4854a130a4b893dd9",
+  "num_agents": 3,
+  "observation_size": 153,
+  "num_actions": 10,
+  "max_steps": 80,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730145,
+  "eval_seeds": [
+    1744500,
+    1744501,
+    1744502,
+    1744503
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 3778560,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Bring finite ore to (1,3). Each miner privately values one randomly assigned ore type; all share delivery benefits and survival losses. Maintain oxygen using two portable canisters and finite shared station stock.",
+    "natural_termination": "All miners are dead, or every vein is empty and nobody carries ore. Delivered and lost ore both count as removed resources; horizon 80 otherwise truncates.",
+    "interaction": "Shared veins are depleted by extraction; the station admits one occupant; a portable canister moves only through physical pickup/drop or simultaneous adjacent Offer/Accept consent. Resource transfers and station occupation change other miners feasible trip lengths and delivery payoffs.",
+    "observation_access": "Terrain, live/dead positions, oxygen, ore inventories, canisters, veins, station stock/occupancy and events are public. Only the observing role own private claim is returned. claim_visible is the identity matrix, so each role scene must hide other claims; a full-state debug view must be labelled separately."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "mined"
+      ],
+      "meaning": "Agent extracted one actual ore unit",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Agent delivered its carried ore at the station",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "transferred"
+      ],
+      "meaning": "Canister changed owner by simultaneous Offer and Accept consent",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "used"
+      ],
+      "meaning": "Positive oxygen amount drawn from this canister",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "died"
+      ],
+      "meaning": "Agent newly exhausted oxygen",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "refilled"
+      ],
+      "meaning": "Agent or its canister received positive gas from finite station stock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Portable canister picked up",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Portable canister dropped voluntarily or by carrier death",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_counts"
+      ],
+      "meaning": "Cumulative delivered units by ore type",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "lost_counts"
+      ],
+      "meaning": "Cumulative carried units lost on death by ore type",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
