@@ -51,6 +51,12 @@ class Session:
                 if key not in self.art_cache:self.art_cache[key]=animation(self.env,self.state,self.obs,int(role),self.previous_state,self.previous_obs)
                 frame['original_animation']=self.art_cache[key]
             bistro={k:self.state[k].tolist()for k in ['tank','sink_dirt','flow','draining','divert','filter_installed','filter_charge','pan_dirty','served','order_status','patience']}
+        elif self.env.name=='gi214':
+            from .magnetic_presentation import animation
+            for role,frame in views.items():
+                key=(self.step_count,role)
+                if key not in self.art_cache:self.art_cache[key]=animation(self.env,self.state,self.obs,int(role),self.previous_state,self.previous_obs)
+                frame['original_animation']=self.art_cache[key]
         masks=self.env.get_avail_actions(self.state)
         return dict(id=self.id,game=self.env.metadata,step=self.step_count,terminal=self.terminal,
             roles=roles,views=views,legal={str(r):masks[self.env.agents[r]].tolist() for r in roles},

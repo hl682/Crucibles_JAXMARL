@@ -39,7 +39,13 @@ def main():
             sequence=ACTIONS[1:]
             for t,actions in enumerate(sequence,start=3):
                 for role,action in enumerate(actions):
-                    page.locator(f'#action-{role}').select_option(str(action));page.locator('#controls .role').nth(role).locator('button').click()
+                    if t==3 and role==1:
+                        sink=page.locator('#world').evaluate('(c)=>{const a=current.views[1].original_animation,s=Math.min(c.width/a.width,c.height/a.height),r=c.getBoundingClientRect();return {x:((c.width-a.width*s)/2+(a.geometry.ox+2.5*a.geometry.cell)*s)*r.width/c.width,y:((c.height-a.height*s)/2+(a.geometry.oy+2.5*a.geometry.cell)*s)*r.height/c.height}}')
+                        page.locator('#world').click(position=sink)
+                        expect(page.locator('#object-actions').get_by_role('button',name='Open drain',exact=True)).to_have_count(1)
+                        page.locator('#object-actions').get_by_role('button',name='Wash bowl',exact=True).click()
+                    else:
+                        page.locator(f'#action-{role}').select_option(str(action));page.locator('#controls .role').nth(role).locator('button').click()
                     expect(page.locator('#controls .role').nth(role).locator('button')).to_have_text('Queued')
                 page.locator('#step').click();expect(page.locator('#clock')).to_have_text(f't={t} / 256',timeout=180000)
                 page.wait_for_function('!busy')
@@ -53,7 +59,7 @@ def main():
             page.locator('#close').click();expect(page.locator('#session')).to_be_hidden();browser.close()
         files=list((out/'sessions').glob('*/events.jsonl'));latest=max(files,key=lambda x:x.stat().st_mtime);events=[json.loads(x)for x in latest.read_text(encoding='utf8').splitlines()]
         transitions=[x['value']['actions']for x in events if x['type']=='transition'];assert transitions==[[2,0],[0,5],*sequence]
-        result=dict(status='PASS',game='gi215',quickplay_owns_two_roles=True,direct_keyboard_changes_native_position=True,canvas_item_click_changes_native_holder=True,real_native_joint_steps=len(transitions),washed_feedback=True,served_orders=1,original_scene_animation=True,browser_errors=errors,human_scores=None,scope='Browser engineering walkthrough, not human performance or all-game acceptance')
+        result=dict(status='PASS',game='gi215',quickplay_owns_two_roles=True,direct_keyboard_changes_native_position=True,canvas_item_click_changes_native_holder=True,station_menu_includes_drain=True,station_menu_wash_uses_native_action=True,real_native_joint_steps=len(transitions),washed_feedback=True,served_orders=1,original_scene_animation=True,browser_errors=errors,human_scores=None,scope='Browser engineering walkthrough, not human performance or all-game acceptance')
         assert runtime=={p:hashlib.sha256((R/'src/crucibles_jaxmarl'/p).read_bytes()).hexdigest()for p in runtime_files}
         result['runtime_sha256']=runtime
         target=R/'verification/gameplay/gi215_live_ui.json';target.parent.mkdir(parents=True,exist_ok=True);target.write_text(json.dumps(result,indent=2)+'\n',encoding='utf8');print(json.dumps(result),flush=True)

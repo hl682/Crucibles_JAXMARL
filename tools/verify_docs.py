@@ -39,10 +39,15 @@ def main():
             page.wait_for_function('Array.from(document.images).every(i=>i.complete&&i.naturalWidth>0)',timeout=60000)
             for img in page.locator('img').all():assert img.evaluate('(i)=>i.complete && i.naturalWidth>0')
             for prefix in ['', 'zh/']:
+                page.goto('http://127.0.0.1:'+str(server.server_port)+'/'+prefix+'games/gi214.html',wait_until='networkidle')
+                magnetic=page.locator('img[src$="walkthroughs/gi214-causal.gif"]')
+                expect(magnetic).to_have_count(1)
+                assert magnetic.evaluate('(i)=>i.complete && i.naturalWidth>0')
                 page.goto('http://127.0.0.1:'+str(server.server_port)+'/'+prefix+'games/gi215.html',wait_until='networkidle')
-                demo=page.locator('img[src$="walkthroughs/gi215-first-order.gif"]')
-                expect(demo).to_have_count(1)
-                assert demo.evaluate('(i)=>i.complete && i.naturalWidth>0')
+                for suffix in ['first-order','water-unprotected','water-diverted']:
+                    demo=page.locator('img[src$="walkthroughs/gi215-'+suffix+'.gif"]')
+                    expect(demo).to_have_count(1)
+                    assert demo.evaluate('(i)=>i.complete && i.naturalWidth>0')
             page.goto('http://127.0.0.1:'+str(server.server_port)+'/zh/');expect(page.locator('.card[data-search]')).to_have_count(256)
             page.locator('#search').fill('四季牧场');expect(page.locator('.card[data-search]:visible')).to_have_count(1)
             page.locator('#collection').scroll_into_view_if_needed()

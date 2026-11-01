@@ -77,7 +77,8 @@ documentation and genuine saved demonstrations; it does not run Python/JAX.
 **GI215 interactive kitchen:** run `crucibles play --game 215` (or
 `play_bistro.cmd` on Windows), keep the terminal open, and click **Play now**.
 This assigns both workers to you. Click a worker to select it; use WASD to move,
-and click an adjacent item or workstation to issue its native action. The
+and click an adjacent item to pick it up. Click a workstation to choose actions
+such as washing, opening the drain, pumping water or diverting dirty water. The
 **Direct controls** option advances one joint step per command; your other
 owned kitchen worker waits. Turn it off to queue both workers' actions before
 advancing, or assign a worker to another participant. Released roles use the

@@ -1,5 +1,19 @@
 # Changes
 
+## Shared-water consequence follow-up
+
+GI214 reuses the original six-role Magnet Frontier art in live play. A four-step
+native demonstration and six one-action controls check mining, bridge/rail
+construction and powered freight movement while all worker positions stay fixed.
+Its world-object menus expose gathering, magnetic power and polarity controls.
+
+GI215 now shows native water levels, drain packets, valve orientation, dirty-pan
+spots and sliced prepared ingredients. A paired ten-step walkthrough changes
+only the diversion action: the unprotected pan is contaminated and cannot
+prepare food; the diverted branch catches the water and prepares successfully.
+Original recording bytes and the environment kernel are unchanged. These are
+engineering walkthroughs, not training results or human scores.
+
 ## Development: playable interaction follow-up
 
 - Restore 29 original scene viewports without rewriting original GIF pixels or game rules; the remaining original layouts still need review.
