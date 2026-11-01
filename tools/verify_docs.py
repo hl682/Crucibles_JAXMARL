@@ -24,8 +24,15 @@ def main():
             page.locator('#family').select_option('legacy_array');expect(page.locator('.card[data-search]:visible')).to_have_count(76)
             page.locator('#family').select_option('')
             expect(page.locator('.card[data-search] img')).to_have_count(256)
-            page.locator('img').evaluate_all('(xs)=>xs.forEach(i=>i.loading="eager")');page.wait_for_load_state('networkidle')
-            page.wait_for_function('Array.from(document.images).every(i=>i.complete&&i.naturalWidth>0)',timeout=60000)
+            # Keep at most four new image requests in flight to the local fixture.
+            for first in range(0,256,4):
+                page.locator('img').evaluate_all('(xs,first)=>xs.slice(first,first+4).forEach(i=>i.loading="eager")',first)
+                page.wait_for_function('''(first)=>{
+                    const images=Array.from(document.images).slice(first,first+4);
+                    const failed=images.filter(i=>i.complete&&!i.naturalWidth);
+                    if(failed.length)throw new Error('Image load failed: '+failed.map(i=>i.currentSrc||i.src).join(', '));
+                    return images.every(i=>i.complete&&i.naturalWidth>0);
+                }''',arg=first,timeout=60000)
             assert page.locator('img').evaluate_all('(xs)=>xs.every(i=>i.complete&&i.naturalWidth>0)')
             page.locator('#theme').select_option('commitment');assert page.locator('.card[data-search]:visible').count()>0
             page.locator('#theme').select_option('');page.locator('#search').fill('gi225')

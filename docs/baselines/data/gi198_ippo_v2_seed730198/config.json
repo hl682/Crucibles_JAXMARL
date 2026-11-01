@@ -1,0 +1,102 @@
+{
+  "game": "gi198",
+  "source_sha256": "c47d540aaeb23d50e5a606c127f68424aed5fe0a4b0943d6a2608a0353f91ff1",
+  "manifest_sha256": "0e4084574804cfd901229ce869c2bebc39e34841b36c216fa91754a0dc247338",
+  "num_agents": 3,
+  "observation_size": 254,
+  "num_actions": 14,
+  "max_steps": 168,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730198,
+  "eval_seeds": [
+    1749800,
+    1749801,
+    1749802,
+    1749803
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 6260736,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Deliver all six construction crates while building, sharing, anchoring or drifting real pontoon routes across the harbor channel.",
+    "natural_termination": "Success when all six crates are delivered. Failure when a worker lacks physical support after tide/current update or any crate sinks. Failure excludes success on the same step.",
+    "interaction": "One anchor stabilizes a whole lashed component; releasing it can carry a peer and their cargo to a different row. Sharing, unsharing, lifting and lashing sections change peer movement permissions and connectivity, with a permanent detour and a low-tide causeway as alternatives.",
+    "observation_access": "Fully observable. The role one-hot and public obs_keys vector expose all map/tide state, worker cargo, pontoon positions/holders/owners/permissions/anchors/direct and transitive connectivity, all crate identities, owner depots and events. Deployed and carried sections are actual state entities. Inactive delivered/sunk crate coordinates stay in public accounting but their entity active mask is false. Scene information is drawn from these same leaves."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "phase"
+      ],
+      "meaning": "0 low, 1 rising, 2 high, 3 falling; three ticks per phase.",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "drifted"
+      ],
+      "meaning": "Sections physically translated by the current this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "anchor_changed"
+      ],
+      "meaning": "Section anchor toggled this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "linked_now"
+      ],
+      "meaning": "Lash or unlash command applied at this section this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Crates delivered this step by owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "sunk_now"
+      ],
+      "meaning": "Crates that lost support and sank this step.",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

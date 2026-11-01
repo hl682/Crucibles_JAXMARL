@@ -1,0 +1,95 @@
+{
+  "game": "gi196",
+  "source_sha256": "b92429afa8deddf0ef620259fd2bd55df3d2b2b81d20409f875a4d556d1d8750",
+  "manifest_sha256": "c648d0ec17b76221a5cde2907d61c8334d2bdecc00b8673cace278287b702705",
+  "num_agents": 3,
+  "observation_size": 301,
+  "num_actions": 12,
+  "max_steps": 90,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730196,
+  "eval_seeds": [
+    1749600,
+    1749601,
+    1749602,
+    1749603
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 7415808,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Supply each polity's opposite-bank outpost twice before any outpost defense reaches zero; manage couriers, fuel, relay information and timed passage agreements.",
+    "natural_termination": "Failure when any defense is zero after pressure. Otherwise success when every outpost has at least two deliveries. If these coincide, defense loss prevents success; both are natural completion, with natural causes taking priority over H.",
+    "interaction": "One polity's offer changes another's legal council choices; acceptance creates temporary pass access and access to the grantor's powered beacon information. Supply investments compete with delivering and defending each polity's outpost.",
+    "observation_access": "Partially observable. Every role sees Manhattan radius two around its courier and radius three around its own powered relays or relays owned by a polity currently granting it passage. Other roles' couriers, cargo and home stocks are masked outside revealed cells; owned home and owned beacon telemetry remain known. Public outposts/defenses, pass locations/owners, pending offers, accepted agreement timers and specified public events are broadcast. The world map declares map_visible and never public=true. Hidden map/objects are -1 in the flat observation with explicit visibility bits. Role renderers bind the same masks; hidden blocked-move events and unrevealed refuel events are not public event channels."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "offer_now"
+      ],
+      "meaning": "Public owner-to-guest offer matrix created this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "accepted_now"
+      ],
+      "meaning": "Public owner-to-guest acceptance matrix this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_now"
+      ],
+      "meaning": "Public outpost deliveries this step by owner.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pressure"
+      ],
+      "meaning": "Public frontier pressure reduced defenses this step.",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Cumulative public outpost deliveries by owner.",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
