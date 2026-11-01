@@ -249,6 +249,7 @@ ZH = {
     'Final checkpoint only; values are not comparable across different reward scales.': '仅列最终检查点；不同奖励尺度之间的数值不可直接比较。',
     'Game': '游戏', 'IPPO native return': 'IPPO 原生回报', 'Random native return': '随机基线原生回报', 'Training seed': '训练种子', 'Tracking': '运行追踪', 'SwanLab run ↗': 'SwanLab 运行记录 ↗',
     'Negative comparison retained:': '保留负向对照结果：',
+    'Zero comparison retained:': '保留零差异对照结果：',
     ' final IPPO mean native return does not exceed the random baseline in this run. This is an observed single-training-seed result.': ' 本次运行的最终 IPPO 平均原生回报未高于随机基线。这是单个训练种子的观测结果。',
     'No orders served:': '没有完成订单：', ' final mean ': ' 最终平均 ',
     ' for both IPPO and random. IPPO has a less negative native return here, but this does not establish task completion. ': '，IPPO 与随机基线均如此。IPPO 的原生回报在此较不负，但不能据此判定任务完成。',
@@ -329,7 +330,8 @@ def render(source, review, results):
         base = 'data/'+r['run']+'/'
         content += f'<article class="baseline-card" id="{r["game"]}"><p class="eyebrow">{r["game"].upper()} · INITIAL BASELINE</p><h2>{esc(r["title"])}</h2>'
         if f['ippo_mean_agent_return'] <= f['random_mean_agent_return']:
-            content += '<p class="native-warning"><strong>Negative comparison retained:</strong> final IPPO mean native return does not exceed the random baseline in this run. This is an observed single-training-seed result.</p>'
+            comparison_label = 'Zero comparison retained:' if f['ippo_mean_agent_return'] == f['random_mean_agent_return'] else 'Negative comparison retained:'
+            content += '<p class="native-warning"><strong>'+comparison_label+'</strong> final IPPO mean native return does not exceed the random baseline in this run. This is an observed single-training-seed result.</p>'
         if r['game']=='gi215':
             content += '<p class="native-warning"><strong>No orders served:</strong> final mean <code>served = 0</code> for both IPPO and random. IPPO has a less negative native return here, but this does not establish task completion. <code>served</code> remains zero at every recorded evaluation point.</p>'
         loading = 'eager' if r is results[0] else 'lazy'

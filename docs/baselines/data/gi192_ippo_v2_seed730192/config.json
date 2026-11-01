@@ -1,0 +1,116 @@
+{
+  "game": "gi192",
+  "source_sha256": "f3607de1a9dd1c045b8fb3ad0079b5121d44f5acc6ee1b1e1fb55ab97df263fb",
+  "manifest_sha256": "ad4ad858d59cfb8d6f3e6fe77867e0caa00089e72ffbe34d12daa67194a50e86",
+  "num_agents": 3,
+  "observation_size": 50,
+  "num_actions": 14,
+  "max_steps": 40,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730192,
+  "eval_seeds": [
+    1749200,
+    1749201,
+    1749202,
+    1749203
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 1247232,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Grow and sell orchard fruit through six growth ticks. Coordinate scarce water, pollinating habitat and one shared pruning tool while choosing crops for private tastes and alternating market demand.",
+    "natural_termination": "After six growth ticks, natural completion requires no ripe plots and no carried fruit. Unpicked ripe fruit can spoil on later four-step ticks. Otherwise H=40 with natural priority.",
+    "interaction": "Farmers move to owned plots, neighboring plots, bee meadow, tool or market. Watering spends a common renewable reservoir; habitat tending changes later yields on other plots; the unique shears control who can harvest before spoilage.",
+    "observation_access": "Static map, actual farmer/tool positions, crops, moisture, soil, pollen, fruit, shared reserves and baskets are public. Each role alone receives its favorite fruit bit. No renderer may show other favorites."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "e_water"
+      ],
+      "meaning": "Water units drawn for each plot this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_tend"
+      ],
+      "meaning": "Farmer tended bee habitat this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_harvest"
+      ],
+      "meaning": "Fruit harvested by each farmer this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_sale"
+      ],
+      "meaning": "Fruit sold by each farmer this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_handoff"
+      ],
+      "meaning": "Pruning tool picked up, passed or placed down",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_blossom"
+      ],
+      "meaning": "Plot entered blossom this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_spoil"
+      ],
+      "meaning": "Unharvested fruit spoiled this step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "e_move"
+      ],
+      "meaning": "Farmer moved this step",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
