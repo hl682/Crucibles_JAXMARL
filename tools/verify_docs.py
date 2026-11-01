@@ -52,6 +52,10 @@ def main():
                 receipt=json.loads((R/'verification/presentation'/(path.stem+'.json')).read_bytes())
                 assert hashlib.sha256(path.read_bytes()).hexdigest()==receipt['gif_sha256']
         assert images==256
+        catalog=json.loads((R/'docs/catalog.json').read_bytes())['games'];by_key={r['key']:r for r in catalog}
+        assert {v['code'] for v in by_key['gi072']['themes']}=={'transport'}
+        assert 'adversarial' not in {v['code'] for v in by_key['gi073']['themes']},'Arrivals must not imply rivals'
+        assert 'commitment' not in {v['code'] for v in by_key['gi074']['themes']},'Committed render effects are not contracts'
         for path in (R/'docs/manuals/en').glob('*.md'):assert not re.search('[\u3400-\u9fff]',path.read_text(encoding='utf-8')),path
         assert len(list((R/'docs/manuals/en').glob('*.md')))==len(list((R/'docs/manuals/zh').glob('*.md')))==256
         for lang in ['en','zh']:

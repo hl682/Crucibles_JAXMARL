@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.2
+
+- Replace keyword-assigned categories with a curated per-game mechanism classification for all 256 identities. Source-word matching retrieves supporting evidence only; it cannot assign a label.
+- Exclude rendering/debug instructions from classification evidence and match word starts, preventing “arrivals” from producing an adversarial “rival” label or “block” from producing a transport “lock” label.
+- Regenerate both-language manuals, catalogs and offline package with corrected labels. Native rules and all active GIFs remain unchanged.
+
 ## 0.1.1
 
 - Game display names, summaries, controls and active GIF text are English. Original manifests and all 256 native sources remain byte-identical to 0.1.0.

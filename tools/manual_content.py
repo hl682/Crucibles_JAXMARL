@@ -57,9 +57,13 @@ def mechanism_intro(text):
 
 def profiles():
     authored={}
+    curated=dict(line.split('\t') for line in (ROOT/'manuals/classification.tsv').read_text(encoding='utf-8').splitlines())
+    codes={'C':'commons','I':'information','K':'commitment','P':'production','T':'transport','A':'adversarial','H':'hazard'}
     for line in (ROOT/'manuals/authoring.tsv').read_text(encoding='utf-8').splitlines():
         key,title,brief=line.split('\t');authored[key]=(title,brief)
     rows=read_json(SRC/'catalog.json')['games'];assert len(rows)==len(authored)==256
+    assert set(curated)==set(authored)
+    assert all(v and set(v)<=set(codes) and len(v)==len(set(v)) for v in curated.values())
     result={}
     for row in rows:
         key=row['key'];g=SRC/'games'/key;m=read_json(g/'manifest.json')
@@ -67,12 +71,14 @@ def profiles():
         mech=(g/'mechanism.md').read_text(encoding='utf-8-sig')
         intro=mechanism_intro(mech) if row['family']=='legacy_array' else m['task']['objective']
         # Prefer explicit task/action/rule evidence to titles or visual styling.
-        evidence=[('manifest.task.objective',m['task']['objective'])]+[('manifest.actions.'+str(a['id']),a['label']) for a in m['actions']]+[('scene.rules.'+str(i),v) for i,v in enumerate(sc.get('rules',[]))]
+        evidence=[('manifest.task.objective',m['task']['objective'])]+[('manifest.task.'+field,m['task'][field]) for field in ['interaction','observation_access'] if field in m['task']]+[('manifest.actions.'+str(a['id']),a['label']) for a in m['actions']]+[('scene.rules.'+str(i),v) for i,v in enumerate(sc.get('rules',[])) if not re.search(r'animate|render|diagnostic|recorded|unexecuted|authored source|show the|display|debug|masquerade',v,re.I)]
         if row['family']=='legacy_array':evidence.append(('mechanism.md',intro))
         tags=[]
-        for code,(_,_,pattern,_,_) in THEMES.items():
-            matches=[dict(field=p,text=t) for p,t in evidence if re.search(pattern,t,re.I)]
-            if matches:tags.append(dict(code=code,evidence=matches[:3]))
+        for letter in curated[key]:
+            code=codes[letter];pattern=THEMES[code][2]
+            matches=[dict(field=p,text=t) for p,t in evidence if re.search(r'\b(?:'+pattern+')',t,re.I)]
+            if not matches:matches=[dict(field='mechanism.md' if row['family']=='legacy_array' else 'manifest.task.objective',text=intro)]
+            tags.append(dict(code=code,assignment='CURATED_RULE_READING',evidence=matches[:3]))
         assert tags,key
         result[key]=dict(key=key,en=dict(title=english_title(row,sc),brief=intro),zh=dict(title=authored[key][0],brief=authored[key][1]),themes=tags)
     return result

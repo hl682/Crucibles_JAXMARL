@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib,json,zipfile
 R=Path(__file__).resolve().parents[1]
 def main():
-    out=R/'dist/crucibles-manuals-and-gifs-v0.1.1.zip';out.parent.mkdir(exist_ok=True)
+    out=R/'dist/crucibles-manuals-and-gifs-v0.1.2.zip';out.parent.mkdir(exist_ok=True)
     files=[p for p in (R/'docs').rglob('*') if p.is_file() and not any(n in p.relative_to(R/'docs').parts for n in ['demos','previews'])]
     manifest={str(p.relative_to(R/'docs')).replace('\\','/'):hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:

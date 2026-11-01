@@ -17,7 +17,8 @@ def main():
         assert p['captured_endpoints'][0]==0 and p['captured_endpoints'][-1]==p['actual_native_steps']
     result=dict(status='PASS',reference='v0.1.0',native_sources_manifests_scenes_catalog_transition_wrapper_live_rendering_and_controls_byte_unchanged=True,
         english_visible_game_metadata=256,presentation_replays=256,game_manuals=512,
-        modified_runtime_scope=['registry English display title/summary overlay','catalog HTTP response uses the same display overlay','versioned health and log labels 0.1.1'],
+        classification='CURATED_PER_GAME_RULE_READING',classification_identities=256,classification_sha256=hashlib.sha256((R/'manuals/classification.tsv').read_bytes()).hexdigest(),
+        modified_runtime_scope=['registry English display title/summary overlay','catalog HTTP response uses the same display overlay','versioned health and log labels 0.1.2'],
         original_all_game_execution_evidence='v0.1.0 verification archive; source identities unchanged',new_browser_regressions='verification/browser; use receipt ui_sha256 and history',
         no_training_or_performance_claim=True)
     (R/'verification/presentation_contract.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8');print(json.dumps(result,indent=2))
