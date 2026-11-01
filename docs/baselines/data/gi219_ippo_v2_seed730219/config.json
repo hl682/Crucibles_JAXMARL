@@ -1,0 +1,109 @@
+{
+  "game": "gi219",
+  "source_sha256": "34219f5e5df7753805e75886060e43fd56c8e5545eca0454601419a568d544cb",
+  "manifest_sha256": "dd4245d281f3367a221697d005162bc5df1b2dcc18cd604187e5a17347d3924c",
+  "num_agents": 16,
+  "observation_size": 909,
+  "num_actions": 22,
+  "max_steps": 384,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 1,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730219,
+  "eval_seeds": [
+    1751900,
+    1751901,
+    1751902,
+    1751903
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 14958592,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Keep four kitchens serving their own changing festival orders by transporting food through distinct equipment stages, protecting heat, fueling the shared boiler and returning reusable trays through hands or a finite routed conveyor.",
+    "natural_termination": "No natural success or joint-failure terminal. This is a continuing finite world. H=384 truncates the observation window, not a success event; done inputs are absorbing.",
+    "interaction": "A dish requires different equipment in four locations. Route switches and occupancy change another kitchen's item delay and freshness. Plating removes a shared clean tray until a served or expired dish's dirty tray is washed and returned. Physical reports reveal another kitchen's order for a limited time; insulated porter tools alter hot-food transport timing and can be exchanged.",
+    "observation_access": "The map, all physical staff cargo, stations, belt occupancy/direction, fuel/water levels, service clocks, public events and reward components are public. Current order flavour is directly visible only to the four actors belonging to that kitchen: order_visible is the kitchen-equality mask. Each observation adds only that actor's own notes and note_life rows. Speaking transfers the speaker's current home order to adjacent actors; foreign notes expire and can disagree with a changed live order. Legal serving masks do not test hidden flavour equality. A full-state/debug view must be labelled separately."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "served"
+      ],
+      "meaning": "Actual matched warm services",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "processed"
+      ],
+      "meaning": "Actual intermediate processing stages",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handed"
+      ],
+      "meaning": "Physical item handoffs",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "wasted"
+      ],
+      "meaning": "Food waste count in this native step",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "belt_moved"
+      ],
+      "meaning": "Occupied belt source cells that moved",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "water"
+      ],
+      "meaning": "Shared washwater level",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "fuel_stock"
+      ],
+      "meaning": "Central fuel supply level",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

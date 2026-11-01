@@ -1,0 +1,130 @@
+{
+  "game": "gi081",
+  "source_sha256": "7cf4953174873acf0e3efbb70d9592a9ed3d8cadd48d96e6ae690607f247a8b4",
+  "manifest_sha256": "e50a560bfce8d1d9d3b07601aad66d047264e60fbfb07bd44cfd6ffb96275451",
+  "num_agents": 4,
+  "observation_size": 254,
+  "num_actions": 11,
+  "max_steps": 128,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730081,
+  "eval_seeds": [
+    1738100,
+    1738101,
+    1738102,
+    1738103
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 8355840,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Deliver two physically carried orders per courier before their deadlines, balancing private timeliness against shared traffic, charging, route commitments and energy assistance.",
+    "natural_termination": "The episode naturally ends once every parcel is delivered or expired. Success means all eight were delivered; mixed outcomes remain explicit. Otherwise truncate at 128, with natural completion taking priority.",
+    "interaction": "A bonded, expiring shared corridor reservation changes other robots legal routes. Opposite-side yielding accelerates admission, prevents the yielder entering the corridor, and can earn a credit only after a real partner crossing. Occupancy, mutually consented swaps, finite batteries and shared-capacity chargers create additional concrete resource and route dependencies.",
+    "observation_access": "The complete board, positions, parcel contracts/status, energies, credits, requests, queue ages, binding commitments and leases are public; each role receives an identity one-hot. Intent becomes public through an actual paid request or binding yield state. No hidden policy-only observation is supplied by rendering."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "ev_request"
+      ],
+      "meaning": "Robot actually posted one service-credit bond for a timed route request",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_yield"
+      ],
+      "meaning": "Robot began a binding yield commitment and relinquished any claim",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_cross"
+      ],
+      "meaning": "Lease holder entered and exited the actual central corridor on the requested opposite side",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_yield_bonus"
+      ],
+      "meaning": "A qualifying opposite-side yielder earned one credit after a partner really crossed",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_transfer"
+      ],
+      "meaning": "Robot actually transferred two battery units to a neighboring robot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_swap"
+      ],
+      "meaning": "Robot participated in a mutual-consent physical position swap",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_pickup"
+      ],
+      "meaning": "A waiting parcel became carried by its assigned robot",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_delivery"
+      ],
+      "meaning": "An actual carried parcel was unloaded at its exact target",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_expired"
+      ],
+      "meaning": "An undelivered parcel passed its deadline and expired",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "All eight actual parcels were delivered",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

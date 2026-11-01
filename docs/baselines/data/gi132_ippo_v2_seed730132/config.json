@@ -1,0 +1,88 @@
+{
+  "game": "gi132",
+  "source_sha256": "00c7314e75f48ee9438cb033535b2a7ce28d8be8fe51f9d2f19f9152f6ea4f8e",
+  "manifest_sha256": "847a273ee389e851da91fbec5919c31932de520c5f28bf15dceb102c5f95858a",
+  "num_agents": 3,
+  "observation_size": 316,
+  "num_actions": 13,
+  "max_steps": 128,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730132,
+  "eval_seeds": [
+    1743200,
+    1743201,
+    1743202,
+    1743203
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 7784448,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Retrieve the three finite coded caches under real illumination and carry them to the central socket, while retaining safe shadow crossings and enough shared lamp charge. Cache owners have different delivery deadlines.",
+    "natural_termination": "All three caches delivered, or all roles have three exposures. Otherwise truncate after 128 live transitions. Stunned or disabled roles may only wait, but the episode can continue for partners.",
+    "interaction": "Rotating or switching a shared lamp changes other roles illumination, native visibility, safe crossing and cache access. Shutters occlude real ray segments and walking, portable mirrors turn rays, and finite packs/socket stock fund future partner opportunities. Captures can repeat unless partners darken the occupied watched cell.",
+    "observation_access": "Partial native observation. Geometry, wired devices, complete beam/shadow raster, socket stock, deadlines and alarm flags are public. Agents are visible within Manhattan distance two or when their cell is lit, plus self. Mirrors are visible by the same distance/light rule or to their carrier. Cache positions, code, status and carrier are visible within distance two, when lit, or to their same-index owner through its tracker. Unseen record fields are -1 and each record has its explicit role-specific visibility bit. No other-role mask rows enter that role observation."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "last_capture"
+      ],
+      "meaning": "Public alarm: role exposed in a watched lit cell this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_collected"
+      ],
+      "meaning": "Public alarm: cache picked up this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "last_delivered"
+      ],
+      "meaning": "Public announcement: cache delivered this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spent_energy"
+      ],
+      "meaning": "Total lamp emissions paid in charge units",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

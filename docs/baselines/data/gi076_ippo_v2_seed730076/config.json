@@ -1,0 +1,256 @@
+{
+  "game": "gi076",
+  "source_sha256": "3aefd945deb38d64614ec4dfaf55ddc131d192b81e6b155f2814bb88f56d37ea",
+  "manifest_sha256": "b723d014345281821ed0669cd3db69855859b1f7d947a7b915c711433322ee1a",
+  "num_agents": 3,
+  "observation_size": 1939,
+  "num_actions": 14,
+  "max_steps": 192,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 1,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730076,
+  "eval_seeds": [
+    1737600,
+    1737601,
+    1737602,
+    1737603
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 5958912,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "A three-person crew must collect three fragile survey capsules from marked river buoys and bank them at its home berth. The skiff retains velocity until counter-thrust or braking changes it. Walking crew, filled corner tanks and loaded capsules change its balance; loose capsules slide toward the low edge and can be lost. Two reusable clips can secure capsules, while cliffs, reef collision and severe imbalance damage the hull.",
+    "natural_termination": "Hull exhaustion, then any capsule lost, then all three banked. Otherwise time limit 192. Natural success/failure has priority over horizon.",
+    "interaction": "A crew member walks to the upper scoop, moving mass upward; a colleague shifts ballast downward before a capsule can satisfy the loading balance check. A loaded capsule changes torque. The clip worker must reach its current deck cell while the helm keeps the boat stationary or navigates safely; securing it prevents gravity motion but preserves its contribution to torque. A helm command changes persistent velocity. Waiting does not stop travel; a later opposite impulse or brake is necessary before stationary sampling or banking. A periodic current impulse can introduce lateral motion. The crew can read tide phase and centre terrain, but the proper correction depends on existing velocity and available fuel. When two clips are occupied, collecting another capsule requires retaining safe balance, releasing a clip or banking earlier. The reward does not directly prescribe one of those strategies. Walking, filling tanks and moving loose capsules alter a shared torque calculation, so independent locally sensible actions can jointly cause an edge loss or structural damage.",
+    "observation_access": "All physical quantities public; only identity one-hot differs by crew. Flat observations have exactly 1939 columns.",
+    "action_mask_semantics": "Masks permit attempts whose outcome depends on simultaneous partner/opponent actions. Static bounds/roles/resources are masked; raw transition rules resolve occupancy, new-object availability, adjacency and conflicts. Attempt validity does not guarantee an effect.",
+    "reward_definition": {
+      "team_reward_formula": "For each active transition, r = newly_banked_count + 2*I(new natural success) - I(new natural failure) - 0.02*hull_units_lost - 0.001. Return [r,r,r] as float32.",
+      "natural_failure": "Reason 2 or 3, selected on this transition.",
+      "horizon": "A horizon truncation has no invented success/failure bonus; it retains the ordinary bank/damage/step reward of that transition.",
+      "accounting": "A capsule can yield a banking reward only on its 1->2 status change. Clips, filling/draining tanks and observations yield no direct reward.",
+      "empirical_status": "These are proposed reward rules. No reward values, completion rates or learning results have been observed."
+    }
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "event_kind"
+      ],
+      "meaning": "Committed transition event codes, gated by event_active; payloads describe actual accepted changes, with documented force/rejected-attempt exceptions.",
+      "semantics": "per_step_flag",
+      "active_path": [
+        "event_active"
+      ],
+      "count_path": [
+        "event_count"
+      ],
+      "tick_path": [
+        "event_tick"
+      ],
+      "actor_path": [
+        "event_actor"
+      ],
+      "object_path": [
+        "event_object"
+      ],
+      "from_position_path": [
+        "event_from_xy"
+      ],
+      "to_position_path": [
+        "event_to_xy"
+      ],
+      "value_path": [
+        "event_value"
+      ],
+      "visibility_path": [
+        "event_visibility"
+      ],
+      "from_space_path": [
+        "event_from_space"
+      ],
+      "to_space_path": [
+        "event_to_space"
+      ],
+      "coordinate_spaces": {
+        "0": "world",
+        "1": "deck",
+        "2": "absent"
+      },
+      "identity": [
+        "candidate_id",
+        "event_tick",
+        "slot"
+      ],
+      "kinds": [
+        {
+          "code": 0,
+          "name": "unused",
+          "actor": "none",
+          "object": "none",
+          "from_to": "absent",
+          "value": "0",
+          "visual_lifetime": "none"
+        },
+        {
+          "code": 1,
+          "name": "crew_move",
+          "actor": "moving crew",
+          "object": "-1",
+          "from_to": "old and accepted new deck cell",
+          "value": "1 accepted move",
+          "visual_lifetime": "0.75 transition interval; interpolate only accepted cells"
+        },
+        {
+          "code": 2,
+          "name": "ballast_change",
+          "actor": "tank operator",
+          "object": "tank id",
+          "from_to": "same deck tank cell",
+          "value": "+1 fill or -1 drain",
+          "visual_lifetime": "0.6 interval; animate actual fill-level change"
+        },
+        {
+          "code": 3,
+          "name": "thrust",
+          "actor": "helmsman",
+          "object": "-1",
+          "from_to": "old world centre to old centre plus command direction; a force arrow, not travel",
+          "value": "1 fuel spent",
+          "visual_lifetime": "0.4 interval"
+        },
+        {
+          "code": 4,
+          "name": "brake",
+          "actor": "helmsman",
+          "object": "-1",
+          "from_to": "same world centre",
+          "value": "1 fuel spent",
+          "visual_lifetime": "0.4 interval; brake icon only"
+        },
+        {
+          "code": 5,
+          "name": "vessel_move",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "old and accepted new world centre",
+          "value": "1 accepted displacement",
+          "visual_lifetime": "0.8 interval; hull, crew and cargo translate together"
+        },
+        {
+          "code": 6,
+          "name": "collision",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "old world centre and rejected candidate centre",
+          "value": "1 hull lost",
+          "visual_lifetime": "0.5 interval; cross at blocked direction, hull remains at accepted position"
+        },
+        {
+          "code": 7,
+          "name": "sample_load",
+          "actor": "scoop operator",
+          "object": "capsule id",
+          "from_to": "source buoy in world space to accepted tray in deck space",
+          "value": "1 capsule loaded",
+          "visual_lifetime": "0.7 interval; animate only accepted transfer"
+        },
+        {
+          "code": 8,
+          "name": "sample_bank",
+          "actor": "dispatch operator",
+          "object": "capsule id",
+          "from_to": "previous cargo deck cell to home berth in world space",
+          "value": "1 capsule banked",
+          "visual_lifetime": "0.7 interval"
+        },
+        {
+          "code": 9,
+          "name": "sample_slide",
+          "actor": "-1",
+          "object": "capsule id",
+          "from_to": "old and accepted new deck cell",
+          "value": "1 slide",
+          "visual_lifetime": "0.6 interval"
+        },
+        {
+          "code": 10,
+          "name": "sample_loss",
+          "actor": "-1",
+          "object": "capsule id",
+          "from_to": "old deck cell and off-deck proposed cell, both in deck space",
+          "value": "1 capsule lost",
+          "visual_lifetime": "0.8 interval; endpoint is a recorded loss location"
+        },
+        {
+          "code": 11,
+          "name": "clip_attach",
+          "actor": "clip operator",
+          "object": "capsule id",
+          "from_to": "same deck cell",
+          "value": "1 clip attached",
+          "visual_lifetime": "0.4 interval; persistent strap then follows capsule_pinned"
+        },
+        {
+          "code": 12,
+          "name": "clip_release",
+          "actor": "clip operator",
+          "object": "capsule id",
+          "from_to": "same deck cell",
+          "value": "1 clip released",
+          "visual_lifetime": "0.4 interval"
+        },
+        {
+          "code": 13,
+          "name": "overstrain",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "same world boat centre",
+          "value": "1 hull lost",
+          "visual_lifetime": "0.5 interval; stress flash driven by committed damage"
+        },
+        {
+          "code": 14,
+          "name": "episode_end",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "absent",
+          "value": "terminal_reason 1..4",
+          "visual_lifetime": "one new-event reveal; persistent banner subsequently derives from done/reason"
+        }
+      ],
+      "replay_rule": "Deduplicate tick/slot identities; interpolate actual stage endpoints only. Absorbing snapshots preserve events and must not replay them."
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

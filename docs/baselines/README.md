@@ -6,10 +6,11 @@ Pages publishes the repository `docs/` directory, so
 the site URL is `baselines/` below the existing project URL. All site-local
 links are relative and work under a GitHub Pages repository prefix.
 
-This bundle includes exactly 197 / 256 reviewed games, not a live
+This bundle includes exactly 229 / 256 reviewed games, not a live
 directory count. The explicit collection is in `snapshot_source.json` and must
 match `root_review.json` exactly. Every run uses one training seed, four evaluation seeds and
-262,144 joint environment steps. Budget completion does not establish learning,
+its frozen per-game budget (262,144–262,528 joint environment steps in this snapshot).
+Budget completion does not establish learning,
 significance, task solution or generalization. All non-positive comparisons are preserved on their own game cards.
 GI215's zero served orders are preserved when that game is in the review. No LLM/UED method is validated here.
 

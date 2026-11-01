@@ -57,20 +57,21 @@ def reviewed_runs(review):
 def verify_run(folder, receipt):
     config, status, provenance = [read(folder / name) for name in FILES[:3]]
     curve = [json.loads(line) for line in (folder / 'eval_curve.jsonl').read_text(encoding='utf-8').splitlines() if line.strip()]
-    require(len(curve) == receipt['eval_points'] == 9, 'Initial-stage evaluation points do not match review')
+    require(len(curve) == receipt['eval_points'], 'Initial-stage evaluation points do not match review')
     require(len(set(provenance['eval_seeds'])) == 4, 'Expected four distinct evaluation seeds')
     require(config['train_seed'] == provenance['training_seed'] == receipt['training_seed'], 'Training seed mismatch')
     require(config['eval_seeds'] == provenance['eval_seeds'] == receipt['eval_seeds'], 'Evaluation seed mismatch')
     require(status['status'] == receipt['status'], 'Execution status mismatch')
-    require(curve[-1]['train_joint_steps'] == status['train_joint_steps'] == receipt['joint_steps'] == 262144, 'Initial-stage joint-step endpoint mismatch')
-    require(status['planned_joint_steps'] == 262144, 'Initial-stage planned budget mismatch')
+    budget, interval = config['total_joint_steps'], config['eval_interval_joint_steps']
+    require(curve[-1]['train_joint_steps'] == status['train_joint_steps'] == receipt['joint_steps'] == budget, 'Initial-stage joint-step endpoint mismatch')
+    require(status['planned_joint_steps'] == budget, 'Initial-stage planned budget mismatch')
     require(curve[-1]['ippo_mean_agent_return'] == receipt['native_return'], 'IPPO endpoint mismatch')
     require(curve[-1]['random_mean_agent_return'] == receipt['random_return'], 'Random endpoint mismatch')
     require(curve[-1]['ippo_native_event_means'] == receipt['native_event_means'], 'Native event mismatch')
     require(config['source_sha256'] == provenance['game_source_sha256'], 'Source identity mismatch')
     require(config['manifest_sha256'] == provenance['game_manifest_sha256'], 'Manifest identity mismatch')
     require(provenance['no_reward_shaping'] is True, 'Native reward contract mismatch')
-    require([p['train_joint_steps'] for p in curve] == list(range(0,262145,32768)), 'Evaluation order or joint-step grid mismatch')
+    require([p['train_joint_steps'] for p in curve] == list(range(0,budget,interval)) + [budget], 'Evaluation order or joint-step grid mismatch')
     return config, status, provenance, curve
 
 
@@ -278,10 +279,18 @@ ZH = {
 }
 
 
+def budget_range(results):
+    values = [r['config']['total_joint_steps'] for r in results]
+    low, high = min(values), max(values)
+    return f'{low:,}' if low == high else f'{low:,}–{high:,}'
+
+
 def chinese_page(page, results, observed):
     translations = dict(ZH)
     count = len(results)
-    translations[f'{count} / {TOTAL_GAMES} games · 1 training seed · 4 evaluation seeds · 262,144 joint steps per run'] = f'{count} / {TOTAL_GAMES} 个游戏 · 1 个训练种子 · 4 个评估种子 · 每次运行 262,144 个联合步'
+    budgets = budget_range(results)
+    translations[f'{count} / {TOTAL_GAMES} games · 1 training seed · 4 evaluation seeds · {budgets} joint steps, frozen per-game budgets'] = f'{count} / {TOTAL_GAMES} 个游戏 · 1 个训练种子 · 4 个评估种子 · 按各款冻结预算运行 {budgets} 个联合步'
+    translations['This scalar curve summary has no task-event metrics. Consult the native event definitions and per-role returns; missing summary fields are not zero-valued observations.'] = '这份标量曲线摘要没有任务事件指标。请结合原生事件定义和逐角色回报；摘要中缺少字段不代表观测值为零。'
     text = f'Coverage is frozen to the {count} runs in the review receipt observed at {observed}. Later files and runs do not enter this snapshot automatically. These fixed-learner baselines do not implement or validate the planned LLM/UED or meta-gradient method.'
     translations[text] = f'覆盖范围冻结为 {observed} 复核回执中的 {count} 次运行。后续文件和运行不会自动进入本快照。这些固定学习器基线没有实现或验证计划中的 LLM/UED 或元梯度方法。'
     translations[f'Reviewed snapshot: {observed}'] = f'复核快照时间：{observed}'
@@ -324,7 +333,7 @@ def render(source, review, results):
         rows.append([link('#'+r['game'],r['game'].upper()+' · '+r['title']), number(f['train_joint_steps']), number(f['ippo_mean_agent_return']), number(f['random_mean_agent_return']), str(r['provenance']['training_seed']), link(r['tracking']['url'],'SwanLab run ↗')])
     content += '<section><h2>Reviewed runs in game-ID order</h2>' + table(['Game','Joint environment steps','IPPO native return','Random native return','Training seed','Tracking'],rows,'Final checkpoint only; values are not comparable across different reward scales.') + '</section>'
     context_content = content
-    content = f'''<div class="curve-intro"><h1>Cloud learning curves</h1><p class="coverage">{count} / {TOTAL_GAMES} games · 1 training seed · 4 evaluation seeds · 262,144 joint steps per run</p><p class="snapshot-time">Reviewed snapshot: {esc(observed)}</p><p>First-round, single-seed results; see each card for task-completion evidence.</p></div>'''
+    content = f'''<div class="curve-intro"><h1>Cloud learning curves</h1><p class="coverage">{count} / {TOTAL_GAMES} games · 1 training seed · 4 evaluation seeds · {budget_range(results)} joint steps, frozen per-game budgets</p><p class="snapshot-time">Reviewed snapshot: {esc(observed)}</p><p>First-round, single-seed results; see each card for task-completion evidence.</p></div>'''
     for r in results:
         f, p, c, s = r['curve'][-1], r['provenance'], r['config'], r['status']
         base = 'data/'+r['run']+'/'
@@ -349,7 +358,7 @@ def render(source, review, results):
         if events:
             content += table(['Native terminal event or state metric','IPPO mean','Random mean'],[[esc(k),number(v),number(f['random_native_event_means'][k])] for k,v in events.items()], 'Native metrics retain their original semantics: counters, state levels and termination flags are not interchangeable.')
         else:
-            content += '<p>Native task-event metrics were not recorded for this game in this source bundle. Nonzero return alone does not prove that its task was solved.</p>'
+            content += '<p>This scalar curve summary has no task-event metrics. Consult the native event definitions and per-role returns; missing summary fields are not zero-valued observations.</p>'
         point_rows = [[number(q['train_joint_steps']),number(q['ippo_mean_agent_return']),number(q['random_mean_agent_return'])] for q in r['curve']]
         content += '<details><summary>All evaluation points</summary>' + table(['Joint environment steps','IPPO native return','Random native return'],point_rows) + '</details>'
         content += '<details><summary>Protocol, identity and provenance</summary><p>'+esc(c['selection_rule'])+'</p><p>'+esc(c['stop_rule'])+'</p><p>The configuration retains its original prepared, not-yet-run state. Execution state comes from the separate actual status receipt shown above.</p><pre>'+esc(json.dumps(p,indent=2))+'</pre><p>Original reviewed archive SHA-256: <code>'+esc(r['receipt']['archive_sha256'])+'</code></p></details>'
@@ -372,7 +381,8 @@ links are relative and work under a GitHub Pages repository prefix.
 This bundle includes exactly {count} / {TOTAL_GAMES} reviewed games, not a live
 directory count. The explicit collection is in `snapshot_source.json` and must
 match `root_review.json` exactly. Every run uses one training seed, four evaluation seeds and
-262,144 joint environment steps. Budget completion does not establish learning,
+its frozen per-game budget ({budget_range(results)} joint environment steps in this snapshot).
+Budget completion does not establish learning,
 significance, task solution or generalization. All non-positive comparisons are preserved on their own game cards.
 GI215's zero served orders are preserved when that game is in the review. No LLM/UED method is validated here.
 

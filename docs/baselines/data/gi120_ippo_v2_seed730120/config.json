@@ -1,0 +1,110 @@
+{
+  "game": "gi120",
+  "source_sha256": "caca2a24be3b3391f4a341640bc129934ec74e897cdcf06f544db7f384aa2fdf",
+  "manifest_sha256": "ad9b48c96db47233554e83ce4f4638a17a8ec09b59dfa25f1ce61fd7659c58a3",
+  "num_agents": 4,
+  "observation_size": 239,
+  "num_actions": 14,
+  "max_steps": 96,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730120,
+  "eval_seeds": [
+    1742000,
+    1742001,
+    1742002,
+    1742003
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 7864320,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Two teams contest four physical objectives and transport them to their own homes. Team rewards oppose each other for deliveries and actual captures; teammates share their team payoff.",
+    "natural_termination": "All four objectives have been banked, possibly by either team. Otherwise time ends at 96 transitions. Recovery from capture is temporary, not an individual episode end.",
+    "interaction": "Bodies block contested passages; a guard tags adjacent opponents and forces them to drop cargo. A hostile mobile decoy within distance two consumes the guard action and is destroyed, allowing an otherwise capturable opponent to escape. Decoys also reduce nearby opposing sight radius from three to one unless a scout pulse restores five. Physical cargo handoffs, local patrol information, public scores and private decoy telemetry create team coordination choices.",
+    "observation_access": "Terrain, home locations, score totals and clock are public. Patrol/objective/decoy state is visible within Manhattan radius three, or one when a hostile active decoy is within distance two; a scout pulse raises it to five. Self is always visible. The owner additionally sees its active decoy remotely. Friendly scout signals broadcast only sender position/team globally; hostile signals are visible within distance five. A signal does not reveal the sender inventory or other hidden attributes. Every invisible record has an explicit visibility bit and zero data fields."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "capture_event"
+      ],
+      "meaning": "Patrol captured and returned to its refuge on this transition",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "distraction_event"
+      ],
+      "meaning": "Guard spent this tick on a hostile decoy rather than capturing",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "deploy_event"
+      ],
+      "meaning": "Patrol deployed or replaced its own decoy",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "handoff_event"
+      ],
+      "meaning": "Patrol transferred carried objective to teammate",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Patrol banked an objective at its home",
+      "semantics": "per_step_flag",
+      "visibility": [
+        "agent_visible"
+      ]
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

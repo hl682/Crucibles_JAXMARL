@@ -1,0 +1,130 @@
+{
+  "game": "gi080",
+  "source_sha256": "9f565752dd7ac1a41501c7c13853d168a668acc5d657f214a13be961c5f32f53",
+  "manifest_sha256": "87df6cbeee45253cee2ff609d7bc8be9a74c10edc69f05a19bcbd7b744cf444d",
+  "num_agents": 3,
+  "observation_size": 435,
+  "num_actions": 13,
+  "max_steps": 120,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 6,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730080,
+  "eval_seeds": [
+    1738000,
+    1738001,
+    1738002,
+    1738003
+  ],
+  "total_joint_steps": 262272,
+  "eval_interval_joint_steps": 33024,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 8031744,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Earn own-farm harvests and access income while constructing and scheduling the shared canal network. Collective completion occurs when every farm has three harvests before flood closure.",
+    "natural_termination": "All three farms reaching at least three harvests or cumulative spill reaching eighteen naturally closes the season. Flood takes priority for the success flag if both occur together. Otherwise 120 turns truncates; natural completion wins over the horizon.",
+    "interaction": "Directed, shuttered, owned conduits route a conserved water resource one edge per hydraulic pulse. Construction and reorientation change other farms future supply. Foreign passage and rotation consume a coin and pay the owner; irreversible public charters remove that barrier.",
+    "observation_access": "The complete strategic board, water volumes, ownership, shutters, resources, turn identity and harvests are public. Each observer also receives its player identity. Only the player to move may use a non-noop action; inactive players retain no-op."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "ev_build"
+      ],
+      "meaning": "A finite kit and one coin became a real owned conduit this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_rotate"
+      ],
+      "meaning": "Actual outgoing flow direction changed this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_shutter"
+      ],
+      "meaning": "Actual hydraulic shutter was toggled this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_charter"
+      ],
+      "meaning": "Owned conduit permanently changed to public access this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_harvest"
+      ],
+      "meaning": "Farm consumed two real water to make one harvest this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_toll"
+      ],
+      "meaning": "Number of coins actually received by each owner through passage or rotation permits this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ev_bail"
+      ],
+      "meaning": "Water units physically removed by each player this turn",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "spill_step"
+      ],
+      "meaning": "Water exceeding local capacity and lost as floodwater on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "total_spill"
+      ],
+      "meaning": "Cumulative spilled water, triggering closure at eighteen",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "success"
+      ],
+      "meaning": "Every farm has at least three harvests and flood closure has not occurred",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

@@ -1,0 +1,276 @@
+{
+  "game": "gi077",
+  "source_sha256": "478a7d1b114ae3c5ad4dca6aefdf0f8e10d2ae15e0befeab9e0e4747979958e8",
+  "manifest_sha256": "b97e602a5b17322158268894f2a62c2f82f7417de7608934e1586b15014583ed",
+  "num_agents": 4,
+  "observation_size": 2196,
+  "num_actions": 15,
+  "max_steps": 240,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 1,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730077,
+  "eval_seeds": [
+    1737700,
+    1737701,
+    1737702,
+    1737703
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 8998912,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Two rival two-person survey crews hunt eight buried geodes. A surveyor can measure counts of amber and teal deposits within a radius but cannot see their exact positions. An excavator opens soil faster. Private scan records can be exchanged only when teammates meet. Once exposed, a geode can be carried, deliberately handed off by dropping it, or knocked loose by a rival's shove. Banking preferred-colour geodes is worth more; the first team to reach eight points wins, with simultaneous finishes resolved from the same new state.",
+    "natural_termination": "After simultaneous deposits, score>=8 gives race ending; otherwise all eight banked ends the game. Compare complete new scores; ties allowed. Otherwise H240 is unresolved truncation.",
+    "interaction": "Several scan origins can constrain a hidden deposit more tightly than one count. Excavation changes later measurements because scans count only still-buried deposits, so timestamps and stale information matter. The surveyor can spend charge on information, while the excavator spends charge to open a suspected tile in one dig. A mistaken rendezvous or stale record can waste both travel and excavation effort. A teammate must physically approach to receive records; that meeting competes with carrying geodes back to bank and gathering new measurements. One agent can expose a deposit while an adjacent teammate picks it up in the same transition because excavation precedes handling. That interaction follows the declared state order rather than an invisible macro action. A dropped geode can be picked by a nearby teammate in the same transition, but simultaneous rival pickup requests cancel, leaving the contested object on the board. A shove can displace a carrier, force a real drop and cancel its pending bank/scan/dig action. Bracing, protected home approaches and shove cooldowns give counterplay. The two teams value colours differently, so visible cargo and public scores change the value of racing, intercepting, handing off or collecting an otherwise lower-value deposit.",
+    "observation_access": "Terrain, base ownership geometry, team/role assignment, scoring rules, total geode count, team scores and total banked count are public. Buried coordinates and colours are engine-only hidden state. Ordinary local visibility never reveals a buried geode. Scan counts and history are private to their record holder. Teammates receive them only through a successful exchange; opponents never receive them. A role sees other agents, their facing/charge/stun/cooldown, surface geodes, carried geode colours and excavation depth only inside its current radius-4 view. No exact position, inventory, depth update, event endpoint or scan readout outside the permitted projection is supplied to an actor or its rendered view. There is no persistent terrain/object memory in the numeric observation other than the six scan records. Policy recurrence may remember past observations; the renderer may not replace unknown current cells with hidden truth. For the role renderer, active bank-event locations and deposited values are deliberately public; match the published endpoint to public bank_xy and read the same-index bank_team. Actor/geode identities keep their local masks. This presentation repair adds no training-observation field.",
+    "action_mask_semantics": "Masks permit attempts whose outcome depends on simultaneous partner/opponent actions. Static bounds/roles/resources are masked; raw transition rules resolve occupancy, new-object availability, adjacency and conflicts. Attempt validity does not guarantee an effect.",
+    "reward_definition": {
+      "formula": "Let dS0 and dS1 be new-minus-old public banked scores. Let b=+3 for a new natural team-0 win, -3 for a new natural team-1 win, 0 for a tie, ongoing state or truncation. r0=float32(dS0-dS1+b), r1=-r0. Return [r0,r0,r1,r1].",
+      "incentives": "No reward for merely scanning, digging, seeing a buried location, shoving, carrying or dropping. Banking is irreversible, so a geode cannot be scored repeatedly.",
+      "leakage_control": "The only reward-bearing events are deliberately public bank events and public natural outcomes.",
+      "horizon": "At truncation, retain any banking reward from that transition but do not invent a winner or a terminal win bonus.",
+      "empirical_status": "No attained reward, victory rate, exploit rate or learned strategy is claimed."
+    },
+    "turn_shove_clarification": {
+      "original_design_wording": [
+        "Apply effective facing changes, then construct four movement intents from old positions.",
+        "A target's non-movement effective action is canceled for this transition."
+      ],
+      "adopted_interpretation": "Facing/turn and movement changes committed in stage 1 remain. Accepted shoves in stages 2/3 cancel only still-pending operations. No turn rollback is performed.",
+      "authoritative_context": "The coordinator explicitly confirmed this interpretation in the current source-authoring task before any candidate execution and instructed that mechanism/scene/generation metadata all disclose it.",
+      "original_design_bytes_modified": false,
+      "fixed_before_execution": true,
+      "adjusted_using_outcomes": false,
+      "unresolved": false
+    }
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "event_kind"
+      ],
+      "meaning": "Committed transition event codes, gated by event_active; payloads describe actual accepted changes, with documented force/rejected-attempt exceptions.",
+      "semantics": "per_step_flag",
+      "active_path": [
+        "event_active"
+      ],
+      "count_path": [
+        "event_count"
+      ],
+      "tick_path": [
+        "event_tick"
+      ],
+      "actor_path": [
+        "event_actor"
+      ],
+      "object_path": [
+        "event_object"
+      ],
+      "from_position_path": [
+        "event_from_xy"
+      ],
+      "to_position_path": [
+        "event_to_xy"
+      ],
+      "value_path": [
+        "event_value"
+      ],
+      "visibility_path": [
+        "event_visibility"
+      ],
+      "from_visibility_path": [
+        "event_from_visibility"
+      ],
+      "to_visibility_path": [
+        "event_to_visibility"
+      ],
+      "actor_visibility_path": [
+        "event_actor_visibility"
+      ],
+      "object_visibility_path": [
+        "event_object_visibility"
+      ],
+      "value_visibility_path": [
+        "event_value_visibility"
+      ],
+      "coordinate_spaces": {
+        "0": "world"
+      },
+      "identity": [
+        "candidate_id",
+        "event_tick",
+        "slot"
+      ],
+      "kinds": [
+        {
+          "code": 0,
+          "name": "unused",
+          "actor": "none",
+          "object": "none",
+          "from_to": "absent",
+          "value": "0",
+          "visual_lifetime": "none"
+        },
+        {
+          "code": 1,
+          "name": "step",
+          "actor": "moving agent",
+          "object": "-1",
+          "from_to": "old to accepted new world cell",
+          "value": "1 move",
+          "visual_lifetime": "0.75 transition interval, after endpoint filtering"
+        },
+        {
+          "code": 2,
+          "name": "turn",
+          "actor": "turning agent",
+          "object": "-1",
+          "from_to": "same cell",
+          "value": "new facing 0..3",
+          "visual_lifetime": "0.35 interval"
+        },
+        {
+          "code": 3,
+          "name": "dig",
+          "actor": "digging agent",
+          "object": "-1",
+          "from_to": "agent cell to addressed front soil cell",
+          "value": "role work units actually applied before depth capping, 1 or 2",
+          "visual_lifetime": "0.6 interval; dust at observed target, persistent crater from actual depth"
+        },
+        {
+          "code": 4,
+          "name": "reveal",
+          "actor": "-1",
+          "object": "newly exposed geode id",
+          "from_to": "same dig cell",
+          "value": "actual colour 0 or 1",
+          "visual_lifetime": "0.6 interval; sparkle only on a real newly exposed and visible object"
+        },
+        {
+          "code": 5,
+          "name": "pickup",
+          "actor": "accepted picker",
+          "object": "geode id",
+          "from_to": "surface cell to carrier cell",
+          "value": "1 picked geode",
+          "visual_lifetime": "0.6 interval"
+        },
+        {
+          "code": 6,
+          "name": "drop",
+          "actor": "voluntary dropper",
+          "object": "geode id",
+          "from_to": "carrier cell to valid front cell",
+          "value": "1 dropped geode",
+          "visual_lifetime": "0.6 interval"
+        },
+        {
+          "code": 7,
+          "name": "bank",
+          "actor": "depositor, redacted if hidden",
+          "object": "geode id, redacted if hidden",
+          "from_to": "Same own-bank cell; every valid in-bounds endpoint is public to all roles. Match the endpoint to public bank_xy[b].",
+          "value": "1 or 2 actual banked points, public to all roles; team is public bank_team[b] at the uniquely matching bank_xy[b], independent of depositor identity.",
+          "visual_lifetime": "0.7 interval; public score pulse"
+        },
+        {
+          "code": 8,
+          "name": "scan",
+          "actor": "scanner",
+          "object": "-1",
+          "from_to": "same scanner cell",
+          "value": "radius 2 or 4, never counts",
+          "visual_lifetime": "0.8 interval; one clipped radius ring"
+        },
+        {
+          "code": 9,
+          "name": "exchange",
+          "actor": "lowest-id initiating teammate solely for event identification",
+          "object": "other teammate id",
+          "from_to": "actual adjacent team positions",
+          "value": "number of valid records in the resulting shared ledger, 0..6; disclose only to the participants",
+          "visual_lifetime": "0.7 interval; observed link arc, no outsider record text"
+        },
+        {
+          "code": 10,
+          "name": "brace",
+          "actor": "bracing agent",
+          "object": "-1",
+          "from_to": "same cell",
+          "value": "1 active brace",
+          "visual_lifetime": "one transition interval; no persistent protection is implied"
+        },
+        {
+          "code": 11,
+          "name": "shove",
+          "actor": "accepted shover",
+          "object": "target agent id",
+          "from_to": "target's pre-shove cell to accepted forced cell",
+          "value": "1 forced cell",
+          "visual_lifetime": "0.6 interval; draw only after event filtering"
+        },
+        {
+          "code": 12,
+          "name": "forced_drop",
+          "actor": "shoved carrier",
+          "object": "geode id",
+          "from_to": "same pre-shove carrier cell",
+          "value": "1 dropped geode",
+          "visual_lifetime": "0.5 interval; the new surface object then persists by state"
+        },
+        {
+          "code": 13,
+          "name": "recharge",
+          "actor": "recharging agent",
+          "object": "-1",
+          "from_to": "same own-base cell",
+          "value": "actual charge restored, 1..3; no event for zero",
+          "visual_lifetime": "0.5 interval"
+        },
+        {
+          "code": 14,
+          "name": "episode_end",
+          "actor": "-1",
+          "object": "-1",
+          "from_to": "absent",
+          "value": "winner code -3,-1,0 or 1",
+          "visual_lifetime": "one reveal; banner subsequently derives from done/winner/reason"
+        }
+      ],
+      "replay_rule": "Deduplicate tick/slot identities; interpolate actual stage endpoints only. Absorbing snapshots preserve events and must not replay them.",
+      "privacy_rule": "Source/to/actor/object/value each has its own actual role mask. Active kind-7 bank events publish valid in-bounds bank endpoints and deposited value to every role. The existing public banks entity maps those coordinates to bank_team; actor and geode identities still require their unchanged local identity masks. No hidden geode, underground state or private scan ledger is disclosed."
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
