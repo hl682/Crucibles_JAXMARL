@@ -4,6 +4,24 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 
+SCOPE_EN={
+    '全状态审阅视角':'Full-state audit view',
+    '原回放视角':'Original replay view',
+    '角色视角':'Role view',
+    '公共展示视角':'Public display view',
+    '角色0实际可见视角':'Role 0 actual visible view',
+    '角色0实际作者动作段':'Role 0 recorded author-action segment',
+    '角色0完整实际记录，含原等待':'Role 0 full actual recording, including original waits',
+    '角色0保存观测，513个离散真实端点，无插值':'Role 0 saved observations; 513 discrete actual endpoints, without interpolation',
+    '全状态审阅静态预览；打开后播放真实保存端点':'Full-state audit still preview; the player contains actual saved endpoints',
+    **{f'角色{i}实际端点抽帧预览；完整端点在播放器':f'Role {i} sampled actual-endpoint preview; full endpoints in the player'for i in [0,1,2,6]},
+}
+MODE_EN={'固定脚本演示':'Fixed-script demonstration','实际诊断回放':'Actual diagnostic replay','保存状态回放':'Saved-state replay','探索记录':'Exploration recording','保存回放（离线原记录；非人工游戏或benchmark验收）':'Saved offline recording; not human-play or benchmark acceptance'}
+
+def recording_metadata(row,lang):
+    if lang=='zh':return row['original_information'],row['original_recording_mode']
+    return SCOPE_EN[row['original_information']],MODE_EN[row['original_recording_mode']]
+
 def original_previews():
     rows=json.loads((ROOT/'verification/original_preview_derivatives.json').read_bytes())
     result={}

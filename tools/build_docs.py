@@ -3,7 +3,7 @@ from pathlib import Path
 import html,json,re
 from manual_content import ROOT as R,SRC as S,THEMES,profiles,read_json
 from manual_pages import manual,choose,GH
-from gallery_media import original_previews,primary,caption
+from gallery_media import original_previews,primary,caption,recording_metadata
 from scene_viewports import profiles as viewport_profiles,image_markup
 D=R/'docs'
 def esc(x):return html.escape(str(x))
@@ -59,7 +59,8 @@ def main():
             figure='<figure><a href="'+prefix+media+'"><img class="demo" src="'+prefix+media+'" width="640" alt="'+esc(title)+'"></a><figcaption>'+esc(caption(key,originals,lang))+'</figcaption></figure>'
             if key in originals:
                 original=originals[key]
-                figure+='<p>'+t('Original recording scope: ','原始录像信息范围：')+esc(original['original_information'])+' · '+t('Mode: ','记录模式：')+esc(original['original_recording_mode'])+'</p>'
+                scope,mode=recording_metadata(original,lang)
+                figure+='<p>'+t('Original recording scope: ','原始录像信息范围：')+esc(scope)+' · '+t('Mode: ','记录模式：')+esc(mode)+'</p>'
                 figure+='<details><summary>'+t('Additional generated state replay (different trajectory / full-state debug)','补充：新生成状态重放（不同轨迹／全状态调试）')+'</summary><figure><a href="'+prefix+'gifs/'+key+'.gif"><img loading="lazy" class="demo" src="'+prefix+'gifs/'+key+'.gif" width="640" alt="'+esc(title)+' — '+t('generated diagnostic','生成诊断')+'"></a><figcaption>'+t('Simplified diagnostic graphics; this does not replace the original scene recording.','简化诊断图，不替代上方原版场景录像。')+'</figcaption></figure></details>'
             if key in viewports:
                 initial='<a href="'+prefix+media+'"><img class="demo" src="'+prefix+media+'" width="640" alt="'+esc(title)+'"></a>'
