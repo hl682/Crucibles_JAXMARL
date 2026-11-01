@@ -1,5 +1,16 @@
 # Changes
 
+## Original-art local worlds and follow views
+
+- Reuse the existing flood and orchard art in live role views. Hidden map cells,
+  entities and private achievements remain outside ordinary role views.
+- Add finite native construction/resource/report and harvest/dry/plant/water
+  demonstrations; original recordings remain preserved and linked separately.
+- Featured GI214-217 cards display these original-art walkthroughs. Add 2x-4x
+  role-follow zoom with coordinate-correct clicks and object action menus.
+- These are engineering and presentation checks, not all-game playability,
+  human benchmarking or completed scientific experiments.
+
 ## Shared-water consequence follow-up
 
 GI214 reuses the original six-role Magnet Frontier art in live play. A four-step

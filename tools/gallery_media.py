@@ -3,6 +3,8 @@ import hashlib,json
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+REUSED_ART={'gi214':'gi214-causal.gif','gi215':'gi215-first-order.gif',
+            'gi216':'gi216-causal.gif','gi217':'gi217-causal.gif'}
 
 SCOPE_EN={
     '全状态审阅视角':'Full-state audit view',
@@ -33,9 +35,13 @@ def original_previews():
     return result
 
 def primary(key,originals):
+    if key in REUSED_ART:return 'walkthroughs/'+REUSED_ART[key]
     return ('previews/' if key in originals else 'gifs/')+key+'.gif'
 
 def caption(key,originals,lang):
+    if key in REUSED_ART:
+        role=2 if key=='gi217' else 0
+        return f'复用原画 · 原生动作演示 · 角色{role}视角'if lang=='zh'else f'Original artwork reused · Native action walkthrough · Role {role} view'
     if key not in originals:
         return '原生状态重放 · 全状态调试 · 未训练动作轨迹' if lang=='zh' else 'Native state replay · Full-state debug · Untrained actions'
     row=originals[key];static=row['original_frames']==1

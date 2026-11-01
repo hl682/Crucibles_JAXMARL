@@ -33,7 +33,35 @@ function sprite(c,e,x,y,r){
   c.restore();
 }
 let paintSerial=0;const paintedSteps=new Set();
-async function render(frame){const canvas=$('world'),c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;c.fillStyle='#101e29';c.fillRect(0,0,w,h);if(!frame){c.fillStyle='#a4b4b5';c.font='22px sans-serif';c.fillText('Assign roles or enable the labelled full-state debug camera.',40,90);return}if(frame.original_animation){const a=frame.original_animation,serial=++paintSerial,stamp=session+':'+frame.role+':'+frame.clock;const images=paintedSteps.has(stamp)?a.frames.slice(-1):a.frames;paintedSteps.add(stamp);for(let i=0;i<images.length;i++){const im=new Image();await new Promise((ok,bad)=>{im.onload=ok;im.onerror=()=>bad(Error('Scene image failed to load'));im.src=images[i]});if(serial!==paintSerial)return;const scale=Math.min(w/a.width,h/a.height),x=(w-a.width*scale)/2,y=(h-a.height*scale)/2;c.fillStyle='#101e29';c.fillRect(0,0,w,h);c.drawImage(im,x,y,a.width*scale,a.height*scale);if(i+1<images.length)await new Promise(ok=>setTimeout(ok,a.duration_ms))}canvas.onclick=event=>action(()=>(current.game.key==='gi214'?magneticClick:bistroClick)(event,frame))();canvas.onmousemove=null;return}canvas.onclick=null;c.fillStyle='#e8eee5';c.font='16px sans-serif';c.fillText(`${frame.game.toUpperCase()} · ${frame.information} · t=${frame.clock}`,24,30);
+function sceneViewport(frame){
+  const c=$('world'),a=frame.original_animation,zoom=Number($('scene-zoom').value)||1;
+  const scale=Math.min(c.width/a.width,c.height/a.height)*zoom;
+  let x=(c.width-a.width*scale)/2,y=(c.height-a.height*scale)/2;
+  const actor=frame.entities.find(e=>e.kind==='agent'&&e.index===Number($('camera').value));
+  if(zoom>1&&actor){
+    x=c.width/2-(a.geometry.ox+(actor.xy[0]+.5)*a.geometry.cell)*scale;
+    y=c.height/2-(a.geometry.oy+(actor.xy[1]+.5)*a.geometry.cell)*scale;
+    x=a.width*scale<c.width?(c.width-a.width*scale)/2:Math.max(c.width-a.width*scale,Math.min(0,x));
+    y=a.height*scale<c.height?(c.height-a.height*scale)/2:Math.max(c.height-a.height*scale,Math.min(0,y));
+  }
+  return {scale,x,y};
+}
+function worldPoint(event,frame){
+  const c=$('world'),r=c.getBoundingClientRect(),a=frame.original_animation,v=sceneViewport(frame);
+  return [(((event.clientX-r.left)*c.width/r.width-v.x)/v.scale-a.geometry.ox)/a.geometry.cell-.5,
+          (((event.clientY-r.top)*c.height/r.height-v.y)/v.scale-a.geometry.oy)/a.geometry.cell-.5];
+}
+function updateFeedback(v){
+  const view=v.views[$('camera').value],a=view?.original_animation;
+  if(v.bistro){const b=v.bistro;$('feedback').textContent=`Orders served: ${b.served}/4 · Clean water: ${b.tank}/12 · Pan: ${b.pan_dirty?'CONTAMINATED':'clean'} · ${a?.events.join(' · ')||'Click a worker to select; WASD moves. Click nearby objects for actions.'}`;return}
+  if(!a){$('feedback').textContent='';return}
+  let shared='';
+  if(v.game.key==='gi214')shared=`Shared power: ${a.shared.charge}/32 · Builds: ${a.shared.builds}`;
+  if(v.game.key==='gi216')shared=`Rain: ${a.shared.rain?'yes':'no'} · Flood alerts: ${a.shared.alerts} · Report dates: ${(view.observed_fields?.report_tick||[]).join(', ')}`;
+  if(v.game.key==='gi217')shared=`Shared well: ${a.shared.reservoir}/20 · Roof: ${a.shared.roof} · Wind: ${a.shared.wind.join(', ')} · ${a.shared.daylight?'Day':'Night'}`;
+  $('feedback').textContent=`${shared} · Inventory (${a.inventory_labels.join(', ')}): ${(a.inventory||[]).join(', ')} · ${a.events.join(' · ')}`;
+}
+async function render(frame){const canvas=$('world'),c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;c.fillStyle='#101e29';c.fillRect(0,0,w,h);$('scene-zoom-control').hidden=!frame?.original_animation;if(!frame){c.fillStyle='#a4b4b5';c.font='22px sans-serif';c.fillText('Assign roles or enable the labelled full-state debug camera.',40,90);return}if(frame.original_animation){canvas.style.pointerEvents='none';const a=frame.original_animation,serial=++paintSerial,stamp=session+':'+frame.role+':'+frame.clock;const images=paintedSteps.has(stamp)?a.frames.slice(-1):a.frames;paintedSteps.add(stamp);for(let i=0;i<images.length;i++){const im=new Image();await new Promise((ok,bad)=>{im.onload=ok;im.onerror=()=>bad(Error('Scene image failed to load'));im.src=images[i]});if(serial!==paintSerial)return;const {scale,x,y}=sceneViewport(frame);c.fillStyle='#101e29';c.fillRect(0,0,w,h);c.imageSmoothingEnabled=false;c.drawImage(im,x,y,a.width*scale,a.height*scale);if(i+1<images.length)await new Promise(ok=>setTimeout(ok,a.duration_ms))}canvas.onclick=event=>action(()=>({gi214:magneticClick,gi215:bistroClick,gi216:landscapeClick,gi217:landscapeClick}[current.game.key])(event,frame))();canvas.onmousemove=null;canvas.style.pointerEvents='auto';canvas.dataset.role=String(frame.role);return}canvas.style.pointerEvents='auto';canvas.onclick=null;c.fillStyle='#e8eee5';c.font='16px sans-serif';c.fillText(`${frame.game.toUpperCase()} · ${frame.information} · t=${frame.clock}`,24,30);
 if(frame.legacy){c.fillText('Original abstract resource / communication game — native observations',24,65);frame.legacy_observation.forEach((a,i)=>{const y=120+i*190;a.forEach((v,j)=>{const x=30+j*58,bar=Math.min(120,Math.abs(v)*100);c.fillStyle=color(j);c.fillRect(x,y+120-bar,40,bar);c.fillStyle='#eee';c.fillText(`${j}: ${v.toFixed(2)}`,x,y+145)})});return}
 const [x0,y0,x1,y1]=frame.bounds,scale=Math.min((w-70)/(x1-x0+1),(h-110)/(y1-y0+1));const pt=p=>[35+(p[0]-x0+.5)*scale,65+(p[1]-y0+.5)*scale];
 if(frame.map){const [ox,oy]=frame.map_origin,[sx,sy]=frame.cell_size,palette=Object.fromEntries((frame.tile_legend||[]).map(t=>[t.value,t.color]));frame.map.forEach((row,y)=>row.forEach((v,x)=>{const [px,py]=pt([ox+x*sx,oy+y*sy]);c.fillStyle=v===null?'#0b151c':palette[v]||color('tile'+v);c.fillRect(px-scale*.49,py-scale*.49,scale*.98,scale*.98);if(v!==null){c.strokeStyle='#ffffff0a';c.strokeRect(px-scale*.49,py-scale*.49,scale*.98,scale*.98)}}))}
@@ -41,17 +69,17 @@ for(const e of [...frame.entities].sort((a,b)=>(a.kind==='agent')-(b.kind==='age
 canvas.onmousemove=event=>{const rect=canvas.getBoundingClientRect(),x=(event.clientX-rect.left)*w/rect.width,y=(event.clientY-rect.top)*h/rect.height;const e=frame.entities.find(e=>{const p=pt(e.xy);return Math.hypot(p[0]-x,p[1]-y)<Math.max(10,scale*.5)});canvas.title=e?`${e.label||e.group} ${e.index} @ ${e.xy.join(', ')}\n${Object.entries(e.attributes).map(([k,v])=>k+': '+JSON.stringify(v)).join('\n')}`:'Native world state'};
 $('legend').replaceChildren(...[...new Set(frame.entities.map(e=>e.group))].map(s=>{const t=document.createElement('span');t.className='tag';t.style.borderLeft=`4px solid ${color(s)}`;t.textContent=s;return t}));
 }
-async function refresh(){if(!session)return;const v=await api({op:'snapshot',debug:$('debug').checked});current=v;$('session').hidden=false;$('title').textContent=v.game.title;$('clock').textContent=`t=${v.step} / ${v.game.dimensions.max_steps}`;$('scope').textContent=`${v.information} · ${v.game.dimensions.num_agents} independently actionable agents · ${v.ai_policy} · ${v.terminal?'EPISODE ENDED':'active'} · human scores: unverified / null`;
+async function refresh(){if(!session)return;const v=await api({op:'snapshot',debug:$('debug').checked});current=v;$('object-actions').hidden=true;$('session').hidden=false;$('title').textContent=v.game.title;$('clock').textContent=`t=${v.step} / ${v.game.dimensions.max_steps}`;$('scope').textContent=`${v.information} · ${v.game.dimensions.num_agents} independently actionable agents · ${v.ai_policy} · ${v.terminal?'EPISODE ENDED':'active'} · human scores: unverified / null`;
 const old=$('camera').value;$('camera').replaceChildren(...v.roles.map(r=>option(r,`Role ${r}`)));if(v.views['-1'])$('camera').append(option(-1,'Full-state debug'));if([...$('camera').options].some(o=>o.value===old))$('camera').value=old;await render(v.views[$('camera').value]);
 const target=$('player').value;$('player').replaceChildren(...v.players.map(p=>option(p.name,`${p.name} (${p.roles.length} roles)`)),option('AI','AI / release control'));if([...$('player').options].some(o=>o.value===target))$('player').value=target;
 $('controls').replaceChildren(...v.roles.map(r=>{const d=document.createElement('div');d.className='role';const label=document.createElement('span');label.textContent=`Role ${r}`;const select=document.createElement('select');select.id=`action-${r}`;v.actions.filter(a=>v.legal[r][a.id]).forEach(a=>select.append(option(a.id,a.label)));if(queued[r]!==undefined&&[...select.options].some(o=>Number(o.value)===queued[r]))select.value=queued[r];const button=document.createElement('button');button.textContent=$('direct').checked&&v.host?'Do action':'Queue';button.onclick=action(async()=>{if($('direct').checked&&v.host)return directAction(r,Number(select.value));queued[r]=Number(select.value);await queueAction(r,queued[r]);button.textContent='Queued'});d.append(label,select,button);return d}));
-const paragraphs=[v.task.objective,v.task.natural_termination,`Native per-step reward bounds: ${v.reward_bounds.join(' … ')}`,...(v.rules||[])].filter(Boolean).map(text=>{const p=document.createElement('p');p.textContent=text;return p});const roles=document.createElement('details'),summary=document.createElement('summary');summary.textContent=`All ${v.agent_roles.length} roles and abilities`;roles.append(summary,...v.agent_roles.map(a=>{const p=document.createElement('p');p.textContent=`${a.id}: ${a.role}`;return p}));$('rules').replaceChildren(...paragraphs,roles);for(const id of ['assign','all','invite','step','auto','debug','close'])$(id).disabled=!v.host||v.terminal&&['step','auto'].includes(id);if(v.terminal)stop();if(v.bistro){const b=v.bistro;$('feedback').textContent=`Orders served: ${b.served}/4 · Clean water: ${b.tank}/12 · Pan: ${b.pan_dirty?'CONTAMINATED':'clean'} · ${v.views[$('camera').value]?.original_animation?.events.join(' · ')||'Click a worker to select; WASD moves. Click adjacent items or stations to use them.'}`}else if(v.game.key==='gi214'){const a=v.views[$('camera').value]?.original_animation;$('feedback').textContent=a?`Shared power: ${a.shared.charge}/32 · Builds: ${a.shared.builds} · Inventory (${a.inventory_labels.join(', ')}): ${(a.inventory||[]).join(', ')} · ${a.events.join(' · ')}`:''}else $('feedback').textContent='';$('progress').textContent=`Session ${v.id.slice(0,8)} ready. Logs are saved by Python.`}
+const paragraphs=[v.task.objective,v.task.natural_termination,`Native per-step reward bounds: ${v.reward_bounds.join(' … ')}`,...(v.rules||[])].filter(Boolean).map(text=>{const p=document.createElement('p');p.textContent=text;return p});const roles=document.createElement('details'),summary=document.createElement('summary');summary.textContent=`All ${v.agent_roles.length} roles and abilities`;roles.append(summary,...v.agent_roles.map(a=>{const p=document.createElement('p');p.textContent=`${a.id}: ${a.role}`;return p}));$('rules').replaceChildren(...paragraphs,roles);for(const id of ['assign','all','invite','step','auto','debug','close'])$(id).disabled=!v.host||v.terminal&&['step','auto'].includes(id);if(v.terminal)stop();updateFeedback(v);$('progress').textContent=`Session ${v.id.slice(0,8)} ready. Logs are saved by Python.`}
 async function step(){if(busy)return;busy=true;try{await queueWrites;await api({op:'step'});queued={};await refresh()}finally{busy=false}}
 function stop(){if(timer)clearInterval(timer);timer=null;$('auto').textContent='Start AI / queued-action clock'}
 async function createSession(){stop();$('create').disabled=true;$('progress').textContent='Compiling original JAX reset… first compilation can take a minute.';try{const v=await api({op:'create',game:$('game').value,seed:Number($('seed').value)});session=v.session;token=v.token;location.hash=new URLSearchParams({session,token}).toString();$('debug').checked=false;queued={};await refresh()}finally{$('create').disabled=false}}
 $('create').onclick=action(createSession);
 
-async function directAction(role,id){if(busy){$('feedback').textContent='Finishing the current action. Try again when the animation ends.';return}if(!current.legal[role]?.[id])throw Error('That action is not available from this position');if(['gi214','gi215'].includes(current.game.key))for(const r of current.roles)if(r!==role)await queueAction(r,0);queued[role]=id;await queueAction(role,id);await step()}
+async function directAction(role,id){if(busy){$('feedback').textContent='Finishing the current action. Try again when the animation ends.';return}if(!current.legal[role]?.[id])throw Error('That action is not available from this position');if(['gi214','gi215','gi216','gi217'].includes(current.game.key))for(const r of current.roles)if(r!==role)await queueAction(r,0);queued[role]=id;await queueAction(role,id);await step()}
 async function objectAction(role,id){
   $('object-actions').hidden=true;
   if(current.host&&$('direct').checked)await directAction(role,id);
@@ -64,9 +92,7 @@ function showObjectActions(label,role,choices){
 }
 async function magneticClick(event,frame){
   $('object-actions').hidden=true;
-  const c=$('world'),a=frame.original_animation,rect=c.getBoundingClientRect(),scale=Math.min(c.width/a.width,c.height/a.height);
-  const gx=(((event.clientX-rect.left)*c.width/rect.width-(c.width-a.width*scale)/2)/scale-a.geometry.ox)/a.geometry.cell-.5;
-  const gy=(((event.clientY-rect.top)*c.height/rect.height-(c.height-a.height*scale)/2)/scale-a.geometry.oy)/a.geometry.cell-.5;
+  const [gx,gy]=worldPoint(event,frame);
   const hit=frame.entities.filter(e=>Math.hypot(e.xy[0]-gx,e.xy[1]-gy)<.48).sort((x,y)=>(y.kind==='agent')-(x.kind==='agent'))[0];
   if(hit?.kind==='agent'&&current.roles.includes(hit.index)){$('camera').value=hit.index;await render(current.views[hit.index]);return}
   const role=Number($('camera').value),actor=frame.entities.find(e=>e.kind==='agent'&&e.index===role);if(!actor)return;
@@ -80,9 +106,7 @@ async function magneticClick(event,frame){
 }
 async function bistroClick(event,frame){
   $('object-actions').hidden=true;
-  const canvas=$('world'),a=frame.original_animation,rect=canvas.getBoundingClientRect(),scale=Math.min(canvas.width/a.width,canvas.height/a.height);
-  const px=((event.clientX-rect.left)*canvas.width/rect.width-(canvas.width-a.width*scale)/2)/scale,py=((event.clientY-rect.top)*canvas.height/rect.height-(canvas.height-a.height*scale)/2)/scale;
-  const gx=(px-a.geometry.ox)/a.geometry.cell-.5,gy=(py-a.geometry.oy)/a.geometry.cell-.5;
+  const [gx,gy]=worldPoint(event,frame);
   const hit=frame.entities.filter(e=>Math.hypot(e.xy[0]-gx,e.xy[1]-gy)<.48).sort((x,y)=>(y.kind==='agent')-(x.kind==='agent'))[0];
   if(hit?.kind==='agent'&&current.roles.includes(hit.index)){$('camera').value=hit.index;await render(current.views[hit.index]);return}
   const r=Number($('camera').value),actor=frame.entities.find(e=>e.kind==='agent'&&e.index===r);if(!actor)return;
@@ -100,12 +124,38 @@ async function bistroClick(event,frame){
   }else if(distance===1){const dx=pos[0]-actor.xy[0],dy=pos[1]-actor.xy[1];id=dy===-1?1:dx===1?2:dy===1?3:4}
   if(id!==null)await objectAction(r,id);
 }
-$('quickplay').onclick=action(async()=>{await createSession();await api({op:'assign',player:'Host',roles:['gi214','gi215'].includes(current.game.key)?Array.from({length:current.game.dimensions.num_agents},(_,i)=>i):[0]});$('direct').checked=true;paintedSteps.clear();await refresh()});
+async function landscapeClick(event,frame){
+  $('object-actions').hidden=true;
+  const [gx,gy]=worldPoint(event,frame),role=Number($('camera').value);
+  const hit=frame.entities.filter(e=>Math.hypot(e.xy[0]-gx,e.xy[1]-gy)<.48).sort((x,y)=>(y.kind==='agent')-(x.kind==='agent'))[0];
+  if(hit?.kind==='agent'&&hit.index!==role&&current.roles.includes(hit.index)){$('camera').value=hit.index;await render(current.views[hit.index]);updateFeedback(current);return}
+  const actor=frame.entities.find(e=>e.kind==='agent'&&e.index===role);if(!actor)return;
+  const pos=hit?.xy||[Math.round(gx),Math.round(gy)],distance=Math.abs(pos[0]-actor.xy[0])+Math.abs(pos[1]-actor.xy[1]);
+  if(distance>1){$('feedback').textContent='Move beside this place or object with WASD first.';return}
+  if(current.game.key==='gi216'){
+    if(hit?.group==='settlements'){showObjectActions('Settlement',role,[[5,'Withdraw stone'],[6,'Withdraw timber'],[7,'Withdraw grain'],[8,'Deposit resources'],[15,'Harvest grain'],[22,'Record visible water reports']]);return}
+    if(hit?.kind==='agent'){showObjectActions('Envoy',role,[[21,'Select next resource'],[20,'Give selected resource to nearby envoy'],[22,'Record water reports'],[23,'Share dated reports']]);return}
+    if(frame.map[pos[1]]?.[pos[0]]===null){$('feedback').textContent='This place is outside your current view.';return}
+    const offsets={1:[0,-1],2:[1,0],3:[0,1],4:[-1,0]},d=offsets[actor.attributes.facing];
+    if(d&&actor.xy[0]+d[0]===pos[0]&&actor.xy[1]+d[1]===pos[1]){
+      const move=pos[1]<actor.xy[1]?1:pos[0]>actor.xy[0]?2:pos[1]>actor.xy[1]?3:4;
+      showObjectActions('Ground ahead',role,[[9,'Build levee · 2 stone'],[10,'Build raised road · 2 timber'],[11,'Convert levee to culvert'],[12,'Open / close culvert'],[13,'Dismantle structure'],[14,'Repair road'],[move,'Walk here']]);return
+    }
+  }else{
+    if(hit?.group==='plots'){showObjectActions('Nearby plots',role,[[7,'Harvest ripe plot'],[8,'Plant selected dry seed'],[11,'Water soil'],[12,'Prune or clear for timber'],[17,'Graft hybrid'],[21,'Mulch depleted soil']]);return}
+    if(hit?.group==='baskets'){showObjectActions('Basket',role,[[5,'Pick up nearby basket'],[6,'Put down basket'],[9,'Put basket on drying rack']]);return}
+    if(hit?.group==='windbreaks'){showObjectActions('Windbreak',role,[[14,'Rotate nearby windbreak'],[15,'Lift windbreak'],[16,'Place windbreak ahead'],[22,'Dismantle for timber']]);return}
+    if(hit?.group==='facilities'||hit?.group==='drying_slots'){showObjectActions('Shared facility',role,[[5,'Retrieve nearby basket'],[9,'Place basket on drying rack'],[10,'Draw water from well'],[18,'Upgrade drying roof']]);return}
+    if(hit?.kind==='agent'){showObjectActions('Gardener',role,[[13,'Build windbreak ahead'],[16,'Place carried windbreak ahead'],[19,'Select next seed trait'],[20,'Give dry seed to nearby gardener'],[23,'Release seed into wind']]);return}
+  }
+  if(distance===1){const dx=pos[0]-actor.xy[0],dy=pos[1]-actor.xy[1];await objectAction(role,dy===-1?1:dx===1?2:dy===1?3:4)}
+}
+$('quickplay').onclick=action(async()=>{await createSession();await api({op:'assign',player:'Host',roles:['gi214','gi215','gi216','gi217'].includes(current.game.key)?Array.from({length:current.game.dimensions.num_agents},(_,i)=>i):[0]});$('direct').checked=true;paintedSteps.clear();await refresh()});
 $('direct').onchange=action(refresh);
 $('assign').onclick=action(async()=>{await api({op:'assign',player:$('player').value,roles:parseRoles()});await refresh()});
 $('all').onclick=action(async()=>{await api({op:'assign',player:$('player').value,roles:Array.from({length:current.game.dimensions.num_agents},(_,i)=>i)});await refresh()});
 $('invite').onclick=action(async()=>{const name=`Player ${current.players.length}`;const v=await api({op:'invite',name});$('invitation').hidden=false;$('invitation').value=location.origin+'/#'+new URLSearchParams({session,token:v.invite});await refresh()});
-$('step').onclick=action(step);$('refresh').onclick=action(refresh);$('debug').onchange=action(refresh);$('camera').onchange=()=>render(current.views[$('camera').value]);
+$('step').onclick=action(step);$('refresh').onclick=action(refresh);$('debug').onchange=action(refresh);$('camera').onchange=action(async()=>{$('object-actions').hidden=true;await render(current.views[$('camera').value]);updateFeedback(current)});$('scene-zoom').onchange=$('camera').onchange;
 $('close').onclick=action(async()=>{stop();await api({op:'close'});session=null;token=null;current=null;queued={};location.hash='';$('session').hidden=true;$('controls').replaceChildren();$('progress').textContent='Session closed. Logs preserved on disk.';render(null)});
 $('auto').onclick=()=>{if(timer){stop();return}timer=setInterval(()=>step().catch(e=>{stop();fail(e)}),Math.max(250,Number($('interval').value)||800));$('auto').textContent='Pause clock'};
 document.addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)||!current)return;if(e.code==='Space'){e.preventDefault();action(step)();return}const dir={ArrowUp:'N',KeyW:'N',ArrowRight:'E',KeyD:'E',ArrowDown:'S',KeyS:'S',ArrowLeft:'W',KeyA:'W'}[e.code];if(!dir)return;const r=Number($('camera').value);if(r<0||!current.roles.includes(r))return;const a=current.actions.find(a=>directionOf(a.label)===dir&&current.legal[r][a.id]);if(a){e.preventDefault();$('action-'+r).value=a.id;if($('direct').checked&&current.host){action(()=>directAction(r,a.id))();return}queued[r]=a.id;queueAction(r,a.id).then(()=>{$('progress').textContent=`Queued ${a.label} for role ${r}`}).catch(fail)}});

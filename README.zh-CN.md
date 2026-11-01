@@ -34,6 +34,12 @@ crucibles play --game 225
 
 ## 本地人机与多人操作
 
+当前复用原画的实时交互包括 **GI214 磁力边境、GI215 洗水小馆、GI216 洪原议会和
+GI217 种风果园**。运行 `crucibles play --game 216` 并替换编号即可选游戏；Windows
+也可用 `play_magnet.cmd`、`play_bistro.cmd`、`play_flood.cmd`、`play_orchard.cmd`。
+View 菜单可选择全图或 2–4 倍角色跟随视角。放大只改变显示，不改变点击对应的
+原生坐标和游戏规则；洪水与果园仍遵守角色本身的局部信息范围。
+
 **GI215 厨房实时操作：**运行 `crucibles play --game 215`，或在 Windows
 双击 `play_bistro.cmd`，保持终端开启，在页面点击 **Play now**。
 两名角色会交给你控制。点击角色切换，WASD 移动，点击身边物品拿取；点击工作台后，

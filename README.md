@@ -74,6 +74,14 @@ documentation and genuine saved demonstrations; it does not run Python/JAX.
 
 ## Local human/AI play
 
+The original-art interactive set currently includes **GI214 Magnet Frontier,
+GI215 Washwater Bistro, GI216 Floodplain Council and GI217 Seedwind Orchard**.
+Use `crucibles play --game 216` (change the number to choose a game), or the
+Windows `play_magnet.cmd`, `play_bistro.cmd`, `play_flood.cmd` and
+`play_orchard.cmd` launchers. The View selector offers a whole-world view and
+2x–4x follow views. Zoom changes presentation only; click coordinates and native
+rules stay the same. GI216 and GI217 preserve their local-information limits.
+
 **GI215 interactive kitchen:** run `crucibles play --game 215` (or
 `play_bistro.cmd` on Windows), keep the terminal open, and click **Play now**.
 This assigns both workers to you. Click a worker to select it; use WASD to move,

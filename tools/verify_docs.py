@@ -39,6 +39,12 @@ def main():
             page.wait_for_function('Array.from(document.images).every(i=>i.complete&&i.naturalWidth>0)',timeout=60000)
             for img in page.locator('img').all():assert img.evaluate('(i)=>i.complete && i.naturalWidth>0')
             for prefix in ['', 'zh/']:
+                for key in ['gi216','gi217']:
+                    page.goto('http://127.0.0.1:'+str(server.server_port)+'/'+prefix+'games/'+key+'.html',wait_until='networkidle')
+                    primary=page.locator('img').first
+                    expect(primary).to_have_attribute('src',('../../'if prefix else'../')+'walkthroughs/'+key+'-causal.gif')
+                    assert primary.evaluate('(i)=>i.complete && i.naturalWidth>0')
+                    expect(page.locator('a[href$="previews/'+key+'.gif"]')).to_have_count(1)
                 page.goto('http://127.0.0.1:'+str(server.server_port)+'/'+prefix+'games/gi214.html',wait_until='networkidle')
                 magnetic=page.locator('img[src$="walkthroughs/gi214-causal.gif"]')
                 expect(magnetic).to_have_count(1)

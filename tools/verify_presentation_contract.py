@@ -26,11 +26,15 @@ def main():
     magnetic=json.loads((R/'verification/gameplay/gi214_live_ui.json').read_bytes())
     assert magnetic['status']=='PASS' and magnetic['all_actor_positions_unchanged'] and magnetic['bridge_and_rail_visible']
     for path,digest in magnetic['runtime_sha256'].items():assert hashlib.sha256((S/path).read_bytes()).hexdigest()==digest,path
+    for game in ('gi216','gi217'):
+        actual=json.loads((R/'verification/gameplay'/f'{game}_live_ui.json').read_bytes())
+        assert actual['status']=='PASS' and actual['role_privacy_checks'] and actual['object_menu_executes_native_action']
+        for path,digest in actual['runtime_sha256'].items():assert hashlib.sha256((S/path).read_bytes()).hexdigest()==digest,path
     result=dict(status='PASS',reference='v0.1.0',native_rules_manifests_scenes_catalog_transition_wrapper_base_projection_byte_unchanged=True,
         english_visible_game_metadata=256,presentation_replays=256,game_manuals=512,
         classification='CURATED_PER_GAME_RULE_READING',classification_identities=256,classification_sha256=hashlib.sha256((R/'manuals/classification.tsv').read_bytes()).hexdigest(),
-        modified_runtime_scope=['registry English display title/summary overlay','catalog HTTP response uses the same display overlay','Quick play and optional direct native-action controls','GI215 original kitchen art, state-driven effects and clickable adjacent objects','GI214 original magnetic world art, state-driven effects and clickable adjacent objects'],
-        gameplay_verified_scope=['gi214 four-step construction and power','gi215 first order','gi215 dirty-water diversion pair'],all_game_playability_accepted=False,
+        modified_runtime_scope=['registry English display title/summary overlay','catalog HTTP response uses the same display overlay','Quick play and optional direct native-action controls','Original-art live views and object actions for GI214-217','Display-only follow zoom; native coordinates preserved'],
+        gameplay_verified_scope=['gi214 four-step construction and power','gi215 first order','gi215 dirty-water diversion pair','gi216 15-step local construction and transfer','gi217 22-step local harvest/dry/plant/water'],all_game_playability_accepted=False,
         original_all_game_execution_evidence='v0.1.0 verification archive; source identities unchanged',new_browser_regressions='verification/browser; use receipt ui_sha256 and history',
         no_training_or_performance_claim=True)
     (R/'verification/presentation_contract.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8');print(json.dumps(result,indent=2))

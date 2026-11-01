@@ -27,11 +27,14 @@ def main():
             page.goto(base+'/?game=214');page.locator('#seed').fill('214');page.locator('#quickplay').click()
             expect(page.locator('#controls .role')).to_have_count(6,timeout=180000);page.wait_for_function('current && current.roles.length===6')
             before=page.evaluate('current.views[0].entities.filter(e=>e.kind==="agent").map(e=>e.xy)')
+            page.locator('#scene-zoom').select_option('2')
+            assert page.evaluate('sceneViewport(current.views[0]).scale / Math.min(world.width/730,world.height/586)')==2
+            assert page.evaluate('current.views[0].entities.filter(e=>e.kind==="agent").map(e=>e.xy)')==before
             page.locator('#direct').uncheck()
             for tick,actions in enumerate(ACTIONS,1):
                 for role,action in enumerate(actions):
                     if tick==1 and role==0:
-                        point=page.locator('#world').evaluate('(c)=>{const a=current.views[0].original_animation,s=Math.min(c.width/a.width,c.height/a.height),r=c.getBoundingClientRect();return {x:((c.width-a.width*s)/2+(a.geometry.ox+8.5*a.geometry.cell)*s)*r.width/c.width,y:((c.height-a.height*s)/2+(a.geometry.oy+10.5*a.geometry.cell)*s)*r.height/c.height}}')
+                        point=page.locator('#world').evaluate('(c)=>{const a=current.views[0].original_animation,v=sceneViewport(current.views[0]),r=c.getBoundingClientRect();return {x:(v.x+(a.geometry.ox+8.5*a.geometry.cell)*v.scale)*r.width/c.width,y:(v.y+(a.geometry.oy+10.5*a.geometry.cell)*v.scale)*r.height/c.height}}')
                         page.locator('#world').click(position=point);page.locator('#object-actions').get_by_role('button',name='Gather resource',exact=True).click()
                     else:
                         page.locator(f'#action-{role}').select_option(str(action));page.locator('#controls .role').nth(role).locator('button').click()
@@ -51,7 +54,7 @@ def main():
         assert [x['value']['actions']for x in events if x['type']=='transition']==ACTIONS
         assert runtime=={p:hashlib.sha256((R/'src/crucibles_jaxmarl'/p).read_bytes()).hexdigest()for p in paths}
         result=dict(status='PASS',game='gi214',native_joint_steps=len(ACTIONS),roles_owned=6,all_actor_positions_unchanged=True,
-            clicked_deposit=True,bridge_and_rail_visible=True,powered_freight_moved=True,power_off_visible=True,browser_errors=errors,
+            clicked_deposit=True,zoomed_click_preserves_coordinates=True,bridge_and_rail_visible=True,powered_freight_moved=True,power_off_visible=True,browser_errors=errors,
             runtime_sha256=runtime,human_scores=None,scope='Four native browser steps, not full-game success or learning')
         (R/'verification/gameplay/gi214_live_ui.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8');print(json.dumps(result),flush=True)
     finally:

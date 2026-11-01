@@ -44,19 +44,25 @@ class Session:
         roles=sorted(c['roles']);views={str(r):scene_frame(self.env,self.state,self.obs,r) for r in roles}
         if debug:views['-1']=scene_frame(self.env,self.state,self.obs,-1)
         bistro=None
-        if self.env.name=='gi215':
-            from .bistro_presentation import animation
+        adapters={'gi214':'magnetic_presentation','gi215':'bistro_presentation',
+                  'gi216':'flood_presentation','gi217':'orchard_presentation'}
+        if self.env.name in adapters:
+            from importlib import import_module
+            adapter=import_module('.'+adapters[self.env.name],__package__)
             for role,frame in views.items():
                 key=(self.step_count,role)
-                if key not in self.art_cache:self.art_cache[key]=animation(self.env,self.state,self.obs,int(role),self.previous_state,self.previous_obs)
-                frame['original_animation']=self.art_cache[key]
-            bistro={k:self.state[k].tolist()for k in ['tank','sink_dirt','flow','draining','divert','filter_installed','filter_charge','pan_dirty','served','order_status','patience']}
-        elif self.env.name=='gi214':
-            from .magnetic_presentation import animation
-            for role,frame in views.items():
-                key=(self.step_count,role)
-                if key not in self.art_cache:self.art_cache[key]=animation(self.env,self.state,self.obs,int(role),self.previous_state,self.previous_obs)
-                frame['original_animation']=self.art_cache[key]
+                if key not in self.art_cache:
+                    view=adapter.make_view(self.env,self.state,self.obs,int(role))
+                    self.art_cache[key]=(adapter.animation(self.env,self.state,self.obs,int(role),self.previous_state,self.previous_obs),view)
+                frame['original_animation'],visible=self.art_cache[key]
+                if self.env.name in ('gi216','gi217'):
+                    frame['entities']=visible['entities']
+                    frame['map']=visible.get('public_map',visible.get('role_map',visible.get('audit_map',{})))
+                    if isinstance(frame['map'],dict):frame['map']=frame['map']['values']
+                    frame['observed_fields']=visible.get('own_scene_fields',{})
+                    if 'visible_grid_fields' in visible:frame['visible_grid_fields']=visible['visible_grid_fields']
+            if self.env.name=='gi215':
+                bistro={k:self.state[k].tolist()for k in ['tank','sink_dirt','flow','draining','divert','filter_installed','filter_charge','pan_dirty','served','order_status','patience']}
         masks=self.env.get_avail_actions(self.state)
         return dict(id=self.id,game=self.env.metadata,step=self.step_count,terminal=self.terminal,
             roles=roles,views=views,legal={str(r):masks[self.env.agents[r]].tolist() for r in roles},

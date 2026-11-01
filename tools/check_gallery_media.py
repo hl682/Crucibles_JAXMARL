@@ -1,7 +1,7 @@
 """Check every preferred original, bilingual entry, and secondary diagnostic link."""
 from html.parser import HTMLParser
 import json
-from gallery_media import ROOT,original_previews,primary
+from gallery_media import ROOT,original_previews,primary,REUSED_ART
 
 class Page(HTMLParser):
     def __init__(self):super().__init__();self.images=[];self.cards=[];self.spatial_selected=False
@@ -26,9 +26,10 @@ def main():
             key=row['key'];p=Page();p.feed((base/'games'/(key+'.html')).read_text(encoding='utf8'));pre='../../' if lang=='zh' else '../'
             assert p.images[0]==pre+primary(key,originals),key
             if key in originals:assert p.images[1]==pre+'gifs/'+key+'.gif',key
+            if key in REUSED_ART:assert pre+'previews/'+key+'.gif' in (base/'games'/(key+'.html')).read_text(encoding='utf8')
             checked+=1
     assert (ROOT/'docs/catalog.js').read_text(encoding='utf8').strip().endswith('filter();')
-    result=dict(status='PASS',original_previews_verified=157,bilingual_game_pages_checked=checked,total_cards_per_language=256,spatial_default_count=180,abstract_environments_retained=76,original_stills=sum(x['original_frames']==1 for x in originals.values()),native_or_training_execution=False)
+    result=dict(status='PASS',original_previews_verified=157,reused_art_primary_walkthroughs=4,bilingual_game_pages_checked=checked,total_cards_per_language=256,spatial_default_count=180,abstract_environments_retained=76,original_stills=sum(x['original_frames']==1 for x in originals.values()),native_or_training_execution=False)
     (ROOT/'verification/gallery_media.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8');print(json.dumps(result))
 
 if __name__=='__main__':main()

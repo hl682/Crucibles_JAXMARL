@@ -60,6 +60,8 @@ def main():
             if key in originals:
                 original=originals[key]
                 scope,mode=recording_metadata(original,lang)
+                if media.startswith('walkthroughs/'):
+                    figure+='<p><a href="'+prefix+'previews/'+key+'.gif">'+t('Open the preserved original recording','查看完整保留的原版记录')+'</a></p>'
                 figure+='<p>'+t('Original recording scope: ','原始录像信息范围：')+esc(scope)+' · '+t('Mode: ','记录模式：')+esc(mode)+'</p>'
                 figure+='<details><summary>'+t('Additional generated state replay (different trajectory / full-state debug)','补充：新生成状态重放（不同轨迹／全状态调试）')+'</summary><figure><a href="'+prefix+'gifs/'+key+'.gif"><img loading="lazy" class="demo" src="'+prefix+'gifs/'+key+'.gif" width="640" alt="'+esc(title)+' — '+t('generated diagnostic','生成诊断')+'"></a><figcaption>'+t('Simplified diagnostic graphics; this does not replace the original scene recording.','简化诊断图，不替代上方原版场景录像。')+'</figcaption></figure></details>'
             if key in viewports:
@@ -75,6 +77,17 @@ def main():
                 for suffix,en,zh in [('unprotected','Unprotected drain: contaminated pan','直接排水：锅被污染'),('diverted','Diverted drain: preparation succeeds','提前分流：可以加工')]:
                     figure+='<figure><img class="demo" src="'+prefix+'walkthroughs/gi215-water-'+suffix+'.gif" alt="'+t(en,zh)+'"><figcaption>'+t(en,zh)+'</figcaption></figure>'
                 figure+='</div></section>'
+            if key in ('gi216','gi217'):
+                if key=='gi216':
+                    heading=t('Local knowledge, shared flood consequences','局部信息，共同承担洪水后果')
+                    description=t('This native walkthrough builds levees and a raised road, converts a levee to a culvert, trades grain and transfers dated water reports. Ordinary views retain their local visibility: hidden cells and remote stores are not revealed by the renderer.','这段原生演示包括筑堤、修路、将堤坝改为涵洞、转交粮食及带日期的水情。普通视角保留原生局部可见性，渲染器不显示隐藏地形和远处库存。')
+                else:
+                    heading=t('Harvest, dry, replant and share water','采收、晾晒、再种植与共享用水')
+                    description=t('This native walkthrough harvests wet seeds, carries a basket to the shared drying shed, retrieves dry seeds and replants an empty bed. A waterkeeper draws from the shared well and waters soil. Growth and drifting seeds follow the original dynamics; hidden plots and private achievements remain hidden.','这段原生演示采收湿种、将篮子送入共用晾晒棚、取回干种并播种空地；水管员从共用水井取水并浇灌。生长和种子漂移遵循原规则，隐藏地块及私人首次成就不向普通角色公开。')
+                figure+='<section><h2>'+heading+'</h2><p>'+description+'</p><p>'+t('Play locally: ','本地游玩：')+'<code>crucibles play --game '+key[2:]+'</code>'+t('. Click Play now; select a role and use the world-object menus. Choose a closer follow view to inspect local interactions. These finite walkthroughs do not establish full-game success or human scores.','。点击 Play now，选择角色并使用场景中的对象菜单；放大跟随视角可看清局部互动。这些有限演示不表示整局成功或人类基准成绩。')+'</p></section>'
+            if media.startswith('walkthroughs/'):
+                matches=list(re.finditer(r'<img [^>]*src="'+re.escape(prefix+media)+r'"[^>]*>',figure))
+                for match in reversed(matches[1:]):figure=figure[:match.start()]+figure[match.end():]
             body=markdown(md);at=body.find('</h1>')+5;body=body[:at]+figure+body[at:]
             download='<p><a class="button" download href="'+prefix+'manuals/'+lang+'/'+key+'.md">'+t('Download this manual','下载本款说明书')+'</a></p>'
             page(base+'games/'+key+'.html',title,'<main class="manual">'+download+body+'</main>',lang)
@@ -94,6 +107,7 @@ def main():
         gallery=gallery.replace(t('All games, animated','全部游戏动态目录'),t('Spatial games & original scenes','空间游戏与原版场景'))
         gallery=gallery.replace(t('Scroll to load each game\'s GIF. Every card has its own recording. Full-state debug may reveal private information. These are saved untrained trajectories, not solved-task claims. Game text stays English; the site and manuals switch language.','滚动即可加载各款动图，每张卡片都有独立预览。完整状态调试视角可能暴露私人信息；保存的未训练轨迹不代表已解出任务。游戏文字固定英文，网站与说明书可以切换语言。'),t('Existing scene previews take priority for 157 games; other games show generated native-state replays. Original previews retain their text and information scope. Two originals are still images. Additional diagnostic replays are available on each game page. Abstract environments remain available through the interface filter. Recordings do not establish task success or human scores.','157款优先展示已有原版场景预览，其余展示生成的原生状态重放。原版保留图中文字与信息范围，其中两款原版为静态图；游戏页另有补充诊断重放。抽象环境可通过接口筛选查看。录像不代表任务成功或人类成绩。'))
         gallery=gallery.replace('<option value="spatial">','<option value="spatial" selected>')
+        gallery=re.sub(r'(?<=</h2>)<p>.*?</p>','<p>'+t('All 157 original recordings are preserved. Four interactive scenes show new native-action walkthroughs using their original artwork, with links to the older recordings. Other games retain their existing previews or generated diagnostics. Role views retain their information limits; full-state debug views are labelled. These recordings do not establish learning or human scores.','157份原版记录完整保留。四款交互场景优先展示复用原画的原生动作演示，并提供旧记录链接；其余保留已有预览或生成诊断。角色视角遵守信息范围，完整状态调试视角单独标注。这些记录不代表学习效果或人类成绩。')+'</p>',gallery,count=1)
         page(base+'index.html',t('All games','全部游戏'),'<main>'+hero+gallery+'</main><script src="'+asset+'catalog.js"></script>',lang)
         for name,title in [('guide',t('Install & play','安装操作')),('api',t('Training API','训练接口'))]:
             body=(D/(name+'-body.html')).read_text(encoding='utf-8') if lang=='en' else '<main class="manual">'+markdown((R/'manuals'/(name+'.zh.md')).read_text(encoding='utf-8'))+'</main>'
