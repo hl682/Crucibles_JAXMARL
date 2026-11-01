@@ -71,7 +71,7 @@ def profiles():
         mech=(g/'mechanism.md').read_text(encoding='utf-8-sig')
         intro=mechanism_intro(mech) if row['family']=='legacy_array' else m['task']['objective']
         # Prefer explicit task/action/rule evidence to titles or visual styling.
-        evidence=[('manifest.task.objective',m['task']['objective'])]+[('manifest.task.'+field,m['task'][field]) for field in ['interaction','observation_access'] if field in m['task']]+[('manifest.actions.'+str(a['id']),a['label']) for a in m['actions']]+[('scene.rules.'+str(i),v) for i,v in enumerate(sc.get('rules',[])) if not re.search(r'animate|render|diagnostic|recorded|unexecuted|authored source|show the|display|debug|masquerade',v,re.I)]
+        evidence=[('manifest.task.objective',m['task']['objective'])]+[('manifest.task.'+field,m['task'][field]) for field in ['interaction','observation_access'] if field in m['task']]+[('manifest.actions.'+str(a['id']),a['label']) for a in m['actions']]+[('scene.rules.'+str(i),v) for i,v in enumerate(sc.get('rules',[])) if not re.search(r'animat|render|diagnostic|recorded|unexecuted|authored source|show the|display|debug|masquerade',v,re.I)]
         if row['family']=='legacy_array':evidence.append(('mechanism.md',intro))
         tags=[]
         for letter in curated[key]:
