@@ -1,0 +1,95 @@
+{
+  "game": "gi142",
+  "source_sha256": "dbed668a41870f1fc914267c5ee0f95ee848bb4d00a574bfa0b10115e36b8468",
+  "manifest_sha256": "162e7b53ac9fac301b2c6a88cee4955c41014a9e75bdb57b6c31988ddbba2926",
+  "num_agents": 4,
+  "observation_size": 131,
+  "num_actions": 8,
+  "max_steps": 72,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730142,
+  "eval_seeds": [
+    1744200,
+    1744201,
+    1744202,
+    1744203
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 4325376,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Return the enemy flag to the carrier team base while the carrier team own flag is on its home base. Team 0 is agents 0,1; team 1 is agents 2,3.",
+    "natural_termination": "Any team scores its first return. Simultaneous returns are resolved together; their reward differences cancel. Horizon 72 truncates only when no natural completion occurs.",
+    "interaction": "Position-dependent tags immobilize enemies for four calls and drop their flags; stationary adjacent ally guarding prevents tags; adjacent ally rescue restores the prisoner action set early. Carrying, interception and blocking alter actual paths.",
+    "observation_access": "The public map, every player/flag/base and all displayed dynamic fields/events are shared. Each policy also gets its own role one-hot. Capture markers use the actual prisoner position and countdown; there are no invented jail coordinates."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "tagged"
+      ],
+      "meaning": "Agent newly captured on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "released"
+      ],
+      "meaning": "Old prisoner became free by countdown or rescue",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Old prisoner released by an adjacent ally rescue action",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Team flag-return total",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "capture_timer"
+      ],
+      "meaning": "Current capture countdown",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

@@ -6,7 +6,7 @@ Pages publishes the repository `docs/` directory, so
 the site URL is `baselines/` below the existing project URL. All site-local
 links are relative and work under a GitHub Pages repository prefix.
 
-This bundle includes exactly 150 / 256 reviewed games, not a live
+This bundle includes exactly 160 / 256 reviewed games, not a live
 directory count. The explicit collection is in `snapshot_source.json` and must
 match `root_review.json` exactly. Every run uses one training seed, four evaluation seeds and
 262,144 joint environment steps. Budget completion does not establish learning,

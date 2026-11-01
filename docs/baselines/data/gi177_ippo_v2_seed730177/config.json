@@ -1,0 +1,130 @@
+{
+  "game": "gi177",
+  "source_sha256": "12a058e28bdb121dfe6afffc3eb56e0dabaafcc872f2fbc5938da1a3a84c5355",
+  "manifest_sha256": "315c970966e7d7237755b9313dd6c33cee2b87e6db192ef9875d3d296135731f",
+  "num_agents": 4,
+  "observation_size": 135,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730177,
+  "eval_seeds": [
+    1747700,
+    1747701,
+    1747702,
+    1747703
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 4456448,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Each controlled pair captures the opposing flag while preserving its own flag at home, coordinating tags, rescue, handoff and finite recharge.",
+    "natural_termination": "Either team reaches two captures. H=96 otherwise truncates; no scripted pursuer or automatic policy participates.",
+    "interaction": "A tag temporarily removes an opponent movement/interaction opportunities and drops possession. An adjacent teammate can pay for early rescue, or receive a handed flag and finish the route. Team depot recharge is finite and contested by teammates.",
+    "observation_access": "All dynamic strategic state is public and encoded: map, positions, teams, energy, frozen timers, flag possession, depot stock, scores and tag/rescue/pass/score events. All entity visibility masks are true; own identity/team labels distinguish the controlled perspective."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "tagged"
+      ],
+      "meaning": "Player newly tagged this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescued"
+      ],
+      "meaning": "Player released by its teammate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "passed"
+      ],
+      "meaning": "Player handed its flag to its teammate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Player picked up enemy flag this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "returned"
+      ],
+      "meaning": "Player returned its own displaced flag this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "recharged"
+      ],
+      "meaning": "Player drew a finite depot unit this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "self_thawed"
+      ],
+      "meaning": "Player spent two energy to self-thaw this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "goal_event"
+      ],
+      "meaning": "Team scored a capture this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "frozen"
+      ],
+      "meaning": "Remaining native freeze timer",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "scores"
+      ],
+      "meaning": "Persistent team capture count",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

@@ -1,0 +1,102 @@
+{
+  "game": "gi175",
+  "source_sha256": "57c802dfeaad65e5f760a9ebeb08cb53a8704c8a8c65c045b2a6e3900db527a7",
+  "manifest_sha256": "0ae65b81c78d41a1eee4273d0fdd40b8276c40d8c6870d65cf441cfc2719e35e",
+  "num_agents": 3,
+  "observation_size": 184,
+  "num_actions": 11,
+  "max_steps": 96,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730175,
+  "eval_seeds": [
+    1747500,
+    1747501,
+    1747502,
+    1747503
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 4540416,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Transport fragile cargo to its matching destination while choosing who carries cargo, who pays finite illumination and which stale reports to share.",
+    "natural_termination": "All cargo is delivered or destroyed; these outcomes are distinguished in state. H=96 otherwise truncates.",
+    "interaction": "Two transferable lanterns expand actual peer hazard observations. One-cargo carrying capacity and adjacent handoffs change peer opportunities; report relays copy aged hazard samples without refreshing timestamps.",
+    "observation_access": "Fixed walls, all explorer/cargo positions, possession, battery and delivery status are public telemetry. Hazard positions/current pulses are visible only within Manhattan 1, or within observer distance 4 when some glowing lantern is within hazard distance 3. Walls do not occlude this abstract light. Private cargo priorities and peer memories are absent. A role may receive a timestamped one-hop report from an adjacent acting sender."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "lamp_passed"
+      ],
+      "meaning": "Explorer handed its lantern and remaining charge to a peer this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cargo_passed"
+      ],
+      "meaning": "Explorer handed its held cargo to a peer this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered_event"
+      ],
+      "meaning": "Cargo delivered at its matching destination this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "broken_event"
+      ],
+      "meaning": "Cargo integrity reached zero this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "glow"
+      ],
+      "meaning": "Paid light is active for this snapshot",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "battery"
+      ],
+      "meaning": "Public remaining battery units",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
