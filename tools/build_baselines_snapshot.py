@@ -257,6 +257,14 @@ ZH = {
     ' remains zero at every recorded evaluation point.': ' 在所有已记录评估点均为零。',
     'Download original PNG': '下载原始 PNG', 'Open original SVG': '打开原始 SVG',
     'Endpoint evidence': '终点评估证据', 'Observed value': '观测值',
+    'Native task objective': '原生任务目标', 'Native episode end conditions': '原生回合结束条件',
+    'Final success metric: 0.': '最终 success 指标：0。',
+    ' Read this recorded metric with the native task condition and role payoffs below.': ' 请结合下方原生任务条件和各角色回报解读该记录值。',
+    'Nonzero role payoffs average to zero.': '非零角色回报相互抵消为零。',
+    ' The role vector below retains the outcomes hidden by the all-role mean.': ' 下方角色向量保留了全员均值未能呈现的结果。',
+    'Joint steps per PPO update': '每次 PPO 更新的联合步数',
+    'PPO optimization target': 'PPO 优化目标',
+    'SwanLab step is the PPO update number; budget/env_steps records joint environment steps. The optimization target combines policy loss, value error and entropy; task performance is shown by native returns and events.': 'SwanLab 的 step 是 PPO 更新编号；budget/env_steps 记录联合环境步。优化目标包含策略损失、价值误差和熵；任务表现由原生回报和事件呈现。',
     'IPPO / random mean native episode return': 'IPPO / 随机基线平均原生回合回报',
     'IPPO per-role return': 'IPPO 各角色回报', 'Random per-role return': '随机基线各角色回报',
     'Training seed (one independent trained policy)': '训练种子（1 个独立训练策略）',
@@ -327,6 +335,7 @@ def render(source, review, results):
     content = ''
     content += f'''<div class="snapshot-note"><strong>Budget completion is not proof of learning, task solution, statistical significance, or generalization.</strong><p>Coverage is frozen to the {count} runs in the review receipt observed at {esc(observed)}. Later files and runs do not enter this snapshot automatically. These fixed-learner baselines do not implement or validate the planned LLM/UED or meta-gradient method.</p><p>Returns use each game's own reward scale. Do not rank games or aggregate performance across games. Four evaluation seeds from one trained policy are not four independent training replications. Failures, negative results and missing event evidence remain visible.</p></div>'''
     content += '''<section class="protocol"><h2>How to read this snapshot</h2><p>The learner is role-conditioned, parameter-shared IPPO with a feedforward policy and four frames of own-observation history. It uses native legal actions, native rewards without shaping, and no privileged critic. Evaluation uses stochastic legal-action sampling with the same independent seeds and native horizon for IPPO and the uniform-legal random baseline.</p><p>Every retained evaluation point is shown. The reported endpoint is the final budget checkpoint; evaluation scores were not used to choose a checkpoint. The mean native return averages across roles and evaluation episodes; the role vector is retained below because averaging can conceal opposing outcomes. <code>The joint environment step count</code> counts joint environment transitions across parallel environments, not individual agent actions.</p><p>The original cloud SVG and PNG files are copied byte for byte. Exact values and paired episode differences remain in the original JSONL. No local training or evaluation was performed to generate this page.</p></section>'''
+    content += '<p>SwanLab step is the PPO update number; budget/env_steps records joint environment steps. The optimization target combines policy loss, value error and entropy; task performance is shown by native returns and events.</p>'
     rows = []
     for r in results:
         f = r["curve"][-1]
@@ -338,6 +347,10 @@ def render(source, review, results):
         f, p, c, s = r['curve'][-1], r['provenance'], r['config'], r['status']
         base = 'data/'+r['run']+'/'
         content += f'<article class="baseline-card" id="{r["game"]}"><p class="eyebrow">{r["game"].upper()} · INITIAL BASELINE</p><h2>{esc(r["title"])}</h2>'
+        if f['ippo_native_event_means'].get('success') == 0:
+            content += '<p class="native-warning"><strong>Final success metric: 0.</strong> Read this recorded metric with the native task condition and role payoffs below.</p>'
+        if f['ippo_mean_agent_return'] == 0 and any(value != 0 for value in f['ippo_per_agent_return']):
+            content += '<p class="native-warning"><strong>Nonzero role payoffs average to zero.</strong> The role vector below retains the outcomes hidden by the all-role mean.</p>'
         if f['ippo_mean_agent_return'] <= f['random_mean_agent_return']:
             comparison_label = 'Zero comparison retained:' if f['ippo_mean_agent_return'] == f['random_mean_agent_return'] else 'Negative comparison retained:'
             content += '<p class="native-warning"><strong>'+comparison_label+'</strong> final IPPO mean native return does not exceed the random baseline in this run. This is an observed single-training-seed result.</p>'
@@ -346,7 +359,11 @@ def render(source, review, results):
         loading = 'eager' if r is results[0] else 'lazy'
         content += f'<figure><a href="{base}learning_curve.svg"><img loading="{loading}" src="{base}learning_curve.svg" alt="{esc(r["game"].upper())} original cloud learning curve: IPPO and random native return by joint environment steps"></a><figcaption>Original cloud learning curve; {len(r["curve"])} evaluation points, one trained seed, four evaluation seeds. Axis ranges are game-specific. {link(base+"learning_curve.png","Download original PNG")} · {link(base+"learning_curve.svg","Open original SVG")}</figcaption></figure><p class="status">{esc(status_label(s["status"]))}</p>'
         content += table(['Endpoint evidence','Observed value'],[
+            *([['Native task objective',esc(c['task']['objective'])]] if c.get('task',{}).get('objective') else []),
+            *([['Native episode end conditions',esc(c['task']['natural_termination'])]] if c.get('task',{}).get('natural_termination') else []),
             ['Joint environment steps (completed / planned)',f'{number(s["train_joint_steps"])} / {number(s["planned_joint_steps"])}'],
+            ['Joint steps per PPO update',number(c['num_envs']*c['rollout_length'])],
+            ['PPO optimization target',esc(f'policy_loss + {c["value_cost"]} × value_loss − {c["entropy"]} × entropy')],
             ['IPPO / random mean native episode return',f'{number(f["ippo_mean_agent_return"])} / {number(f["random_mean_agent_return"])}'],
             ['IPPO per-role return',esc(', '.join(number(v) for v in f['ippo_per_agent_return']))],
             ['Random per-role return',esc(', '.join(number(v) for v in f['random_per_agent_return']))],
