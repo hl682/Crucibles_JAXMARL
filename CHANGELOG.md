@@ -1,5 +1,12 @@
 # Changes
 
+## Development: playable interaction follow-up
+
+- Restore 29 original scene viewports without rewriting original GIF pixels or game rules; the remaining original layouts still need review.
+- Add quick play and optional direct native-action controls. GI215 clicks on adjacent items/stations use original action IDs.
+- Reuse the original GI215 kitchen art for live washing, preparation, filled bowls and served-order effects. Display interpolation never advances the environment.
+- Verify a first order from the original reset and a single-action no-wash control. The browser also executes the order through actual keyboard, object clicks and joint actions. This is not all-game playability acceptance or a human score.
+
 ## 0.1.2
 
 - Replace keyword-assigned categories with a curated per-game mechanism classification for all 256 identities. Source-word matching retrieves supporting evidence only; it cannot assign a label.

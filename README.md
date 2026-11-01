@@ -74,6 +74,21 @@ documentation and genuine saved demonstrations; it does not run Python/JAX.
 
 ## Local human/AI play
 
+**GI215 interactive kitchen:** run `crucibles play --game 215` (or
+`play_bistro.cmd` on Windows), keep the terminal open, and click **Play now**.
+This assigns both workers to you. Click a worker to select it; use WASD to move,
+and click an adjacent item or workstation to issue its native action. The
+**Direct controls** option advances one joint step per command; your other
+owned kitchen worker waits. Turn it off to queue both workers' actions before
+advancing, or assign a worker to another participant. Released roles use the
+labelled untrained AI.
+
+GI215 now reuses its original kitchen artwork and displays washing, preparation,
+filled bowls and served orders from real JAX state changes. A verified first
+order requires the cleaner's washed bowl and the cook's preparation, assembly
+and delivery. This is a narrow engineering walkthrough, not a human benchmark
+or acceptance of gameplay quality across all 256 environments.
+
 Create a session with a seed. Assign any role or set of roles to Host or to an
 invited local participant. Each role has its own legal-command selector and
 native observation. Queue commands, then advance the joint step. Arrow keys or

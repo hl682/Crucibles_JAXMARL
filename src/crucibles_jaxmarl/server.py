@@ -19,6 +19,7 @@ class Session:
         self.returns=np.zeros(self.env.num_agents,dtype=np.float64)
         self.reset=jax.jit(self.env.reset);self.transition=jax.jit(self.env.step_env);self.sample=jax.jit(self.env.sample_actions)
         self.obs,self.state=self.reset(self.key);jax.block_until_ready(self.obs)
+        self.previous_state=None;self.previous_obs=None;self.art_cache={}
         self.logdir=Path(runs)/self.id;self.logdir.mkdir(parents=True)
         self.chain='0'*64
         self.log('create',dict(game=self.env.name,seed=seed,source_sha256=self.env.metadata['source_sha256'],
@@ -42,6 +43,14 @@ class Session:
             self.ever_debug=True;self.log('information_condition',dict(full_state_debug=True))
         roles=sorted(c['roles']);views={str(r):scene_frame(self.env,self.state,self.obs,r) for r in roles}
         if debug:views['-1']=scene_frame(self.env,self.state,self.obs,-1)
+        bistro=None
+        if self.env.name=='gi215':
+            from .bistro_presentation import animation
+            for role,frame in views.items():
+                key=(self.step_count,role)
+                if key not in self.art_cache:self.art_cache[key]=animation(self.env,self.state,self.obs,int(role),self.previous_state,self.previous_obs)
+                frame['original_animation']=self.art_cache[key]
+            bistro={k:self.state[k].tolist()for k in ['tank','sink_dirt','flow','draining','divert','filter_installed','filter_charge','pan_dirty','served','order_status','patience']}
         masks=self.env.get_avail_actions(self.state)
         return dict(id=self.id,game=self.env.metadata,step=self.step_count,terminal=self.terminal,
             roles=roles,views=views,legal={str(r):masks[self.env.agents[r]].tolist() for r in roles},
@@ -51,7 +60,7 @@ class Session:
             task=self.env.manifest.get('task',{}),observation_fields=self.env.manifest.get('observation_fields',[]),
             rules=self.env.scene.get('rules',[]),reward_bounds=[self.env.manifest['reward_low'],self.env.manifest['reward_high']],
             information='FULL_STATE_DEBUG' if debug else 'ROLE_FILTERED',ai_policy='UNTRAINED_UNIFORM_LEGAL',
-            human_scores=None,engineering=self.engineering)
+            human_scores=None,engineering=self.engineering,bistro=bistro)
     def command(self,token,op,payload):
         import jax
         import numpy as np
@@ -94,7 +103,9 @@ class Session:
                     if not mask[r,action]:raise ValueError(f'Queued action is no longer legal: {r}')
                     actions[agent]=np.int32(action);human.append(r);inputs[str(r)]=p['name']
                 else:ai.append(r)
+            self.previous_state,self.previous_obs=self.state,self.obs
             self.obs,self.state,rewards,dones,info=self.transition(jax.random.fold_in(self.key,self.step_count*2+2),self.state,actions)
+            self.art_cache={}
             jax.block_until_ready(rewards);self.step_count+=1;self.terminal=bool(dones['__all__'])
             r=np.array([rewards[a] for a in self.env.agents],dtype=np.float64);self.returns+=r
             self.ever_human|=bool(human);self.ever_ai|=bool(ai)

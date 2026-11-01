@@ -65,6 +65,9 @@ def main():
             if key in viewports:
                 initial='<a href="'+prefix+media+'"><img class="demo" src="'+prefix+media+'" width="640" alt="'+esc(title)+'"></a>'
                 figure=figure.replace(initial,image_markup(key,prefix+media,title,viewports,lazy=False),1)
+            if key=='gi215':
+                walkthrough=t('A real cooperative order','真实协作完成一单')
+                figure+='<section><h2>'+walkthrough+'</h2><img class="demo" src="'+prefix+'walkthroughs/gi215-first-order.gif" alt="'+walkthrough+'"><p>'+t('The cleaner washes and transfers a bowl; the cook prepares an ingredient, assembles soup and serves it. This recording contains 19 native transitions, with display-only animation between them. Removing the washing action prevents this order.','清洁角色洗碗并交接，厨师加工食材、装汤并上菜。这段录像包含19次原生状态更新，中间动画仅用于显示。去掉洗碗动作后，同一路线不能完成这一单。')+'</p><p>'+t('Play locally: run ','本地游玩：运行 ')+'<code>crucibles play --game 215</code>'+t(', click Play now, select a worker and use WASD or click adjacent items. Direct controls make your other owned kitchen worker wait; switch them off to queue both actions. This first-order engineering check is not a human score or all-game acceptance.','，点击 Play now，选择角色后使用 WASD，或点击身边物品。直接控制模式会让另一名自有角色等待；关闭后可分别排队两人的动作。这是一单的工程验证，不是人类成绩或全部游戏验收。')+'</p></section>'
             body=markdown(md);at=body.find('</h1>')+5;body=body[:at]+figure+body[at:]
             download='<p><a class="button" download href="'+prefix+'manuals/'+lang+'/'+key+'.md">'+t('Download this manual','下载本款说明书')+'</a></p>'
             page(base+'games/'+key+'.html',title,'<main class="manual">'+download+body+'</main>',lang)
