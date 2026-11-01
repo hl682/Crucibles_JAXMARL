@@ -1,0 +1,109 @@
+{
+  "game": "gi143",
+  "source_sha256": "a9e23750216fa0e669c68ed604257fe7fdfd19471f184f14724da6ba2d4de6c6",
+  "manifest_sha256": "76b0dfc14f67921382eba5666316e8a132f64335f0135a1d874aa2aa3d9381ed",
+  "num_agents": 4,
+  "observation_size": 125,
+  "num_actions": 10,
+  "max_steps": 72,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730143,
+  "eval_seeds": [
+    1744300,
+    1744301,
+    1744302,
+    1744303
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 4128768,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Two teams contest two neutral stones. Entering the right goal (x=10,y=2..4) scores team 0; entering the left goal (x=0,y=2..4) scores team 1, regardless of last pusher.",
+    "natural_termination": "Both stones have entered goals and become inactive. Horizon 72 truncates otherwise, with natural completion priority.",
+    "interaction": "Teammates and opponents can redirect or brake the same stone, cancel conflicting pushes, or occupy its future endpoint. These changes persist through bounded momentum and alter subsequent scoring opportunities.",
+    "observation_access": "All agent positions/energy, stone endpoints/directions/durations/activity, terrain, public event flags and team scores are public. Own role is one-hot. Goal centers are fixed landmarks; the actual goal mouth is the three terrain cells."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "pushed"
+      ],
+      "meaning": "A stone received one or more push commands, even if the forces cancel",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "braked"
+      ],
+      "meaning": "A stone received a brake command",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collided"
+      ],
+      "meaning": "Attempted stone motion was stopped by a boundary, player or stone",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "scored_stone"
+      ],
+      "meaning": "Stone entered a goal and became inactive",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "hit"
+      ],
+      "meaning": "Player contacted by an attempted moving-stone endpoint",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative goals scored by each team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "momentum"
+      ],
+      "meaning": "Remaining bounded motion duration",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
