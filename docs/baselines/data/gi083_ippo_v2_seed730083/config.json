@@ -1,0 +1,88 @@
+{
+  "game": "gi083",
+  "source_sha256": "f13fabbc6d48ad8b92f984c905586710f64d4d48b07c984c253bcd18eebaebea",
+  "manifest_sha256": "dcc13bf011827886cf083bb95dbbffbb6260c4b910c8b04eac24b348742d3d8b",
+  "num_agents": 4,
+  "observation_size": 112,
+  "num_actions": 10,
+  "max_steps": 96,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730083,
+  "eval_seeds": [
+    1738300,
+    1738301,
+    1738302,
+    1738303
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 3702784,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Owned uncontested nodes pay every fourth step, weighted top 1, center 2, bottom 1. Both teammates receive own-team minus opponent point increments; opposing team receives the negative.",
+    "natural_termination": "Either team reaching at least twelve points naturally ends jointly, including simultaneous threshold arrival. Otherwise horizon 96; no extra winner bonus. Raw terminal calls absorb with zero reward.",
+    "interaction": "Opponent presence blocks capture and income. Coordinated pulses overcome limited protection. Shared energy and teammate shields make recovery, attack, defense and control partner-dependent.",
+    "observation_access": "All rule-relevant positions, terrain, scores, energy, integrity, stun, shield and relay states are public. Disabled roles have no-op only. Diagnostic per-step action flags are not native observation or scene event channels."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Team relay points",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "energy"
+      ],
+      "meaning": "Shared battery pools",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "stun"
+      ],
+      "meaning": "Operator disable timers",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "owner"
+      ],
+      "meaning": "Relay node ownership",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

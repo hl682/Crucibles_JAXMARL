@@ -1,0 +1,130 @@
+{
+  "game": "gi101",
+  "source_sha256": "a2c2ae21a48b7ed1950ed96f636e2f62b404ec99bd7c09be2ab337aba4227b28",
+  "manifest_sha256": "335c9823e15eb644a53d0b9a3024b8d86f889f23e34c3ff8d67be65daf43ab12",
+  "num_agents": 3,
+  "observation_size": 141,
+  "num_actions": 13,
+  "max_steps": 160,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730101,
+  "eval_seeds": [
+    1740100,
+    1740101,
+    1740102,
+    1740103
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 3483648,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Install one block at each side station and two at the middle station. Cargo cannot be carried upward on ladders; raise it on shared lifts. Build a bridge to support the middle station. A station's corresponding role earns the larger installation bonus even when another worker carries the material.",
+    "natural_termination": "All station_count entries equal station_required [1,1,2]. Otherwise truncate after 160 nonterminal steps. Natural completion takes precedence at the horizon. Impact immobilization is bounded at two future calls unless another impact occurs. Terminal raw state is absorbing.",
+    "interaction": "Opposite-pad resting blocks and bracing workers support a loaded lift. Another worker removing ballast or stopping a brace can make the platform drop and stun its riders. A crank operator raises or safely lowers platforms; the shared brake also stops useful motion. Physical material can be installed privately, left as ballast, or bolted into traversable support at three bridge cells. Reclaiming bridge material removes that support and can drop another worker.",
+    "observation_access": "The side-view map, ladder and solid-cell legend, all workers, blocks, platforms, ballast pads, stations, crane state and events are public. All entity visibility masks are true. Every displayed changing attribute is returned in the flat observation. Downward screen y is gravity. Loose waist-high cargo permits worker co-location; bolted blocks and lift platforms are solid cells."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "lift_up_event"
+      ],
+      "meaning": "Balanced platforms raised one cell by an operator",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lift_down_event"
+      ],
+      "meaning": "Platforms safely lowered one cell by an operator",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "lift_drop_event"
+      ],
+      "meaning": "Underbalanced platforms dropped one cell, jolting riders",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "block_fall_event"
+      ],
+      "meaning": "Loose blocks fell one real cell under discrete gravity",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "impact_event"
+      ],
+      "meaning": "Workers jolted or struck this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "build_event"
+      ],
+      "meaning": "Blocks converted into real bolted support cells",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "reclaim_event"
+      ],
+      "meaning": "Bolted support cells removed for reuse",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Work stations receiving material this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "braced"
+      ],
+      "meaning": "Workers currently adding live ballast",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "brake_event"
+      ],
+      "meaning": "Crank operator engaged the shared brake",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

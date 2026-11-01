@@ -1,0 +1,109 @@
+{
+  "game": "gi144",
+  "source_sha256": "4269d24c4659c474d5734959cd66e5504a11a772055437cc79b399d6c41b5768",
+  "manifest_sha256": "8d87b498de6f261608e1f5b1c77dcaa1bc8315ccdff1ea5764a1504989be38a7",
+  "num_agents": 3,
+  "observation_size": 148,
+  "num_actions": 8,
+  "max_steps": 96,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730144,
+  "eval_seeds": [
+    1744400,
+    1744401,
+    1744402,
+    1744403
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 3655680,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Deliver cargo 0 from (1,1) to (9,1) and cargo 1 from (1,5) to (9,5), using periodic gates and distributed local station commands.",
+    "natural_termination": "Both cargo items are delivered; otherwise horizon 96 truncates. A matching delivery on the horizon retains natural-completion priority.",
+    "interaction": "An operator on a remote station changes another role cargo entry opportunity through a gate on the same transition, then pays a forced-stationary commitment. Phase shifts persist and alter future schedules. Cargo can be dropped for another carrier.",
+    "observation_access": "Map, positions, cargo ownership, gate phase/open/override, station mapping, commitment clocks, dock delivery status and latest events are public. Each role also observes own identity; no hidden phase is exposed only to a renderer."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "gate_changed"
+      ],
+      "meaning": "Gate entry-open flag changed from the previous frame",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "commanded"
+      ],
+      "meaning": "Hold or phase-shift command applied at this station index",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Cargo newly delivered to its matching dock",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "picked"
+      ],
+      "meaning": "Cargo picked up on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "dropped"
+      ],
+      "meaning": "Cargo voluntarily dropped on this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Persistent delivered status",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lock_timer"
+      ],
+      "meaning": "Current operator commitment countdown",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

@@ -1,0 +1,95 @@
+{
+  "game": "gi099",
+  "source_sha256": "a355223f334d3ddcfe71534c335342c327adcf0862c3d4a35f1d249dbb4472ae",
+  "manifest_sha256": "24aa9fdb752d306a9883fca64b1a188c1c21139099f931452df778b85b0bfcdc",
+  "num_agents": 4,
+  "observation_size": 73,
+  "num_actions": 7,
+  "max_steps": 96,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730099,
+  "eval_seeds": [
+    1739900,
+    1739901,
+    1739902,
+    1739903
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 2424832,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Wardens aim to immobilize every courier still inside. Couriers aim to get both pennants out, one carried pennant per escaping courier, while keeping their partner available for rescue.",
+    "natural_termination": "Both couriers escaped, or every nonescaped courier is currently frozen. If one has escaped and the other is tagged, the wardens end the remaining chase. Otherwise truncate at 96 steps. Frozen timers last at most six steps without retagging; an episode can end earlier. Terminal raw state is absorbing.",
+    "interaction": "Workers occupy a courtyard with two routes around a wall. Tagging drops carried cargo and removes the target's next actions. A nearby courier can free the partner with grace before the tag phase. Both couriers draw from the same regenerating shelter charges; wardens can seal those physical shelters. Exiting removes a possible rescuer while also securing a payoff.",
+    "observation_access": "Same-team workers are always radio-visible. Opponents are visible only within Manhattan distance three; walls do not block this proximity sensor. Pennants are visible within the same radius or when carried by a teammate; delivered pennants are inactive. The static map, shelters, exit, shelter resources and identity-only event announcements are public. Hidden worker and pennant coordinates and attributes are masked exactly as listed; the renderer must honor agent_vis and flag_vis."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "tag_event"
+      ],
+      "meaning": "Couriers newly immobilized this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescue_event"
+      ],
+      "meaning": "Couriers released by their teammate this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "escape_event"
+      ],
+      "meaning": "Couriers who deposited a pennant and exited this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "seal_event"
+      ],
+      "meaning": "Shelters closed by wardens this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "cover_event"
+      ],
+      "meaning": "Couriers who spent a shelter charge this tick",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

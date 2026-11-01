@@ -1,0 +1,82 @@
+{
+  "game": "gi116",
+  "source_sha256": "77e414f83595f8e956845a9273d39bf6e347e9f43075f77e97ffe07f8d39d772",
+  "manifest_sha256": "b148d75469e728b7b9dc939ae02d14bdcb05ebe73d0d6b75d4cd69794e8b4312",
+  "num_agents": 3,
+  "observation_size": 102,
+  "num_actions": 12,
+  "max_steps": 144,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730116,
+  "eval_seeds": [
+    1741600,
+    1741601,
+    1741602,
+    1741603
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 2525184,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Bring all three crew members to x>=6 across two channels using four reusable parts and temporary spans.",
+    "natural_termination": "All crew physically occupy far-bank ground simultaneously; otherwise truncate at tick 144. A previously arrived crew member may return to help, and arrival reward is not repeated.",
+    "interaction": "Mass equals one plus carried part count. Unbraced spans carry mass one; braced spans carry mass two. The builder consumes a held part to install a span, the stabilizer sustains it, and the porter cannot cross while holding two parts. Consent-based handoffs and bridge recovery move exactly existing material identities.",
+    "observation_access": "Map, roles, all part locations and owners, bridge support/lifetime/capacity and current crew locations are public. The acting role receives its identity one-hot. There are no private fields.",
+    "transition_order": "Movement uses existing spans/capacities and rotating mass arbitration; pickup/drop and consent-based handoffs follow; support decays or is renewed; the builder installs or retrieves a span; unsupported lifetime decays; overload/expiry collapses return parts and affected crew to the western bank; arrivals and termination follow."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "collapse_count"
+      ],
+      "meaning": "Number of collapsed spans over the episode",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "fall_count"
+      ],
+      "meaning": "Number of crew falls with a deterministic recovery to the western bank",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

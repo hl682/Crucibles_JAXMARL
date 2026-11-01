@@ -1,0 +1,130 @@
+{
+  "game": "gi139",
+  "source_sha256": "01fe140143e8464ce2affdebe5c9aefa347536d5b309d0af03c478cf68994f08",
+  "manifest_sha256": "218eedb89a697b2e783770ef157159b8cd8fc93870164ef7787bd763822994b0",
+  "num_agents": 3,
+  "observation_size": 120,
+  "num_actions": 12,
+  "max_steps": 96,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730139,
+  "eval_seeds": [
+    1743900,
+    1743901,
+    1743902,
+    1743903
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 2967552,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Cooperatively deliver the six finite fruits. Each delivery rewards every courier 0.5; the delivering courier additionally receives 0.5 when its private preferred species matches.",
+    "natural_termination": "Six deliveries naturally complete the garden. Missing pollen or poor coordination may instead reach the 96-step truncation.",
+    "interaction": "A packet must pass to another handler before grafting. Grafting closes that plant as a pollen source, then opens a delayed harvest opportunity for any courier. One inventory slot and contested plants create route, handoff and harvesting tradeoffs.",
+    "observation_access": "Each role sees its own preference and inventory. Courier/plant/active-fruit payloads are visible only at Manhattan distance <=3; other payloads are zero with explicit visibility bits. Depot, clock, phase, aggregate stock-consumption counters and anonymous event-count bells are public. Preferences of other roles are never exposed in observations or entity attributes."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "gather_event"
+      ],
+      "meaning": "Public garden bell: count of pollen packets gathered this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "handoff_event"
+      ],
+      "meaning": "Public garden bell: count of successful courier handoffs this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "pollination_event"
+      ],
+      "meaning": "Public garden bell: count of plants grafted this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "ripening_event"
+      ],
+      "meaning": "Public garden bell: count of fruits becoming ripe this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "harvest_event"
+      ],
+      "meaning": "Public garden bell: count of fruits harvested this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivery_event"
+      ],
+      "meaning": "Public garden bell: count of fruit deliveries this transition",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "collision_event"
+      ],
+      "meaning": "Public garden bell: count of blocked movement proposals due to couriers",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Total deposited fruit",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "pollen_used"
+      ],
+      "meaning": "Total pollen units consumed by grafting",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "pollen_discarded"
+      ],
+      "meaning": "Total pollen units irreversibly discarded",
+      "semantics": "cumulative_counter"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

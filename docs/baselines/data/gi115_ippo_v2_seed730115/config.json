@@ -1,0 +1,82 @@
+{
+  "game": "gi115",
+  "source_sha256": "dd21f93f71a3b24167e86e3dc1098b05bc286ee88e0cb5c489b32f83427dd360",
+  "manifest_sha256": "415e8890239aa517c90f5df84bb51a68c9fba663128d47b3274ad5472dd82068",
+  "num_agents": 3,
+  "observation_size": 100,
+  "num_actions": 11,
+  "max_steps": 128,
+  "observability": "fully_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730115,
+  "eval_seeds": [
+    1741500,
+    1741501,
+    1741502,
+    1741503
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 2476032,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Deliver each boat cargo to its indexed dock using either lock lane and the two shared transferable water units.",
+    "natural_termination": "All three boats delivered; otherwise truncate at tick 128, with natural completion taking priority on that tick.",
+    "interaction": "A chamber may be opened at the low bank only at level zero and at the high bank only at level two. Filling or transferring water changes what the other chamber can do. Boats physically occupy cells, may form convoys and may need to yield an entrance to allow opposing traffic.",
+    "observation_access": "All map, boat, gate, chamber, reservoir and dock state is public. The flat row adds the acting boat identity. No private targets or unobserved resource fields are used.",
+    "transition_order": "Movement uses old gate states and rotating occupancy priority. Each chamber then selects one nearby boat command by the same rotating boat priority. Chambers settle their commands in alternating lane order, followed by delivery and termination."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "delivery_count"
+      ],
+      "meaning": "Completed freight deliveries",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "flow"
+      ],
+      "meaning": "Net signed chamber water transfer during this transition, not a cumulative level",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "done"
+      ],
+      "meaning": "Joint episode completion, including timeout",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}

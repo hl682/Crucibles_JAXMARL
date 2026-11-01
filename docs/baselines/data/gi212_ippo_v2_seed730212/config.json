@@ -1,0 +1,81 @@
+{
+  "game": "gi212",
+  "source_sha256": "addbf61f680e09e17fbfdf0a28637beb2594f8e5d23804606c7903259bd01204",
+  "manifest_sha256": "aba75fbbab8e20bcea1596ec14fa05fa80c8a748fe402ea087e31649b1b71da5",
+  "num_agents": 3,
+  "observation_size": 145,
+  "num_actions": 12,
+  "max_steps": 150,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730212,
+  "eval_seeds": [
+    1751200,
+    1751201,
+    1751202,
+    1751203
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 3581952,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Carry each settlement's finite shipment to its assigned market, using fuel, temporary crossing reservations, escorts and dated signals to manage the single mountain pass.",
+    "natural_termination": "Natural completion when all three original shipments are delivered; otherwise truncate at tick 150.",
+    "interaction": "A reservation delays competing entry; relinquishing it enables others. An escort spends one actor's fuel/action to protect another caravan against closed-pass entry. Relay fuel buys a delayed observation for remote peers; simultaneous entry contests block all contenders.",
+    "observation_access": "Public information is the map, settlement/market locations, clock/terminal causes, council reservation/lease and market receipts. Agents, their visible fuel/guard/stock/load, beacons and cargo are observed only within Manhattan radius two. Current pass weather is shown only within radius two of its physical position. Each actor additionally receives its own report and original timestamp. Beacon payloads and timestamps are local; pending packets are never observed. Visibility masks suppress all hidden record data to -1. Legal movement does not reveal hidden actors; weather/lease entry checks only occur when the acting caravan is already adjacent to the pass and can directly see it."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "delivered"
+      ],
+      "meaning": "Public market receipt per settlement, 0 or 1",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "reservation"
+      ],
+      "meaning": "Public council crossing owner, -1 unreserved",
+      "semantics": "level"
+    },
+    {
+      "state_path": [
+        "lease"
+      ],
+      "meaning": "Public crossing lease ticks remaining",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
