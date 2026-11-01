@@ -1,0 +1,88 @@
+{
+  "game": "gi157",
+  "source_sha256": "a48d44379f9cdc85b5ee2bcda19d1c06a5e98b0e6ea29cd601f5b11d918674bd",
+  "manifest_sha256": "867af05edc71d88a55a5c9f1010c940ad9cdc8001d86911985f05ffab0e0facc",
+  "num_agents": 4,
+  "observation_size": 171,
+  "num_actions": 14,
+  "max_steps": 128,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 8,
+  "rollout_length": 64,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730157,
+  "eval_seeds": [
+    1745700,
+    1745701,
+    1745702,
+    1745703
+  ],
+  "total_joint_steps": 262144,
+  "eval_interval_joint_steps": 32768,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 5636096,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Coordinate beacon control, cover, pursuit, decoy placement and rescues to capture both opposing players simultaneously.",
+    "natural_termination": "The game terminates when either team has both players captured after the simultaneous capture/rescue phase. If both teams are fully captured on that step, winner remains -1 for a draw. A horizon of 128 otherwise truncates without assigning a winner.",
+    "interaction": "Teammates share information, cover and rescues. Beacons give radar and consumable protection; enemy decoys suppress detection and wards and can consume a pursuer move by stunning it at a real cell. Conflicting capture intentions resolve simultaneously.",
+    "observation_access": "Own-team telemetry, beacon state and capture/rescue identity notices are public to the relevant observation channels. Opponents require direct range or friendly beacon radar and may be hidden by enemy jammers. Adjacent opponents are always visible. Decoys are explicitly labeled when seen; no false indistinguishability claim is made."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "capture_event"
+      ],
+      "meaning": "Public capture notices by player this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "rescue_event"
+      ],
+      "meaning": "Public rescue notices by player this tick",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "score"
+      ],
+      "meaning": "Cumulative captures credited to each team",
+      "semantics": "cumulative_counter"
+    },
+    {
+      "state_path": [
+        "captured_count"
+      ],
+      "meaning": "Currently captured players per team",
+      "semantics": "level"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
