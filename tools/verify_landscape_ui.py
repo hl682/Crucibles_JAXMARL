@@ -34,7 +34,14 @@ def main():
                     (out/f'{game}-failure.json').write_text(json.dumps(dict(error=issue,browser_errors=errors),indent=2),encoding='utf8')
                     raise RuntimeError(issue)
                 expect(page.locator('#controls .role')).to_have_count(roles,timeout=180000)
-                session=page.evaluate('session');page.locator('#direct').uncheck();page.locator('#scene-zoom').select_option('2')
+                session=page.evaluate('session')
+                # Switching input mode must preserve a selected, not-yet-queued action.
+                # Await the actual change handler so this catches a delayed refresh too.
+                page.evaluate('()=>{const handler=document.getElementById("direct").onchange;document.getElementById("direct").onchange=e=>window.modeChangeDone=Promise.resolve(handler(e))}')
+                page.locator('#action-0').select_option(str(sequence[0][0]))
+                page.locator('#direct').uncheck();page.evaluate('window.modeChangeDone')
+                expect(page.locator('#action-0')).to_have_value(str(sequence[0][0]))
+                page.locator('#scene-zoom').select_option('2')
                 for tick,actions in enumerate(sequence,1):
                     for role,value in enumerate(actions):
                         if game=='gi216' and tick==1 and role==0:
@@ -66,7 +73,8 @@ def main():
                 assert not errors,errors
                 page.locator('#close').click();expect(page.locator('#session')).to_be_hidden();page.close()
                 events=[json.loads(x)for x in (out/'sessions'/session/'events.jsonl').read_text(encoding='utf8').splitlines()]
-                assert [e['value']['actions']for e in events if e['type']=='transition']==sequence
+                actual=[e['value']['actions']for e in events if e['type']=='transition']
+                assert actual==sequence,dict(game=game,session=session,expected=sequence,actual=actual)
                 result=dict(status='PASS',game=game,native_joint_steps=len(sequence),roles_owned=roles,
                     object_menu_executes_native_action=True,zoomed_click=True,role_privacy_checks=True,debug_logged_separately=True,
                     browser_errors=errors,runtime_sha256=runtime,human_scores=None,

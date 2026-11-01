@@ -151,7 +151,9 @@ async function landscapeClick(event,frame){
   if(distance===1){const dx=pos[0]-actor.xy[0],dy=pos[1]-actor.xy[1];await objectAction(role,dy===-1?1:dx===1?2:dy===1?3:4)}
 }
 $('quickplay').onclick=action(async()=>{await createSession();await api({op:'assign',player:'Host',roles:['gi214','gi215','gi216','gi217'].includes(current.game.key)?Array.from({length:current.game.dimensions.num_agents},(_,i)=>i):[0]});$('direct').checked=true;paintedSteps.clear();await refresh()});
-$('direct').onchange=action(refresh);
+// This is a local input mode: rebuilding controls from a snapshot can discard
+// a selection made while that snapshot is still loading.
+$('direct').onchange=()=>{for(const r of current?.roles||[]){const button=$('action-'+r)?.parentElement.querySelector('button');if(button)button.textContent=$('direct').checked&&current.host?'Do action':queued[r]!==undefined?'Queued':'Queue'}};
 $('assign').onclick=action(async()=>{await api({op:'assign',player:$('player').value,roles:parseRoles()});await refresh()});
 $('all').onclick=action(async()=>{await api({op:'assign',player:$('player').value,roles:Array.from({length:current.game.dimensions.num_agents},(_,i)=>i)});await refresh()});
 $('invite').onclick=action(async()=>{const name=`Player ${current.players.length}`;const v=await api({op:'invite',name});$('invitation').hidden=false;$('invitation').value=location.origin+'/#'+new URLSearchParams({session,token:v.invite});await refresh()});
