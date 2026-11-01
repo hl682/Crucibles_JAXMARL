@@ -1,0 +1,88 @@
+{
+  "game": "gi239",
+  "source_sha256": "88c80f02733cafd84a9a6ec94b88c35b218f754b8acd8a799af10423a545881b",
+  "manifest_sha256": "edac80da0f8520d8a68b461b7fa593208180f198d80c7534718422c4d01711dd",
+  "num_agents": 96,
+  "observation_size": 238,
+  "num_actions": 19,
+  "max_steps": 896,
+  "observability": "partially_observable",
+  "history": 4,
+  "num_envs": 1,
+  "rollout_length": 39,
+  "hidden": 128,
+  "epochs": 4,
+  "learning_rate": 0.0003,
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip": 0.2,
+  "entropy": 0.01,
+  "value_cost": 0.5,
+  "grad_clip": 1.0,
+  "train_seed": 730239,
+  "eval_seeds": [
+    1753900,
+    1753901,
+    1753902,
+    1753903
+  ],
+  "total_joint_steps": 262158,
+  "eval_interval_joint_steps": 32799,
+  "status": "PREPARED_NOT_RUN",
+  "budget_origin": "Pre-run initial exposure v2: 262144 joint steps rounded up to whole rollout; not convergence or success criterion",
+  "feature_storage_float32_bytes": 15694848,
+  "algorithm": "role_conditioned_parameter_shared_IPPO",
+  "stage": "initial_baseline",
+  "selection_basis": "All native actions categorical. Per-role native returns; no assumed shared team reward. Parameter sharing with explicit role index permits different role policies and bounds memory at up to 768 roles. Local observations only, no privileged critic.",
+  "memory_limit": "Four local frames, feedforward; partial observation can require recurrent follow-up, not claimed sufficient.",
+  "task": {
+    "objective": "Sustain household food and communal seeds through complementary care, local harvest labor, downstream water management and livestock shelter.",
+    "natural_termination": "No early natural terminal; farming season truncates at 896 ticks.",
+    "interaction": "Assist changes harvesting; shared tools and seeds alter production; three-slot downstream water/salt and moving trays affect other households; herding restores soils.",
+    "observation_access": "Public village/drainage geometry; only selected nearby entity rows with presence flags are observed. Downstream pipes and remote weather are hidden; local field-water relay requires an actual action. Off-view events are debug-only."
+  },
+  "native_event_definitions": [
+    {
+      "state_path": [
+        "event"
+      ],
+      "meaning": "Actor:0 none,1 sow,2 care,3 harvest,4 sluice/levee,5 seed/tray,6 private store,7 donate,8 herd,9 handoff/tools/relay",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "field_event"
+      ],
+      "meaning": "0 none,1 sow,2 care,3 harvest,4 flood/salt stress",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "animal_event"
+      ],
+      "meaning": "0 none,1 herd,2 flood injury",
+      "semantics": "per_step_flag"
+    },
+    {
+      "state_path": [
+        "tray_event"
+      ],
+      "meaning": "0 none,1 launched,2 arrived,3 collected",
+      "semantics": "per_step_flag"
+    }
+  ],
+  "primary_metric": "mean across roles of unmodified native episode returns; inspect role vector and task events, mean can cancel in competitive games",
+  "secondary_metrics": [
+    "per-role native return",
+    "native event counters",
+    "natural termination",
+    "truncation"
+  ],
+  "evaluation_policy": "stochastic legal-action sampling; same independent seeds and native horizon for random/IPPO",
+  "selection_rule": "No selection by evaluation; initial final checkpoint reported, every intermediate point retained",
+  "stop_rule": "Complete frozen joint-step exposure. Stop safely for nonfinite values, native contract error, resource limit, or explicit coordinator/user instruction. Wall slices resume same identity.",
+  "scope": "Existing Crucibles games only; does not implement original LLM/UED/meta-gradient experiment",
+  "purpose": "FORMAL_BASELINE",
+  "backend": "gpu",
+  "tracking_project": "Crucibles_JAXMARL_MARL_Baselines"
+}
