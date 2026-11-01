@@ -13,6 +13,13 @@ class Links(HTMLParser):
 
 def main():
     errors=[];count=0
+    baseline_snapshot=None
+    if (R/'docs/baselines/snapshot_source.json').exists():
+        try:
+            from build_baselines_snapshot import check_snapshot
+            baseline_snapshot=check_snapshot()
+        except (AssertionError,ValueError,KeyError,OSError) as exc:
+            errors.append('Baseline snapshot integrity: '+str(exc))
     for p in (R/'docs').rglob('*.html'):
         parser=Links();parser.feed(p.read_text(encoding='utf-8'))
         for url in parser.links:
@@ -39,7 +46,7 @@ def main():
             if any(ord(c)<32 and c not in '\t\r\n' for c in text):errors.append('Unexpected control character in '+str(p.relative_to(R)))
             for pattern in patterns:
                 if re.search(pattern,text):errors.append('Sensitive/nonportable pattern in '+str(p.relative_to(R)))
-    result=dict(status='PASS' if not errors else 'FAIL',games=len(rows),html_links_checked=count,errors=errors)
+    result=dict(status='PASS' if not errors else 'FAIL',games=len(rows),html_links_checked=count,baseline_snapshot=baseline_snapshot,errors=errors)
     (R/'verification/release_checks.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(dict(result,errors=errors[:10],error_count=len(errors)),indent=2));return bool(errors)
 
